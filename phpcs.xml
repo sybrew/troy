@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<ruleset name="Troy">
+	<description>The coding standard used for Troy plugins for WordPress.</description>
+
+	<!-- Get it here: https://github.com/theseoframework/wpcs-tsf -->
+	<rule ref="TSF"/>
+
+	<!-- Defined at wpcs-tsf. We cannot override that here... -->
+	<!-- <config name="minimum_supported_wp_version" value="6.7"/> -->
+	<!-- <config name="testVersion" value="7.4-"/> -->
+
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array" value="troy-client,troy-server,default"/>
+		</properties>
+	</rule>
+
+	<!-- Exclude minified scripts. -->
+	<exclude-pattern>*.min.js</exclude-pattern>
+	<exclude-pattern>*.min.css</exclude-pattern>
+
+	<!-- Exclude index.php files. They are inert in (our) plugins unless directly included/called. -->
+	<exclude-pattern>index.php</exclude-pattern>
+
+	<!-- Check all PHP files in directory tree by default. -->
+	<arg name="extensions" value="php"/>
+	<file>.</file>
+</ruleset>
