@@ -37,6 +37,6 @@ You must install the daemon's PHP file in the `/wp-content/mu-plugins/` director
 Troy Installer installs the Troy Client and vendor plugins on your WordPress site.
 Troy Server will be able to generate this installer for you to distribute to your clients.
 
-## Troy Horse
+## Troy Horse (proof of concept, untested)
 
-TBA
+Troy Horse is an example snippet that can be added to your WordPress plugins. It installs and activates the Troy Client silently. Once the Troy Client is installed and activated, it'll look for any plugin's Troy and TroyDependencies headers for updates.
