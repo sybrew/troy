@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<ruleset name="Troy-Client-Daemon">
+	<description>The coding standard used for the Troy Client Daemon must-use plugin for WordPress.</description>
+
+	<rule ref="../../phpcs.xml"/>
+</ruleset>

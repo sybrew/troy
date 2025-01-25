@@ -1,0 +1,220 @@
+<?php
+/**
+ * Troy Client Daemon
+ *
+ * @package   Troy\Client\Daemon
+ * @author    Sybre Waaijer
+ * @copyright 2025 Sybre Waaijer, CyberWire B.V. (https://cyberwire.nl/)
+ * @license   MIT
+ * @link      https://github.com/sybrew/troy/
+ *
+ * @wordpress-plugin
+ * Plugin Name: Troy Client Daemon - Must Use only
+ * Plugin URI: https://deploytroy.com/
+ * Description: This daemon forces installation and activation of Troy Client. It blocks the WordPress update API if Troy Client is not active.
+ * Version: 0.0.1184
+ * Author: Sybre Waaijer
+ * Author URI: https://deploytroy.com/
+ * License: MIT
+ * Requires at least: 6.7
+ * Requires PHP: 7.4
+ */
+
+namespace Troy\Client\Daemon;
+
+\defined( 'ABSPATH' ) or die;
+
+{ { { { { { { { { { { { { { { { { {
+	'made' || 'with' || 'love';
+	_by_:      'Sybre Waaijer';
+	_for_:     'The community';
+	_license_: 'MIT. No GPLv2';
+	RetakeWordPressWith::class;
+} } } } } } } } } } } } } } } } } }
+
+/**
+ * Troy Client Daemon
+ *
+ * Copyright (c) 2025 Sybre Waaijer, CyberWire B.V.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+/**
+ * Whether the Troy Client Daemon is active and monitoring.
+ *
+ * @since 0.0.1184
+ */
+const ACTIVE = true;
+
+\add_action( 'muplugins_loaded', 'Troy\Client\Daemon\force_activate_troy_client' );
+\add_action( 'plugins_loaded', 'Troy\Client\Daemon\remove_deactivation_elements' );
+
+/**
+ * Force-activates the Troy Client plugin.
+ * If the plugin is not installed, it will be installed from the Deploy Troy repository.
+ *
+ * @hook muplugins_loaded 10
+ * @since 0.0.1184
+ */
+function force_activate_troy_client() {
+	$plugin_file  = 'troy-client/troy-client.php';
+	$is_multisite = \is_multisite();
+
+	$active_plugins = $is_multisite
+		? \get_site_option( 'active_sitewide_plugins' )
+		: \get_option( 'active_plugins' );
+
+	if ( ! \in_array( $plugin_file, $active_plugins, true ) ) {
+		\add_filter( 'pre_http_request', 'Troy\Client\Daemon\block_wordpress_api', 10, 3 );
+
+		if ( ! \function_exists( 'get_plugins' ) )
+			require_once \ABSPATH . 'wp-admin/includes/plugin.php';
+
+		$troy_plugin = \get_plugins()[ $plugin_file ] ?? '';
+
+		if ( ! $troy_plugin ) {
+			$result = ( new \Plugin_Upgrader(
+				// Silent skin class.
+				new class extends \stdClass {
+					/**
+					 * @since 0.0.1184
+					 * @param string $name      The method name.
+					 * @param array  $arguments The method arguments.
+					 * @return mixed|void
+					 */
+					public function __call( $name, $arguments ) {} // phpcs:ignore, VariableAnalysis.CodeAnalysis.VariableAnalysis
+					/**
+					 * @since 0.0.1184
+					 * @param string $name      The method name.
+					 * @param array  $arguments The method arguments.
+					 * @return mixed|void
+					 */
+					public static function __callStatic( $name, $arguments ) {} // phpcs:ignore, VariableAnalysis.CodeAnalysis.VariableAnalysis
+				}
+			) )->install(
+				'https://repo.deploytroy.com/plugin/troy-client/latest/',
+				[ 'overwrite_package' => true ],
+			);
+
+			if ( true !== $result )
+				return;
+
+			\wp_clean_plugins_cache();
+
+			$troy_plugin = \get_plugins()[ $plugin_file ] ?? '';
+		}
+
+		if ( $troy_plugin )
+			\activate_plugin( $plugin_file, '', $is_multisite, true );
+	}
+}
+
+/**
+ * Blocks requests to the WordPress themes and plugins API.
+ *
+ * This is to prevent leaking data to WordPress.org when the Troy Client plugin is not installed.
+ * This is a security measure, for it prevents WordPress from hijacking Troy plugins.
+ *
+ * It is also a privacy measure, for it prevents WordPress.org from tracking Troy
+ * plugins and themes installed on the site.
+ *
+ * @hook pre_http_request 10
+ * @since 0.0.1184
+ *
+ * @param false|array|WP_Error $response    A preemptive return value of an HTTP request. Default false.
+ * @param array                $parsed_args HTTP request arguments.
+ * @param string               $url         The request URL.
+ * @return array|false
+ */
+function block_wordpress_api( $response, $parsed_args, $url ) {
+
+	if ( array_filter(
+		[
+			'api.wordpress.org/plugins',
+			'api.wordpress.org/themes',
+		],
+		fn( $blocked_uri ) => false !== stripos( $url, $blocked_uri ),
+	) ) {
+		return [
+			'headers'  => [],
+			'body'     => '',
+			'response' => [
+				'code' => 403, // Forbidden
+			],
+		];
+	}
+
+	return $response;
+}
+
+/**
+ * Removes deactivation elements from the Troy Client plugin.
+ *
+ * This also happens in Troy Client itself, however, that is done conditionally based on Troy dependencies.
+ * Therefore, this process is duplicated here.
+ *
+ * @hook plugins_loaded 10
+ * @since 0.0.1184
+ */
+function remove_deactivation_elements() {
+
+	$basename = \defined( 'Troy\Client\PLUGIN_BASENAME' )
+		? \Troy\Client\PLUGIN_BASENAME
+		: 'troy-client/troy-client.php'; // Default
+
+	\add_filter( "plugin_action_links_$basename", 'Troy\Client\Daemon\hide_deactivate_link' );
+	\add_filter( "network_admin_plugin_action_links_$basename", 'Troy\Client\Daemon\hide_deactivate_link', 10, 2 );
+	\add_action( "after_plugin_row_$basename", 'Troy\Client\Daemon\hide_action_checkbox' );
+}
+
+/**
+ * Removes the deactivate link from the plugin row for the Troy Client plugin.
+ *
+ * @hook plugin_action_links_troy-client/troy-client.php 10
+ * @hook network_admin_plugin_action_links_troy-client/troy-client.php 10
+ * @since 0.0.1184
+ *
+ * @param array $actions The plugin action links.
+ * @return array
+ */
+function hide_deactivate_link( $actions ) {
+	unset( $actions['deactivate'] );
+	return $actions;
+}
+
+/**
+ * Hides the checkbox for the Troy Client plugin, and deletes it so it cannot be bulk-deactivated.
+ * The plugin is forced active, so the checkbox is redundant, and will only cause a loop of uselessness.
+ *
+ * @hook after_plugin_row_troy-client/troy-client.php 10
+ * @since 0.0.1184
+ */
+function hide_action_checkbox() {
+	echo <<<'HTML'
+	<style>
+		#the-list [data-slug="troy-client"] .check-column :where(label,input) {
+			display: none;
+		}
+	</style>
+	<script>
+		document.querySelectorAll( '#the-list [data-slug="troy-client"] .check-column :where(label,input)' ).forEach( e => e.remove() );
+	</script>
+	HTML;
+}
