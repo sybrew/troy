@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<ruleset name="Troy-Installer">
+	<description>The coding standard used for the Troy Installer plugin for WordPress.</description>
+
+	<rule ref="../../phpcs.xml"/>
+
+	<rule ref="TSF.Performance.Opcodes">
+		<properties>
+			<property name="userNoopChecks" type="array" value="register_skin_messages,register_admin_message,list_items"/>
+		</properties>
+	</rule>
+
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array" value="troy-installer,default"/>
+		</properties>
+	</rule>
+</ruleset>

@@ -11,7 +11,7 @@
 
 <p align="center">
 	<a href="#"><strong>Documentation (TBA)</strong></a> ·
-	<a href="changelog.md"><strong>Changelog</strong></a> ·
+	<a href="changelog.md"><strong>Changelog</strong></a>
 </p>
 
 <br>
@@ -34,7 +34,8 @@ You must install the daemon's PHP file in the `/wp-content/mu-plugins/` director
 
 ## Troy Installer
 
-TBA
+Troy Installer installs the Troy Client and vendor plugins on your WordPress site.
+Troy Server will be able to generate this installer for you to distribute to your clients.
 
 ## Troy Horse
 
