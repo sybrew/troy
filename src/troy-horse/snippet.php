@@ -28,7 +28,7 @@ add_action(
 			require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
 
 			$result = ( new Plugin_Upgrader(
-				new class extends \stdClass {
+				new class extends stdClass {
 					/**
 					 * @param string $name      The method name.
 					 * @param array  $arguments The method arguments.

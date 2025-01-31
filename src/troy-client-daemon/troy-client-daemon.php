@@ -129,8 +129,10 @@ function force_activate_troy_client() {
 /**
  * Blocks requests to the WordPress themes and plugins API.
  *
- * This is to prevent leaking data to WordPress.org when the Troy Client plugin is not installed.
- * This is a security measure, for it prevents WordPress from hijacking Troy plugins.
+ * This is to prevent leaking data to WordPress.org when the Troy Client plugin
+ * is not installed.
+ * This is a security measure, for it prevents WordPress from hijacking
+ * Troy-dependent plugins.
  *
  * It is also a privacy measure, for it prevents WordPress.org from tracking Troy
  * plugins and themes installed on the site.
@@ -138,7 +140,8 @@ function force_activate_troy_client() {
  * @hook pre_http_request 10
  * @since 0.0.1184
  *
- * @param false|array|WP_Error $response    A preemptive return value of an HTTP request. Default false.
+ * @param false|array|WP_Error $response    A preemptive return value of an HTTP
+ *                                          request. Default false.
  * @param array                $parsed_args HTTP request arguments.
  * @param string               $url         The request URL.
  * @return array|false
@@ -167,7 +170,8 @@ function block_wordpress_api( $response, $parsed_args, $url ) {
 /**
  * Removes deactivation elements from the Troy Client plugin.
  *
- * This also happens in Troy Client itself, however, that is done conditionally based on Troy dependencies.
+ * This also happens in Troy Client itself, however, that is done conditionally
+ * based on Troy dependencies.
  * Therefore, this process is duplicated here.
  *
  * @hook plugins_loaded 10
@@ -200,8 +204,10 @@ function hide_deactivate_link( $actions ) {
 }
 
 /**
- * Hides the checkbox for the Troy Client plugin, and deletes it so it cannot be bulk-deactivated.
- * The plugin is forced active, so the checkbox is redundant, and will only cause a loop of uselessness.
+ * Hides the checkbox for the Troy Client plugin for no-JS, and deletes it on JS
+ * so it cannot be bulk-deactivated.
+ * The plugin is forced active, so the checkbox is redundant, and will only cause
+ * a loop of uselessness.
  *
  * @hook after_plugin_row_troy-client/troy-client.php 10
  * @since 0.0.1184
@@ -214,7 +220,8 @@ function hide_action_checkbox() {
 		}
 	</style>
 	<script>
-		document.querySelectorAll( '#the-list [data-slug="troy-client"] .check-column :where(label,input)' ).forEach( e => e.remove() );
+		document.querySelectorAll( '#the-list [data-slug="troy-client"] .check-column :where(label,input)' )
+			.forEach( e => e.remove() );
 	</script>
 	HTML;
 }
