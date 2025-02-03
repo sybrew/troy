@@ -22,7 +22,17 @@ TBA
 
 ## Troy Client
 
-TBA
+Troy Client is a WordPress plugin that enables updating plugins, plugin translations, and plugin dependencies from any Troy Server.
+
+It also overrides the plugins API to allow getting information about plugins from the plugin's registered Troy Server. You can view the API connection status on the Site Health page.
+
+If a plugin has registered dependencies, future updates for those dependencies will be fetched from the registered Troy Server instead of WordPress.org.
+
+Moreover, Troy Client will remove information plugin information from requests made to WordPress.org, including subsequent translation update requests.
+
+Lastly, it overrides the WordPress.org plugin-search results when a plugin's slug is registered with Troy Client, so that the plugin's information is fetched from the Troy Server instead of WordPress.org.
+
+Troy Client looks for updates for itself from the Troy Server `repo.deploytroy.org`.
 
 ## Troy Client Daemon
 
