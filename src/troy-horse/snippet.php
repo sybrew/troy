@@ -21,7 +21,7 @@ add_action(
 	function () {
 
 		$plugin_file = 'troy-client/troy-client.php';
-		$url         = 'https://repo.deploytroy.com/plugin/troy-client/latest/';
+		$url         = 'https://repo.deploytroy.com/plugin/get/zip/troy-client/';
 
 		if ( ! is_plugin_active( $plugin_file ) ) {
 

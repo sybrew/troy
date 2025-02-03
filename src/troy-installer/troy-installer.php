@@ -268,10 +268,8 @@ function install_plugins() {
 		set_time_limit( max( $ini_max_execution_time, OPTIONS['install_timeout'] ) );
 
 	install_troy:
-	if ( \function_exists( 'Troy\Client\API\get_slug_repos' ) )
+	if ( \function_exists( 'Troy\Client\API\get_troy_plugin_repos_per_slug' ) )
 		goto install_deps;
-
-	require_once \ABSPATH . 'wp-admin/includes/plugin.php';
 
 	if ( isset( $plugins['troy-client/troy-client.php'] ) )
 		goto activate_troy;
@@ -280,7 +278,7 @@ function install_plugins() {
 
 	$skin   = new Troy_Installer_Skin;
 	$result = ( new \Plugin_Upgrader( $skin ) )->install(
-		'https://repo.deploytroy.com/plugin/troy-client/latest/',
+		'https://repo.deploytroy.com/plugin/get/zip/troy-client/',
 		[ 'overwrite_package' => true ],
 	);
 
@@ -299,9 +297,11 @@ function install_plugins() {
 	$installed[] = 'Troy Client';
 
 	activate_troy:
+	require_once \ABSPATH . 'wp-admin/includes/plugin.php';
+
 	\activate_plugin( 'troy-client/troy-client.php', '', \is_multisite(), true );
 
-	if ( ! \function_exists( 'Troy\Client\API\get_slug_repos' ) ) {
+	if ( ! \function_exists( 'Troy\Client\API\get_troy_plugin_repos_per_slug' ) ) {
 		register_admin_message(
 			\sprintf(
 				'Plugin "Troy Client" could not be activated. This will be retried until you deactivate plugin "%s."',
@@ -318,7 +318,7 @@ function install_plugins() {
 	\wp_clean_plugins_cache();
 
 	install_deps:
-	$slug_repos   = \Troy\Client\API\get_slug_repos();
+	$slug_repos   = \Troy\Client\API\get_troy_plugin_repos_per_slug();
 	$is_multisite = \is_multisite();
 
 	$install    = INSTALL;
@@ -351,7 +351,7 @@ function install_plugins() {
 
 		$skin   = new Troy_Installer_Skin;
 		$result = ( new \Plugin_Upgrader( $skin ) )->install(
-			"{$args['repo']}plugin/$slug/{$args['version']}/",
+			"{$args['repo']}plugin/get/zip/$slug/{$args['version']}/",
 			[
 				'overwrite_package' => $args['overwrite'] ?? false,
 			],
@@ -412,10 +412,10 @@ function install_plugins() {
 			continue;
 		}
 
-		if ( ! \is_wp_error( \activate_plugin( $file, '', $install_args['network'], true ) ) ) {
-			$activated[] = $plugin['Name'];
-		} else {
+		if ( \is_wp_error( \activate_plugin( $file, '', $install_args['network'], true ) ) ) {
 			$not_activated[] = $plugin['Name'];
+		} else {
+			$activated[] = $plugin['Name'];
 		}
 	}
 
@@ -551,9 +551,9 @@ function register_admin_message( $message, $type = 'info', $get = false ) {
  * @param array               $args {
  *     An array of notice arguments.
  *
- *    @type string $before The message to prepend to the error message.
- *    @type string $type   The type of notice to output. Accepts 'error', 'success', 'warning', 'info'. Default 'info'.
- *    @type string $after  The message to append to the error message.
+ *     @type string $before The message to prepend to the error message.
+ *     @type string $type   The type of notice to output. Accepts 'error', 'success', 'warning', 'info'. Default 'info'.
+ *     @type string $after  The message to append to the error message.
  * }
  */
 function register_skin_messages( $skin, $args = [] ) {

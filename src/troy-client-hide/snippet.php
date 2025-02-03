@@ -9,8 +9,7 @@
  * Troy Client should never be hidden by third-party plugins. Every site admin
  * should have the right to know what's running on their site.
  *
- * @package    Troy\Client\Hide
- * @subpackage Troy\Client
+ * @package Troy\Hide
  */
 
 define( 'Troy\Client\HIDE', true );
