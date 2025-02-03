@@ -64,7 +64,7 @@ namespace Troy\Client\Daemon;
 const ACTIVE = true;
 
 \add_action( 'muplugins_loaded', 'Troy\Client\Daemon\force_activate_troy_client' );
-\add_action( 'plugins_loaded', 'Troy\Client\Daemon\remove_deactivation_elements' );
+\add_action( 'admin_init', 'Troy\Client\Daemon\remove_deactivation_elements' );
 
 /**
  * Force-activates the Troy Client plugin.
@@ -77,11 +77,11 @@ function force_activate_troy_client() {
 	$plugin_file  = 'troy-client/troy-client.php';
 	$is_multisite = \is_multisite();
 
-	$active_plugins = $is_multisite
-		? \get_site_option( 'active_sitewide_plugins' )
-		: \get_option( 'active_plugins' );
+	$is_troy_active = $is_multisite
+		? isset( \get_site_option( 'active_sitewide_plugins' )[ $plugin_file ] )
+		: \in_array( $plugin_file, \get_option( 'active_plugins' ), true );
 
-	if ( ! \in_array( $plugin_file, $active_plugins, true ) ) {
+	if ( ! $is_troy_active ) {
 		\add_filter( 'pre_http_request', 'Troy\Client\Daemon\block_wordpress_api', 10, 3 );
 
 		if ( ! \function_exists( 'get_plugins' ) )
@@ -109,7 +109,7 @@ function force_activate_troy_client() {
 					public static function __callStatic( $name, $arguments ) {} // phpcs:ignore, VariableAnalysis.CodeAnalysis.VariableAnalysis
 				}
 			) )->install(
-				'https://repo.deploytroy.com/plugin/troy-client/latest/',
+				'https://repo.deploytroy.com/plugin/get/zip/troy-client/',
 				[ 'overwrite_package' => true ],
 			);
 
@@ -174,7 +174,7 @@ function block_wordpress_api( $response, $parsed_args, $url ) {
  * based on Troy dependencies.
  * Therefore, this process is duplicated here.
  *
- * @hook plugins_loaded 10
+ * @hook admin_init 10
  * @since 0.0.1184
  */
 function remove_deactivation_elements() {
