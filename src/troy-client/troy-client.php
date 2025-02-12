@@ -11,7 +11,6 @@
  *
  * @troy-repo
  * Troy: repo.deploytroy.org
- * Troy Dependency: troy-clientasd
  *
  * @wordpress-plugin
  * Plugin Name: Troy Client
