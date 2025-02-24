@@ -12,6 +12,7 @@ use function Troy\Client\API\{
 	get_troy_plugins,
 	get_troy_plugin_dependencies,
 	make_fully_qualified_repo_url,
+	recheck_dependencies,
 };
 
 /**
@@ -53,7 +54,7 @@ class Dependencies {
 	 * @since 0.0.1184
 	 */
 	public static function set_recheck_flag() {
-		\update_site_option( 'troy_client_recheck_dependencies', 1 );
+		recheck_dependencies( 'yes' );
 	}
 
 	/**
@@ -169,7 +170,7 @@ class Dependencies {
 			 * Perhaps a dependency requires another dependency.
 			 * So, we only unset the flag if no new dependencies were tried to install.
 			 */
-			\update_site_option( 'troy_client_recheck_dependencies', 0 );
+			recheck_dependencies( 'no' );
 
 			// Delete the setting. This is only present in edge-cases, anyway.
 			\delete_site_option( 'troy_client_recheck_timeout' );

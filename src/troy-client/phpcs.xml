@@ -6,7 +6,7 @@
 
 	<rule ref="TSF.Performance.Opcodes">
 		<properties>
-			<property name="userNoopChecks" type="array" value="get_plugin_slug,get_site_unique_id,get_troy_plugin_dependencies,get_troy_plugin_slugs_per_repo,get_troy_plugin_repos_per_slug,get_troy_plugins,has_troy_plugins,make_fully_qualified_repo_url,make_troy_api_request,make_troy_api_request_cached"/>
+			<property name="userNoopChecks" type="array" value="get_plugin_slug,get_site_unique_id,get_troy_plugin_dependencies,get_troy_plugin_slugs_per_repo,get_troy_plugin_repos_per_slug,get_troy_plugins,has_troy_plugins,make_fully_qualified_repo_url,make_troy_api_request,make_troy_api_request_cached,recheck_dependencies"/>
 		</properties>
 	</rule>
 

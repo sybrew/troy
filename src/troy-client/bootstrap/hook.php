@@ -1,17 +1,14 @@
 <?php
 /**
  * @package Troy\Client\Bootstrap
- * @access private
+ * @access  private
  */
 
 namespace Troy\Client\Bootstrap\Hook;
 
 \defined( 'Troy\Client\ABSPATH' ) or die;
 
-use const Troy\Client\{
-	MAIN_FILE,
-	PLUGIN_BASENAME,
-};
+use const Troy\Client\PLUGIN_BASENAME;
 
 use Troy\Client\{
 	Dependencies,
@@ -21,6 +18,8 @@ use Troy\Client\{
 	ProtectClient,
 	SiteHealth,
 };
+
+use function Troy\Client\API\recheck_dependencies;
 
 /**
  * Troy Client
@@ -87,7 +86,7 @@ use Troy\Client\{
 \add_action( 'upgrader_process_complete', [ Dependencies::class, 'set_recheck_flag' ] );
 
 // Only loads the file when we can recheck dependencies.
-if ( \get_site_option( 'troy_client_recheck_dependencies', 1 ) )
+if ( recheck_dependencies() )
 	\add_action( 'admin_init', [ Dependencies::class, 'install_troy_dependencies' ] );
 
 // Themes (soon™):

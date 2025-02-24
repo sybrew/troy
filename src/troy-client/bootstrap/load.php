@@ -1,7 +1,7 @@
 <?php
 /**
  * @package Troy\Client\Bootstrap
- * @access private
+ * @access  private
  */
 
 namespace Troy\Client\Bootstrap\Load;
@@ -60,7 +60,7 @@ function autoload_classes( $class ) {
 	if ( ! str_starts_with( $class, 'troy\client\\' ) ) return;
 
 	$class = strtr(
-		substr( $class, 12 ), // remove the "troy\client\"
+		substr( $class, 12 ), // remove the "troy\client\" part
 		[
 			'\\' => \DIRECTORY_SEPARATOR,
 			'_'  => '-',

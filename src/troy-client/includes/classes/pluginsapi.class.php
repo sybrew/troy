@@ -223,8 +223,8 @@ class PluginsAPI {
 	 *
 	 *     @type bool $short_description Include the plugin short description.
 	 *     @type bool $description       Include the full plugin description.
-	 *     @type bool $sections          Include the plugin readme sections: description, installation,
-	 *                                   FAQ, screenshots, other notes, and changelog.
+	 *     @type bool $sections          Include the plugin readme sections: description, installation, FAQ, screenshots,
+	 *                                   other notes, and changelog.
 	 *     @type bool $tested            Include the 'Compatible up to' value.
 	 *     @type bool $requires          Include the required WordPress version.
 	 *     @type bool $requires_php      Include the required PHP version.
@@ -233,8 +233,7 @@ class PluginsAPI {
 	 *     @type bool $downloaded        Include the download count.
 	 *     @type bool $downloadlink      Include the download link for the package.
 	 *     @type bool $last_updated      Include the date of the last update.
-	 *     @type bool $added             Include the date when the plugin was added to the WordPress.org
-	 *                                   repository.
+	 *     @type bool $added             Include the date when the plugin was added to the WordPress.org repository.
 	 *     @type bool $tags              Include the assigned tags.
 	 *     @type bool $compatibility     Include the WordPress compatibility list.
 	 *     @type bool $homepage          Include the plugin homepage link.

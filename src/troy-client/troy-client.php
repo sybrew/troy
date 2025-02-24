@@ -74,7 +74,7 @@ const VERSION = '0.0.1184';
  *
  * @since 0.0.1184
  */
-const DB_VERSION = '1184';
+const DB_VERSION = 1184;
 
 /**
  * The plugin base file.

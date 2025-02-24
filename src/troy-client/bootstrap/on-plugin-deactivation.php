@@ -1,7 +1,7 @@
 <?php
 /**
  * @package Troy\Client\Bootstrap
- * @access private
+ * @access  private
  */
 
 namespace Troy\Client\Bootstrap\Deactivation;
@@ -34,5 +34,6 @@ namespace Troy\Client\Bootstrap\Deactivation;
 
 // Destroy the caches on deactivation.
 \delete_site_option( 'troy_client_api_request_cache' );
-\delete_site_option( 'troy_client_recheck_dependencies', 0 );
 \delete_site_option( 'troy_client_recheck_timeout' );
+\delete_site_option( 'troy_client_recheck_dependencies' );
+\delete_option( 'troy_client_recheck_dependencies' ); // redundant, but just in case something changes in delete_site_option.

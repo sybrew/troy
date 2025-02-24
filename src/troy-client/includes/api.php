@@ -68,7 +68,7 @@ function get_site_unique_id() {
 
 	$uuid = \get_option( 'troy_client_site_unique_id', '' );
 
-	// This is the timeout for the UUID: 4 weeks.
+	// This is the timeout for the UUID: 4 weeks. int-casting floors.
 	$epoch = (int) ( time() / 604_800 );
 
 	if ( ! $uuid || (int) strtok( $uuid, '-' ) < $epoch ) {
@@ -403,7 +403,7 @@ function make_troy_api_request_cached( $key, $repo, $body = '', $method = 'POST'
 			|| \strlen( serialize( $memo ) ) > 333_000 // ~ 20 plugins
 		) {
 			$memo = [
-				'_timeout' => time() + 600, // 10 minutes.
+				'_timeout' => time() + 600, // 10 minutes
 			];
 		} elseif ( isset( $memo[ $key ] ) ) {
 			return $memo[ $key ];
@@ -425,4 +425,31 @@ function make_troy_api_request_cached( $key, $repo, $body = '', $method = 'POST'
 	\update_site_option( 'troy_client_api_request_cache', $memo );
 
 	return $res;
+}
+
+/**
+ * Returns whether the site should recheck dependencies.
+ *
+ * @since 0.0.1184
+ *
+ * @param ?string $recheck 'yes' or 'no'. Leave null to check the current value.
+ *                         If set, the value will be set in the database.
+ *                         This is used to toggle the recheck of dependencies.
+ * @return bool Whether the site should recheck dependencies.
+ */
+function recheck_dependencies( $recheck = null ) {
+
+	if ( null === $recheck ) {
+		$recheck = (
+			\is_multisite()
+				? \get_site_option( 'troy_client_recheck_dependencies', 'yes' )
+				: \get_option( 'troy_client_recheck_dependencies', 'yes' )
+		);
+	} else {
+		\is_multisite()
+			? \update_site_option( 'troy_client_recheck_dependencies', $recheck )
+			: \update_option( 'troy_client_recheck_dependencies', $recheck );
+	}
+
+	return 'yes' === $recheck;
 }

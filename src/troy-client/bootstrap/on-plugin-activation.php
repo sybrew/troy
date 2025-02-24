@@ -1,12 +1,16 @@
 <?php
 /**
  * @package Troy\Client\Bootstrap
- * @access private
+ * @access  private
  */
 
 namespace Troy\Client\Bootstrap\Activation;
 
 \defined( 'Troy\Client\ABSPATH' ) or die;
+
+use Troy\Client\{
+	Dependencies,
+};
 
 /**
  * Troy Client
@@ -31,3 +35,5 @@ namespace Troy\Client\Bootstrap\Activation;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
+Dependencies::set_recheck_flag();
