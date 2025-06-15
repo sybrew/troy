@@ -130,7 +130,7 @@ class PluginsAPI {
 						array_flip( array_column( $repo_plugin_slugs, 'textdomain' ) ),
 					),
 					'php_version'      => $php_version,
-					'wp_version'       => $wp_version, // phpcs:ignore, VariableAnalysis.CodeAnalysis -- included above.
+					'wp_version'       => $wp_version, // phpcs:ignore VariableAnalysis.CodeAnalysis -- included above.
 				],
 			);
 
@@ -138,8 +138,8 @@ class PluginsAPI {
 				$res = new \WP_Error(
 					'plugins_api_failed',
 					\sprintf(
-						/* translators: %1$s: API url, %2$s: support URL */
-						\__( 'An unexpected error occurred. Something may be wrong with %1$s or this server&#8217;s configuration.', 'troy-client' ),
+						/* translators: %s: repo API URL */
+						\__( 'An unexpected error occurred. Something may be wrong with %s or this server&#8217;s configuration.', 'troy-client' ),
 						$repo,
 					),
 					$request->get_error_message(),
@@ -155,8 +155,8 @@ class PluginsAPI {
 					$res = new \WP_Error(
 						'plugins_api_failed',
 						\sprintf(
-							/* translators: %1$s: API url, %2$s: support URL */
-							\__( 'An unexpected error occurred. Something may be wrong with %1$s or this server&#8217;s configuration.', 'troy-client' ),
+							/* translators: %s: repo API URL */
+							\__( 'An unexpected error occurred. Something may be wrong with %s or this server&#8217;s configuration.', 'troy-client' ),
 							\esc_url( $repo ),
 						),
 						$body,
@@ -173,7 +173,7 @@ class PluginsAPI {
 						);
 					}
 				}
-			};
+			}
 		}
 
 		return $value;
@@ -218,7 +218,7 @@ class PluginsAPI {
 	 *
 	 * @param string $slug   The plugin slug.
 	 * @param string $locale The locale.
-	 * @param array  $fields The fields to retrieve {
+	 * @param array  $fields {
 	 *     Array of fields to include or exclude in the response. If not set, get all fields.
 	 *
 	 *     @type bool $short_description Include the plugin short description.
@@ -285,8 +285,8 @@ class PluginsAPI {
 			$res = new \WP_Error(
 				'plugins_api_failed',
 				\sprintf(
-					/* translators: %1$s: API url, %2$s: support URL */
-					\__( 'An unexpected error occurred. Something may be wrong with %1$s or this server&#8217;s configuration.', 'troy-client' ),
+					/* translators: %s: repo API URL */
+					\__( 'An unexpected error occurred. Something may be wrong with %s or this server&#8217;s configuration.', 'troy-client' ),
 					$repo,
 				),
 				$request->get_error_message(),
@@ -298,8 +298,8 @@ class PluginsAPI {
 				$res = new \WP_Error(
 					'plugins_api_failed',
 					\sprintf(
-						/* translators: %1$s: API url, %2$s: support URL */
-						\__( 'An unexpected error occurred. Something may be wrong with %1$s or this server&#8217;s configuration.', 'troy-client' ),
+						/* translators: %s: repo API URL */
+						\__( 'An unexpected error occurred. Something may be wrong with %s or this server&#8217;s configuration.', 'troy-client' ),
 						$repo,
 					),
 					\wp_remote_retrieve_body( $request ),

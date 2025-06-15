@@ -8,9 +8,7 @@ namespace Troy\Client\Bootstrap\Activation;
 
 \defined( 'Troy\Client\ABSPATH' ) or die;
 
-use Troy\Client\{
-	Dependencies,
-};
+use Troy\Client\Dependencies;
 
 /**
  * Troy Client

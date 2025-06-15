@@ -64,7 +64,7 @@ class Background extends \stdClass {
 	 * @param array  $arguments The method arguments.
 	 * @return mixed|void
 	 */
-	public function __call( $name, $arguments ) { // phpcs:ignore, VariableAnalysis.CodeAnalysis.VariableAnalysis
+	public function __call( $name, $arguments ) { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis
 		return null;
 	}
 
@@ -74,7 +74,7 @@ class Background extends \stdClass {
 	 * @param array  $arguments The method arguments.
 	 * @return mixed|void
 	 */
-	public static function __callStatic( $name, $arguments ) {  // phpcs:ignore, VariableAnalysis.CodeAnalysis.VariableAnalysis
+	public static function __callStatic( $name, $arguments ) {  // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis
 		return null;
 	}
 }

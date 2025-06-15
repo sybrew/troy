@@ -4,11 +4,11 @@
  * @access  public
  */
 
-namespace Troy\Client\API;
+namespace Troy\Client\API; // TODO Remove \API affix from the namespace
 
 \defined( 'Troy\Client\ABSPATH' ) or die;
 
-use const \Troy\Client\{
+use const Troy\Client\{
 	ABSPATH,
 	PLUGIN_BASENAME,
 	TROY_PLUGIN_HEADERS,
@@ -48,7 +48,9 @@ use const \Troy\Client\{
  * @return string The plugin's slug.
  */
 function get_plugin_slug( $plugin_file ) {
-	return str_contains( $plugin_file, '/' ) ? \dirname( $plugin_file ) : str_replace( '.php', '', $plugin_file );
+	return strtolower(
+		str_contains( $plugin_file, '/' ) ? \dirname( $plugin_file ) : str_replace( '.php', '', $plugin_file )
+	);
 }
 
 /**
@@ -136,7 +138,7 @@ function get_troy_plugin_dependencies() {
 					);
 
 					if ( ! $repo ) {
-						// phpcs:ignore, WordPress.PHP.DevelopmentFunctions -- This should be resolved by the developer before it reaches production.
+						// phpcs:ignore WordPress.PHP.DevelopmentFunctions -- This should be resolved by the developer before it reaches production.
 						\trigger_error( \esc_html( "Troy Dependency '$slug' is missing a repository URL in '{$plugin['slug']}'" ), \E_USER_WARNING );
 						return null;
 					}
@@ -330,7 +332,7 @@ function has_troy_plugins() {
  */
 function make_fully_qualified_repo_url( $repo ) {
 	return \esc_url(
-		\preg_replace(
+		preg_replace(
 			'/^(?:\w*:)?(?:\/\/)?(.*?)$/',
 			'https://$1/',
 			\trim( $repo, ' \\/' ),
@@ -362,8 +364,9 @@ function make_troy_api_request( $repo, $body = '', $method = 'POST' ) {
 				'Content-Type'     => 'application/json',
 				'charset'          => 'UTF-8',
 				'X-Troy-Client-Id' => get_site_unique_id(),
+				'User-Agent'       => 'Troy Client/' . VERSION, // See WP_Http_Curl::request()
 			],
-			'user-agent'  => 'Troy Client/' . VERSION,
+			'user-agent'  => 'Troy Client/' . VERSION, // See WP_Http::request()
 		],
 	);
 }
@@ -399,7 +402,7 @@ function make_troy_api_request_cached( $key, $repo, $body = '', $method = 'POST'
 		if (
 			   empty( $memo['_timeout'] )
 			|| $memo['_timeout'] < time()
-			// phpcs:ignore, WordPress.PHP.DiscouragedPHPFunctions -- we're not going to unserialize.
+			// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions -- we're not going to unserialize.
 			|| \strlen( serialize( $memo ) ) > 333_000 // ~ 20 plugins
 		) {
 			$memo = [

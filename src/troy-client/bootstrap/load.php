@@ -78,7 +78,7 @@ function autoload_classes( $class ) {
  *
  * @param bool $network_wide Whether the plugin is being activated network-wide.
  */
-function on_plugin_activation( $network_wide ) {
+function on_plugin_activation( $network_wide ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter
 	require ABSPATH . 'bootstrap/on-plugin-activation.php';
 }
 
@@ -90,6 +90,6 @@ function on_plugin_activation( $network_wide ) {
  *
  * @param bool $network_wide Whether the plugin is being activated network-wide.
  */
-function on_plugin_deactivation( $network_wide ) {
+function on_plugin_deactivation( $network_wide ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter
 	require ABSPATH . 'bootstrap/on-plugin-deactivation.php';
 }

@@ -8,7 +8,7 @@ namespace Troy\Client;
 
 \defined( 'Troy\Client\ABSPATH' ) or die;
 
-use function \Troy\Client\API\{
+use function Troy\Client\API\{
 	get_troy_plugin_dependencies,
 	get_troy_plugins,
 	get_troy_plugin_slugs_per_repo,
@@ -340,7 +340,10 @@ class SiteHealth {
 		$dependencies = get_troy_plugin_dependencies();
 
 		foreach ( get_troy_plugins() as $file => $plugin ) {
-			$repo = make_fully_qualified_repo_url( $plugin['repo'] );
+
+			$repo = $plugin['repo']
+				? make_fully_qualified_repo_url( $plugin['repo'] )
+				: \__( 'Not set', 'troy-client' );
 
 			$fields[ $file ] = [
 				'label' => \sprintf( $i18n['plugin_name_slug'], $plugin['name'], $plugin['slug'] ),

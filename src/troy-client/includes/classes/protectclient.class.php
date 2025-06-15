@@ -8,7 +8,7 @@ namespace Troy\Client;
 
 \defined( 'Troy\Client\ABSPATH' ) or die;
 
-use function \Troy\Client\API\{
+use function Troy\Client\API\{
 	has_troy_plugins,
 	get_troy_plugins,
 };
@@ -152,7 +152,7 @@ class ProtectClient {
 		// Redundancy escape. JS escapes also work for quoted CSS.
 		$slug = \esc_js( PLUGIN_SLUG );
 
-		// phpcs:ignore, WordPress.Security.EscapeOutput.OutputNotEscaped -- it is.
+		// phpcs:disable WordPress.Security.EscapeOutput.HeredocOutputNotEscaped -- it is.
 		echo <<<HTML
 		<style>
 			#the-list [data-slug="{$slug}"] .check-column :where(label,input) {
@@ -164,6 +164,7 @@ class ProtectClient {
 				.forEach( e => e.remove() );
 		</script>
 		HTML;
+		// phpcs:enable WordPress.Security.EscapeOutput
 	}
 
 	/**
