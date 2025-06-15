@@ -11,11 +11,11 @@
  * <-- @troy-generator -->
  * @wordpress-plugin
  * Plugin Name: Troy Installer
- * Plugin URI: https://deploytroy.com/
+ * Plugin URI: https://deploytroy.org/
  * Description: Troy Installer installs "Troy Client" and vendor plugins.
  * Version: 0.0.1184
  * Author: Sybre Waaijer
- * Author URI: https://deploytroy.com/
+ * Author URI: https://deploytroy.org/
  * License: MIT
  * Requires at least: 6.7
  * Requires PHP: 7.4
@@ -115,12 +115,12 @@ const OPTIONS = [
  *     }
  * }
  *
- * phpcs:disable, WordPress.Arrays.MultipleStatementAlignment.DoubleArrowNotAligned
+ * phpcs:disable WordPress.Arrays.MultipleStatementAlignment.DoubleArrowNotAligned
  */
 const INSTALL = [
 	'test-plugin' => [
 		'name'           => 'Test Plugin',
-		'repo'           => 'https://repo.deploytroy.com/',
+		'repo'           => 'https://repo.deploytroy.org/',
 		'version'        => 'latest',
 		'activate'       => true,
 		'network'        => true,
@@ -144,7 +144,7 @@ register_admin_message(
 	'info',
 );
 
-// phpcs:ignore, WordPress.Security.NonceVerification -- no data is being handled.
+// phpcs:ignore WordPress.Security.NonceVerification -- no data is being handled.
 if ( isset( $_GET['activate'] ) && ( OPTIONS['deactivate_on_completion'] || OPTIONS['delete_on_completion'] ) )
 	\add_filter( 'wp_admin_notice_markup', 'Troy\Installer\suppress_activation_notice' );
 
@@ -224,14 +224,14 @@ function output_registered_install_notices() {
 		HTML;
 	}
 
-	// phpcs:ignore, WordPress.Security.EscapeOutput -- already escaped.
+	// phpcs:ignore WordPress.Security.EscapeOutput -- already escaped.
 	echo \wp_get_admin_notice(
 		$notice,
 		[
 			'id'             => 'troy-installer-message',
 			'type'           => 'info',
 			'paragraph_wrap' => false,
-		]
+		],
 	);
 }
 
@@ -276,9 +276,18 @@ function install_plugins() {
 
 	require_once \ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
 
+	$client_url = 'https://repo.deploytroy.org/plugin/get/zip/troy-client/';
+
+	\add_filter(
+		'http_headers_useragent',
+		fn( $user_agent, $url ) => $url === $client_url ? 'Troy Installer/' . PLUGIN_NAME : $user_agent,
+		10,
+		2,
+	);
+
 	$skin   = new Troy_Installer_Skin;
 	$result = ( new \Plugin_Upgrader( $skin ) )->install(
-		'https://repo.deploytroy.com/plugin/get/zip/troy-client/',
+		$client_url,
 		[ 'overwrite_package' => true ],
 	);
 
@@ -347,11 +356,23 @@ function install_plugins() {
 
 	require_once \ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
 
-	foreach ( $to_install as $slug => $args ) {
+	$plugin_url = ''; // Ref.
 
-		$skin   = new Troy_Installer_Skin;
+	\add_filter(
+		'http_headers_useragent',
+		function ( $user_agent, $url ) use ( &$plugin_url ) {
+			return $url === $plugin_url ? 'Troy Installer/' . PLUGIN_NAME : $user_agent;
+		},
+		10,
+		2,
+	);
+
+	foreach ( $to_install as $slug => $args ) {
+		// Write to $plugin_url so that the filter above can use it. This is a referenced variable.
+		$plugin_url = "{$args['repo']}plugin/get/zip/$slug/{$args['version']}/"; // Ref.
+
 		$result = ( new \Plugin_Upgrader( $skin ) )->install(
-			"{$args['repo']}plugin/get/zip/$slug/{$args['version']}/",
+			$plugin_url,
 			[
 				'overwrite_package' => $args['overwrite'] ?? false,
 			],
@@ -502,7 +523,7 @@ function list_items( $items ) {
 			$list = '';
 			$any  = $l['over_two']['any'];
 
-			while ( --$i ) // phpcs:ignore, WordPress.WhiteSpace.ControlStructureSpacing -- phpcs bug
+			while ( --$i ) // phpcs:ignore WordPress.WhiteSpace.ControlStructureSpacing -- phpcs bug
 				$list .= \sprintf( $any, array_shift( $items ) );
 
 			return $list . \sprintf(
@@ -619,7 +640,7 @@ function register_skin_messages( $skin, $args = [] ) {
  *
  * @since 0.0.1184
  */
-class Troy_Installer_Skin extends \stdClass {
+class Troy_Installer_Skin extends \stdClass { // phpcs:ignore -- This plugin must be single-file.
 
 	/**
 	 * @since 0.0.1184
@@ -645,7 +666,7 @@ class Troy_Installer_Skin extends \stdClass {
 	 * @param array  $arguments The method arguments.
 	 * @return mixed|void
 	 */
-	public function __call( $name, $arguments ) { // phpcs:ignore, VariableAnalysis.CodeAnalysis.VariableAnalysis
+	public function __call( $name, $arguments ) { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis
 		return null;
 	}
 
@@ -655,7 +676,7 @@ class Troy_Installer_Skin extends \stdClass {
 	 * @param array  $arguments The method arguments.
 	 * @return mixed|void
 	 */
-	public static function __callStatic( $name, $arguments ) {  // phpcs:ignore, VariableAnalysis.CodeAnalysis.VariableAnalysis
+	public static function __callStatic( $name, $arguments ) {  // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis
 		return null;
 	}
 }

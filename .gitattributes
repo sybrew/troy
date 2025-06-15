@@ -4,9 +4,11 @@
 # Declare files that will otherwise have CRLF line endings on checkout.
 *.php text eol=lf
 *.js text eol=lf
+*.json text eol=lf
 *.css text eol=lf
 *.md text eol=lf
 *.txt text eol=lf
+LICENSE text eol=lf
 *.svg text eol=lf
 *.xml text eol=lf
 *.pot text eol=lf
@@ -21,9 +23,9 @@
 
 # GitHub baggage for development.
 .github export-ignore
-.gitattributes export-ignore
-.gitignore export-ignore
-.editorconfig export-ignore
+.gitattributes export-ignore text eol=lf
+.gitignore export-ignore text eol=lf
+.editorconfig export-ignore text eol=lf
 readme.md export-ignore
 changelog.md export-ignore
 

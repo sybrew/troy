@@ -89,6 +89,18 @@ class Dependencies {
 
 		require_once \ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
 
+		$plugin_url = ''; // Ref.
+		$slug       = ''; // Ref.
+
+		\add_filter(
+			'http_headers_useragent',
+			function ( $user_agent, $url ) use ( &$plugin_url, &$slug ) {
+				return $url === $plugin_url ? "Troy Dependencies/$slug" : $user_agent;
+			},
+			10,
+			2,
+		);
+
 		foreach ( get_troy_plugin_dependencies() as $file => $plugin ) {
 			foreach ( $plugin['dependencies'] as $dependency ) {
 				$slug = $dependency['slug'];
@@ -99,9 +111,12 @@ class Dependencies {
 
 				$repo = make_fully_qualified_repo_url( $dependency['repo'] );
 
+				// Write to $plugin_url so that the filter above can use it. This is a referenced variable.
+				$plugin_url = "{$repo}plugin/get/zip/{$slug}/"; // Ref.
+
 				$skin   = new Skins\Background;
 				$result = ( new \Plugin_Upgrader( $skin ) )->install(
-					"{$repo}plugin/get/zip/{$slug}/",
+					$plugin_url,
 					[
 						'overwrite_package' => true,
 					],

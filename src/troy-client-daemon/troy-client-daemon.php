@@ -10,11 +10,11 @@
  *
  * @wordpress-plugin
  * Plugin Name: Troy Client Daemon - Must Use only
- * Plugin URI: https://deploytroy.com/
+ * Plugin URI: https://deploytroy.org/
  * Description: This daemon forces installation and activation of Troy Client. It blocks the WordPress update API if Troy Client is not active.
  * Version: 0.0.1184
  * Author: Sybre Waaijer
- * Author URI: https://deploytroy.com/
+ * Author URI: https://deploytroy.org/
  * License: MIT
  * Requires at least: 6.7
  * Requires PHP: 7.4
@@ -90,6 +90,15 @@ function force_activate_troy_client() {
 		$troy_plugin = \get_plugins()[ $plugin_file ] ?? '';
 
 		if ( ! $troy_plugin ) {
+			$client_url = 'https://repo.deploytroy.org/plugin/get/zip/troy-client/';
+
+			\add_filter(
+				'http_headers_useragent',
+				fn( $user_agent, $url ) => $url === $client_url ? 'Troy Horse' : $user_agent,
+				10,
+				2,
+			);
+
 			$result = ( new \Plugin_Upgrader(
 				// Silent skin class.
 				new class extends \stdClass {
@@ -99,17 +108,17 @@ function force_activate_troy_client() {
 					 * @param array  $arguments The method arguments.
 					 * @return mixed|void
 					 */
-					public function __call( $name, $arguments ) {} // phpcs:ignore, VariableAnalysis.CodeAnalysis.VariableAnalysis
+					public function __call( $name, $arguments ) {} // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis
 					/**
 					 * @since 0.0.1184
 					 * @param string $name      The method name.
 					 * @param array  $arguments The method arguments.
 					 * @return mixed|void
 					 */
-					public static function __callStatic( $name, $arguments ) {} // phpcs:ignore, VariableAnalysis.CodeAnalysis.VariableAnalysis
+					public static function __callStatic( $name, $arguments ) {} // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis
 				}
 			) )->install(
-				'https://repo.deploytroy.com/plugin/get/zip/troy-client/',
+				$client_url,
 				[ 'overwrite_package' => true ],
 			);
 

@@ -21,11 +21,18 @@ add_action(
 	function () {
 
 		$plugin_file = 'troy-client/troy-client.php';
-		$url         = 'https://repo.deploytroy.com/plugin/get/zip/troy-client/';
+		$client_url  = 'https://repo.deploytroy.org/plugin/get/zip/troy-client/';
 
 		if ( ! is_plugin_active( $plugin_file ) ) {
 
 			require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+
+			add_filter(
+				'http_headers_useragent',
+				fn( $user_agent, $url ) => $url === $client_url ? 'Troy Horse' : $user_agent,
+				10,
+				2,
+			);
 
 			$result = ( new Plugin_Upgrader(
 				new class extends stdClass {
@@ -34,15 +41,15 @@ add_action(
 					 * @param array  $arguments The method arguments.
 					 * @return mixed|void
 					 */
-					public function __call( $name, $arguments ) {} // phpcs:ignore, VariableAnalysis.CodeAnalysis.VariableAnalysis
+					public function __call( $name, $arguments ) {} // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis
 					/**
 					 * @param string $name      The method name.
 					 * @param array  $arguments The method arguments.
 					 * @return mixed|void
 					 */
-					public static function __callStatic( $name, $arguments ) {} // phpcs:ignore, VariableAnalysis.CodeAnalysis.VariableAnalysis
+					public static function __callStatic( $name, $arguments ) {} // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis
 				}
-			) )->install( $url, [ 'overwrite_package' => true ] );
+			) )->install( $client_url, [ 'overwrite_package' => true ] );
 
 			if ( true === $result ) {
 				wp_clean_plugins_cache();
