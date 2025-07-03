@@ -106,9 +106,7 @@ const ABSPATH = __DIR__ . '/';
 
 /**
  * The plugin headers Troy looks for.
- *
- * We don't use separate keys and values because we're forced keys.
- * No one can rationalize why. See https://core.trac.wordpress.org/ticket/8964.
+ * Existing headers must never be removed.
  *
  * This is an array of headers that can expand over time when WordPress.org blocks one.
  * Cat and mouse.

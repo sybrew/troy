@@ -95,6 +95,12 @@ function get_site_unique_id() {
  * - Troy Dependencies: plugin-slug <repo-uri>, second-plugin-slug
  *   _This lists multiple dependencies, where the second gets it from the plugin's "Troy:" header._
  *
+ * The Troy and Troy Dependencies headers may not exceed 191 characters.
+ * This is to improve Troy Server indexing performance.
+ * The character limit is not enforced here, but on the server.
+ *
+ * There may not be more than 5 dependencies per plugin; this part is enforced here.
+ *
  * We assume the Troy and Troy Dependency registrations are correctly formed.
  * We do not validate them here. Use `get_troy_plugin_repos_per_slug()` instead.
  *
@@ -139,7 +145,7 @@ function get_troy_plugin_dependencies() {
 
 					if ( ! $repo ) {
 						// phpcs:ignore WordPress.PHP.DevelopmentFunctions -- This should be resolved by the developer before it reaches production.
-						\trigger_error( \esc_html( "Troy Dependency '$slug' is missing a repository URL in '{$plugin['slug']}'" ), \E_USER_WARNING );
+						trigger_error( \esc_html( "Troy Dependency '$slug' is missing a repository URL in '{$plugin['slug']}'" ), \E_USER_WARNING );
 						return null;
 					}
 
@@ -148,7 +154,7 @@ function get_troy_plugin_dependencies() {
 						'repo' => trim( $repo, ' >' ),
 					];
 				},
-				explode( ',', $plugin['dependencies'] ),
+				\array_slice( explode( ',', $plugin['dependencies'] ), 0, 5 ), // Limit to 5 dependencies per plugin.
 			) ),
 		];
 	}
