@@ -1,0 +1,545 @@
+<?php
+/**
+ * @package Troy\Server\Upgrade
+ * @access  private
+ */
+
+namespace Troy\Server\Upgrade;
+
+\defined( 'Troy\Server\ABSPATH' ) or die;
+
+// phpcs:disable TSF.Performance.Opcodes.ShouldHaveNamespaceEscape -- Too many scoped funcs. Test me once in a while.
+
+use const Troy\Server\DB_VERSION;
+
+use function Troy\Server\get_db_version;
+
+/**
+ * Troy Server
+ *
+ * Copyright (c) 2025 Sybre Waaijer, CyberWire B.V.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+// Upgrade outside of the global scope.
+upgrade();
+
+/**
+ * Upgrades the database.
+ *
+ * @since 0.0.1184
+ */
+function upgrade() {
+
+	if ( \wp_doing_ajax() ) return;
+
+	$timeout = 5 * \MINUTE_IN_SECONDS; // Same as WP Core, function update_core().
+
+	$lock = set_upgrade_lock( $timeout );
+	// Lock failed to create--probably because it was already locked (or the database failed us).
+	if ( ! $lock ) return;
+
+	register_shutdown_function( 'Troy\Server\Upgrade\release_upgrade_lock' );
+
+	\wp_raise_memory_limit( 'troy-server-upgrade' );
+
+	$ini_max_execution_time = (int) ini_get( 'max_execution_time' );
+	if ( 0 !== $ini_max_execution_time && \function_exists( 'set_time_limit' ) )
+		set_time_limit( max( $ini_max_execution_time, $timeout ) );
+
+	\wp_cache_flush();
+	\wp_cache_delete( 'alloptions', 'options' );
+
+	$previous_version = get_db_version();
+
+	if ( ! \get_option( 'troy_server_initial_db_version' ) )
+		\update_option( 'troy_server_initial_db_version', DB_VERSION, false );
+
+	$success = $previous_version > DB_VERSION
+		? downgrade_from( $previous_version )
+		: upgrade_from( $previous_version );
+
+	$success and \update_option( 'troy_server_db_version', DB_VERSION, true );
+}
+
+/**
+ * Creates the upgrade lock.
+ *
+ * @since 0.0.1184
+ * @global \wpdb $wpdb
+ *
+ * @param int $release_timeout The timeout of the lock.
+ * @return bool False if a lock couldn't be created or if the lock is still valid. True otherwise.
+ */
+function set_upgrade_lock( $release_timeout ) {
+	global $wpdb;
+
+	// WP 6.6+: we use 'off' instead of 'no' for autoload.
+	$lock = $wpdb->query(
+		$wpdb->prepare(
+			"INSERT ignore INTO `$wpdb->options` ( `option_name`, `option_value`, `autoload` ) VALUES (%s, %s, 'off') /* LOCK */",
+			'troy_server_upgrade.lock',
+			time(),
+		),
+	);
+
+	if ( ! $lock ) {
+		$lock = \get_option( 'troy_server_upgrade.lock' );
+
+		if ( ! $lock )
+			return false;
+
+		if ( $lock > ( time() - $release_timeout ) )
+			return false;
+
+		release_upgrade_lock();
+
+		return set_upgrade_lock( $release_timeout );
+	}
+
+	\update_option( 'troy_server_upgrade.lock', time(), true );
+
+	return true;
+}
+
+/**
+ * Releases the upgrade lock on shutdown.
+ * When the upgrader halts, timeouts, or crashes for any reason, this will run.
+ *
+ * @since 0.0.1184
+ */
+function release_upgrade_lock() {
+	\delete_option( 'troy_server_upgrade.lock' );
+}
+
+/**
+ * Downgrades the database from a specific version.
+ *
+ * @since 0.0.1184
+ *
+ * @param int $version The version to downgrade to.
+ */
+function downgrade_from( $version ) {
+	// Nothing to consider reverting yet.
+	\update_option( 'troy_server_db_version', $version, true );
+}
+
+/**
+ * Upgrades the Troy Server database to a specific version.
+ *
+ * @since 0.0.1184
+ * @global \wpdb $wpdb
+ *
+ * @param int $version The version to upgrade to.
+ */
+function upgrade_from( $version ) {
+
+	switch ( true ) {
+		case $version < 1184:
+			global $wpdb;
+
+			// dbDelta is unreliable; it works sporadically using case-sensitive regex.
+			foreach ( get_initial_db_schema_queries() as $query ) {
+				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- No user input.
+				$wpdb->query( $query );
+			}
+
+			// Register the initial settings.
+			\add_option( 'troy_server_settings', [], '', true );
+
+			\update_option( 'troy_server_db_version', 1184, true );
+			// Fall through.
+	}
+}
+
+/**
+ * Returns a list of queries for the default Troy Server database schema.
+ *
+ * We use 191 because InnoDB has a limit of 767 bytes per index, with utf8mb4 that's 191 characters (191*4=764).
+ * We expect URLs not to exceed 191 characters; even though technically allowed, it'd be ludicrous.
+ *
+ * We make plugin versions 20 characters long because we haven't found plugins with a longer version.
+ *
+ * An epoch is 4 weeks long. Its identifier is calculated by flooring ( current UNIX timestamp / 2419200 seconds ).
+ * You can get the current epoch via `Troy\Server\get_epoch()`, and previous epoch via `Troy\Server\get_epoch( 'last' )`.
+ *
+ * We partition the update request stats by epoch because we expect a lot of data.
+ * Partitioning allows accessing data by epoch, which is useful for calculating the active install count quickly.
+ * It also allows for quick deletion of old data.
+ *
+ * We partition the download stats by day because we expect a lot of data.
+ * Again, partitioning allows for quickly counting data by day, and deleting old data.
+ *
+ * We composited indexes:
+ * - `plugin_id_version` for the `view_stats` table to force unique view stats per plugin per version, plus they are common.
+ * - `plugin_id_user_id` for the ratings table to force unique ratings per user.
+ * - `plugin_id_date` for the `stats_total_to_date` table because direct access for these is common.
+ * - `plugin_id_version_language` for the translations table to force unique translations per language.
+ * - `plugin_id_date_origin_url` for the `stats_total_to_date` table to force unique stats per plugin per day.
+ * - `plugin_id_version_origin_url` for the stats tables to force unique stats per plugin per version per origin URL.
+ * - `plugin_id_version_date` for the `stats_to_date` table because direct access for these is common.
+ * - `plugin_id_version_date_origin_url` for the `stats_to_date` table to force unique stats per plugin per version per day per origin URL.
+ *
+ * Default values are set only for direct database queries. These may differ from the defaults we use in the plugin.
+ * Still, we fully rely on the created_at and updated_at fields to be set automatically.
+ *
+ * | Table Name                              | Purpose                                                             |
+ * |-----------------------------------------|---------------------------------------------------------------------|
+ * | troy_plugins                            | The main plugins table.                                             |
+ * | troy_plugin_slug_transfers              | Transfers of plugin slugs (for slug changes).                       |
+ * | troy_plugins_metas                      | Meta data for plugins (for plugin cards).                           |
+ * | troy_plugins_contributors               | Contributors of the plugins (for plugin search and details).        |
+ * | troy_plugins_infos                      | Parsed information of plugins (for plugin info page/tickbox).       |
+ * | troy_plugins_settings                   | Settings for plugins (for plugin edit page).                        |
+ * | troy_plugins_zips                       | ZIP locations for plugins (for plugin update/download).             |
+ * | troy_plugins_zips_queues                | ZIP processing queues for plugins (for plugin update/registration). |
+ * | troy_plugins_translations               | Translation locations for plugins (for download).                   |
+ * | troy_plugins_data_caches                | Cached data for plugins (for search/archives/ranking).              |
+ * | troy_plugins_ratings                    | Ratings for plugins (for plugin page, review page).                 |
+ * | troy_plugins_stats_totals               | Total stats for plugins (accumulated over all time).                |
+ * | troy_plugins_stats_totals_to_date       | Total stats for plugins by day (historical).                        |
+ * |                                         | This table can get partitioned (e.g., by year).                     |
+ * | troy_plugins_stats                      | Stats by version for plugins (accumulated over all time).           |
+ * | troy_plugins_stats_to_date              | Stats by version for plugins by day (historical).                   |
+ * |                                         | This table can get partitioned (e.g., by year).                     |
+ * | troy_plugins_view_stats                 | View stats for plugins (for accumulation in stats).                 |
+ * | troy_plugins_view_stats_live            | Live view stats for plugins (for accumulation in view_stats).       |
+ * |                                         | This table can get partitioned (e.g., by week).                     |
+ * | troy_plugins_download_stats             | Download stats for plugins.                                         |
+ * | troy_plugins_download_stats_live        | Live download stats for plugins.                                    |
+ * |                                         | This table can get partitioned (e.g., by week).                     |
+ * | troy_plugins_update_request_stats       | Update request stats for plugins.                                   |
+ * | troy_plugins_update_request_stats_live  | Live update request stats for plugins.                              |
+ * |                                         | This table can get partitioned (e.g., by day).                      |
+ * |-----------------------------------------|---------------------------------------------------------------------|
+ *
+ * @since 0.0.1184
+ * @global \wpdb $wpdb
+ *
+ * @return string[] The initial database queries.
+ */
+function get_initial_db_schema_queries() {
+	global $wpdb;
+
+	$collate  = $wpdb->has_cap( 'collation' ) ? $wpdb->get_charset_collate() : '';
+	$dbprefix = $wpdb->prefix;
+
+	return [
+		"CREATE table `{$dbprefix}troy_plugins` (
+			`id` bigint unsigned NOT null auto_increment,
+			`post_id` bigint unsigned NOT null,
+			`slug` varchar(191) NOT null,
+			`status` varchar(20) NOT null DEFAULT 'pending',
+			`origin_url` varchar(191) NOT null,
+			`database_version` int unsigned NOT null,
+			`created_at` datetime DEFAULT current_timestamp,
+			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
+			primary key (`id`),
+			unique index `post_id` (`post_id`),
+			unique index `slug` (`slug`)
+		) $collate",
+		"CREATE table `{$dbprefix}troy_plugin_slug_transfers` (
+			`id` bigint unsigned NOT null auto_increment,
+			`plugin_id` bigint unsigned NOT null,
+			`old_slug` varchar(191) NOT null,
+			`new_slug` varchar(191) NOT null,
+			`created_at` datetime DEFAULT current_timestamp,
+			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
+			primary key (`id`),
+			unique index `old_slug` (`old_slug`)
+		) $collate",
+		"CREATE table `{$dbprefix}troy_plugins_metas` (
+			`id` bigint unsigned NOT null auto_increment,
+			`plugin_id` bigint unsigned NOT null,
+			`name` varchar(191) NOT null,
+			`author_id` bigint unsigned NOT null,
+			`short_description` varchar(191) NOT null,
+			`permalink` varchar(191) NOT null,
+			`support_uri` varchar(191) NOT null,
+			`logo_uri` varchar(191) NOT null,
+			`builder_type` varchar(20) NOT null DEFAULT 'readme',
+			`created_at` datetime DEFAULT current_timestamp,
+			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
+			primary key (`id`),
+			unique index `plugin_id` (`plugin_id`),
+			index `author_id` (`author_id`)
+		) $collate",
+		"CREATE table `{$dbprefix}troy_plugins_contributors` (
+			`id` bigint unsigned NOT null auto_increment,
+			`plugin_id` bigint unsigned NOT null,
+			`user_id` bigint unsigned NOT null,
+			`role` varchar(20) NOT null DEFAULT 'contributor',
+			`created_at` datetime DEFAULT current_timestamp,
+			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
+			primary key (`id`),
+			index `plugin_id` (`plugin_id`),
+			index `user_id` (`user_id`),
+			unique index `plugin_id_user_id` (`plugin_id`, `user_id`)
+		) $collate",
+		"CREATE table `{$dbprefix}troy_plugins_infos` (
+			`id` bigint unsigned NOT null auto_increment,
+			`plugin_id` bigint unsigned NOT null,
+			`locale` varchar(15) NOT null DEFAULT 'en_US',
+			`latest_version` varchar(20) NOT null,
+			`banner_uri` varchar(191) NOT null,
+			`contents` longtext NOT null,
+			`created_at` datetime DEFAULT current_timestamp,
+			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
+			primary key (`id`),
+			unique index `plugin_id_locale` (`plugin_id`, `locale`),
+		) $collate",
+		"CREATE table `{$dbprefix}troy_plugins_settings` (
+			`id` bigint unsigned NOT null auto_increment,
+			`plugin_id` bigint unsigned NOT null,
+			`version` varchar(20) NOT null,
+			`values` longtext NOT null,
+			`created_at` datetime DEFAULT current_timestamp,
+			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
+			primary key (`id`),
+			index `plugin_id` (`plugin_id`),
+			unique index `plugin_id_version` (`plugin_id`, `version`)
+		) $collate",
+		"CREATE table `{$dbprefix}troy_plugins_zips` (
+			`id` bigint unsigned NOT null auto_increment,
+			`plugin_id` bigint unsigned NOT null,
+			`version` varchar(20) NOT null,
+			`type` varchar(20) NOT null default 'unreleased',
+			`file_size` bigint unsigned NOT null,
+			`tested_wp` varchar(20) NOT null,
+			`requires_wp` varchar(20) NOT null,
+			`requires_php` varchar(20) NOT null,
+			`repo` varchar(191) NOT null,
+			`dependencies` varchar(191) NOT null,
+			`upgrade_notice` varchar(191) NOT null,
+			`origin_url` varchar(191) NOT null,
+			`checksum` varchar(191) NOT null,
+			`checksum_version` varchar(20) NOT null,
+			`checksum_origin` varchar(191) NOT null,
+			`created_at` datetime DEFAULT current_timestamp,
+			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
+			primary key (`id`),
+			index `plugin_id` (`plugin_id`),
+			index `version` (`version`),
+			unique index `plugin_id_version` (`plugin_id`, `version`)
+		) $collate",
+		"CREATE table `{$dbprefix}troy_plugins_zips_queues` (
+			`id` bigint unsigned NOT null auto_increment,
+			`plugin_id` bigint unsigned NOT null,
+			`download_url` varchar(191) NOT null,
+			`type` varchar(20) NOT null default 'unreleased',
+			`processed` Boolean NOT null DEFAULT 0,
+			`process_attempt` tinyint unsigned NOT null DEFAULT 0,
+			`created_at` datetime DEFAULT current_timestamp,
+			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
+			primary key (`id`),
+			index `plugin_id` (`plugin_id`),
+			unique index `plugin_id_download_url` (`plugin_id`, `download_url`)
+		) $collate",
+		"CREATE table `{$dbprefix}troy_plugins_translations` (
+			`id` bigint unsigned NOT null auto_increment,
+			`plugin_id` bigint unsigned NOT null,
+			`version` varchar(20) NOT null,
+			`locale` varchar(15) NOT null,
+			`file_size` bigint unsigned NOT null,
+			`origin_url` varchar(191) NOT null,
+			`checksum` varchar(191) NOT null,
+			`checksum_version` varchar(20) NOT null,
+			`checksum_origin` varchar(191) NOT null,
+			`created_at` datetime DEFAULT current_timestamp,
+			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
+			primary key (`id`),
+			index `plugin_id` (`plugin_id`),
+			index `plugin_id_version` (`plugin_id`, `version`),
+			unique index `plugin_id_version_language` (`plugin_id`, `version`, `language`)
+		) $collate",
+		"CREATE table `{$dbprefix}troy_plugins_data_caches` (
+			`id` bigint unsigned NOT null auto_increment,
+			`plugin_id` bigint unsigned NOT null,
+			`average_rating` tinyint NOT null DEFAULT 0,
+			`rating_count` bigint unsigned NOT null DEFAULT 0,
+			`recent_average_rating` tinyint NOT null DEFAULT 0,
+			`recent_rating_count` bigint unsigned NOT null DEFAULT 0,
+			`active_install_count` bigint unsigned NOT null DEFAULT 0,
+			`created_at` datetime DEFAULT current_timestamp,
+			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
+			primary key (`id`),
+			unique index `plugin_id` (`plugin_id`)
+		) $collate",
+		"CREATE table `{$dbprefix}troy_plugins_ratings` (
+			`id` bigint unsigned NOT null auto_increment,
+			`plugin_id` bigint unsigned NOT null,
+			`user_id` bigint unsigned NOT null,
+			`version` varchar(20) NOT null,
+			`rating` tinyint NOT null,
+			`created_at` datetime DEFAULT current_timestamp,
+			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
+			primary key (`id`),
+			index `plugin_id` (`plugin_id`),
+			unique index `plugin_id_user_id` (`plugin_id`, `user_id`)
+		) $collate",
+		"CREATE table `{$dbprefix}troy_plugins_stats_totals` (
+			`id` bigint unsigned NOT null auto_increment,
+			`plugin_id` bigint unsigned NOT null,
+			`origin_url` varchar(191) NOT null,
+			`downloads` bigint unsigned NOT null,
+			`views` bigint unsigned NOT null,
+			`installations_current_epoch` bigint unsigned NOT null,
+			`installations_previous_epoch` bigint unsigned NOT null,
+			`created_at` datetime DEFAULT current_timestamp,
+			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
+			primary key (`id`),
+			index `plugin_id` (`plugin_id`),
+			unique index `plugin_id_origin_url` (`plugin_id`, `origin_url`)
+		) $collate",
+		"CREATE table `{$dbprefix}troy_plugins_stats_totals_to_date` (
+			`id` bigint unsigned NOT null auto_increment,
+			`plugin_id` bigint unsigned NOT null,
+			`date` date NOT null DEFAULT (current_date),
+			`origin_url` varchar(191) NOT null,
+			`downloads` bigint unsigned NOT null,
+			`views` bigint unsigned NOT null,
+			`installations_current_epoch` bigint unsigned NOT null,
+			`installations_previous_epoch` bigint unsigned NOT null,
+			`created_at` datetime DEFAULT current_timestamp,
+			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
+			primary key (`id`),
+			index `plugin_id` (`plugin_id`),
+			index `plugin_id_date` (`plugin_id`, `date`),
+			unique index `plugin_id_date_origin_url` (`plugin_id`, `date`, `origin_url`)
+		) $collate",
+		"CREATE table `{$dbprefix}troy_plugins_stats` (
+			`id` bigint unsigned NOT null auto_increment,
+			`plugin_id` bigint unsigned NOT null,
+			`version` varchar(20) NOT null,
+			`origin_url` varchar(191) NOT null,
+			`downloads` bigint unsigned NOT null,
+			`views` bigint unsigned NOT null,
+			`installations_current_epoch` bigint unsigned NOT null,
+			`installations_previous_epoch` bigint unsigned NOT null,
+			`created_at` datetime DEFAULT current_timestamp,
+			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
+			primary key (`id`),
+			index `plugin_id` (`plugin_id`),
+			index `plugin_id_version` (`plugin_id`, `version`),
+			unique index `plugin_id_version_origin_url` (`plugin_id`, `version`, `origin_url`)
+		) $collate",
+		"CREATE table `{$dbprefix}troy_plugins_stats_to_date` (
+			`id` bigint unsigned NOT null auto_increment,
+			`plugin_id` bigint unsigned NOT null,
+			`version` varchar(20) NOT null,
+			`date` date NOT null DEFAULT (current_date),
+			`origin_url` varchar(191) NOT null,
+			`downloads` bigint unsigned NOT null,
+			`views` bigint unsigned NOT null,
+			`installations_current_epoch` bigint unsigned NOT null,
+			`installations_previous_epoch` bigint unsigned NOT null,
+			`created_at` datetime DEFAULT current_timestamp,
+			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
+			primary key (`id`),
+			index `plugin_id` (`plugin_id`),
+			index `plugin_id_version_date` (`plugin_id`, `version`, `date`),
+			unique index `plugin_id_version_date_origin_url` (`plugin_id`, `version`, `date`, `origin_url`)
+		) $collate",
+		"CREATE table `{$dbprefix}troy_plugins_view_stats` (
+			`id` bigint unsigned NOT null auto_increment,
+			`plugin_id` bigint unsigned NOT null,
+			`version` varchar(20) NOT null,
+			`origin_url` varchar(191) NOT null,
+			`views` bigint unsigned NOT null,
+			`type` varchar(20) NOT null,
+			`created_at` datetime DEFAULT current_timestamp,
+			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
+			primary key (`id`),
+			index `plugin_id` (`plugin_id`),
+			index `plugin_id_version` (`plugin_id`, `version`),
+			unique index `plugin_id_version_origin_url` (`plugin_id`, `version`, `origin_url`)
+		) $collate",
+		"CREATE table `{$dbprefix}troy_plugins_view_stats_live` (
+			`id` bigint unsigned NOT null auto_increment,
+			`plugin_id` bigint unsigned NOT null,
+			`version` varchar(20) NOT null,
+			`type` varchar(20) NOT null,
+			`origin_url` varchar(191) NOT null,
+			`created_at` datetime DEFAULT current_timestamp,
+			primary key (`id`),
+			index `plugin_id` (`plugin_id`),
+			index `plugin_id_version` (`plugin_id`, `version`)
+		) $collate",
+		"CREATE table `{$dbprefix}troy_plugins_download_stats` (
+			`id` bigint unsigned NOT null auto_increment,
+			`plugin_id` bigint unsigned NOT null,
+			`version` varchar(20) NOT null,
+			`downloads` bigint unsigned NOT null,
+			`type` varchar(20) NOT null,
+			`origin_url` varchar(191) NOT null,
+			`created_at` datetime DEFAULT current_timestamp,
+			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
+			primary key (`id`),
+			index `plugin_id` (`plugin_id`)
+		) $collate",
+		"CREATE table `{$dbprefix}troy_plugins_download_stats_live` (
+			`id` bigint unsigned NOT null auto_increment,
+			`plugin_id` bigint unsigned NOT null,
+			`version` varchar(20) NOT null,
+			`type` varchar(20) NOT null,
+			`origin_url` varchar(191) NOT null,
+			`created_at` datetime DEFAULT current_timestamp,
+			primary key (`id`),
+			index `plugin_id` (`plugin_id`)
+		) $collate",
+		"CREATE table `{$dbprefix}troy_plugins_update_request_stats` (
+			`id` bigint unsigned NOT null auto_increment,
+			`plugin_id` bigint unsigned NOT null,
+			`version` varchar(20) NOT null,
+			`epoch` bigint unsigned NOT null,
+			`request_count` bigint unsigned NOT null,
+			`created_at` datetime DEFAULT current_timestamp,
+			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
+			primary key (`id`),
+			index `plugin_id` (`plugin_id`)
+		) $collate",
+		"CREATE table `{$dbprefix}troy_plugins_update_request_locales_stats` (
+			`id` bigint unsigned NOT null auto_increment,
+			`plugin_id` bigint unsigned NOT null,
+			`version` varchar(20) NOT null,
+			`locale` bigint unsigned NOT null,
+			`request_count` bigint unsigned NOT null,
+			`created_at` datetime DEFAULT current_timestamp,
+			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
+			primary key (`id`),
+			index `plugin_id` (`plugin_id`),
+			unique index `plugin_id_version_locale` (`plugin_id`, `version`, `locale`)
+		) $collate",
+		"CREATE table `{$dbprefix}troy_plugins_update_request_stats_live` (
+			`id` bigint unsigned NOT null auto_increment,
+			`plugin_id` bigint unsigned NOT null,
+			`version` varchar(20) NOT null,
+			`uuid` varchar(100) NOT null,
+			`request_count` int(7) unsigned NOT null,
+			`locales` varchar(191) NOT null,
+			`php_version` varchar(20) NOT null,
+			`wp_version` varchar(20) NOT null,
+			`created_at` datetime DEFAULT current_timestamp,
+			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
+			primary key (`id`),
+			index `plugin_id` (`plugin_id`)
+		) $collate",
+	];
+}

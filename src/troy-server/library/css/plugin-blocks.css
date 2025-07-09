@@ -1,0 +1,109 @@
+/**
+ * Troy Server
+ *
+ * Copyright (c) 2025 Sybre Waaijer, CyberWire B.V.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+.troy-server-editor-plugin-headergroup {
+	margin-block-start: 4rem !important; /* Some root styles in Gutenberg supersede this */
+}
+
+.wp-block-troy-server-block-plugin-tabs.troy-server-block-plugin-tabs-container { /* Target the block wrapper */
+	border: 1px dashed #ccc;
+	padding: 10px;
+	margin-bottom: 1em; /* Add some space below the tabs block */
+}
+
+.troy-server-block-plugin-tabs-nav {
+	display: flex;
+	flex-wrap: wrap;
+	margin-bottom: 10px;
+	border-bottom: 1px solid #ddd;
+	padding-bottom: 5px;
+}
+
+.troy-server-block-plugin-tab-button {
+	margin-right: 5px;
+	margin-bottom: 5px; /* Handle wrapping */
+}
+
+/* Style the direct children (tab panels) managed by InnerBlocks */
+/* Need to target the structure created by InnerBlocks */
+.wp-block-troy-server-block-plugin-tabs > .block-editor-inner-blocks > .block-editor-block-list__layout > .wp-block-troy-server-block-plugin-tab {
+	display: none; /* Hide all tab panels by default */
+	border: 1px dashed #eee; /* Visual aid for inactive tabs in editor */
+	padding: 10px;
+	margin-top: -1px; /* Overlap border slightly */
+	min-height: 50px; /* Ensure inactive tabs have some height */
+}
+
+.wp-block-troy-server-block-plugin-tabs > .block-editor-inner-blocks > .block-editor-block-list__layout > .wp-block-troy-server-block-plugin-tab.is-active {
+	display: block; /* Show only the active one */
+	border-color: #ddd; /* Stronger border for active tab */
+}
+
+/* Ensure appender is visible within the active tab */
+.wp-block-troy-server-block-plugin-tab.is-active > .block-editor-inner-blocks > .block-editor-block-list__layout > .block-list-appender {
+	display: block;
+	position: relative; /* Adjust positioning if needed */
+	margin-top: 10px;
+}
+
+/* Hide the default block title in the editor, as we repositioned it. We load it here since the editor is an iframe. */
+.edit-post-visual-editor__post-title-wrapper {
+	display: none
+}
+
+/* Hide figcaptions. They don't have a control to disable them in the editor. */
+/* This is a workaround until we can add a control to the block. */
+.wp-block-image.troy-server-editor-plugin-logo figcaption,
+.wp-block-image.troy-server-editor-plugin-banner figcaption {
+	display: none
+}
+
+.troy-server-block-plugin-banner {
+	max-width: 100%;
+	height: auto;
+}
+.troy-server-block-plugin-logo-wrap {
+	width: 100%;
+	height: 100%;
+}
+.troy-server-block-plugin-logo-wrap {
+	width: 96px;
+	height: 96px;
+}
+
+.troy-server-editor-plugin-banner {
+	width: 100%;
+	height: auto;
+	max-width: 772px;
+	max-height: 250px;
+}
+
+.troy-server-editor-plugin-title {
+	font-size: 40px;
+	resize: none;
+}
+
+.troy-server-no-content-message {
+	opacity: .7;
+}
