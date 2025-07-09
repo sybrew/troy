@@ -105,13 +105,16 @@ const ABSPATH = __DIR__ . '/';
 \define( 'Troy\Client\PLUGIN_SLUG', \dirname( PLUGIN_BASENAME ) );
 
 /**
- * The plugin headers Troy looks for.
- * Existing headers must never be removed.
+ * Defines custom plugin headers that Troy recognizes.
+ * Any header added to this list must be permanent and never removed.
  *
- * This is an array of headers that can expand over time when WordPress.org blocks one.
- * Cat and mouse.
+ * Existing headers must never be removed for backward compatibility. New headers
+ * can be added if WordPress.org blocks an existing one.
  *
- * Note that the plugin must have a "Plugin Name" header, or it won't be recognized.
+ * This array is used with the `extra_{$context}_headers` filter. WordPress uses
+ * the header values as keys in the filter's output array, which is intended
+ * to prevent plugins from overwriting each other's headers. This is wrong.
+ * See: https://core.trac.wordpress.org/ticket/8964
  *
  * @since 0.0.1184
  */

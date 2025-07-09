@@ -107,6 +107,9 @@ class PluginsAPI {
 
 		$php_version = phpversion();
 
+		// Instead of looping through the slugs, we loop through the repos.
+		// This way, we can make one request per repo, instead of one request per
+		// plugin slug, which is more efficient.
 		foreach ( get_troy_plugin_slugs_per_repo() as $repo => $slugs ) {
 			$flipped_slugs = array_flip( $slugs );
 
@@ -114,23 +117,33 @@ class PluginsAPI {
 			$value->response  = array_diff_key( $value->response, $flipped_slugs );
 			$value->no_update = array_diff_key( $value->no_update, $flipped_slugs );
 
-			$active_repo_plugins = array_intersect( $active_plugin_slugs, $slugs );
-			$repo_plugin_slugs   = array_intersect_key( $flipped_slugs, $troy_plugins_by_slug );
+			$active_repo_plugins   = array_intersect( $active_plugin_slugs, $slugs );
+			$inactive_repo_plugins = array_diff( $slugs, $active_repo_plugins );
+			$repo_plugin_slugs     = array_intersect_key( $flipped_slugs, $troy_plugins_by_slug );
 
 			$request = make_troy_api_request_cached(
 				"update_plugins-$repo",
 				"{$repo}plugin/get/updates/",
 				[
-					'action'           => 'update_plugins',
-					'active_plugins'   => $active_repo_plugins,
-					'inactive_plugins' => array_diff( $active_repo_plugins, $slugs ),
-					'locale'           => $locales,
+					// Build slug => version arrays
+					'active_plugins'   => array_column(
+						array_intersect_key( $troy_plugins_by_slug, array_flip( $active_repo_plugins ) ),
+						'version',
+						'slug',
+					),
+					'inactive_plugins' => array_column(
+						array_intersect_key( $troy_plugins_by_slug, array_flip( $inactive_repo_plugins ) ),
+						'version',
+						'slug',
+					),
+					'locales'          => $locales,
 					'translations'     => array_intersect_key(
 						$translations,
 						array_flip( array_column( $repo_plugin_slugs, 'textdomain' ) ),
 					),
 					'php_version'      => $php_version,
 					'wp_version'       => $wp_version, // phpcs:ignore VariableAnalysis.CodeAnalysis -- included above.
+					'troy_version'     => VERSION,
 				],
 			);
 
@@ -166,7 +179,7 @@ class PluginsAPI {
 				if ( isset( $res->error ) ) {
 					$res = new \WP_Error( 'plugins_api_failed', $res->error );
 				} else {
-					foreach ( [ 'checked', 'no_update', 'response', 'translations' ] as $key ) {
+					foreach ( [ 'no_update', 'response', 'translations' ] as $key ) {
 						$value->$key = array_merge(
 							$value->$key,
 							(array) ( $res->$key ?? [] ),

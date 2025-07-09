@@ -75,10 +75,10 @@ function get_site_unique_id() {
 
 	if ( ! $uuid || (int) strtok( $uuid, '-' ) < $epoch ) {
 		// We don't use an rfc9562 UUID because we need to be able to extract a custom epoch.
-		$uuid = "$epoch-" . bin2hex( random_bytes( 32 ) );
+		$uid = bin2hex( random_bytes( 32 ) );
 
 		// Not autoloaded -- we only use if when we make a request.
-		\update_option( 'troy_client_site_unique_id', $uuid, false );
+		\update_option( 'troy_client_site_unique_id', "$epoch-$uid", false );
 	}
 
 	return $uuid;
@@ -225,6 +225,8 @@ function get_troy_plugin_repos_per_slug() {
  *     An array of supported plugins, associative, keyed by the plugin file (a.k.a. basename).
  *
  *     @type string $slug         The plugin's slug.
+ *     @type string $version      The plugin's version.
+ *     @type string $textdomain   The plugin's textdomain.
  *     @type string $name         The plugin's name.
  *     @type string $repo         The plugin's Troy repository header value. Filtered.
  *     @type string $dependencies The plugin's Troy dependencies header value. Unfiltered.
@@ -281,9 +283,10 @@ function get_troy_plugins() {
 		$plugins[ $file ] = [
 			'slug'         => $slug,
 			'name'         => $data['Name'],
+			'version'      => $data['Version'],
+			'textdomain'   => $data['TextDomain'],
 			'repo'         => $repo,
 			'dependencies' => $dependencies,
-			'textdomain'   => $data['TextDomain'],
 		];
 	}
 
@@ -409,7 +412,7 @@ function make_troy_api_request_cached( $key, $repo, $body = '', $method = 'POST'
 			   empty( $memo['_timeout'] )
 			|| $memo['_timeout'] < time()
 			// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions -- we're not going to unserialize.
-			|| \strlen( serialize( $memo ) ) > 333_000 // ~ 20 plugins
+			|| \strlen( serialize( $memo ) ) > 333_000 // ~ holds 20 plugins
 		) {
 			$memo = [
 				'_timeout' => time() + 600, // 10 minutes
@@ -426,6 +429,8 @@ function make_troy_api_request_cached( $key, $repo, $body = '', $method = 'POST'
 
 	$res = make_troy_api_request( $repo, $body, $method );
 
+	// WordPress's API will resolve redirects until no more redirects are available,
+	// but we limit this to 2 redirects. So, when we hit another, we assume the request failed.
 	if ( \is_wp_error( $res ) || \wp_remote_retrieve_response_code( $res ) >= 300 )
 		return $err_memo[ $key ] = $res;
 
