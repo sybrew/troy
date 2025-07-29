@@ -53,7 +53,8 @@
 	min-height: 40px;
 	display: flex;
 	align-items: center;
-	word-break: break-all;
+	word-break: break-all; /* Safari and Firefox support */
+	word-break: auto-phrase;
 	hyphens: auto;
 }
 

@@ -299,7 +299,7 @@
 }
 
 /* Media queries */
-@media screen and (max-width: 782px) {
+@media (max-width: 782px) {
 	.troy-server-settings-body {
 		margin: 0 12px;
 		width: auto;
@@ -345,7 +345,7 @@
 	}
 }
 
-@media only screen and (max-width: 1004px) {
+@media (max-width: 1004px) {
 	.troy-server-settings-body {
 		margin: 0 22px;
 		width: auto;

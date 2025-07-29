@@ -49,7 +49,10 @@ window.troyServerPluginEditorComponents = ( wp => {
 		Notice,
 		Dropdown,
 		RadioControl,
+		SelectControl,
+		Spinner,
 	} = wp.components;
+	const { useSelect } = wp.data;
 
 	// Experimental components
 	const VStack  = wp.components?.VStack || wp.components?.__experimentalVStack;
@@ -65,6 +68,29 @@ window.troyServerPluginEditorComponents = ( wp => {
 		PanelRow,
 		createPopoverProps,
 	} = troyServerEditorComponents;
+
+	/**
+	 * MenuDropdown component - wrapper around WordPress Dropdown with custom styling.
+	 *
+	 * @since 0.0.1184
+	 *
+	 * @param {Object} props - Component properties passed to the WordPress Dropdown component.
+	 * @returns {JSX.Element} The rendered MenuDropdown component.
+	 */
+	function MenuDropdown( props ) {
+		const {
+			className = '',
+			...otherProps
+		} = props;
+
+		return JSX(
+			Dropdown,
+			{
+				...otherProps,
+				className: `components-dropdown-menu ${className}`.trim(),
+			},
+		);
+	}
 
 	/**
 	 * Plugin Slug Popover Control component.
@@ -221,7 +247,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 				onRefChange: setPopoverAnchor,
 			},
 			JSX(
-				Dropdown,
+				MenuDropdown,
 				{
 					popoverProps,
 					focusOnMount: true,
@@ -335,7 +361,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 				onRefChange: setPopoverAnchor,
 			},
 			JSX(
-				Dropdown,
+				MenuDropdown,
 				{
 					popoverProps,
 					focusOnMount: true,
@@ -370,15 +396,15 @@ window.troyServerPluginEditorComponents = ( wp => {
 	 * @param {Object}   props {
 	 *     Component properties.
 	 *
-	 *     @param {Function} props.onClose    Callback function to close the popover.
-	 *     @param {Object}   props.storeData  The current plugin store data.
+	 *     @param {Function} props.onClose       Callback function to close the popover.
+	 *     @param {Object}   props.description   The current plugin description.
 	 *     @param {Function} props.setStoreValue Function to set values in the store.
 	 * }
 	 * @returns {JSX.Element} The rendered component.
 	 */
-	function ShortDescriptionPopover( { onClose, storeData, setStoreValue } ) {
+	function ShortDescriptionPopover( { onClose, description, setStoreValue } ) {
 
-		const [ currentDescription, setCurrentDescription ] = useState( storeData.short_description || '' );
+		const [ currentDescription, setCurrentDescription ] = useState( description );
 
 		const handleDescriptionChange = value => {
 			setCurrentDescription( value );
@@ -453,7 +479,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 				onRefChange: setPopoverAnchor,
 			},
 			JSX(
-				Dropdown,
+				MenuDropdown,
 				{
 					popoverProps,
 					focusOnMount: true,
@@ -472,7 +498,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 						ShortDescriptionPopover,
 						{
 							onClose,
-							storeData,
+							description,
 							setStoreValue,
 						},
 					),
@@ -588,7 +614,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 				onRefChange: setPopoverAnchor,
 			},
 			JSX(
-				Dropdown,
+				MenuDropdown,
 				{
 					popoverProps,
 					focusOnMount: true,
@@ -699,7 +725,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 				onRefChange: setPopoverAnchor,
 			},
 			JSX(
-				Dropdown,
+				MenuDropdown,
 				{
 					popoverProps,
 					focusOnMount: true,
@@ -753,7 +779,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 				onRefChange: setPopoverAnchor,
 			},
 			JSX(
-				Dropdown,
+				MenuDropdown,
 				{
 					popoverProps,
 					focusOnMount: true,
@@ -1402,7 +1428,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 			PanelRow,
 			{
 				label:       JSX(
-					Dropdown,
+					MenuDropdown,
 					{
 						popoverProps,
 						focusOnMount: true,
@@ -1443,21 +1469,182 @@ window.troyServerPluginEditorComponents = ( wp => {
 		);
 	}
 
+	/**
+	 * Plugin Author Popover Control component.
+	 *
+	 * @since 0.0.1184
+	 *
+	 * @param {Object}   props {
+	 *     Component properties.
+	 *
+	 *     @param {Function} props.onClose       Callback function to close the popover.
+	 *     @param {number}   props.authorId      The current author ID.
+	 *     @param {Function} props.setStoreValue Function to set values in the store.
+	 * }
+	 * @returns {JSX.Element} The rendered component.
+	 */
+	function PluginAuthorPopover( { onClose, authorId, setStoreValue } ) {
+
+		const [ selectedAuthorId, setSelectedAuthorId ] = useState( authorId || 0 );
+
+		const { authors, isLoading } = useSelect(
+			select => {
+				const { getUsers, isResolving } = select( 'core' );
+				const args = {
+					who:      'authors',
+					per_page: -1,
+					_fields:  'id,name',
+					context:  'view',
+				};
+				return {
+					authors:   getUsers( args ) || [],
+					isLoading: isResolving( 'getUsers', [ args ] ),
+				};
+			},
+			[],
+		);
+
+		const handleAuthorChange = newAuthorId => {
+			const authorId = parseInt( newAuthorId );
+			setSelectedAuthorId( authorId );
+			setStoreValue( 'author_id', authorId );
+		};
+
+		return JSX(
+			Fragment,
+			null,
+			JSX(
+				InspectorPopoverHeader,
+				{
+					title: __( 'Plugin Author', 'troy-server' ),
+					onClose,
+				},
+			),
+			JSX(
+				VStack,
+				{
+					spacing: 4,
+				},
+				isLoading
+					? JSX(
+						HStack,
+						{
+							spacing:   2,
+							alignment: 'center',
+						},
+						JSX(
+							Spinner,
+							{
+								size: 16,
+							},
+						),
+						JSX(
+							'span',
+							null,
+							__( 'Loading authors...', 'troy-server' ),
+						),
+					)
+					: JSX(
+						SelectControl,
+						{
+							label:    __( 'Author', 'troy-server' ),
+							value:    selectedAuthorId,
+							options:  [
+								{
+									label: __( 'Select an author...', 'troy-server' ),
+									value: 0,
+								},
+								...( authors || [] ).map( author => ( {
+									label: `${author.name} [${author.id}]`,
+									value: author.id,
+								} ) ),
+							],
+							onChange: handleAuthorChange,
+							help:     __( 'Choose the author who will be displayed for this plugin.', 'troy-server' ),
+							hideLabelFromVision: true,
+							__nextHasNoMarginBottom: true,
+							__next40pxDefaultSize: true,
+						},
+					),
+			),
+		);
+	}
+
+	/**
+	 * Plugin Author Control component for sidebar display.
+	 *
+	 * @since 0.0.1184
+	 *
+	 * @param {Object}   props {
+	 *     Component properties.
+	 *
+	 *     @param {number}   props.authorId      The current author ID.
+	 *     @param {Function} props.setStoreValue Function to set values in the store.
+	 * }
+	 * @returns {JSX.Element} The rendered component.
+	 */
+	function PluginAuthorControl( { authorId, setStoreValue } ) {
+
+		const [ popoverAnchor, setPopoverAnchor ] = useState( null );
+		const popoverProps = useMemo(
+			() => createPopoverProps( popoverAnchor, __( 'Plugin Author', 'troy-server' ) ),
+			[ popoverAnchor ]
+		);
+
+		// Get author name from WordPress core data store
+		const authorName = useSelect(
+			select => {
+				if ( ! authorId ) return '';
+
+				const user = select( 'core' ).getUser( authorId );
+				return user?.name || '';
+			},
+			[ authorId ],
+		);
+
+		const displayText = authorName || __( 'No author set', 'troy-server' );
+
+		return JSX(
+			PanelRow,
+			{
+				label:       __( 'Author', 'troy-server' ),
+				onRefChange: setPopoverAnchor,
+			},
+			JSX(
+				MenuDropdown,
+				{
+					popoverProps,
+					focusOnMount: true,
+					renderToggle: ( { onToggle, isOpen } ) => JSX(
+						Button,
+						{
+							variant:         'tertiary',
+							size:            'compact',
+							onClick:         onToggle,
+							'aria-expanded': isOpen,
+						},
+						displayText,
+					),
+					renderContent: ( { onClose } ) => JSX(
+						PluginAuthorPopover,
+						{
+							onClose,
+							authorId,
+							setStoreValue,
+						},
+					),
+				},
+			),
+		);
+	}
+
 	return {
-		PluginSlugPopover,
 		PluginSlugControl,
-		PluginStatusPopover,
 		PluginStatusControl,
-		ShortDescriptionPopover,
+		PluginAuthorControl,
 		ShortDescriptionControl,
-		UrlsPopover,
 		UrlsControl,
-		ReadmeSettingsPopover,
 		ReadmeSettingsControl,
-		AddVersionControl,
-		AddVersionPopover,
 		PluginVersionsControl,
-		VersionPopover,
-		VersionControl,
 	};
 } )( window.wp );

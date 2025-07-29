@@ -14,11 +14,13 @@ Follow these rules:
 - No SOLID
 - KISS
 - Procedural code is the way
+- Never add phpcs comments
+- Before making broad assumptions, ask for clarification
 
 ## General Coding Standards
 
 - Use WordPress coding standards, except as noted below
-- Use lowercase unit types, but write "Boolean" not "boolean"
+- Use lowercase unit types, except write "Boolean" not "boolean"
 - Use single quotes for strings unless interpolating
 - Interpolate variables in strings when possible
 - Align array key/value separators with spaces AFTER the separator

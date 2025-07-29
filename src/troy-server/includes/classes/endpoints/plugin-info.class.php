@@ -98,17 +98,54 @@ class Plugin_Info extends Base_Endpoint {
 			if ( ! $plugin_row || ! $meta_row )
 				$this->send_error( 'Plugin data not available', 404 );
 
-			$response = $this->build_plugin_info_response(
-				$plugin_row,
-				$meta_row,
-				$info_row,
-				$latest_zip,
-				$translations,
-				$data_cache,
-				$contributors,
-				$fields,
-				$data,
-			);
+			// Decode info contents once for performance
+			$info_contents = $info_row->contents ? json_decode( $info_row->contents, true ) : [];
+
+			// var_dump() We need to see how this works in practice, hence some stuff is commented out.
+			$response = [
+				'name'                     => $meta_row->name,
+				'slug'                     => $plugin_row->slug,
+				'version'                  => $latest_zip->version ?? '',
+				'author'                   => $this->get_author_string( $meta_row->author_id ),
+				// 'author_profile'           => \get_author_posts_url( $meta_row->author_id ),
+				'contributors'             => $this->get_contributors_array( $contributors ),
+				'requires'                 => $latest_zip->requires_wp ?? '',
+				'tested'                   => $latest_zip->tested_wp ?? \Troy\Server\get_latest_public_wordpress_version( $latest_zip->requires_wp ),
+				'requires_php'             => $latest_zip->requires_php ?? '',
+				// 'compatibility'            => [], // What is this?
+				'rating'                   => $this->calculate_rating_percentage( $data_cache ),
+				'ratings'                  => $this->get_ratings_breakdown( $data_cache ),
+				'num_ratings'              => (int) ( $data_cache->rating_count ?? 0 ),
+				// 'support_threads'          => 0,
+				// 'support_threads_resolved' => 0,
+				'downloaded'               => (int) ( $data_cache->active_install_count ?? 0 ),
+				'last_updated'             => $this->format_last_updated( $latest_zip->updated_at ?? '' ),
+				// 'added'                    => $this->format_date_added( $plugin_row->created_at ?? '' ),
+				'homepage'                 => $meta_row->permalink ?? '',
+				// 'short_description'        => $meta_row->short_description ?? '',
+				// 'description'              => $this->get_description_content( $info_contents ),
+				'download_link'            => $this->get_download_link( $plugin_row->slug, $latest_zip ),
+				// 'changelog'                => $this->get_changelog_content( $info_contents ),
+				// 'installation'             => $this->get_installation_content( $info_contents ),
+				// 'faq'                      => $this->get_faq_content( $info_contents ),
+				// 'screenshots'              => $this->get_screenshots_content( $info_contents ),
+				// 'tags'                     => [],
+				// 'versions'                 => $this->get_versions_list( $data ),
+				'sections'                 => $this->get_sections_array( $info_contents ),
+				'donate_link'              => '',
+				'banners'                  => $this->get_banners_array( $info_row ),
+				// 'icons'                    => $this->get_icons_array( $meta_row ),
+				// 'blocks'                   => [],
+				// 'block_assets'             => [],
+				// 'author_block_count'       => 0,
+				// 'author_block_rating'      => 0,
+				// 'blueprints'               => [],
+				// 'preview_link'             => '',
+			];
+
+			// Filter response based on requested fields
+			if ( ! empty( $fields ) )
+				$response = $this->filter_response_by_fields( $response, $fields );
 
 			// Record plugin info request stats
 			$this->record_info_request_stats( $plugin_id, $locale );
@@ -118,86 +155,6 @@ class Plugin_Info extends Base_Endpoint {
 		} catch ( \Exception $e ) {
 			$this->send_error( 'Failed to get plugin information: ' . $e->getMessage(), 500 );
 		}
-	}
-
-	/**
-	 * Build the plugin information response in WordPress-compatible format.
-	 *
-	 * @since 0.0.1184
-	 *
-	 * @param object   $plugin_row     Plugin row from troy_plugins table.
-	 * @param object   $meta_row       Meta row from troy_plugins_metas table.
-	 * @param object   $info_row       Info row from troy_plugins_infos table.
-	 * @param object   $latest_zip     Latest zip row from troy_plugins_zips table.
-	 * @param object[] $translations   Translations array from troy_plugins_translations table.
-	 * @param object   $data_cache     Data cache row from troy_plugins_data_caches table.
-	 * @param object[] $contributors   Contributors array from troy_plugins_contributors table.
-	 * @param array    $fields         Requested fields to include/exclude.
-	 * @param Data     $data           Plugin data object.
-	 * @return array Plugin information response.
-	 */
-	private function build_plugin_info_response(
-		$plugin_row,
-		$meta_row,
-		$info_row,
-		$latest_zip,
-		$translations,
-		$data_cache,
-		$contributors,
-		$fields,
-		$data,
-	) {
-		// Decode info contents once for performance
-		$info_contents = $info_row->contents ? json_decode( $info_row->contents, true ) : [];
-
-		// var_dump() clean up the commented crap -- that was AI vibed.
-		// Base plugin information
-		$response = [
-			'name'                     => $meta_row->name,
-			'slug'                     => $plugin_row->slug,
-			'version'                  => $latest_zip->version ?? '',
-			'author'                   => $this->get_author_string( $meta_row->author_id ),
-			// 'author_profile'           => $meta_row->permalink ?? '',
-			'contributors'             => $this->get_contributors_array( $contributors ),
-			'requires'                 => $latest_zip->requires_wp ?? '',
-			'tested'                   => $latest_zip->tested_wp ?? \Troy\Server\get_latest_public_wordpress_version( $latest_zip->requires_wp ),
-			'requires_php'             => $latest_zip->requires_php ?? '',
-			// 'compatibility'            => [],
-			'rating'                   => $this->calculate_rating_percentage( $data_cache ),
-			'ratings'                  => $this->get_ratings_breakdown( $data_cache ),
-			'num_ratings'              => (int) ( $data_cache->rating_count ?? 0 ),
-			// 'support_threads'          => 0,
-			// 'support_threads_resolved' => 0,
-			// 'downloaded'               => (int) ( $data_cache->installations_current_epoch ?? 0 ),
-			'last_updated'             => $this->format_last_updated( $latest_zip->updated_at ?? '' ),
-			// 'added'                    => $this->format_date_added( $plugin_row->created_at ?? '' ),
-			'homepage'                 => $meta_row->permalink ?? '',
-			// 'short_description'        => $meta_row->short_description ?? '',
-			// 'description'              => $this->get_description_content( $info_contents ),
-			'download_link'            => $this->get_download_link( $plugin_row->slug, $latest_zip ),
-			// 'changelog'                => $this->get_changelog_content( $info_contents ),
-			// 'installation'             => $this->get_installation_content( $info_contents ),
-			// 'faq'                      => $this->get_faq_content( $info_contents ),
-			// 'screenshots'              => $this->get_screenshots_content( $info_contents ),
-			// 'tags'                     => [],
-			// 'versions'                 => $this->get_versions_list( $data ),
-			'sections'                 => $this->get_sections_array( $info_contents ),
-			'donate_link'              => '',
-			'banners'                  => $this->get_banners_array( $info_row ),
-			// 'icons'                    => $this->get_icons_array( $meta_row ),
-			// 'blocks'                   => [],
-			// 'block_assets'             => [],
-			// 'author_block_count'       => 0,
-			// 'author_block_rating'      => 0,
-			// 'blueprints'               => [],
-			// 'preview_link'             => '',
-		];
-
-		// Filter response based on requested fields
-		if ( ! empty( $fields ) )
-			$response = $this->filter_response_by_fields( $response, $fields );
-
-		return $response;
 	}
 
 	/**
@@ -231,13 +188,16 @@ class Plugin_Info extends Base_Endpoint {
 		$result = [];
 
 		foreach ( $contributors as $contributor ) {
-			// For now, use user_id as the key
-			// In the future, this could be enhanced to get actual user data
-			$result[ $contributor->user_id ] = [
-				'profile'      => '',
-				'avatar'       => '',
-				'display_name' => "User {$contributor->user_id}",
-			];
+			// User should always exit.
+			$userdata = \get_userdata( $contributor->user_id );
+
+			if ( $userdata ) {
+				$result[ $contributor->user_id ] = [
+					'profile'      => \get_author_posts_url( $contributor->user_id ),
+					'avatar'       => \get_avatar_url( $contributor->user_id, [ 'size' => 96 ] ),
+					'display_name' => $userdata->display_name,
+				];
+			}
 		}
 
 		return $result;
@@ -253,7 +213,7 @@ class Plugin_Info extends Base_Endpoint {
 	 */
 	private function calculate_rating_percentage( $data_cache ) {
 
-		if ( ! $data_cache?->rating_count )
+		if ( ! $data_cache->rating_count )
 			return 0;
 
 		// Convert from 0-100 scale to percentage
@@ -272,7 +232,7 @@ class Plugin_Info extends Base_Endpoint {
 		// For now, return empty breakdown
 		// In the future, this could be enhanced with actual rating distribution
 		return [
-			'5' => 69, // TODO remove me, testing
+			'5' => 69, // var_dump() TODO remove me, testing
 			'4' => 4,
 			'3' => 3,
 			'2' => 2,

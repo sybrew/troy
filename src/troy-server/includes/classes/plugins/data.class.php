@@ -442,15 +442,15 @@ class Data {
 	 * @return ?object {
 	 *     The plugin data cache.
 	 *
-	 *     @type int    id                  The cache ID.
-	 *     @type int    plugin_id           The plugin ID.
-	 *     @type int    average_rating      The average rating.
-	 *     @type int    rating_count        The rating count.
+	 *     @type int    id                    The cache ID.
+	 *     @type int    plugin_id             The plugin ID.
+	 *     @type int    average_rating        The average rating.
+	 *     @type int    rating_count          The rating count.
 	 *     @type int    recent_average_rating The recent average rating.
-	 *     @type int    recent_rating_count The recent rating count.
-	 *     @type int    active_install_count The active install count.
-	 *     @type string created_at          The row creation timestamp.
-	 *     @type string updated_at          The row last updated timestamp.
+	 *     @type int    recent_rating_count   The recent rating count.
+	 *     @type int    active_install_count  The active install count.
+	 *     @type string created_at            The row creation timestamp.
+	 *     @type string updated_at            The row last updated timestamp.
 	 * }
 	 */
 	public function get_data_caches_row() {

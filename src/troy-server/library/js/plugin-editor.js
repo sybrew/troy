@@ -29,11 +29,11 @@
 	const { PluginDocumentSettingPanel } = wp.editor;
 	const {
 		createElement: JSX,
-		useMemo,
 		Fragment,
 	} = wp.element;
 	const {
 		__,
+		sprintf,
 	} = wp.i18n;
 	const { useDispatch } = wp.data;
 
@@ -50,10 +50,11 @@
 		PanelRow,
 	} = troyServerEditorComponents;
 
-	// Import plugin-specific components from plugin-editor-components
+	// Import plugin-specific components from plugin-editor-components.
 	const {
 		PluginSlugControl,
 		PluginStatusControl,
+		PluginAuthorControl,
 		ShortDescriptionControl,
 		UrlsControl,
 		ReadmeSettingsControl,
@@ -70,11 +71,11 @@
 	function PluginDocumentSettings() {
 		const {
 			postId,
-			data:         storeData,
-			isLoading:    isStoreLoading,
+			data:           storeData,
+			isLoading:      isStoreLoading,
 			sortedVersions,
 			latestVersion,
-			setValue:     setStoreValue,
+			setValue:       setStoreValue,
 		} = troyServerGetPluginStore();
 
 		const { createNotice } = useDispatch( 'core/notices' );
@@ -163,6 +164,13 @@
 								PluginStatusControl,
 								{
 									status: storeData.status,
+									setStoreValue,
+								},
+							),
+							JSX(
+								PluginAuthorControl,
+								{
+									authorId: storeData.author_id,
 									setStoreValue,
 								},
 							),

@@ -140,10 +140,12 @@ class Plugin_Download extends Base_Endpoint {
 
 			$this->clean_response_header();
 
+			$filename = \sanitize_file_name( "{$slug}-{$version}.zip" );
+
 			http_response_code( 200 );
 			header( 'Content-Description: File Transfer' );
 			header( 'Content-Type: application/zip' );
-			header( "Content-Disposition: attachment; filename=\"{$slug}.zip\"" );
+			header( "Content-Disposition: attachment; filename=\"{$filename}\"" );
 			header( "Content-Length: {$zip_data->file_size}" );
 			header( 'Cache-Control: no-cache, must-revalidate' );
 			header( 'Expires: Mon, 26 Jul 1997 05:00:00 GMT' );

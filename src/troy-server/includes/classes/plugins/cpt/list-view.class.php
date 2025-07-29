@@ -527,7 +527,7 @@ class List_View {
 
 			// We add visibility and height to ensure that odd specificities don't cause unforeseen issues.
 			$css .= <<<CSS
-				@media screen and (max-width: 782px) {
+				@media (max-width: 782px) {
 					{$selectors} {
 						display: none !important;
 						visibility: hidden;

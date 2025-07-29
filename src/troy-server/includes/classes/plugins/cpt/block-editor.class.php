@@ -169,6 +169,47 @@ class Block_Editor {
 			],
 		);
 
+		// Heading group (logo, title, author, download).
+		\register_block_type(
+			'troy-server/plugin-heading',
+			[
+				'api_version' => 3,
+				'title'       => \__( 'Plugin Heading', 'troy-server' ),
+				'category'    => 'widgets',
+				'icon'        => 'index-card',
+				'attributes'  => [
+					'align' => [
+						'type'    => 'string',
+						'default' => 'wide',
+					],
+				],
+				'supports'    => [
+					'inserter' => false,
+					'reusable' => false,
+					'lock'     => true,
+					'align'    => true,
+				],
+				// 'editor_script' and 'editor_style' are handled by the main enqueue function
+			],
+		);
+
+		// Title-Author wrapper group.
+		\register_block_type(
+			'troy-server/plugin-title-author-wrap',
+			[
+				'api_version' => 3,
+				'title'       => \__( 'Plugin Title & Author Wrapper', 'troy-server' ),
+				'category'    => 'widgets',
+				'icon'        => 'index-card',
+				'supports'    => [
+					'inserter' => false,
+					'reusable' => false,
+					'lock'     => true,
+				],
+				// 'editor_script' and 'editor_style' are handled by the main enqueue function
+			],
+		);
+
 		// Banner
 		\register_block_type(
 			'troy-server/plugin-banner',
@@ -254,7 +295,41 @@ class Block_Editor {
 			],
 		);
 
-		// TODO post author
+		\register_block_type(
+			'troy-server/plugin-author',
+			[
+				'api_version' => 3,
+				'title'       => \__( 'Plugin Author', 'troy-server' ),
+				'category'    => 'widgets',
+				'icon'        => 'admin-users',
+				'attributes'  => [
+					'authorId' => [
+						'type'    => 'integer',
+						'default' => 0,
+					],
+				],
+				'supports'    => [
+					'inserter' => false,
+					'reusable' => false,
+					'lock'     => true,
+				],
+			],
+		);
+
+		\register_block_type(
+			'troy-server/plugin-download',
+			[
+				'api_version' => 3,
+				'title'       => \__( 'Plugin Download', 'troy-server' ),
+				'category'    => 'widgets',
+				'icon'        => 'download',
+				'supports'    => [
+					'inserter' => false,
+					'reusable' => false,
+					'lock'     => true,
+				],
+			],
+		);
 
 		// Tabs wrapper.
 		\register_block_type(
@@ -345,7 +420,7 @@ class Block_Editor {
 				'troy-server/plugin-headergroup',
 				[
 					'align'     => 'wide',
-					'className' => 'troy-server-editor-plugin-headergroup',
+					'className' => 'troy-server-block-plugin-headergroup',
 					'lock'      => 'all',
 					'style'     => [
 						'marginTop' => '4rem',
@@ -356,7 +431,7 @@ class Block_Editor {
 						'troy-server/plugin-banner',
 						[
 							'align'     => 'wide',
-							'className' => 'troy-server-editor-plugin-banner',
+							'className' => 'troy-server-block-plugin-banner',
 							'lock'      => 'all',
 							'width'     => 772,
 							'height'    => 250,
@@ -369,44 +444,50 @@ class Block_Editor {
 						],
 					],
 					[
-						'core/columns',
+						'troy-server/plugin-heading',
 						[
-							'align' => 'wide',
-							'lock'  => 'all',
-							'style' => [
-								'spacing' => [
-									'blockGap' => '1em',
-								],
-							],
+							'align'     => 'wide',
+							'className' => 'troy-server-block-plugin-heading',
+							'lock'      => 'all',
 						],
 						[
 							[
 								'troy-server/plugin-logo',
 								[
-									'align'     => 'left',
-									'className' => 'troy-server-editor-plugin-logo',
+									'className' => 'troy-server-block-plugin-logo',
 									'lock'      => 'all',
 									'width'     => 96,
 									'height'    => 96,
 								],
 							],
 							[
-								'core/column',
+								'troy-server/plugin-title-author-wrap',
 								[
-									'width'             => 'auto',
-									'verticalAlignment' => 'top',
-									'lock'              => 'all',
+									'className' => 'troy-server-block-plugin-title-author-wrap',
+									'lock'      => 'all',
 								],
 								[
 									[
 										'troy-server/plugin-title',
 										[
-											'align'     => 'left',
-											'className' => 'troy-server-editor-plugin-title',
+											'className' => 'troy-server-block-plugin-title',
 											'lock'      => 'all',
 										],
 									],
-									// TODO add author_id selection/display here. It should be able to create a user, no?
+									[
+										'troy-server/plugin-author',
+										[
+											'className' => 'troy-server-block-plugin-author',
+											'lock'      => 'all',
+										],
+									],
+								],
+							],
+							[
+								'troy-server/plugin-download',
+								[
+									'className' => 'troy-server-block-plugin-download',
+									'lock'      => 'all',
 								],
 							],
 						],

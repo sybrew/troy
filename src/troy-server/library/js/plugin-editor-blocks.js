@@ -32,7 +32,10 @@
 		useState,
 		useMemo,
 	} = wp.element;
-	const { __ } = wp.i18n;
+	const {
+		__,
+		sprintf,
+	} = wp.i18n;
 	const {
 		useSelect,
 		useDispatch,
@@ -55,14 +58,49 @@
 			icon:     'admin-post',
 			edit: () => {
 				const blockProps = useBlockProps( {
-					className: 'troy-server-editor-plugin-headergroup',
+					className: 'troy-server-block-plugin-headergroup',
 				} );
+				const innerBlocksProps = useInnerBlocksProps( blockProps, {} );
 
-				return JSX(
-					'div',
-					blockProps,
-					JSX( InnerBlocks ),
-				);
+				return JSX( 'div', innerBlocksProps );
+			},
+			save: () => {
+				return null; // We don't save the content of this block.
+			},
+		},
+	);
+
+	registerBlockType(
+		'troy-server/plugin-heading',
+		{
+			title:    __( 'Plugin Heading', 'troy-server' ),
+			icon:     'admin-post',
+			edit: () => {
+				const blockProps = useBlockProps( {
+					className: 'troy-server-block-plugin-heading',
+				} );
+				const innerBlocksProps = useInnerBlocksProps( blockProps, {} );
+
+				return JSX( 'div', innerBlocksProps );
+			},
+			save: () => {
+				return null; // We don't save the content of this block.
+			},
+		},
+	);
+
+	registerBlockType(
+		'troy-server/plugin-title-author-wrap',
+		{
+			title: __( 'Plugin Title & Author Wrapper', 'troy-server' ),
+			icon:  'admin-post',
+			edit:  () => {
+				const blockProps = useBlockProps( {
+					className: 'troy-server-block-plugin-title-author-wrap',
+				} );
+				const innerBlocksProps = useInnerBlocksProps( blockProps, {} );
+
+				return JSX( 'div', innerBlocksProps );
 			},
 			save: () => {
 				return null; // We don't save the content of this block.
@@ -431,7 +469,7 @@
 			edit: ( { attributes, setAttributes } ) => {
 				const { content: titleInputValue } = attributes;
 				const blockProps = useBlockProps( {
-					className: 'troy-server-editor-plugin-title',
+					className: 'troy-server-block-plugin-title',
 				} );
 				const { editPost } = useDispatch( 'core/editor' );
 				const postTitle = useSelect(
@@ -468,6 +506,132 @@
 				);
 			},
 			// We don't save the content of this block; handled via select( 'core/editor' ).getEditedPostAttribute( 'title' )
+		},
+	);
+
+	registerBlockType(
+		'troy-server/plugin-author',
+		{
+			edit: ( { attributes } ) => {
+				const { authorId } = attributes;
+				const blockProps = useBlockProps( {
+					className: 'troy-server-block-plugin-author',
+				} );
+
+				const postAuthor = useSelect(
+					select => select( 'core/editor' ).getEditedPostAttribute( 'author' ),
+					[],
+				);
+
+				const {
+					data: storeData,
+					setValue: setStoreValue,
+				} = troyServerGetPluginStore();
+
+				// Get the effective author ID (store takes precedence, then post author, then block attribute)
+				const effectiveAuthorId = storeData.author_id || postAuthor || authorId;
+
+				// Update store if we're using post author or block attribute
+				useEffect(
+					() => {
+						if ( effectiveAuthorId !== storeData.author_id ) {
+							if ( postAuthor && postAuthor !== storeData.author_id ) {
+								setStoreValue( 'author_id', postAuthor );
+							} else if ( authorId && authorId !== storeData.author_id ) {
+								setStoreValue( 'author_id', authorId );
+							}
+						}
+					},
+					[ effectiveAuthorId, storeData.author_id, postAuthor, authorId ],
+				);
+
+				// Get author name from WordPress core data store
+				const authorName = useSelect( ( select ) => {
+					if ( ! effectiveAuthorId ) return '';
+
+					const user = select( 'core' ).getUser( effectiveAuthorId );
+					return user?.name || '';
+				}, [ effectiveAuthorId ] );
+
+				return JSX(
+					'div',
+					{
+						...blockProps,
+						className: 'troy-server-block-plugin-author-wrap',
+					},
+					JSX(
+						'span',
+						{
+							className: `troy-server-block-plugin-author ${
+								! authorName ? 'troy-server-no-content-message' : ''
+							}`,
+						},
+						authorName
+							? sprintf( __( 'By %s', 'troy-server' ), authorName )
+							: __( 'Set plugin author in the sidebar...', 'troy-server' ),
+					),
+				);
+			},
+			// We don't save the content of this block; handled via store author_id
+		},
+	);
+
+	registerBlockType(
+		'troy-server/plugin-download',
+		{
+			edit: () => {
+				const blockProps = useBlockProps( {
+					className: 'troy-server-block-plugin-download',
+				} );
+
+				const {
+					data: storeData,
+					latestVersion,
+				} = troyServerGetPluginStore();
+
+				return JSX(
+					'div',
+					blockProps,
+					latestVersion
+						? JSX(
+							Button,
+							{
+								variant: 'primary',
+								href:    storeData.versions?.find( v => v.version === latestVersion )?.download_uri,
+								onClick: event => {
+									// We're in edit mode, so we cannot use href directly.
+									// Let's use this trick to trigger a download.
+									const a = document.createElement( 'a' );
+									a.href   = event.currentTarget.href;
+									a.target = '_blank';
+									a.rel    = 'noopener noreferrer';
+
+									document.body.appendChild( a );
+									a.click();
+									document.body.removeChild( a );
+								},
+								target:  '_blank',
+								rel:     'noopener noreferrer',
+								icon:    'download',
+								size:    'default',
+							},
+							__( 'Download', 'troy-server' ),
+						)
+						: JSX(
+							Button,
+							{
+								variant:  'primary',
+								disabled: true,
+								icon:     'download',
+								size:     'default',
+							},
+							__( 'Download', 'troy-server' ),
+						),
+				);
+			},
+			save: () => {
+				return null; // We don't save the content of this block
+			},
 		},
 	);
 } )( window.wp );
