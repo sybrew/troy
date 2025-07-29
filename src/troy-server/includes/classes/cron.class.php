@@ -53,7 +53,7 @@ class Cron {
 	 * }
 	 */
 	protected const CRON_JOBS = [
-		'troy_cron_clean_temp'         => [
+		'troy_cron_clean_temp' => [
 			'callback' => [ Zip_Extractor::class, 'cron_clean_old_temp_dirs' ],
 			'schedule' => 'daily',
 		],

@@ -374,34 +374,6 @@ class Data {
 	}
 
 	/**
-	 * Gets the plugin zips queues.
-	 *
-	 * @since 0.0.1184
-	 * @global \wpdb $wpdb
-	 *
-	 * @return ?object[] {
-	 *     An array of plugin zip queues, or null if none are found.
-	 *
-	 *     @type int    id               The zip ID.
-	 *     @type int    plugin_id        The plugin ID.
-	 *     @type string download_url     The download URL to get the original zip file.
-	 *     @type string type             The zip type (unreleased, beta, tag).
-	 *     @type bool   processed        Whether the version is processed.
-	 *     @type int    process_attempt  The process attempt.
-	 *     @type string created_at       The row creation timestamp.
-	 *     @type string updated_at       The row last updated timestamp.
-	 * }
-	 */
-	public function get_zips_queues() {
-		global $wpdb;
-
-		return $wpdb->get_results( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}troy_plugins_zips_queues WHERE plugin_id = %d",
-			$this->plugin_id,
-		) );
-	}
-
-	/**
 	 * Gets the plugin translations by version.
 	 *
 	 * @since 0.0.1184

@@ -209,7 +209,6 @@ function upgrade_from( $version ) {
  * | troy_plugins_infos                      | Parsed information of plugins (for plugin info page/tickbox).       |
  * | troy_plugins_settings                   | Settings for plugins (for plugin edit page).                        |
  * | troy_plugins_zips                       | ZIP locations for plugins (for plugin update/download).             |
- * | troy_plugins_zips_queues                | ZIP processing queues for plugins (for plugin update/registration). |
  * | troy_plugins_translations               | Translation locations for plugins (for download).                   |
  * | troy_plugins_data_caches                | Cached data for plugins (for search/archives/ranking).              |
  * | troy_plugins_ratings                    | Ratings for plugins (for plugin page, review page).                 |
@@ -338,19 +337,6 @@ function get_initial_db_schema_queries() {
 			index `plugin_id` (`plugin_id`),
 			index `version` (`version`),
 			unique index `plugin_id_version` (`plugin_id`, `version`)
-		) $collate",
-		"CREATE table `{$dbprefix}troy_plugins_zips_queues` (
-			`id` bigint unsigned NOT null auto_increment,
-			`plugin_id` bigint unsigned NOT null,
-			`download_url` varchar(191) NOT null,
-			`type` varchar(20) NOT null default 'unreleased',
-			`processed` Boolean NOT null DEFAULT 0,
-			`process_attempt` tinyint unsigned NOT null DEFAULT 0,
-			`created_at` datetime DEFAULT current_timestamp,
-			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
-			primary key (`id`),
-			index `plugin_id` (`plugin_id`),
-			unique index `plugin_id_download_url` (`plugin_id`, `download_url`)
 		) $collate",
 		"CREATE table `{$dbprefix}troy_plugins_translations` (
 			`id` bigint unsigned NOT null auto_increment,

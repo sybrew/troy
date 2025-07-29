@@ -40,6 +40,7 @@ namespace Troy\Server\Plugins;
 class Cron extends \Troy\Server\Cron {
 
 	/**
+	 * @todo this will probably be needed once we add a Github API for automated releases. Keep this.
 	 * @since 0.0.1184
 	 * @var array CRON_JOBS {
 	 *     An array of cron jobs with their schedules, indexed by the hook name.
@@ -51,12 +52,5 @@ class Cron extends \Troy\Server\Cron {
 	 *     }
 	 * }
 	 */
-	protected const CRON_JOBS = [
-		// TODO reimplement?
-		// 'troy_cron_plugins_process_zips_queue' => [
-		// 	'callback' => [ Zip_Uploader::class, 'cron_process_zip_queue' ],
-		// 	'interval' => \MINUTE_IN_SECONDS,
-		// 	'schedule' => 'every_minute',
-		// ],
-	];
+	protected const CRON_JOBS = [];
 }

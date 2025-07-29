@@ -100,7 +100,6 @@ class Drop {
 				'troy_plugins_infos',
 				'troy_plugins_settings',
 				'troy_plugins_zips',
-				'troy_plugins_zips_queues',
 				'troy_plugins_translations',
 				'troy_plugins_data_caches',
 				'troy_plugins_ratings',

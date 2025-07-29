@@ -628,33 +628,4 @@ class Zip_Uploader {
 		$this->version_uploaded = $version;
 		// phpcs:enable Generic.WhiteSpace.ScopeIndent
 	}
-
-	/**
-	 * Processes the ZIP queues.
-	 *
-	 * @hook troy_cron_plugins_process_zips_queue 10
-	 * @since 0.0.1184
-	 * @global \wpdb $wpdb
-	 * @ignore not implemented
-	 * @todo delete? We probably need this later as we sync repositories.
-	 */
-	public static function cron_process_zip_queue() {
-		global $wpdb;
-
-		$queues = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}troy_plugins_zips_queues WHERE processed = 0" );
-
-		foreach ( $queues as $queue ) {
-			$handler = new self( $queue->plugin_id )->process_via_url( $queue->download_url );
-
-			if ( $handler->processed ) {
-				$wpdb->update(
-					"{$wpdb->prefix}troy_plugins_zips_queues",
-					[ 'processed' => 1 ],
-					[ 'id' => $queue->id ],
-					[ '%d' ],
-					[ '%d' ],
-				);
-			}
-		}
-	}
 }
