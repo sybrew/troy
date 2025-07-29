@@ -129,9 +129,9 @@ class Store {
 	 * Sanitizes the Editor plugin data.
 	 * This data is not complete; some of it is left to the database or other handlers.
 	 *
-	 * @since 0.0.1184
 	 * @hook sanitize_post_meta_{Troy\Server\PLUGINS_CPT} 10
 	 *       This hook is registered via register_post_meta() in the CPT class.
+	 * @since 0.0.1184
 	 *
 	 * @param array $data The plugin data to sanitize.
 	 * @return array The sanitized plugin data.
@@ -196,8 +196,8 @@ class Store {
 	 * Extracts data from post meta (as submitted by editor) and block content,
 	 * then saves it to custom tables.
 	 *
-	 * @since 0.0.1184
 	 * @hook save_post_{Troy\Server\PLUGINS_CPT} 10
+	 * @since 0.0.1184
 	 *
 	 * @param int     $post_id The post ID being saved.
 	 * @param WP_Post $post    The post object being saved.
@@ -676,9 +676,9 @@ class Store {
 	 * the plugin is untrashed, or deleted automatically by WordPress if the trash
 	 * is emptied.
 	 *
-	 * @since 0.0.1184
 	 * @hook trash_{Troy\Server\PLUGINS_CPT} 10
 	 *       This hook is documented in wp_transition_post_status()
+	 * @since 0.0.1184
 	 *
 	 * @param int $post_id The post ID being trashed.
 	 */
@@ -703,8 +703,8 @@ class Store {
 	/**
 	 * Handles the untrash action for the PLUGINS_CPT CPT.
 	 *
-	 * @since 0.0.1184
 	 * @hook untrashed_post 10
+	 * @since 0.0.1184
 	 *
 	 * @param int $post_id The post ID being untrashed.
 	 */
@@ -735,12 +735,84 @@ class Store {
 	/**
 	 * Handles the delete_post action for the PLUGINS_CPT CPT.
 	 *
-	 * @since 0.0.1184
 	 * @hook delete_post_{Troy\Server\PLUGINS_CPT} 10
+	 * @since 0.0.1184
 	 *
 	 * @param int $post_id The post ID being trashed.
 	 */
 	public static function handle_delete_post( $post_id ) {
 		new Drop( post_id: $post_id )->commit();
+	}
+
+	/**
+	 * Handles user deletion by cleaning up references in Troy plugin tables.
+	 *
+	 * @hook delete_user 10
+	 * @since 0.0.1184
+	 *
+	 * @param int  $user_id The ID of the user being deleted.
+	 * @param ?int $reassign The ID of the user to reassign posts and links to, if any.
+	 */
+	public static function handle_user_deletion( $user_id, $reassign ) {
+		global $wpdb;
+
+		$wpdb->query( 'START TRANSACTION' );
+
+		try {
+			if ( $reassign ) {
+				// Reassign user from contributors table
+				$wpdb->update(
+					"{$wpdb->prefix}troy_plugins_contributors",
+					[ 'user_id' => $reassign ],
+					[ 'user_id' => $user_id ],
+					[ '%d' ],
+					[ '%d' ],
+				);
+
+				// Reassign user ratings
+				$wpdb->update(
+					"{$wpdb->prefix}troy_plugins_ratings",
+					[ 'user_id' => $reassign ],
+					[ 'user_id' => $user_id ],
+					[ '%d' ],
+					[ '%d' ],
+				);
+			} else {
+				// Remove user from contributors table
+				$wpdb->delete(
+					"{$wpdb->prefix}troy_plugins_contributors",
+					[ 'user_id' => $user_id ],
+					[ '%d' ],
+				);
+
+				// Remove user ratings
+				$wpdb->delete(
+					"{$wpdb->prefix}troy_plugins_ratings",
+					[ 'user_id' => $user_id ],
+					[ '%d' ],
+				);
+			}
+
+			// Set author_id to 0 in metas table for deleted users
+			$wpdb->update(
+				"{$wpdb->prefix}troy_plugins_metas",
+				[ 'author_id' => $reassign ?? 0 ],
+				[ 'author_id' => $user_id ],
+				[ '%d' ],
+				[ '%d' ],
+			);
+
+			$wpdb->query( 'COMMIT' );
+		} catch ( \Exception $e ) {
+			$wpdb->query( 'ROLLBACK' );
+
+			\wp_die(
+				\sprintf(
+					/* translators: %s is the error message from the exception. */
+					\esc_html__( 'An error occurred while deleting the user: %s', 'troy-server' ),
+					\esc_html( $e->getMessage() ),
+				),
+			);
+		}
 	}
 }

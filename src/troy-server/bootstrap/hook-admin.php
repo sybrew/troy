@@ -63,6 +63,9 @@ use Troy\Server\{
 \add_action( 'delete_post_' . PLUGINS_CPT, [ Plugins\CPT\Store::class, 'handle_delete_post' ] );
 \add_filter( 'wp_insert_post_empty_content', [ Plugins\CPT\Store::class, 'unset_empty_post' ], 10, 2 );
 
+// Handle user deletion cleanup.
+\add_action( 'delete_user', [ Plugins\CPT\Store::class, 'handle_user_deletion' ], 10, 2 );
+
 // Register the block editor template for the CPT.
 \add_filter( 'block_editor_settings_all', [ Plugins\CPT\Block_Editor::class, 'register_block_editor_template' ], 10, 2 );
 \add_action( 'init', [ Plugins\CPT\Block_Editor::class, 'register_blocks' ] );
