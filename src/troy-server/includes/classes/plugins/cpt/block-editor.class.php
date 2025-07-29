@@ -88,6 +88,7 @@ final class Block_Editor {
 										'version'        => [ 'type' => 'string' ],
 										'type'           => [ 'type' => 'string' ],
 										'file_size'      => [ 'type' => 'integer' ],
+										'tested_wp'      => [ 'type' => 'string' ],
 										'requires_wp'    => [ 'type' => 'string' ],
 										'requires_php'   => [ 'type' => 'string' ],
 										'repo'           => [ 'type' => 'string' ],

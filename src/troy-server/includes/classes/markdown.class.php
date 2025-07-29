@@ -140,7 +140,7 @@ final class Markdown {
 						continue;
 
 					// Get the relative class name.
-					$relative_class = substr( $class, strlen( $prefix ) );
+					$relative_class = substr( $class, \strlen( $prefix ) );
 
 					// Replace the namespace prefix with the base directory, replace
 					// namespace separators with directory separators, and append .php

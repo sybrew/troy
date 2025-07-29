@@ -150,9 +150,9 @@ final class Plugin_Updates extends Base_Endpoint {
 						[
 							'new_version'    => $zip->version,
 							'package'        => Files::get_plugin_zip_url_by_slug( $slug, $zip->version ),
+							'tested'         => \Troy\Server\get_latest_public_wordpress_version( $zip->tested_wp ),
 							'requires'       => $zip->requires_wp ?: '',
 							'requires_php'   => $zip->requires_php ?: '',
-							'tested'         => \Troy\Server\get_latest_public_wordpress_version( $zip->tested_wp ),
 							'upgrade_notice' => $zip->upgrade_notice ?: '',
 						],
 					);
