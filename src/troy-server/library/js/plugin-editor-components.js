@@ -469,7 +469,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 
 		const description = storeData.short_description || '';
 		const displayText = description.length > 150
-			? description.substring( 0, 149 ) + '...'
+			? description.substring( 0, 149 ) + '…'
 			: description || __( 'No description', 'troy-server' );
 
 		return JSX(
@@ -536,6 +536,16 @@ window.troyServerPluginEditorComponents = ( wp => {
 			setStoreValue( key, value );
 		};
 
+		const [ placeHolderURL, setPlaceHolderURL ] = useState( '' );
+
+		useSelect(
+			select => {
+				if ( ! placeHolderURL )
+					setPlaceHolderURL( select( 'core/editor' ).getPermalink() );
+			},
+			[],
+		);
+
 		return JSX(
 			Fragment,
 			null,
@@ -554,11 +564,12 @@ window.troyServerPluginEditorComponents = ( wp => {
 				JSX(
 					TextControl,
 					{
-						label:    __( 'Custom Permalink', 'troy-server' ),
-						value:    currentUrls.permalink,
-						onChange: value => handleUrlChange( 'permalink', value ),
-						type:     'url',
-						help:     __( 'This link is used when information about this plugin is requested, also known as the "plugin homepage".', 'troy-server' ),
+						label:       __( 'Custom Permalink', 'troy-server' ),
+						value:       currentUrls.permalink,
+						placeholder: placeHolderURL,
+						onChange:    value => handleUrlChange( 'permalink', value ),
+						type:        'url',
+						help:        __( 'This link is used when information about this plugin is requested, also known as the "plugin homepage".', 'troy-server' ),
 						__nextHasNoMarginBottom: true,
 						__next40pxDefaultSize:   true,
 					},
@@ -1541,7 +1552,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 						JSX(
 							'span',
 							null,
-							__( 'Loading authors...', 'troy-server' ),
+							__( 'Loading authors…', 'troy-server' ),
 						),
 					)
 					: JSX(
@@ -1551,7 +1562,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 							value:    selectedAuthorId,
 							options:  [
 								{
-									label: __( 'Select an author...', 'troy-server' ),
+									label: __( 'Select an author…', 'troy-server' ),
 									value: 0,
 								},
 								...( authors || [] ).map( author => ( {

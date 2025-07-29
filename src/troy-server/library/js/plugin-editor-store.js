@@ -410,7 +410,7 @@ const TroyServerPluginEditorStore = new class {
 				if ( response?.type === 'updated' ) {
 					createSuccessNotice(
 						response.message
-							|| __( 'Plugin data updated successfully. Fetching latest data...', 'troy-server' ),
+							|| __( 'Plugin data updated successfully. Fetching latest data…', 'troy-server' ),
 						noticeOps,
 					);
 

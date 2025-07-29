@@ -366,7 +366,7 @@ class Store {
 							'name'              => $data['name'],
 							'author_id'         => $data['author_id'],
 							'short_description' => $data['short_description'],
-							'permalink'         => $data['permalink'],
+							'permalink'         => $data['permalink'] ?? \get_permalink( $post_id ),
 							'support_uri'       => $data['support_uri'],
 							'logo_uri'          => $data['logo_uri'],
 							'builder_type'      => $data['builder_type'],

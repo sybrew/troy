@@ -500,7 +500,7 @@
 								setAttributes( { content: newContent } );
 								editPost( { title: newContent } );
 							},
-							placeholder: __( 'Enter plugin title here...', 'troy-server' ),
+							placeholder: __( 'Enter plugin title here…', 'troy-server' ),
 						},
 					),
 				);
@@ -568,7 +568,7 @@
 						},
 						authorName
 							? sprintf( __( 'By %s', 'troy-server' ), authorName )
-							: __( 'Set plugin author in the sidebar...', 'troy-server' ),
+							: __( 'Set plugin author in the sidebar…', 'troy-server' ),
 					),
 				);
 			},

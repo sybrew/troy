@@ -106,7 +106,7 @@
 					JSX(
 						'strong',
 						null,
-						__( 'Loading plugin data...', 'troy-server' ),
+						__( 'Loading plugin data…', 'troy-server' ),
 					),
 				),
 			),

@@ -165,7 +165,7 @@
 											wp.blocks.createBlock(
 												'core/paragraph',
 												{
-													content:   __( 'No content found...', 'troy-server' ),
+													content:   __( 'No content found…', 'troy-server' ),
 													className: 'troy-server-no-content-message',
 													lock:      'all', // lol, doesn't do much
 												},

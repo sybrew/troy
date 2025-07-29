@@ -59,7 +59,7 @@
 		},
 		'troy-server-store-is-loading': {
 			type:    'info',
-			message: __( 'Loading plugin data...', 'troy-server' ),
+			message: __( 'Loading plugin data…', 'troy-server' ),
 			options: {
 				isDismissible: false,
 			},
