@@ -43,7 +43,7 @@ use const Troy\Server\{
  *
  * @since 0.0.1184
  */
-class List_View {
+final class List_View {
 
 	/**
 	 * @since 0.0.1184

@@ -42,7 +42,7 @@ use function Troy\Client\API\{
  *
  * @since 0.0.1184
  */
-class HTTP {
+final class HTTP {
 
 	/**
 	 * Filters the arguments used in an HTTP request.

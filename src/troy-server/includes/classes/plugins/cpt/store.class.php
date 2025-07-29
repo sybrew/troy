@@ -68,7 +68,7 @@ use Troy\Server\Plugins\{
  *
  * @since 0.0.1184
  */
-class Store {
+final class Store {
 
 	/**
 	 * Prevents the post from being marked as empty.

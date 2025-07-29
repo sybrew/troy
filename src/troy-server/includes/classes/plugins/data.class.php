@@ -56,7 +56,7 @@ use function Troy\Server\Sanitize\sanitize_sql_date;
  *
  * @since 0.0.1184
  */
-class Data {
+final class Data {
 
 	/**
 	 * @since 0.0.1184

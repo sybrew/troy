@@ -42,7 +42,7 @@ use function Troy\Client\API\{
  *
  * @since 0.0.1184
  */
-class ProtectClient {
+final class ProtectClient {
 
 	/**
 	 * Filters the primitive capabilities required of the user to deactivate the plugin.

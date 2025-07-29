@@ -46,7 +46,7 @@ use function Troy\Client\API\{
  *
  * @since 0.0.1184
  */
-class SiteHealth {
+final class SiteHealth {
 
 	/**
 	 * Registers the site status tests for Troy Client.

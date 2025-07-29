@@ -61,7 +61,7 @@ use Troy\Server\{
  *
  * @since 0.0.1184
  */
-class Zip_Uploader {
+final class Zip_Uploader {
 
 	/**
 	 * @since 0.0.1184

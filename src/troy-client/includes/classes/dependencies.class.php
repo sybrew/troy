@@ -44,7 +44,7 @@ use function Troy\Client\API\{
  *
  * @since 0.0.1184
  */
-class Dependencies {
+final class Dependencies {
 
 	/**
 	 * Sets the recheck flag on plugin activation.

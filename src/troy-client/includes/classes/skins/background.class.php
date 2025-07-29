@@ -38,7 +38,7 @@ namespace Troy\Client\Skins;
  *
  * @since 0.0.1184
  */
-class Background extends \stdClass {
+final class Background extends \stdClass {
 
 	/**
 	 * @since 0.0.1184

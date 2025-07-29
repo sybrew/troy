@@ -40,7 +40,7 @@ namespace Troy\Server\Endpoints;
  *
  * @since 0.0.1184
  */
-class Ping extends Base_Endpoint {
+final class Ping extends Base_Endpoint {
 
 	/**
 	 * Handle the ping request.

@@ -53,7 +53,7 @@ use Troy\Server\{
  *
  * @since 0.0.1184
  */
-class REST {
+final class REST {
 
 	/**
 	 * Register the REST API routes for the Troy Plugins.

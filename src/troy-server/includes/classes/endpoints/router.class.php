@@ -41,7 +41,7 @@ namespace Troy\Server\Endpoints;
  *
  * @since 0.0.1184
  */
-class Router {
+final class Router {
 
 	/**
 	 * Handle API requests based on the endpoint using direct URL parsing.

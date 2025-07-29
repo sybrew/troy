@@ -42,7 +42,7 @@ use const Troy\Server\{
  *
  * @since 0.0.1184
  */
-class Init {
+final class Init {
 
 	/**
 	 * Register the Troy Plugins custom post type.

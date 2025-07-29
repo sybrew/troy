@@ -54,7 +54,7 @@ use Troy\Server\{
  *
  * @since 0.0.1184
  */
-class Files {
+final class Files {
 
 	/**
 	 * Returns the plugin storage directory.

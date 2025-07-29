@@ -39,7 +39,7 @@ namespace Troy\Server;
  *
  * @since 0.0.1184
  */
-class Markdown {
+final class Markdown {
 
 	/**
 	 * Processes the given content as Markdown.

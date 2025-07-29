@@ -37,7 +37,7 @@ namespace Troy\Server\Plugins\CPT;
  *
  * @since 0.0.1184
  */
-class Preview {
+final class Preview {
 
 	// TODO: What we want is to preview the plugin thickbox and the plugin card.
 	// See _nag_install_tsf() in Extension Manager, which includes TB_iframe.

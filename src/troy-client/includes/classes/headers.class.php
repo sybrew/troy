@@ -37,7 +37,7 @@ namespace Troy\Client;
  *
  * @since 0.0.1184
  */
-class Headers {
+final class Headers {
 
 	/**
 	 * Registers the plugin headers.

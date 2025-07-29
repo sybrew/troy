@@ -43,7 +43,7 @@ use function Troy\Server\Sanitize\sanitize_file_path;
  *
  * @since 0.0.1184
  */
-class Zip_Extractor {
+final class Zip_Extractor {
 
 	/**
 	 * @since 0.0.1184

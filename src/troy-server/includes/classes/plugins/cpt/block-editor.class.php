@@ -44,7 +44,7 @@ use const Troy\Server\{
  *
  * @since 0.0.1184
  */
-class Block_Editor {
+final class Block_Editor {
 
 	/**
 	 * Register the Troy Plugins post meta.

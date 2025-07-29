@@ -52,7 +52,7 @@ use Troy\Server\Plugins\{
  *
  * @since 0.0.1184
  */
-class Plugin_Info extends Base_Endpoint {
+final class Plugin_Info extends Base_Endpoint {
 
 	/**
 	 * Handle the plugin information request.

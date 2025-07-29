@@ -37,7 +37,7 @@ namespace Troy\Server;
  *
  * @since 0.0.1184
  */
-class Settings {
+final class Settings {
 
 	/**
 	 * The settings page slug.

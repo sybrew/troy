@@ -41,7 +41,7 @@ namespace Troy\Server;
  *
  * @since 0.0.1184
  */
-class File_Utils {
+final class File_Utils {
 
 	/**
 	 * @since 0.0.1184

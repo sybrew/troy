@@ -55,7 +55,7 @@ use Troy\Server\Plugins\{
  *
  * @since 0.0.1184
  */
-class Plugin_Download extends Base_Endpoint {
+final class Plugin_Download extends Base_Endpoint {
 
 	/**
 	 * Handle a plugin download request with slug provided directly.

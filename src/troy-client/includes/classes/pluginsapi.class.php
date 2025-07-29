@@ -44,7 +44,7 @@ use function Troy\Client\API\{
  *
  * @since 0.0.1184
  */
-class PluginsAPI {
+final class PluginsAPI {
 
 	/**
 	 * Cleans up the cache after an upgrade.

@@ -55,7 +55,7 @@ use function Troy\Server\Sanitize\{
  *
  * @since 0.0.1184
  */
-class Readme_Parser {
+final class Readme_Parser {
 
 	/**
 	 * @since 0.0.1184

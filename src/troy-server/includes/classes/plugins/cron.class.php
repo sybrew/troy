@@ -37,7 +37,7 @@ namespace Troy\Server\Plugins;
  *
  * @since 0.0.1184
  */
-class Cron extends \Troy\Server\Cron {
+final class Cron extends \Troy\Server\Cron {
 
 	/**
 	 * @todo this will probably be needed once we add a Github API for automated releases. Keep this.

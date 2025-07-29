@@ -46,7 +46,7 @@ use function Troy\Server\{
  *
  * @since 0.0.1184
  */
-class Drop {
+final class Drop {
 
 	/**
 	 * @since 0.0.1184
