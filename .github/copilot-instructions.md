@@ -30,7 +30,7 @@ Follow these rules:
 - Place multiline operators at new line start, also for conditional checks
 - Put function args on a new line when >30 chars or for objects/arrays
 - Unless there's a conditional follow-up construct, do not add braces in constructs (if/do/for etc.) followed by only a single-line statement
-- Do not state the obvious with inline comments
+- Do not write inline comments that state the obvious
 - Write detailed docblocks for all functions, classes, and methods
 - Add a newline after a function opening brace, unless its body is a single line
 - A tab is 4 spaces
@@ -48,7 +48,7 @@ Follow these rules:
 - Never use strict typing unless required
 - When outside global namespace:
 	1. Namespace-escape these native PHP functions only when outside global space: strlen, is_null, is_bool, is_long, is_int, is_integer, is_float, is_double, is_string, is_array, is_object, is_resource, is_scalar, boolval, intval, floatval, doubleval, strval, defined, chr, ord, call_user_func_array, call_user_func, in_array, count, sizeof, get_class, get_called_class, gettype, func_num_args, func_get_args, array_slice, array_key_exists, sprintf, constant, function_exists, is_callable, extension_loaded, dirname, define
-	2. Do not namespace-escape any other native PHP functions
+	2. It's forbidden to namespace-escape any other native PHP functions
 	3. When importing non-native PHP symbols, put the imports above the copyright header, below the direct access guard, and put them in this order:
 		1. constants
 		2. functions

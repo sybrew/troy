@@ -20,6 +20,7 @@ use function Troy\Server\Sanitize\{
 	sanitize_sql_date,
 	sanitize_slug,
 	sanitize_url_qualified,
+	sanitize_static_image_url,
 	sanitize_tested_version,
 	sanitize_version_type,
 	sanitize_upgrade_notice,
@@ -166,8 +167,8 @@ final class Store {
 			'permalink'         => sanitize_url_qualified( $data['permalink'] ?? '' ),
 			'support_uri'       => sanitize_url_qualified( $data['support_uri'] ?? '' ),
 			'short_description' => \sanitize_text_field( $data['short_description'] ?? '' ), // not textarea
-			'banner_uri'        => sanitize_url_qualified( $data['banner_uri'] ?? '' ),
-			'logo_uri'          => sanitize_url_qualified( $data['logo_uri'] ?? '' ),
+			'banner_uri'        => sanitize_static_image_url( $data['banner_uri'] ?? '' ),
+			'logo_uri'          => sanitize_static_image_url( $data['logo_uri'] ?? '' ),
 			'contributors'      => sanitize_contributors( $data['contributors'] ?? [] ),
 			'screenshots'       => array_filter(
 				array_map(

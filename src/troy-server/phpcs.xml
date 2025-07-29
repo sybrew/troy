@@ -6,7 +6,7 @@
 
 	<rule ref="TSF.Performance.Opcodes">
 		<properties>
-			<property name="userNoopChecks" type="array" value="get_db_version,get_origin_url,get_plugin_id_by_slug,get_plugin_id_by_post_id,get_post_id_by_plugin_id,get_settings,json_encode_db,sanitize_sql_date,sanitize_slug,sanitize_tested_version,sanitize_url_qualified,sanitize_contributors,sanitize_version_type,sanitize_semver,sanitize_upgrade_notice,sanitize_user_id,sanitize_contributor_role,sanitize_wp_locale,get_available_locales,sanitize_file_path,increase_time_limit_by,extract_latest_version,make_fully_qualified_repo_url,get_latest_public_wordpress_version"/>
+			<property name="userNoopChecks" type="array" value="get_db_version,get_origin_url,get_plugin_id_by_slug,get_plugin_id_by_post_id,get_post_id_by_plugin_id,get_settings,json_encode_db,sanitize_sql_date,sanitize_slug,sanitize_tested_version,sanitize_url_qualified,sanitize_contributors,sanitize_version_type,sanitize_semver,sanitize_upgrade_notice,sanitize_user_id,sanitize_contributor_role,sanitize_wp_locale,get_available_locales,sanitize_file_path,increase_time_limit_by,extract_latest_version,make_fully_qualified_repo_url,get_latest_public_wordpress_version,sanitize_static_image_url"/>
 		</properties>
 	</rule>
 

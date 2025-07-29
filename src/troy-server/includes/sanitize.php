@@ -369,3 +369,53 @@ function make_fully_qualified_repo_url( $repo ) {
 		[ 'https' ],
 	);
 }
+
+/**
+ * Sanitizes a static image URL.
+ * Detects if the image is animated and returns an empty string if it is.
+ *
+ * @since 0.0.1184
+ *
+ * @param string $url The URL to sanitize.
+ * @return string The sanitized URL or empty string.
+ */
+function sanitize_static_image_url( $url ) {
+
+	$sanitized_url = sanitize_url_qualified( $url );
+
+	if ( empty( $sanitized_url ) )
+		return '';
+
+	$response = \wp_safe_remote_get(
+		$sanitized_url,
+		[
+			'timeout' => 3, // Image should be locally hosted, or at worst at a CDN.
+			'headers' => [ 'Range' => 'bytes=0-20480' ],
+		],
+	);
+
+	// Assume a fluke, return the sanitized URL.
+	if ( \is_wp_error( $response ) )
+		return $sanitized_url;
+
+	$content = \wp_remote_retrieve_body( $response );
+
+	// Assume a fluke, return the sanitized URL.
+	if ( empty( $content ) )
+		return $sanitized_url;
+
+	$header = substr( $content, 0, 20 );
+
+	if ( str_starts_with( $header, 'GIF' ) ) {
+		if ( preg_match_all( '#\x00\x21\xF9\x04.{4}\x00[\x2C\x21]#s', $content ) > 1 )
+			return '';
+	} elseif ( str_starts_with( $header, "\x89PNG" ) ) { // png
+		if ( str_contains( $content, 'acTL' ) )
+			return '';
+	} elseif ( str_starts_with( $header, 'RIFF' ) ) { // webp
+		if ( str_contains( $content, 'ANIM' ) )
+			return '';
+	}
+
+	return $sanitized_url;
+}
