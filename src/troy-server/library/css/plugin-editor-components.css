@@ -67,6 +67,12 @@
 	border-radius: 0 4px 4px 0;
 }
 
+.troy-server-plugin-version-warning {
+	border-left: 3px solid #ffae00;
+	background-color: rgba(255, 174, 0, 0.04);
+	border-radius: 0 4px 4px 0;
+}
+
 .troy-server-plugin-version-remove {
 	text-decoration: line-through;
 	border-left: 3px solid #cc1818;
@@ -75,6 +81,7 @@
 }
 
 .troy-server-plugin-version-current .components-button,
+/* .troy-server-plugin-version-warning .components-button, */
 .troy-server-plugin-version-remove .components-button {
 	font-weight: 600;
 }
@@ -90,5 +97,18 @@
 }
 
 .troy-server-metadata-item__value {
-	max-width: 62%;
+	width: 62%;
+}
+
+.troy-server-metadata-item--warning {
+	padding-left: 4px;
+	background-color: #fef8ee;
+	border-left: 2px solid #ffae00;
+}
+
+/* TODO remove me? Unused */
+.troy-server-metadata-item--error {
+	padding-left: 4px;
+	background-color: #f4a2a2;
+	border-left: 2px solid #ffae00;
 }

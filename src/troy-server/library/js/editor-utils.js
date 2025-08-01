@@ -194,7 +194,7 @@ window.troyServerEditorUtils = ( () => {
 	 * @returns {string} A formatted string with the appropriate binary prefix.
 	 *                   Returns '0 bytes' if the input is 0 or falsy.
 	 */
-	function ibiBytes( bytes, decimals = 2 ) {
+	function bytesToIbiBytes( bytes, decimals = 2 ) {
 
 		if ( ! bytes ) return '0 bytes';
 
@@ -205,10 +205,62 @@ window.troyServerEditorUtils = ( () => {
 		return `${parseFloat( ( bytes / Math.pow( k, i ) ).toFixed( decimals ) ).toLocaleString()} ${sizes[i]}`
 	}
 
+	/**
+	 * Sanitizes a URL to only include the domain, port, path, and query components.
+	 * Supports various repository URL formats including IPv6 addresses.
+	 *
+	 * This won't return a proper fully qualified URL with a protocol scheme.
+	 *
+	 * @since 0.0.1184
+	 *
+	 * @param {string} url The URL to sanitize.
+	 * @returns {string} The sanitized URL containing only domain/path/query.
+	 */
+	function sanitizeRepoUrl( url ) {
+
+		if ( ! url || typeof url !== 'string' )
+			return '';
+
+		try {
+			// This removes any protocol scheme and leading slashes, keeping everything else
+			const fullyQualifiedUrl = url
+				.trim()
+				.replace( /^[\s\\\/]+|[\s\\\/]+$/g, '' )
+				.replace( /^(?:\w*:)?(?:\/\/)?(.*?)$/, 'https://$1/' );
+
+			const urlObj = new URL( fullyQualifiedUrl );
+
+			// Construct the sanitized URL: hostname + pathname + search (no port)
+			let url = urlObj.hostname;
+
+			// Add port if it exists
+			if ( urlObj.port )
+				url += `:${urlObj.port}`;
+
+			// Add pathname if it exists and is not just '/'
+			if ( urlObj.pathname && urlObj.pathname !== '/' )
+				url += urlObj.pathname;
+
+			// Add search params if they exist
+			if ( urlObj.search )
+				url += urlObj.search;
+
+			// Remove trailing slash
+			if ( url.endsWith( '/' ) )
+				url = url.slice( 0, -1 );
+
+			return url;
+		} catch ( error ) {
+			// Fallback for malformed URLs - return original with basic cleanup
+			return url.replace( /^https?:\/\//, '' ).replace( /\/$/, '' );
+		}
+	}
+
 	return {
 		assignDeepObject,
 		sortVersions,
 		debounce,
-		ibiBytes,
+		bytesToIbiBytes,
+		sanitizeRepoUrl,
 	};
 } )();

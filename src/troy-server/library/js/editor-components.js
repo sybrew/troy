@@ -101,18 +101,30 @@ window.troyServerEditorComponents = ( wp => {
 	 * @param {Object} props {
 	 *     Component properties.
 	 *
-	 *     @param {string} props.label The label text to display.
-	 *     @param {string} props.value The value text to display.
+	 *     @param {string}  props.label The label text to display.
+	 *     @param {string}  props.value The value text to display.
+	 *     @param {?string} props.state The state for styling ('warning', 'error').
 	 * }
 	 * @returns {JSX.Element} The rendered component.
 	 */
-	function MetadataItem( { label, value } ) {
+	function MetadataItem( { label, value, state } ) {
+
+		let stateClass = '';
+
+		switch ( state ) {
+			case 'warning':
+				stateClass = 'troy-server-metadata-item--warning';
+				break;
+			case 'error':
+				stateClass = 'troy-server-metadata-item--error';
+		}
+
 		return JSX(
 			HStack,
 			{
 				spacing:   2,
 				alignment: 'left',
-				className: 'troy-server-metadata-item',
+				className: `troy-server-metadata-item ${stateClass}`,
 			},
 			JSX(
 				'span',

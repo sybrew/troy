@@ -15,6 +15,8 @@ use const Troy\Server\{
 	REST_NS,
 };
 
+use function Troy\Server\get_origin_url;
+
 /**
  * Troy Server
  *
@@ -676,6 +678,7 @@ final class Block_Editor {
 				'postType'       => PLUGINS_CPT,
 				'maxFileSize'    => \wp_max_upload_size(),
 				'maxFileSizeStr' => \size_format( \wp_max_upload_size() ),
+				'originUrl'      => get_origin_url(),
 				'restUrls'       => [
 					'getEditorStore'     => \rest_url( "$rest_plugins_manage/getEditorStore" ),
 					'registerSlug'       => \rest_url( "$rest_plugins_manage/registerSlug" ),

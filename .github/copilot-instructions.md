@@ -104,3 +104,4 @@ Follow these rules:
 	1. Recheck your changes against all instructions; if you find a code snippet that does not comply, fix it
 	2. Recheck your code to simplify it as much as possible without losing functionality
 	2. Make a checklist of all changes you made in accordance to the request; if you couldn't do something, mark it with X and explain the issue
+- After adding a new feature, review the code 20 lines above and below here you added it. Reevaluate your code with this context in mind: Is it still the best solution or should it be refactored?

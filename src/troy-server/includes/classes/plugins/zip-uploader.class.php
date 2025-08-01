@@ -348,7 +348,7 @@ final class Zip_Uploader {
 				if ( \count( $dependency_list ) > 5 )
 					throw new \Exception( 'Repo Dependencies header cannot exceed 5 dependencies.' );
 
-				// Validate each dependency format
+				// Validate each dependency format; this isn't stored.
 				foreach ( $dependency_list as $dependency ) {
 					$dependency = trim( $dependency );
 
@@ -356,25 +356,26 @@ final class Zip_Uploader {
 						throw new \Exception( 'Repo Dependencies header cannot contain empty dependency entries.' );
 
 					// Parse dependency: "plugin-slug" or "plugin-slug <repo-uri>"
-					[ $slug, $repo_part ] = array_pad( explode( '<', $dependency ), 2, null );
-					$slug                 = trim( $slug );
+					[ $dep_slug, $dep_repo ] = array_pad( explode( '<', $dependency ), 2, null );
+					$dep_slug                = trim( $dep_slug );
 
-					if ( empty( $slug ) || str_contains( $slug, ' ' ) || ! sanitize_slug( $slug ) )
+					// A sanitized slug doesn't mean it was valid, so test additional conditions before
+					if ( empty( $dep_slug ) || str_contains( $dep_slug, ' ' ) || ! sanitize_slug( $dep_slug ) )
 						throw new \Exception( 'Repo Dependencies header must specify a valid plugin slug for each dependency.' );
 
 					// If repo part exists, validate the closing bracket
 					if (
-						   null !== $repo_part
+						   null !== $dep_repo
 						&& (
-							   ! str_ends_with( trim( $repo_part ), '>' )
-							|| ! trim( $repo_part, ' >' ) // empty repo part is not allowed
+							   ! str_ends_with( trim( $dep_repo ), '>' )
+							|| ! trim( $dep_repo, ' >' ) // empty repo part is not allowed
 						)
 					) {
 						throw new \Exception( 'Repo Dependencies header with repository URIs must use format: "plugin-slug" or "plugin-slug <repo-uri>".' );
 					}
 
 					// If repo part exists, validate the URL
-					if ( $repo_part && ! make_fully_qualified_repo_url( trim( $repo_part, ' >' ) ) )
+					if ( $dep_repo && ! make_fully_qualified_repo_url( trim( $dep_repo, ' >' ) ) )
 						throw new \Exception( 'Repo Dependencies header must use a valid repository URL for each dependency.' );
 				}
 			}

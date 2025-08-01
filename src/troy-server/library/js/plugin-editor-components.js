@@ -1034,11 +1034,25 @@ window.troyServerPluginEditorComponents = ( wp => {
 				updateVersion( { ...versions[ index ], remove } );
 		}
 
-		const [ noticeMessage, setNoticeMessage ] = useState( null );
-
 		// Count versions marked for removal via the remove property
 		const versionsToRemove     = versions.filter( v => true === v.remove );
 		const removedVersionsCount = versionsToRemove.length;
+
+		const { sanitizeRepoUrl } = troyServerEditorUtils;
+
+		const currentRepoUrl           = sanitizeRepoUrl( troyPluginEditorData.originUrl );
+		const versionsWithRepoMismatch = useMemo(
+			() => {
+				if ( ! versions?.length ) return [];
+
+				return versions.filter(
+					version => sanitizeRepoUrl( version.repo ) !== currentRepoUrl,
+				);
+			},
+			[ versions, currentRepoUrl ],
+		);
+
+		const [ noticeMessage, setNoticeMessage ] = useState( null );
 
 		const handleFinalizeRemovals = async () => {
 			let removedCount = 0;
@@ -1096,7 +1110,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 				JSX(
 					Notice,
 					{
-						status:        'warning',
+						status:        'error',
 						isDismissible: false,
 					},
 					__( 'Versions are marked for removal, you must still finalize this.', 'troy-server' ),
@@ -1119,6 +1133,18 @@ window.troyServerPluginEditorComponents = ( wp => {
 					),
 				),
 			),
+			versionsWithRepoMismatch.length > 0 && JSX(
+				Notice,
+				{
+					status:        'warning',
+					isDismissible: false,
+				},
+				sprintf(
+					/* translators: %s is the current repository URL */
+					__( 'Some versions have repository mismatches with this server. Releasing these will redirect users to other update services. The current repository URL is: %s', 'troy-server' ),
+					currentRepoUrl,
+				),
+			),
 			versions?.length > 0 && JSX(
 				VStack,
 				{
@@ -1130,6 +1156,8 @@ window.troyServerPluginEditorComponents = ( wp => {
 					__( 'Available versions', 'troy-server' ),
 				),
 				versions.map( ( version, index ) => {
+					const hasRepoMismatch = versionsWithRepoMismatch.some( v => v.version === version.version );
+
 					return JSX(
 						Fragment,
 						{
@@ -1141,6 +1169,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 								version,
 								index,
 								isLatestVersion: version?.version === latestVersion,
+								hasRepoMismatch,
 								handleTypeChange,
 								handleUpgradeNoticeChange,
 								handleRemoveToggle,
@@ -1164,6 +1193,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 	 *     @param {Object}   props.version                   The version object data.
 	 *     @param {number}   props.index                     The version index in the array.
 	 *     @param {Boolean}  props.isLatestVersion           Whether this is the latest version.
+	 *     @param {Boolean}  props.hasRepoMismatch           Whether this version has a repository mismatch.
 	 *     @param {Function} props.handleTypeChange          Function to handle version type changes.
 	 *     @param {Function} props.handleUpgradeNoticeChange Function to handle upgrade notice changes.
 	 *     @param {Function} props.handleRemoveToggle        Function to set version removal state.
@@ -1175,12 +1205,14 @@ window.troyServerPluginEditorComponents = ( wp => {
 		version,
 		index,
 		isLatestVersion,
+		hasRepoMismatch,
 		handleTypeChange,
 		handleUpgradeNoticeChange,
 		handleRemoveToggle,
 	} ) {
 
-		const isRemovedVersion = version.remove;
+		const isRemovedVersion    = version.remove;
+		const { sanitizeRepoUrl } = troyServerEditorUtils;
 
 		return JSX(
 			Fragment,
@@ -1199,6 +1231,14 @@ window.troyServerPluginEditorComponents = ( wp => {
 				{
 					spacing: 3,
 				},
+				hasRepoMismatch && JSX(
+					Notice,
+					{
+						status:        'warning',
+						isDismissible: false,
+					},
+					__( 'This version has a repository mismatch.', 'troy-server' ),
+				),
 				JSX(
 					RadioControl,
 					{
@@ -1267,11 +1307,11 @@ window.troyServerPluginEditorComponents = ( wp => {
 						{
 							spacing: 2,
 						},
-						version.file_size && JSX(
+						JSX(
 							MetadataItem,
 							{
 								label: __( 'File size:', 'troy-server' ),
-								value: troyServerEditorUtils.ibiBytes( version.file_size ),
+								value: troyServerEditorUtils.bytesToIbiBytes( version.file_size ),
 							},
 						),
 						version.tested_wp && JSX(
@@ -1295,11 +1335,12 @@ window.troyServerPluginEditorComponents = ( wp => {
 								value: version.requires_php,
 							},
 						),
-						version.repo && JSX(
+						JSX(
 							MetadataItem,
 							{
 								label: __( 'Repository:', 'troy-server' ),
-								value: version.repo,
+								value: sanitizeRepoUrl( version.repo ),
+								state: hasRepoMismatch ? 'warning' : undefined,
 							},
 						),
 						version.dependencies && JSX(
@@ -1317,14 +1358,14 @@ window.troyServerPluginEditorComponents = ( wp => {
 						// 		value: version.origin_url,
 						// 	},
 						// ),
-						version.created_at && JSX(
+						JSX(
 							MetadataItem,
 							{
 								label: __( 'Created at:', 'troy-server' ),
 								value: version.created_at,
 							},
 						),
-						version.updated_at && JSX(
+						JSX(
 							MetadataItem,
 							{
 								label: __( 'Updated at:', 'troy-server' ),
@@ -1387,6 +1428,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 	 *     @param {Object}   props.version                   The version object data.
 	 *     @param {number}   props.index                     The version index in the array.
 	 *     @param {Boolean}  props.isLatestVersion           Whether this is the latest version.
+	 *     @param {Boolean}  props.hasRepoMismatch           Whether this version has a repository mismatch.
 	 *     @param {Function} props.handleTypeChange          Function to handle version type changes.
 	 *     @param {Function} props.handleUpgradeNoticeChange Function to handle upgrade notice changes.
 	 *     @param {Function} props.handleRemoveToggle        Function to set version removal state.
@@ -1397,6 +1439,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 		version,
 		index,
 		isLatestVersion,
+		hasRepoMismatch,
 		handleTypeChange,
 		handleUpgradeNoticeChange,
 		handleRemoveToggle,
@@ -1435,6 +1478,17 @@ window.troyServerPluginEditorComponents = ( wp => {
 			);
 		};
 
+		// Determine CSS class based on version state
+		let versionClassName = '';
+		if ( isRemovedVersion )
+			versionClassName += 'troy-server-plugin-version-remove ';
+		if ( hasRepoMismatch )
+			versionClassName += 'troy-server-plugin-version-warning ';
+		if ( isLatestVersion )
+			versionClassName += 'troy-server-plugin-version-current ';
+
+		versionClassName = versionClassName.trim();
+
 		return JSX(
 			PanelRow,
 			{
@@ -1465,6 +1519,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 								version,
 								index,
 								isLatestVersion,
+								hasRepoMismatch,
 								handleTypeChange,
 								handleUpgradeNoticeChange,
 								handleRemoveToggle,
@@ -1473,9 +1528,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 					},
 				),
 				onRefChange: setPopoverAnchor,
-				className:  isRemovedVersion
-					? 'troy-server-plugin-version-remove'
-					: ( isLatestVersion ? 'troy-server-plugin-version-current' : '' ),
+				className:   versionClassName,
 			},
 		);
 	}
