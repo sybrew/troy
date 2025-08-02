@@ -286,7 +286,7 @@ function get_troy_plugins() {
 			'slug'         => $slug,
 			'name'         => $data['Name'],
 			'version'      => $data['Version'],
-			'textdomain'   => $data['TextDomain'],
+			'textdomain'   => $data['TextDomain'], // falls back to slug automatically
 			'repo'         => $repo,
 			'dependencies' => $dependencies,
 		];
@@ -358,26 +358,32 @@ function make_fully_qualified_repo_url( $repo ) {
  * @since 0.0.1184
  *
  * @param string       $repo   The Troy Server endpoint.
- * @param array|string $body   The request body. Use array to send form data, string for JSON or otherwise.
+ * @param array|string $body   The request body. Use array to send as JSON, string for raw body content.
  * @param string       $method The request method. Accepts 'GET', 'POST'. Default 'POST'.
  * @return array|\WP_Error Array containing 'headers', 'body', 'response', 'cookies', and/or 'filename'.
  *                         A \WP_Error instance upon error.
  */
 function make_troy_api_request( $repo, $body = '', $method = 'POST' ) {
+
+	if ( \is_array( $body ) ) {
+		$body         = json_encode( $body );
+		$content_type = 'application/json';
+	}
+
 	return \wp_remote_request(
 		$repo,
 		[
 			'method'      => $method,
-			'body'        => $body,
-			'timeout'     => 7,
-			'redirection' => 2, // Stringently few. We actually aim for 0, but can imagine a new server URL.
 			'headers'     => [
-				'Content-Type'     => 'application/json',
+				'Content-Type'     => $content_type ?? 'text/plain',
 				'charset'          => 'UTF-8',
 				'X-Troy-Client-Id' => get_site_unique_id(),
 				'User-Agent'       => 'Troy Client/' . VERSION, // See WP_Http_Curl::request()
 			],
 			'user-agent'  => 'Troy Client/' . VERSION, // See WP_Http::request()
+			'body'        => $body,
+			'timeout'     => 7,
+			'redirection' => 2, // Stringently few. We actually aim for 0, but can imagine a new server URL.
 		],
 	);
 }
@@ -395,7 +401,7 @@ function make_troy_api_request( $repo, $body = '', $method = 'POST' ) {
  *
  * @param string       $key    The cache key. Underscore-prefix is reserved for internal use.
  * @param string       $repo   The Troy Server endpoint.
- * @param array|string $body   The request body. Use array to send form data, string for JSON or otherwise.
+ * @param array|string $body   The request body. Use array to send as JSON, string for raw body content.
  * @param string       $method The request method. Accepts 'GET', 'POST'. Default 'POST'.
  * @return array|\WP_Error Array containing 'headers', 'body', 'response', 'cookies', and/or 'filename'.
  *                         A \WP_Error instance upon error.

@@ -69,29 +69,37 @@ final class Plugin_Updates extends Base_Endpoint {
 		if ( 'POST' !== $_SERVER['REQUEST_METHOD'] )
 			$this->send_error( 'Method not allowed', 405 );
 
-		// phpcs:disable WordPress.Security.NonceVerification -- Public API endpoints don't use nonces
-		$active_plugins   = (array) ( $_POST['active_plugins'] ?? [] );
-		$inactive_plugins = (array) ( $_POST['inactive_plugins'] ?? [] );
+		$input = json_decode( file_get_contents( 'php://input' ), true );
 
-		$locales     = (array) ( $_POST['locales'] ?? [] );
-		$origin_url  = get_origin_url();
-		$php_version = sanitize_tested_version( $_POST['php_version'] ?? '' );
-		$wp_version  = sanitize_tested_version( $_POST['wp_version'] ?? '' );
-		// $troy_version = sanitize_tested_version( $_POST['troy_version'] ?? [] );
+		if ( ! \is_array( $input ) )
+			$this->send_error( 'Invalid JSON input', 400 );
+
+		$active_plugins   = (array) ( $input['active_plugins'] ?? [] );
+		$inactive_plugins = (array) ( $input['inactive_plugins'] ?? [] );
+
+		$locales      = (array) ( $input['locales'] ?? [] );
+		$origin_url   = get_origin_url();
+		$php_version  = sanitize_tested_version( $input['php_version'] ?? '' );
+		$wp_version   = sanitize_tested_version( $input['wp_version'] ?? '' );
+		$troy_version = sanitize_tested_version( $input['troy_version'] ?? '' );
 
 		$client_uuid = $this->get_client_uuid();
-		// phpcs:enable WordPress.Security.NonceVerification
 
-		// $translations        = (array) ( $_POST['translations'] ?? [] );
+		// TODO: implement translation updates
+		// $translations = (array) ( $input['translations'] ?? [] );
 
 		$response = [
-			'response'     => [],
 			'no_update'    => [],
 			'translations' => [],
+			'update'       => [],
 		];
 
 		// Process active plugins
 		foreach ( array_merge( $active_plugins, $inactive_plugins ) as $slug => $cur_version ) {
+
+			// We need an unmodified index key to test if the plugin is active.
+			$is_active = isset( $active_plugins[ $slug ] );
+
 			$slug = sanitize_slug( $slug );
 
 			if ( ! $slug )
@@ -111,20 +119,21 @@ final class Plugin_Updates extends Base_Endpoint {
 					[
 						'wp_version'  => $wp_version,
 						'php_version' => $php_version,
-						'type'        => 'tag', // TODO implement beta channel support
+						'type'        => 'tag', // TODO implement beta channel support, this must be done via a constant.
 					]
 				);
 
-				$response = [
+				// Write default plugin info for update and no_update responses.
+				$plugin_info = [
 					// ID should actually be equal to the "Update URI", but that header never considered real plugin authors.
-					'id'               => $slug,
+					'id'               => $origin_url,
 					'slug'             => $slug,
 					// The 'plugin' field is expected by WordPress, but overwritten immediately by the original filename.
 					// Then, it remains unused. Ehh...?
 					// 'plugin'           => $slug,
 					'new_version'      => null,
 					'url'              => $metas?->permalink ?: '',
-					'package'          => '', // Plugin update pakcage URL.
+					'package'          => '', // Plugin update package URL. Filled below.
 					// WordPress expects (in order) svg, 2x, 1x, and default.
 					// There's a bug where it only uses 1x instead of default, so we always fill 1x.
 					'icons'            => [
@@ -145,8 +154,8 @@ final class Plugin_Updates extends Base_Endpoint {
 
 				// Feed if the latest compatible version is newer than the current version.
 				if ( $zip && version_compare( $zip->version, $cur_version, '>' ) ) {
-					$response['response'][ $slug ] = array_merge(
-						$response,
+					$response['update'][ $slug ] = array_merge(
+						$plugin_info,
 						[
 							'new_version'    => $zip->version,
 							'package'        => Files::get_plugin_zip_url_by_slug( $slug, $zip->version ),
@@ -158,19 +167,20 @@ final class Plugin_Updates extends Base_Endpoint {
 					);
 				} else {
 					// We must send a no_update response to support auto updates.
-					$response['no_update'][ $slug ] = $response;
+					$response['no_update'][ $slug ] = $plugin_info;
 				}
 
 				// Record update request stats
 				$this->record_update_request_stats(
 					$plugin_id,
-					// TODO add inactive/active version check
+					$is_active,
 					$cur_version,
 					$client_uuid,
 					$locales,
 					$origin_url,
 					$php_version,
 					$wp_version,
+					$troy_version,
 				);
 
 			} catch ( \Exception $e ) {
@@ -188,34 +198,50 @@ final class Plugin_Updates extends Base_Endpoint {
 	 * @since 0.0.1184
 	 * @global \wpdb $wpdb
 	 *
-	 * @param int    $plugin_id   The plugin ID.
-	 * @param string $version     The client's current plugin version.
-	 * @param string $client_uuid The client UUID.
-	 * @param array  $locales     The requested locales.
-	 * @param string $origin_url  The origin URL.
-	 * @param string $php_version The PHP version.
-	 * @param string $wp_version  The WordPress version.
+	 * @param int    $plugin_id      The plugin ID.
+	 * @param bool   $is_active      Whether the plugin is active.
+	 * @param string $version        The client's current plugin version.
+	 * @param string $client_uuid    The client UUID.
+	 * @param array  $locales        The requested locales.
+	 * @param string $origin_url     The origin URL.
+	 * @param string $php_version    The PHP version.
+	 * @param string $wp_version     The WordPress version.
+	 * @param string $client_version The Troy Client version.
 	 */
-	private function record_update_request_stats( $plugin_id, $version, $client_uuid, $locales, $origin_url, $php_version, $wp_version ) { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
+	private function record_update_request_stats(
+		$plugin_id,
+		$is_active,
+		$version,
+		$client_uuid,
+		$locales,
+		$origin_url,
+		$php_version,
+		$wp_version,
+		$client_version,
+	) {
 		global $wpdb;
 
 		// Record live update request stat
 		$wpdb->insert(
 			"{$wpdb->prefix}troy_plugins_update_request_stats_live",
 			[
-				'plugin_id'     => $plugin_id,
-				'version'       => $version,
-				'uuid'          => $client_uuid ?: 'unknown',
-				'request_count' => 1,
-				'locales'       => json_encode( $locales ),
-				'php_version'   => $php_version,
-				'wp_version'    => $wp_version,
+				'plugin_id'      => $plugin_id,
+				'is_active'      => $is_active,
+				'version'        => $version,
+				'uuid'           => $client_uuid ?: 'unknown',
+				'request_count'  => 1,
+				'locales'        => json_encode( $locales ),
+				'php_version'    => $php_version,
+				'wp_version'     => $wp_version,
+				'client_version' => $client_version,
 			],
 			[
 				'%d',
+				'%d',
 				'%s',
 				'%s',
 				'%d',
+				'%s',
 				'%s',
 				'%s',
 				'%s',

@@ -599,7 +599,7 @@ final class Data {
 	 *     @type string version    The plugin version.
 	 *     @type string origin_url The origin URL that collected this information.
 	 *     @type int    views      The number of views.
-	 *     @type string type       The view type: 'site', 'search', 'admin-plugins-search', 'admin-plugins-update'.
+	 *     @type string screen     The screen type: 'thickbox', 'search', etc.
 	 *     @type string created_at The row creation timestamp.
 	 *     @type string updated_at The row last updated timestamp.
 	 * }
@@ -626,7 +626,8 @@ final class Data {
 	 *     @type int    id         The view ID.
 	 *     @type int    plugin_id  The plugin ID.
 	 *     @type string version    The plugin version.
-	 *     @type string type       The view type: 'site', 'search', 'admin-plugins-search', 'admin-plugins-update'.
+	 *     @type string screen     The screen type: 'thickbox', 'search', etc.
+	 *     @type string locale     The locale of the view.
 	 *     @type string origin_url The origin URL that collected this information.
 	 *     @type string created_at The row creation timestamp.
 	 * }
@@ -762,16 +763,18 @@ final class Data {
 	 * @return ?object[] {
 	 *     The plugin update request stats by version meant for scheduled processing, or null if none are found.
 	 *
-	 *     @type int    id            The request ID.
-	 *     @type int    plugin_id     The plugin ID.
-	 *     @type string version       The plugin version.
-	 *     @type string uuid          The UUID of the client.
-	 *     @type int    request_count The request count.
-	 *     @type string locales       The locales supported by the client, comma-separated.
-	 *     @type string php_version   The PHP version.
-	 *     @type string wp_version    The WordPress version.
-	 *     @type string created_at    The row creation timestamp.
-	 *     @type string updated_at    The row last updated timestamp.
+	 *     @type int    id             The request ID.
+	 *     @type int    plugin_id      The plugin ID.
+	 *     @type bool   is_active      Whether the plugin is active on the client site.
+	 *     @type string version        The plugin version.
+	 *     @type string uuid           The UUID of the client.
+	 *     @type int    request_count  The request count.
+	 *     @type string locales        The locales supported by the client, comma-separated.
+	 *     @type string php_version    The PHP version.
+	 *     @type string wp_version     The WordPress version.
+	 *     @type string client_version The Troy client version.
+	 *     @type string created_at     The row creation timestamp.
+	 *     @type string updated_at     The row last updated timestamp.
 	 * }
 	 */
 	public function get_update_request_stats_live() {

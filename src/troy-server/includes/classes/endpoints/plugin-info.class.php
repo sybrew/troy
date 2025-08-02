@@ -65,15 +65,18 @@ final class Plugin_Info extends Base_Endpoint {
 		if ( 'POST' !== $_SERVER['REQUEST_METHOD'] )
 			$this->send_error( 'Method not allowed', 405 );
 
-		// phpcs:disable WordPress.Security.NonceVerification -- Public API endpoints don't use nonces
-		if ( empty( $_POST['slug'] ) )
+		$input = json_decode( file_get_contents( 'php://input' ), true );
+
+		if ( ! \is_array( $input ) )
+			$this->send_error( 'Invalid JSON input', 400 );
+
+		if ( empty( $input['slug'] ) )
 			$this->send_error( 'Missing required parameter: slug', 400 );
 
-		$slug   = sanitize_slug( $_POST['slug'] );
-		$fields = (array) ( $_POST['fields'] ?? [] );
-		$locale = \sanitize_text_field( $_POST['locale'] ?? 'en_US' );
-
-		// phpcs:enable WordPress.Security.NonceVerification
+		$slug   = sanitize_slug( $input['slug'] );
+		$fields = (array) ( $input['fields'] ?? [] );
+		$locale = \sanitize_text_field( $input['locale'] ?? 'en_US' );
+		$screen = \sanitize_text_field( $input['screen'] ?? 'unknown' );
 
 		// Additional validation for slug format
 		if ( ! $slug )
@@ -91,7 +94,7 @@ final class Plugin_Info extends Base_Endpoint {
 			$meta_row     = $data->get_metas_row();
 			$info_row     = $data->get_infos_row();
 			$latest_zip   = $data->get_zips_row();
-			$translations = $data->get_translations();
+			// $translations = $data->get_translations(); // var_dump() TODO implement me
 			$data_cache   = $data->get_data_caches_row();
 			$contributors = $data->get_contributors();
 
@@ -144,11 +147,11 @@ final class Plugin_Info extends Base_Endpoint {
 			];
 
 			// Filter response based on requested fields
-			if ( ! empty( $fields ) )
+			if ( $fields )
 				$response = $this->filter_response_by_fields( $response, $fields );
 
 			// Record plugin info request stats
-			$this->record_info_request_stats( $plugin_id, $locale );
+			$this->record_info_request_stats( $plugin_id, $locale, $screen );
 
 			$this->send_json_response( $response );
 
@@ -170,6 +173,7 @@ final class Plugin_Info extends Base_Endpoint {
 		if ( ! $author_id )
 			return 'Unknown Author';
 
+		// false on failure, so no null-safe operator here.
 		$user = \get_user_by( 'id', $author_id );
 
 		return $user ? $user->user_nicename : 'Unknown Author';
@@ -492,38 +496,10 @@ final class Plugin_Info extends Base_Endpoint {
 	 *
 	 * @param int    $plugin_id The plugin ID.
 	 * @param string $locale    The requested locale.
+	 * @param string $screen    The screen name.
 	 */
-	private function record_info_request_stats( $plugin_id, $locale ) { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
+	private function record_info_request_stats( $plugin_id, $locale, $screen ) {
 		global $wpdb;
-
-		$referer = $_SERVER['HTTP_REFERER'] ?? '';
-
-		$type = 'direct_api';
-
-		// Determine view type based on referer URL (20 chars max)
-		if ( $referer ) {
-			if ( str_contains( $referer, 'update-core.php' ) ) {
-				$type = 'updates_page';
-			} elseif ( str_contains( $referer, 'plugins.php' ) ) {
-				$type = 'plugins_page';
-			} elseif ( str_contains( $referer, 'plugin-install.php' ) ) {
-				$type = 'search';
-			} elseif ( str_contains( $referer, 'wp-admin' ) ) {
-				$type = 'dashboard';
-			} elseif ( str_contains( $referer, '.php' ) ) {
-				$type = 'unknown_script';
-			}
-		}
-
-		// phpcs:disable WordPress.Security.NonceVerification -- Public API endpoints don't use nonces
-		// Check for plugin thickbox context
-		if ( isset( $_POST['fields'] ) && \is_array( $_POST['fields'] ) ) {
-			$fields = $_POST['fields'];
-			// TODO validate this
-			if ( \in_array( 'screenshots', $fields, true ) || \in_array( 'sections', $fields, true ) )
-				$type = 'thickbox';
-		}
-		// phpcs:enable WordPress.Security.NonceVerification
 
 		// Record live view stat
 		$wpdb->insert(
@@ -531,11 +507,13 @@ final class Plugin_Info extends Base_Endpoint {
 			[
 				'plugin_id'  => $plugin_id,
 				'version'    => '',
-				'type'       => $type,
+				'screen'     => $screen,
+				'locale'     => $locale,
 				'origin_url' => get_origin_url(),
 			],
 			[
 				'%d',
+				'%s',
 				'%s',
 				'%s',
 				'%s',

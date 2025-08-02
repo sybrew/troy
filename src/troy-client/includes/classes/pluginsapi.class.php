@@ -60,6 +60,13 @@ final class PluginsAPI {
 	/**
 	 * Modifies the plugin API to bind to Troy's embedded services.
 	 *
+	 * The transient is prepared by WordPress to prevent multiple requests, so
+	 * this method gets called twice. But the second call may not happen when the
+	 * WordPress plugin API is blocked. So, we will populate the transient values
+	 * in the first call, so that Troy can still provide updates.
+	 * When the second call happens, the first call's values are gone, so we simply
+	 * repopulate them again.
+	 *
 	 * @hook pre_set_site_transient_update_plugins 10
 	 * @since 0.0.1184
 	 *
@@ -72,21 +79,42 @@ final class PluginsAPI {
 		if ( ! \is_object( $value ) )
 			return $value;
 
-		if ( ! isset( $value->response ) )
-			return $value;
-
-		// The filter may be invoked before $value is set. https://core.trac.wordpress.org/ticket/61055
+		// The filter may be invoked before these are set. We can safely prepopulate them.
 		$value->checked      ??= [];
 		$value->no_update    ??= [];
 		$value->response     ??= [];
 		$value->translations ??= [];
 
-		$troy_plugins         = get_troy_plugins();
-		$troy_plugins_by_slug = array_combine( array_column( $troy_plugins, 'slug' ), $troy_plugins );
-		$active_plugin_slugs  = array_map(
+		$troy_plugins = get_troy_plugins();
+
+		// Clear Troy plugins from value before applying memoized results, which
+		// may not contain the all plugin data due to failed requests.
+		// Use the plugin filenames (keys of $troy_plugins) to clear from WordPress transients
+		$value->checked   = array_diff_key( $value->checked, $troy_plugins );
+		$value->response  = array_diff_key( $value->response, $troy_plugins );
+		$value->no_update = array_diff_key( $value->no_update, $troy_plugins );
+
+		static $memo;
+
+		if ( isset( $memo ) )
+			goto apply_memo;
+
+		// Initialize the updates object for first-time use
+		$memo = (object) [
+			'no_update'    => [],
+			'translations' => [],
+			'update'       => [],
+		];
+
+		$troy_plugins_slugs   = array_column( $troy_plugins, 'slug' );
+		$troy_plugins_by_slug = array_combine( $troy_plugins_slugs, $troy_plugins );
+		$active_slugs_keyed   = array_flip( array_map(
 			'Troy\Client\API\get_plugin_slug',
 			(array) \get_option( 'active_plugins' ),
-		);
+		) );
+
+		// Create a mapping from slug to plugin filename for Troy plugins
+		$filename_by_slug = array_combine( $troy_plugins_slugs, array_keys( $troy_plugins ) );
 
 		$translations = \wp_get_installed_translations( 'plugins' );
 
@@ -94,6 +122,10 @@ final class PluginsAPI {
 			/**
 			 * Filters the locales requested for plugin translations.
 			 *
+			 * This is taken from WordPress Core.
+			 *
+			 * @since WP 3.7.0
+			 * @since WP 4.5.0 The default value of the `$locales` parameter changed to include all locales.
 			 * @param string[] $locales Plugin locales. Default is all available locales of the site.
 			 */
 			\apply_filters(
@@ -102,92 +134,75 @@ final class PluginsAPI {
 			),
 		);
 
-		// include an unmodified $wp_version
+		// Include an unmodified $wp_version
 		include \ABSPATH . \WPINC . '/version.php';
 
 		$php_version = phpversion();
 
-		// Instead of looping through the slugs, we loop through the repos.
-		// This way, we can make one request per repo, instead of one request per
-		// plugin slug, which is more efficient.
+		// Privacy by design.
 		foreach ( get_troy_plugin_slugs_per_repo() as $repo => $slugs ) {
-			$flipped_slugs = array_flip( $slugs );
+			$active_plugins_data   = [];
+			$inactive_plugins_data = [];
+			$repo_translations     = [];
 
-			$value->checked   = array_diff_key( $value->checked, $flipped_slugs );
-			$value->response  = array_diff_key( $value->response, $flipped_slugs );
-			$value->no_update = array_diff_key( $value->no_update, $flipped_slugs );
+			foreach ( $slugs as $slug ) {
+				$plugin_data = $troy_plugins_by_slug[ $slug ];
+				$textdomain  = $plugin_data['textdomain'];
 
-			$active_repo_plugins   = array_intersect( $active_plugin_slugs, $slugs );
-			$inactive_repo_plugins = array_diff( $slugs, $active_repo_plugins );
-			$repo_plugin_slugs     = array_intersect_key( $flipped_slugs, $troy_plugins_by_slug );
+				if ( isset( $active_slugs_keyed[ $slug ] ) ) {
+					$active_plugins_data[ $slug ] = $plugin_data['version'];
+				} else {
+					$inactive_plugins_data[ $slug ] = $plugin_data['version'];
+				}
+
+				$repo_translations[ $textdomain ] = $translations[ $textdomain ] ?? [];
+			}
 
 			$request = make_troy_api_request_cached(
 				"update_plugins-$repo",
 				"{$repo}plugin/get/updates/",
 				[
-					// Build slug => version arrays
-					'active_plugins'   => array_column(
-						array_intersect_key( $troy_plugins_by_slug, array_flip( $active_repo_plugins ) ),
-						'version',
-						'slug',
-					),
-					'inactive_plugins' => array_column(
-						array_intersect_key( $troy_plugins_by_slug, array_flip( $inactive_repo_plugins ) ),
-						'version',
-						'slug',
-					),
+					'active_plugins'   => $active_plugins_data,
+					'inactive_plugins' => $inactive_plugins_data,
 					'locales'          => $locales,
-					'translations'     => array_intersect_key(
-						$translations,
-						array_flip( array_column( $repo_plugin_slugs, 'textdomain' ) ),
-					),
+					'translations'     => $repo_translations,
 					'php_version'      => $php_version,
 					'wp_version'       => $wp_version, // phpcs:ignore VariableAnalysis.CodeAnalysis -- included above.
 					'troy_version'     => VERSION,
 				],
 			);
 
-			if ( \is_wp_error( $request ) ) {
-				$res = new \WP_Error(
-					'plugins_api_failed',
-					\sprintf(
-						/* translators: %s: repo API URL */
-						\__( 'An unexpected error occurred. Something may be wrong with %s or this server&#8217;s configuration.', 'troy-client' ),
-						$repo,
-					),
-					$request->get_error_message(),
-				);
-			} else {
-				$body = \wp_remote_retrieve_body( $request );
-				$res  = json_decode( $body, true );
+			if ( \is_wp_error( $request ) )
+				continue;
 
-				if ( \is_array( $res ) ) {
-					// Object casting is required in order to match the info/1.0 format.
-					$res = (object) $res;
-				} elseif ( ! \is_object( $res ) ) {
-					$res = new \WP_Error(
-						'plugins_api_failed',
-						\sprintf(
-							/* translators: %s: repo API URL */
-							\__( 'An unexpected error occurred. Something may be wrong with %s or this server&#8217;s configuration.', 'troy-client' ),
-							\esc_url( $repo ),
-						),
-						$body,
-					);
-				}
+			$res = json_decode( \wp_remote_retrieve_body( $request ), true );
 
-				if ( isset( $res->error ) ) {
-					$res = new \WP_Error( 'plugins_api_failed', $res->error );
-				} else {
-					foreach ( [ 'no_update', 'response', 'translations' ] as $key ) {
-						$value->$key = array_merge(
-							$value->$key,
-							(array) ( $res->$key ?? [] ),
-						);
-					}
+			if ( \is_array( $res ) ) {
+				// Object casting is required in order to match the info/1.0 format.
+				$res = (object) $res;
+			} elseif ( ! \is_object( $res ) || isset( $res->error ) ) {
+				continue;
+			}
+
+			$memo->translations[] = (array) ( $res->translations ?? [] );
+
+			foreach ( [ 'no_update', 'update' ] as $key ) {
+				foreach ( $res->$key ?? [] as $slug => $plugin_data ) {
+					if ( empty( $filename_by_slug[ $slug ] ) )
+						continue;
+
+					$memo->{$key}[ $filename_by_slug[ $slug ] ] = (object) $plugin_data;
 				}
 			}
 		}
+
+		apply_memo:
+			foreach ( [
+				'no_update'    => 'no_update',
+				'translations' => 'translations',
+				'update'       => 'response', // WP uses 'response', probably backwards compatibility.
+			] as $key => $wp_key )
+				$value->$wp_key = array_merge( $value->$wp_key, $memo->$key );
 
 		return $value;
 	}
@@ -291,6 +306,7 @@ final class PluginsAPI {
 			[
 				'fields' => $fields,
 				'slug'   => $slug,
+				'screen' => 'thickbox',
 			],
 		);
 
@@ -305,6 +321,7 @@ final class PluginsAPI {
 				$request->get_error_message(),
 			);
 		} else {
+			// TODO this can fail and then the WP_Error doesn't do much useful.
 			$res = json_decode( \wp_remote_retrieve_body( $request ), true );
 
 			if ( empty( $res ) ) {

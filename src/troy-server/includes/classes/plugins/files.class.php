@@ -17,8 +17,8 @@ use function Troy\Server\Sanitize\{
 };
 
 use Troy\Server\{
-	Data,
 	File_Utils,
+	Plugins\Data,
 };
 
 /**
