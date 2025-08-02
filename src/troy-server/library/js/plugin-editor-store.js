@@ -433,7 +433,7 @@ const TroyServerPluginEditorStore = new class {
 				} else {
 					createErrorNotice(
 						response?.message
-							|| __( 'Failed to synchronize plugin data after saving.', 'troy-server' ),
+							|| __( 'Failed to synchronize plugin data after saving. Likely, a fatal error occurred on the server.', 'troy-server' ),
 						noticeOps,
 					);
 				}

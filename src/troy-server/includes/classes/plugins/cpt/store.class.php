@@ -561,7 +561,6 @@ final class Store {
 							'%s',
 							'%s',
 							'%s',
-							'%s',
 						],
 						[
 							'%d',
@@ -579,7 +578,6 @@ final class Store {
 						],
 						[
 							'%d',
-							'%s',
 							'%s',
 							'%s',
 							'%s',

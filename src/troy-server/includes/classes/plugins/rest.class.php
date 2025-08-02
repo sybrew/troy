@@ -719,9 +719,9 @@ final class REST {
 
 		// Helper function to scale point arrays
 		$scale_points = fn( $points ) => \array_map(
-			fn( $value, $index ) => $index & 1
+			fn( $value, $index ) => (int) ( $index & 1
 				? $value * $scale_y
-				: $value * $scale_x,
+				: $value * $scale_x ),
 			$points,
 			\array_keys( $points ),
 		);
@@ -857,9 +857,9 @@ final class REST {
 			];
 
 			$scaled_rect = \array_map(
-				fn( $value, $index ) => $value * (
+				fn( $value, $index ) => (int) ( $value * (
 					$index & 1 ? $scale_y : $scale_x
-				),
+				) ),
 				$random_rect,
 				\array_keys( $random_rect )
 			);
@@ -892,7 +892,7 @@ final class REST {
 		);
 
 		$burn_rect = \array_map(
-			fn( $val ) => $val * ( $scale_x + $scale_y ) / 2,
+			fn( $val ) => (int) ( $val * ( $scale_x + $scale_y ) / 2 ),
 			[
 				mt_rand( 50, 300 ),
 				mt_rand( 50, 300 ),
@@ -927,7 +927,7 @@ final class REST {
 				: mt_rand( 150, 300 ); // 30% chance in middle area
 
 			$circle_data = \array_map(
-				fn( $val ) => $val * ( $scale_x + $scale_y ) / 2,
+				fn( $val ) => (int) ( $val * ( $scale_x + $scale_y ) / 2 ),
 				[
 					mt_rand( 80, 350 ), // x position
 					$y_pos,             // biased y position
@@ -946,7 +946,10 @@ final class REST {
 		}
 
 		// Add texture effects
-		\imagesetthickness( $image, max( 1, 3 * ( $scale_x + $scale_y ) / 2 ) );
+		\imagesetthickness(
+			$image,
+			(int) max( 1, 3 * ( $scale_x + $scale_y ) / 2 ),
+		);
 
 		// Add 2-4 random arcs
 		for ( $i = mt_rand( 2, 4 ); $i--; ) {
@@ -986,10 +989,10 @@ final class REST {
 		// Add random sun
 		\imagefilledrectangle(
 			$image,
-			$width * 0.85,
+			(int) ( $width * 0.85 ),
 			0,
 			$width - 1,
-			$height * 0.15,
+			(int) ( $height * 0.15 ),
 			\imagecolorallocatealpha(
 				$image,
 				mt_rand( 200, 255 ), // bias toward yellows/oranges for sun

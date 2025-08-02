@@ -49,7 +49,9 @@ use const Troy\Client\{
  */
 function get_plugin_slug( $plugin_file ) {
 	return strtolower(
-		str_contains( $plugin_file, '/' ) ? \dirname( $plugin_file ) : str_replace( '.php', '', $plugin_file )
+		str_contains( $plugin_file, '/' )
+			? \dirname( $plugin_file )
+			: str_replace( '.php', '', $plugin_file ),
 	);
 }
 
