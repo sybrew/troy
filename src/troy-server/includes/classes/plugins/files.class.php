@@ -260,14 +260,18 @@ final class Files {
 		// 15 ought to be plenty to rename a few folder indexes.
 		increase_time_limit_by( 15 );
 
-		File_Utils::init_wpfs();
+		$source_dir = static::get_plugin_storage_dir_path( $plugin_id );
 
-		File_Utils::make_shielded_dir( static::get_plugin_graveyard_dir_path() );
+		// Not every plugin has had filed uploaded to it. Let's check if they have first.
+		if ( \is_dir( $source_dir ) ) {
+			File_Utils::init_wpfs();
+			File_Utils::make_shielded_dir( static::get_plugin_graveyard_dir_path() );
 
-		\move_dir(
-			static::get_plugin_storage_dir_path( $plugin_id ),
-			static::get_plugin_graveyard_dir_path( $plugin_id ),
-			true,
-		);
+			\move_dir(
+				$source_dir,
+				static::get_plugin_graveyard_dir_path( $plugin_id ),
+				true,
+			);
+		}
 	}
 }
