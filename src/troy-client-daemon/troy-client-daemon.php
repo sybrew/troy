@@ -79,10 +79,13 @@ function force_activate_troy_client() {
 
 	$is_troy_active = $is_multisite
 		? isset( \get_site_option( 'active_sitewide_plugins' )[ $plugin_file ] )
-		: \in_array( $plugin_file, \get_option( 'active_plugins' ), true );
+		: \in_array( $plugin_file, \get_option( 'active_plugins' ) ?: [], true );
 
 	if ( ! $is_troy_active ) {
 		\add_filter( 'pre_http_request', 'Troy\Client\Daemon\block_wordpress_api', 10, 3 );
+
+		if ( \wp_installing() )
+			return;
 
 		if ( ! \function_exists( 'get_plugins' ) )
 			require_once \ABSPATH . 'wp-admin/includes/plugin.php';
