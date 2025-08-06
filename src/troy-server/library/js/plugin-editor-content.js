@@ -39,6 +39,7 @@
 		store: blockEditorStore,
 	} = wp.blockEditor;
 	const apiFetch = wp.apiFetch;
+	const { addQueryArgs } = wp.url;
 
 	/**
 	 * We store our plugin content in custom tables. Here, we reset the template
@@ -51,7 +52,6 @@
 	function resetPluginTemplate() {
 
 		const {
-			postId,
 			data:         storeData,
 			isLoading:    isStoreLoading,
 			latestVersion,
@@ -59,7 +59,8 @@
 			setContent,
 		} = troyServerGetPluginStore();
 
-		const [ isLoading, setIsLoading ] = useState( false );
+		// const [ isLoading, setIsLoading ]           = useState( false );
+		const [ hasInitialized, setHasInitialized ] = useState( false );
 
 		const template = useSelect(
 			select => select( blockEditorStore ).getSettings()?.template,
@@ -72,8 +73,7 @@
 		} = useDispatch( blockEditorStore );
 
 		const { removeNotice } = useDispatch( 'core/notices' );
-
-		const { editPost } = useDispatch( 'core/editor' );
+		const { editPost }     = useDispatch( 'core/editor' );
 
 		const { __unstableMarkLastChangeAsPersistent } = useDispatch( 'core' );
 
@@ -85,14 +85,12 @@
 		useEffect(
 			() => {
 				if (
-					   isLoading
-					|| isStoreLoading
-					|| 'readme' !== storeData.builder_type
-					|| ! postId
+					   ! hasInitialized
 					|| ! storeData.plugin_id
+					|| 'readme' !== storeData.builder_type
 				) return;
 
-				setIsLoading( true );
+				// setIsLoading( true );
 
 				if ( ! latestVersion ) {
 					// Empty all content tabs if no latest version is set (e.g., all versions are marked for removal)
@@ -101,12 +99,18 @@
 					} );
 
 					// Set loading to false; we defer to resetting the template.
-					setIsLoading( false );
+					// setIsLoading( false );
 					return;
 				}
 
 				apiFetch( {
-					url:    `${troyPluginEditorData.restUrls.getReadmeData}?plugin_id=${storeData.plugin_id}&version=${latestVersion}`,
+					url:    addQueryArgs(
+						troyPluginEditorData.restUrls.getReadmeData,
+						{
+							plugin_id: storeData.plugin_id,
+							version:   latestVersion,
+						},
+					),
 					method: 'GET',
 				} )
 					.then( response => {
@@ -134,69 +138,23 @@
 							} );
 						}
 
-						setIsLoading( false );
+						// setIsLoading( false );
 					} ).catch( error => {
 						console.error( 'Failed to fetch README data:', error );
-						setIsLoading( false );
+						// setIsLoading( false );
 					} );
 			},
-			[ postId, latestVersion, isStoreLoading, storeData.plugin_id, storeData.builder_type, storeData.versions ],
+			[ latestVersion, storeData.plugin_id, storeData.builder_type, hasInitialized ],
 		);
-
-		const repaintTemplate = () => {
-			wp.data.select( blockEditorStore )
-				.getBlocks()
-				.find( b => b.name === 'troy-server/plugin-tabs' )
-				?.innerBlocks
-				.forEach(
-					tabBlock => {
-						const tabId = tabBlock.attributes.troyServerTabId;
-
-						if ( 'readme' === storeData.builder_type ) {
-							// In readme mode, use content from store, unless empty.
-							if ( tabId in storeData.contents ) {
-								// const isEmpty = ! storeData.contents[ tabId ].length;
-
-								wp.data.dispatch( blockEditorStore ).replaceInnerBlocks(
-									tabBlock.clientId,
-									storeData.contents[ tabId ].length
-										? wp.blocks.parse( storeData.contents[ tabId ] )
-										: [
-											wp.blocks.createBlock(
-												'core/paragraph',
-												{
-													content:   __( 'No content found…', 'troy-server' ),
-													className: 'troy-server-no-content-message',
-													lock:      'all', // lol, doesn't do much
-												},
-											),
-										],
-								);
-							}
-						} else {
-							// When (going to) editor mode, use content from store if available, otherwise empty paragraph
-							const content = storeData.contents?.[ tabId ] || '';
-							if ( content.length ) {
-								// Use the readme content as editable blocks
-								wp.data.dispatch( blockEditorStore ).replaceInnerBlocks(
-									tabBlock.clientId,
-									wp.blocks.parse( content ),
-								);
-							} else {
-								// Only create empty paragraph if truly no content
-								wp.data.dispatch( blockEditorStore ).replaceInnerBlocks(
-									tabBlock.clientId,
-									[ wp.blocks.createBlock( 'core/paragraph' ) ],
-								);
-							}
-						}
-					}
-				);
-		};
 
 		// Repaint template when content actually changes or when switching modes
 		useEffect(
 			() => {
+				if (
+					   ! hasInitialized
+					|| ! storeData.plugin_id
+				) return;
+
 				// When switching away from readme mode, convert content to editable blocks
 				if ( 'readme' !== storeData.builder_type ) {
 					// Don't clear content - let it become editable
@@ -212,9 +170,56 @@
 					} );
 				}
 
-				repaintTemplate();
+				wp.data.select( blockEditorStore )
+					.getBlocks()
+					.find( b => b.name === 'troy-server/plugin-tabs' )
+					?.innerBlocks
+					.forEach(
+						tabBlock => {
+							const tabId = tabBlock.attributes.troyServerTabId;
+
+							if ( 'readme' === storeData.builder_type ) {
+								// In readme mode, use content from store, unless empty.
+								if ( tabId in storeData.contents ) {
+									wp.data.dispatch( blockEditorStore ).replaceInnerBlocks(
+										tabBlock.clientId,
+										storeData.contents[ tabId ].length
+											? wp.blocks.parse( storeData.contents[ tabId ] )
+											: [
+												wp.blocks.createBlock(
+													'core/paragraph',
+													{
+														content:   __( 'No content found…', 'troy-server' ),
+														className: 'troy-server-no-content-message',
+														lock:      'all', // lol, doesn't do much
+													},
+												),
+											],
+									);
+								}
+							} else {
+								// When in/going-to editor mode, use content from store if available, otherwise empty paragraph
+								const content = storeData.contents?.[ tabId ];
+								if ( content?.length ) {
+									// Only apply if current content differs from expected
+									if ( wp.blocks.serialize( tabBlock.innerBlocks || [] ) !== content ) {
+										wp.data.dispatch( blockEditorStore ).replaceInnerBlocks(
+											tabBlock.clientId,
+											wp.blocks.parse( content ),
+										);
+									}
+								} else {
+									// Only create empty paragraph if truly no content
+									wp.data.dispatch( blockEditorStore ).replaceInnerBlocks(
+										tabBlock.clientId,
+										[ wp.blocks.createBlock( 'core/paragraph' ) ],
+									);
+								}
+							}
+						}
+					);
 			},
-			[ storeData.contents, storeData.builder_type ],
+			[ storeData.builder_type, storeData.plugin_id, storeData.contents, hasInitialized ],
 		);
 
 		// Handle locking of classic editor blocks when in readme mode
@@ -253,9 +258,6 @@
 		);
 
 		// Reset the template when the post is loaded or the template changes.
-		// This grabs directly from the block editor store, so it will not
-		// trigger when the plugin store data changes.
-		const [ hasInitialized, setHasInitialized ] = useState( false );
 		useEffect(
 			() => {
 				if ( hasInitialized || ! template || isStoreLoading )

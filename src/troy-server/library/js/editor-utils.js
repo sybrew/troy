@@ -49,11 +49,11 @@ window.troyServerEditorUtils = ( () => {
 			const defVal = defaults[ key ];
 			const srcVal = source?.[ key ];
 
-			if ( typeof defVal === 'object' && defVal !== null && ! Array.isArray( defVal ) ) {
+			if ( defVal && 'object' === typeof defVal && ! Array.isArray( defVal ) ) {
 				result[ key ] = assignDeepObject( defVal, srcVal );
 			} else {
-				// null == undefined (and only that.)
-				result[ key ] = srcVal == null ? defVal : srcVal;
+				// null == undefined, and null == null, nothing else.
+				result[ key ] = null == srcVal ? defVal : srcVal;
 			}
 		}
 

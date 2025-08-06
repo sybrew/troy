@@ -403,20 +403,9 @@ final class Plugin_Info extends Base_Endpoint {
 
 		$sections = [];
 
-		if ( ! empty( $info_contents['details'] ) )
-			$sections['details'] = $info_contents['details'];
-
-		if ( ! empty( $info_contents['usage'] ) )
-			$sections['usage'] = $info_contents['usage'];
-
-		if ( ! empty( $info_contents['faq'] ) )
-			$sections['faq'] = $info_contents['faq'];
-
-		if ( ! empty( $info_contents['changelog'] ) )
-			$sections['changelog'] = $info_contents['changelog'];
-
-		if ( ! empty( $info_contents['api'] ) )
-			$sections['api'] = $info_contents['api'];
+		foreach ( [ 'details', 'usage', 'faq', 'changelog', 'api' ] as $key )
+			if ( ! empty( $info_contents[ $key ] ) )
+				$sections[ $key ] = $info_contents[ $key ];
 
 		return $sections;
 	}

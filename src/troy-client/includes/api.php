@@ -4,7 +4,8 @@
  * @access  public
  */
 
-namespace Troy\Client\API; // TODO Remove \API affix from the namespace
+// var_dump() Remove \API affix from the namespace, we can then also use API_TIMEOUT directly.
+namespace Troy\Client\API;
 
 \defined( 'Troy\Client\ABSPATH' ) or die;
 
@@ -423,7 +424,12 @@ function make_troy_api_request_cached( $key, $repo, $body = '', $method = 'POST'
 			|| \strlen( serialize( $memo ) ) > 333_000 // ~ holds 20 plugins
 		) {
 			$memo = [
-				'_timeout' => time() + 600, // 10 minutes
+				'_timeout' => time() + max(
+					15, // Hardcoded 15 seconds minimum
+					\defined( 'Troy\Client\API_TIMEOUT' )
+						? \Troy\Client\API_TIMEOUT
+						: 600, // 10 minutes default.
+				),
 			];
 		} elseif ( isset( $memo[ $key ] ) ) {
 			return $memo[ $key ];

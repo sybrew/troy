@@ -181,14 +181,10 @@ final class Store {
 				),
 				fn( $item ) => $item['url'],
 			),
-			'contents'          => [
-				'details'     => \wp_kses_post( $data['contents']['details'] ?? '' ),
-				'usage'       => \wp_kses_post( $data['contents']['usage'] ?? '' ),
-				'faq'         => \wp_kses_post( $data['contents']['faq'] ?? '' ),
-				'api'         => \wp_kses_post( $data['contents']['api'] ?? '' ),
-				'changelog'   => \wp_kses_post( $data['contents']['changelog'] ?? '' ),
-				'screenshots' => \wp_kses_post( $data['contents']['screenshots'] ?? '' ),
-			],
+			'contents'          => array_map(
+				fn( $type ) => trim( \wp_kses_post( $data['contents'][ $type ] ?? '' ), " \r\n\v\t" ),
+				[ 'details', 'usage', 'faq', 'api', 'changelog', 'screenshots' ],
+			),
 		];
 	}
 
@@ -227,14 +223,28 @@ final class Store {
 			$data['plugin_id'] = $plugin_id_by_post_id;
 		} elseif ( $data['plugin_id'] !== $plugin_id_by_post_id ) {
 			// The data has been tampered with. We should not allow this for future proofing (plugin author as editor).
-			// TODO: Store errors here, fetch them after the save action and output them in the editor.
+			\update_post_meta(
+				$post_id,
+				'troy_server_plugin_update_status',
+				[
+					'type'    => 'error',
+					'message' => \__( 'The plugin ID is not for this post ID! No changes were stored.', 'troy-server' ),
+				],
+			);
 			return;
 		}
 
 		switch ( true ) {
 			case empty( $data['plugin_id'] ):
 			case empty( $data['slug'] ):
-				// TODO: Store errors here, fetch them after the save action and output them in the editor.
+				\update_post_meta(
+					$post_id,
+					'troy_server_plugin_update_status',
+					[
+						'type'    => 'error',
+						'message' => \__( 'No valid plugin ID or slug found! Please set a plugin slug.', 'troy-server' ),
+					],
+				);
 				return;
 		}
 
@@ -270,8 +280,11 @@ final class Store {
 						foreach ( $tab['innerBlocks'] as $child )
 							$html .= $child['innerHTML'] ?? '';
 
-						// Map to plugin_data['contents']
-						$contents[ $tab_id ] = trim( $html, " \r\n\v\t" );
+						// Map to plugin_data['contents'] - only store if there's actual text content
+						// Test if there's any contents inside the HTML. We still want to send HTML, hence the double trim.
+						$contents[ $tab_id ] = trim( \wp_strip_all_tags( $html ), " \r\n\v\t" )
+							? trim( $html, " \r\n\v\t" )
+							: '';
 					}
 				}
 
@@ -318,6 +331,15 @@ final class Store {
 				// We don't do anything here. The readme.txt is parsed by the server.
 				// This is a fallback for when the plugin author doesn't use the block editor.
 				// TODO add support for other builders? e.g., apply_filters..
+
+				\update_post_meta(
+					$post_id,
+					'troy_server_plugin_update_status',
+					[
+						'type'    => 'error',
+						'message' => \__( 'Your changes are not saved! No valid builder type found. Please set a valid builder type.', 'troy-server' ),
+					],
+				);
 				return;
 		}
 
@@ -663,7 +685,7 @@ final class Store {
 					),
 				],
 			);
-			return; // redundant here at the end, but we really need to quit on error.
+			return; // Redundant here at the end. Defensive: we really need to quit parsing on exceptions.
 		}
 	}
 

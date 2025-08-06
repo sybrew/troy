@@ -509,13 +509,14 @@ final class Readme_Parser {
 					PREG_SET_ORDER,
 				);
 
+				// Parse the sections and store them in contents_raw.
 				foreach ( $matches as $match ) {
 					// Trim extraneous whitespace and accidental header characters.
 					$s_key = static::SECTIONS[ strtolower( trim( $match['title'], ' =#' ) ) ] ?? null;
 
 					// Check against default sections, we do not want to accidentally insert rogue sections.
 					if ( \array_key_exists( $s_key, $this->contents_raw ) )
-						$this->contents_raw[ $s_key ] = trim( $match['content'] );
+						$this->contents_raw[ $s_key ] = trim( $match['content'], " \r\n\v\t" );
 				}
 
 				// If there's no short description header, attempt to extract it from the details.
@@ -523,7 +524,7 @@ final class Readme_Parser {
 					foreach ( explode( "\n", $this->contents_raw['details'] ) as $line ) {
 						$line = trim( $line );
 						if ( $line ) {
-							$this->headers_raw['short_description'] = $line;
+							$this->headers_raw['short_description'] = trim( $line, " \r\n\v\t" );
 							break;
 						}
 					}
@@ -562,17 +563,20 @@ final class Readme_Parser {
 			if ( ! ( $this->parsed & static::PARSED['contents'] ) ) {
 				// Convert the contents_raw to sanitized HTML.
 				foreach ( $this->contents_raw as $key => $content ) { // No ref: we cannot assume others don't mangle it.
-					$this->contents[ $key ] = \wp_kses_post(
-						Markdown::process(
-							$content,
-							'common',
-							[
-								'html_input'         => 'allow',
-								'allow_unsafe_links' => true,
-								'convert_wordpress'  => true,
-							],
-						),
-					);
+					$this->contents[ $key ] = $content
+						? trim(
+							\wp_kses_post( Markdown::process(
+								$content,
+								'common',
+								[
+									'html_input'         => 'allow',
+									'allow_unsafe_links' => true,
+									'convert_wordpress'  => true,
+								],
+							) ),
+							" \r\n\v\t",
+						)
+						: '';
 				}
 
 				$this->parsed |= static::PARSED['contents'];

@@ -259,8 +259,8 @@ const TroyServerPluginEditorStore = new class {
 
 		this.#postIdInit = postId;
 
-		const { addAction, removeAction } = wp.hooks;
-		const { syncStore, awaitSave }    = this.#saveHandler( postId );
+		const { addAction, removeAction }  = wp.hooks;
+		const { syncStore, awaitSaveSync } = this.#saveHandler( postId );
 
 		syncStore();
 
@@ -278,7 +278,7 @@ const TroyServerPluginEditorStore = new class {
 				if ( options.isAutosave ) return;
 
 				// Spawn a new thread to avoid blocking the save thread, which, stupidly, didn't save yet.
-				setTimeout( awaitSave );
+				setTimeout( awaitSaveSync );
 			},
 		);
 	}
@@ -300,7 +300,9 @@ const TroyServerPluginEditorStore = new class {
 		const { apiFetch }                    = wp;
 		const { dispatch, subscribe, select } = wp.data;
 		const { __ }                          = wp.i18n;
+		const { addQueryArgs }                = wp.url;
 		const { assignDeepObject }            = troyServerEditorUtils;
+		// const { doAction }                    = wp.hooks;
 
 		const { setIsLoading, setEditorData } = dispatch( this.storeName );
 
@@ -317,7 +319,7 @@ const TroyServerPluginEditorStore = new class {
 		 * Synchronizes the store with the server data.
 		 *
 		 * @since 0.0.1184
-		 * @returns {boolean} True if the store was successfully synchronized, false otherwise.
+		 * @returns {Promise<boolean>} A promise that resolves to true if the store was successfully synchronized, false otherwise.
 		 */
 		const syncStore = async () => {
 
@@ -329,11 +331,15 @@ const TroyServerPluginEditorStore = new class {
 
 			currentFetchController = new AbortController();
 
-			let success = false;
+			let success = false,
+				error   = null;
 
 			try {
 				const response = await wp.apiFetch( {
-					url:    `${troyPluginEditorData.restUrls.getEditorStore}?post_id=${postId}`,
+					url:    addQueryArgs(
+						troyPluginEditorData.restUrls.getEditorStore,
+						{ post_id: postId },
+					),
 					method: 'GET',
 					signal: currentFetchController.signal,
 				} );
@@ -344,14 +350,17 @@ const TroyServerPluginEditorStore = new class {
 				) );
 
 				success = true;
-			} catch ( error ) {
-				console.error( 'Failed to fetch plugin data:', error );
+
+				// doAction( 'troy-server.pluginEditorStore.synced' );
+			} catch ( err ) {
+				console.error( 'Failed to sync store data:', err );
+				error = err;
 			}
 
 			currentFetchController = null;
 
 			setIsLoading( false );
-			return success;
+			return { success, error };
 		}
 
 		/**
@@ -360,7 +369,7 @@ const TroyServerPluginEditorStore = new class {
 		 *
 		 * @since 0.0.1184
 		 */
-		const awaitSave = async () => {
+		const awaitSaveSync = async () => {
 
 			setIsLoading( true );
 
@@ -396,51 +405,57 @@ const TroyServerPluginEditorStore = new class {
 				speak:         true,
 			};
 
+			let response = null;
+
 			if ( ! actuallySaved ) {
 				createErrorNotice(
 					__( 'Failed to synchronize plugin data. Try saving again if saving failed. Otherwise, please reload the editor.', 'troy-server' ),
 					noticeOps,
 				);
 			} else try {
-				const response = await apiFetch( {
-					url:    `${troyPluginEditorData.restUrls.getSaveStatus}?post_id=${postId}`,
+				response = await apiFetch( {
+					url:    addQueryArgs(
+						`${troyPluginEditorData.restUrls.getSaveStatus}`,
+						{ post_id: postId },
+					),
 					method: 'GET',
 				} );
-
-				if ( response?.type === 'updated' ) {
-					createSuccessNotice(
-						response.message
-							|| __( 'Plugin data updated successfully. Fetching latest data…', 'troy-server' ),
-						noticeOps,
-					);
-
-					if ( syncStore( postId ) ) { // async call
-						removeNotice( noticeId );
-						createSuccessNotice(
-							__( 'Plugin data successfully synchronized with the server.', 'troy-server' ),
-							noticeOps,
-						);
-					} else {
-						// Don't use the same notice ID, as it can be removed automatically -- this one must stick.
-						createErrorNotice(
-							__( 'Failed to synchronize plugin data. Please reload the editor.', 'troy-server' ),
-							{
-								...noticeOps,
-								id: 'troy-server-post-save-editor-notice-sync-fail',
-							},
-						);
-					}
-				} else {
-					createErrorNotice(
-						response?.message
-							|| __( 'Failed to synchronize plugin data after saving. Likely, a fatal error occurred on the server.', 'troy-server' ),
-						noticeOps,
-					);
-				}
 			} catch ( error ) {
 				console.error( 'Failed to synchronize plugin data after saving:', error );
 				createErrorNotice(
 					__( 'Failed to synchronize plugin data after saving.', 'troy-server' ),
+					noticeOps,
+				);
+			}
+
+			if ( response?.type === 'updated' ) {
+				createSuccessNotice(
+					response.message
+						|| __( 'Plugin data updated successfully. Fetching latest data…', 'troy-server' ),
+					noticeOps,
+				);
+
+				const { success, error } = await syncStore();
+
+				if ( success ) {
+					removeNotice( noticeId );
+					createSuccessNotice(
+						__( 'Plugin data successfully synchronized with the server.', 'troy-server' ),
+						noticeOps,
+					);
+				} else {
+					createErrorNotice(
+						__( 'Failed to synchronize plugin data. Please reload the editor.', 'troy-server' ) + ( error?.message ? ` Error: ${error.message}` : '' ),
+						{
+							...noticeOps,
+							id: 'troy-server-post-save-editor-notice-sync-fail',
+						},
+					);
+				}
+			} else {
+				createErrorNotice(
+					response?.message
+						|| __( 'Failed to synchronize plugin data after saving. Likely, a fatal error occurred on the server.', 'troy-server' ),
 					noticeOps,
 				);
 			}
@@ -450,7 +465,7 @@ const TroyServerPluginEditorStore = new class {
 
 		return {
 			syncStore,
-			awaitSave,
+			awaitSaveSync,
 		};
 	}
 

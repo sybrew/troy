@@ -178,7 +178,7 @@ final class REST {
 				'banner_uri'        => $data_infos?->banner_uri,
 				'logo_uri'          => $data_metas?->logo_uri,
 				'contributors'      => $contributors,
-				'contents'          => $data_infos?->contents,
+				'contents'          => json_decode( $data_infos?->contents, true ) ?? [],
 			];
 		} else {
 			$data = Store::get_default_plugin_data();

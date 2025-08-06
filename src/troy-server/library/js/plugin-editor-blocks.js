@@ -29,9 +29,7 @@
 	const {
 		createElement: JSX,
 		useEffect,
-		useState,
-		useMemo,
-	} = wp.element;
+		useState,	} = wp.element;
 	const {
 		__,
 		sprintf,
@@ -42,7 +40,6 @@
 	} = wp.data;
 	const { Button } = wp.components;
 	const {
-		InnerBlocks,
 		useBlockProps,
 		useInnerBlocksProps,
 		store: blockEditorStore,
@@ -50,6 +47,7 @@
 		PlainText,
 	} = wp.blockEditor;
 	const apiFetch = wp.apiFetch;
+	const { addQueryArgs } = wp.url;
 
 	registerBlockType(
 		'troy-server/plugin-headergroup',
@@ -419,7 +417,13 @@
 						( async () => {
 							try {
 								const response = await apiFetch( {
-									url:    `${troyPluginEditorData.restUrls.getPlaceholderLogo}?width=192&height=192`,
+									url:    addQueryArgs(
+										troyPluginEditorData.restUrls.getPlaceholderLogo,
+										{
+											width: 192,
+											height: 192,
+										},
+									),
 									method: 'GET',
 									signal: controller.signal,
 								} );

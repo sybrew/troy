@@ -8,6 +8,7 @@ Follow these rules:
 
 - Use PHP 8.4+ for src/troy-server/\*, PHP 7.4+ for other folders
 - In the root folder files, e.g. troy-server.php, increment the "Version: "-header by "-dev-{number}" when making a PR. If there's no -dev-{number} in the "Version: "-header, add it as -dev-1
+- Never use wp.data.subscribe
 
 ## General Guidelines
 
