@@ -17,6 +17,7 @@ Follow these rules:
 - Procedural code is the way
 - Never add phpcs comments
 - Before making broad assumptions, ask for clarification
+- Use plain punctuation, no fancy quotes
 
 ## General Coding Standards
 

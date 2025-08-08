@@ -29,7 +29,8 @@
 	const {
 		createElement: JSX,
 		useEffect,
-		useState,	} = wp.element;
+		useState,
+	} = wp.element;
 	const {
 		__,
 		sprintf,
@@ -409,10 +410,11 @@
 				useEffect(
 					() => {
 						// Don't fetch if we have a real logo or if we already have a placeholder URI.
-						if ( storeData.logo_uri || placeholderUri ) return;
+						if ( placeholderUri || storeData.logo_uri ) return;
 
-						let cancelled = false;
+						// Prepare abort controller to cancel in-flight requests on dependency changes
 						const controller = new AbortController();
+						let cancelled = false;
 
 						( async () => {
 							try {
@@ -420,7 +422,7 @@
 									url:    addQueryArgs(
 										troyPluginEditorData.restUrls.getPlaceholderLogo,
 										{
-											width: 192,
+											width:  192,
 											height: 192,
 										},
 									),
@@ -428,11 +430,13 @@
 									signal: controller.signal,
 								} );
 
-								if ( cancelled ) return;
+								// If cancelled or logo_uri was set in-flight, stop processing
+								if ( cancelled || storeData.logo_uri ) return;
 
 								setPlaceholderUri( `data:${response.mime_type};base64,${response.image_data}` );
 							} catch ( error ) {
-								if ( ! cancelled ) console.error( 'Failed to fetch placeholder logo:', error );
+								if ( ! cancelled )
+									console.error( 'Failed to fetch placeholder logo:', error );
 							}
 						} )();
 
@@ -499,8 +503,8 @@
 						PlainText,
 						{
 							...blockProps,
-							value:    titleInputValue,
-							onChange: newContent => {
+							value:       titleInputValue,
+							onChange:    newContent => {
 								setAttributes( { content: newContent } );
 								editPost( { title: newContent } );
 							},
@@ -532,30 +536,25 @@
 					setValue: setStoreValue,
 				} = troyServerGetPluginStore();
 
-				// Get the effective author ID (store takes precedence, then post author, then block attribute)
-				const effectiveAuthorId = storeData.author_id || postAuthor || authorId;
+				// Determine the author ID to use (store > post > attribute)
+				const authorIdToUse = storeData.author_id || postAuthor || authorId;
 
-				// Update store if we're using post author or block attribute
+				// Seed store once when it has no author yet
 				useEffect(
 					() => {
-						if ( effectiveAuthorId !== storeData.author_id ) {
-							if ( postAuthor && postAuthor !== storeData.author_id ) {
-								setStoreValue( 'author_id', postAuthor );
-							} else if ( authorId && authorId !== storeData.author_id ) {
-								setStoreValue( 'author_id', authorId );
-							}
-						}
+						if ( ! storeData.author_id && authorIdToUse )
+							setStoreValue( 'author_id', authorIdToUse );
 					},
-					[ effectiveAuthorId, storeData.author_id, postAuthor, authorId ],
+					[ storeData.author_id, authorIdToUse ],
 				);
 
-				// Get author name from WordPress core data store
-				const authorName = useSelect( ( select ) => {
-					if ( ! effectiveAuthorId ) return '';
-
-					const user = select( 'core' ).getUser( effectiveAuthorId );
-					return user?.name || '';
-				}, [ effectiveAuthorId ] );
+				// Resolve author name from core store
+				const authorName = useSelect(
+					select => authorIdToUse
+						? select( 'core' ).getUser( authorIdToUse )?.name || ''
+						: '',
+					[ authorIdToUse ],
+				);
 
 				return JSX(
 					'div',

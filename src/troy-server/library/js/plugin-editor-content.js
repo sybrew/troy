@@ -49,7 +49,7 @@
 	 *
 	 * @returns {null} Nothing is rendered visually.
 	 */
-	function resetPluginTemplate() {
+	function renderPluginTemplate() {
 
 		const {
 			data:         storeData,
@@ -103,48 +103,59 @@
 					return;
 				}
 
-				apiFetch( {
-					url:    addQueryArgs(
-						troyPluginEditorData.restUrls.getReadmeData,
-						{
-							plugin_id: storeData.plugin_id,
-							version:   latestVersion,
-						},
-					),
-					method: 'GET',
-				} )
-					.then( response => {
-						// Update store contents with README data
+				// Prepare abort controller to cancel in-flight requests on dependency changes
+				const controller = new AbortController();
+				let cancelled = false;
+
+				( async () => {
+					try {
+						const response = await apiFetch( {
+							url:    addQueryArgs(
+								troyPluginEditorData.restUrls.getReadmeData,
+								{
+									plugin_id: storeData.plugin_id,
+									version:   latestVersion,
+								},
+							),
+							method: 'GET',
+							signal: controller.signal,
+						} );
+
+						// If cancelled or builder type changed in-flight, stop processing
+						if ( cancelled || 'readme' !== storeData.builder_type ) return;
+
 						const { contents, headers } = response;
 
 						// Update page title if empty and we have plugin_name
 						// We should not do this when the title updates, but only when a new readme is fetched.
-						// Hence, neither currentTitle nor storeData.name are used in the dependency array.
 						if ( headers?.plugin_name && ! storeData.name?.trim().length ) {
-							// We shouldn't affect the store's name, for it'll cause an infinite loop.
-							// Let's rely on WordPress's editor to update the title.
+							// We shouldn't affect the store's name, for it'll cause an infinite loop
+							// Let's rely on WordPress's editor to update the title
 							editPost( { title: headers.plugin_name } );
 						}
 
-						// Update short_description if empty and we have it in headers (only on initial load, not refetch)
 						if ( headers?.short_description && ! storeData.short_description?.trim().length )
 							setValue( 'short_description', headers.short_description );
 
-						// Unlike the title, we only update the store's contents.
-						// Another effect will handle the actual content update, for that goes back and forth.
+						// Only store, another effect will handle the actual content update
 						if ( contents ) {
 							Object.keys( troyPluginEditorData.contentTabs ).forEach( tabId => {
 								setContent( tabId, contents[ tabId ] || '' );
 							} );
 						}
+					} catch ( error ) {
+						if ( ! cancelled )
+							console.error( 'Failed to fetch README data:', error );
+					}
+				} )();
 
-						// setIsLoading( false );
-					} ).catch( error => {
-						console.error( 'Failed to fetch README data:', error );
-						// setIsLoading( false );
-					} );
+				// Cleanup: abort request if dependencies change
+				return () => {
+					cancelled = true;
+					controller.abort();
+				};
 			},
-			[ latestVersion, storeData.plugin_id, storeData.builder_type, hasInitialized ],
+			[ hasInitialized, latestVersion, storeData.plugin_id, storeData.builder_type ],
 		);
 
 		// Repaint template when content actually changes or when switching modes
@@ -219,13 +230,13 @@
 						}
 					);
 			},
-			[ storeData.builder_type, storeData.plugin_id, storeData.contents, hasInitialized ],
+			[ hasInitialized, storeData.builder_type, storeData.plugin_id, storeData.contents ],
 		);
 
-		// Handle locking of classic editor blocks when in readme mode
+		// Handle locking of content blocks when in readme mode
 		useEffect(
 			() => {
-				if ( ! storeData.builder_type ) return;
+				if ( ! hasInitialized || ! storeData.builder_type ) return;
 
 				const lockTabBlocks = blocks => {
 					blocks.forEach( block => {
@@ -254,7 +265,7 @@
 						lockTabBlocks( tabBlock.innerBlocks );
 				} );
 			},
-			[ storeData.builder_type ],
+			[ hasInitialized, storeData.builder_type ],
 		);
 
 		// Reset the template when the post is loaded or the template changes.
@@ -283,7 +294,7 @@
 	}
 
 	registerPlugin(
-		'troy-server-editor-reset-template',
-		{ render: resetPluginTemplate },
+		'troy-server-editor-plugin-template',
+		{ render: renderPluginTemplate },
 	);
 } )( window.wp );
