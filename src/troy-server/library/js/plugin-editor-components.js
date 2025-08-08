@@ -963,6 +963,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 						StyledHelp,
 						null,
 						sprintf(
+							/* translators: %s is the maximum file size in human-readable format */
 							__( 'Max file size: %s', 'troy-server' ),
 							troyPluginEditorData.maxFileSizeStr,
 						),
@@ -1221,7 +1222,9 @@ window.troyServerPluginEditorComponents = ( wp => {
 				InspectorPopoverHeader,
 				{
 					title: isLatestVersion
+						/* translators: %s is the version number */
 						? sprintf( __( 'Version %s (current)', 'troy-server' ), version.version )
+						/* translators: %s is the version number */
 						: sprintf( __( 'Version %s', 'troy-server' ), version.version ),
 					onClose,
 				},
@@ -1506,6 +1509,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 								'aria-expanded': isOpen,
 								icon:            'edit',
 								'aria-label':    sprintf(
+									/* translators: %s is the version number */
 									__( 'Edit version %s', 'troy-server' ),
 									version.version,
 								),

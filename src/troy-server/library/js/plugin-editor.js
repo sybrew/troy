@@ -219,7 +219,7 @@
 							),
 						),
 					),
-				), // Do not modify this line! var_dump() AI is confused here.
+				),
 			),
 			slugSet && JSX(
 				PluginDocumentSettingPanel,
@@ -276,6 +276,7 @@
 								createNotice(
 									'success',
 									sprintf(
+										/* translators: %s is the version number */
 										__( 'Version %s removed successfully.', 'troy-server' ),
 										version
 									),
@@ -292,7 +293,8 @@
 								createNotice(
 									'error',
 									sprintf(
-										__( 'Failed to remove version %s: %s', 'troy-server' ),
+										/* translators: %1$s is the version number, %2$s is the error message */
+										__( 'Failed to remove version %1$s: %2$s', 'troy-server' ),
 										version,
 										error.message || __( 'Unknown error', 'troy-server' )
 									),

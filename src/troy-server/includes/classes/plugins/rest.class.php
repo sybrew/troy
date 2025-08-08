@@ -169,7 +169,7 @@ final class REST {
 				'name'              => $post->post_title,
 				'slug'              => $data_plugins->slug,
 				'status'            => $data_plugins->status,
-				'author_id'         => $data_metas?->author_id,
+				'author_id'         => (int) $data_metas?->author_id,
 				'builder_type'      => $data_metas?->builder_type,
 				'versions'          => $versions,
 				'permalink'         => $data_metas?->permalink,
@@ -178,7 +178,7 @@ final class REST {
 				'banner_uri'        => $data_infos?->banner_uri,
 				'logo_uri'          => $data_metas?->logo_uri,
 				'contributors'      => $contributors,
-				'contents'          => json_decode( $data_infos?->contents, true ) ?? [],
+				'contents'          => json_decode( $data_infos?->contents ?: 0, true ) ?? [],
 			];
 		} else {
 			$data = Store::get_default_plugin_data();
@@ -693,11 +693,10 @@ final class REST {
 		$width  = (int) $request->get_param( 'width' ) ?: 512;
 		$height = (int) $request->get_param( 'height' ) ?: 512;
 
-		// Ensure we have GD extension
 		if ( ! \extension_loaded( 'gd' ) )
 			return new \WP_REST_Response(
 				[ 'message' => 'GD extension is not enabled.' ],
-				500,
+				503,
 			);
 
 		// Create image

@@ -118,7 +118,11 @@ final class Init {
 				'show_in_admin_all_list'    => true,
 				'show_in_admin_status_list' => true,
 				/* translators: %s: number of public plugins */
-				'label_count'               => \_n_noop( 'Public <span class="count">(%s)</span>', 'Public <span class="count">(%s)</span>', 'troy-server' ),
+				'label_count'               => \_n_noop(
+					'Public <span class="count">(%s)</span>',
+					'Public <span class="count">(%s)</span>',
+					'troy-server',
+				),
 			],
 		);
 		\register_post_status(
@@ -134,7 +138,11 @@ final class Init {
 				'show_in_admin_all_list'    => true,
 				'show_in_admin_status_list' => true,
 				/* translators: %s: number of unlisted plugins */
-				'label_count'               => \_n_noop( 'Unlisted <span class="count">(%s)</span>', 'Unlisted <span class="count">(%s)</span>', 'troy-server' ),
+				'label_count'               => \_n_noop(
+					'Unlisted <span class="count">(%s)</span>',
+					'Unlisted <span class="count">(%s)</span>',
+					'troy-server',
+				),
 			],
 		);
 		\register_post_status(
@@ -150,7 +158,11 @@ final class Init {
 				'show_in_admin_all_list'    => true,
 				'show_in_admin_status_list' => true,
 				/* translators: %s: number of protected plugins */
-				'label_count'               => \_n_noop( 'Protected <span class="count">(%s)</span>', 'Protected <span class="count">(%s)</span>', 'troy-server' ),
+				'label_count'               => \_n_noop(
+					'Protected <span class="count">(%s)</span>',
+					'Protected <span class="count">(%s)</span>',
+					'troy-server',
+				),
 			],
 		);
 		\register_post_status(
@@ -166,7 +178,11 @@ final class Init {
 				'show_in_admin_all_list'    => true,
 				'show_in_admin_status_list' => true,
 				/* translators: %s: number of pending plugins */
-				'label_count'               => \_n_noop( 'Pending <span class="count">(%s)</span>', 'Pending <span class="count">(%s)</span>', 'troy-server' ),
+				'label_count'               => \_n_noop(
+					'Pending <span class="count">(%s)</span>',
+					'Pending <span class="count">(%s)</span>',
+					'troy-server',
+				),
 			],
 		);
 		\register_post_status(
@@ -182,7 +198,11 @@ final class Init {
 				'show_in_admin_all_list'    => true,
 				'show_in_admin_status_list' => true,
 				/* translators: %s: number of disabled plugins */
-				'label_count'               => \_n_noop( 'Disabled <span class="count">(%s)</span>', 'Disabled <span class="count">(%s)</span>', 'troy-server' ),
+				'label_count'               => \_n_noop(
+					'Disabled <span class="count">(%s)</span>',
+					'Disabled <span class="count">(%s)</span>',
+					'troy-server',
+				),
 			],
 		);
 	}
