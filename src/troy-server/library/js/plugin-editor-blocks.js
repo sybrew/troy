@@ -520,46 +520,40 @@
 	registerBlockType(
 		'troy-server/plugin-author',
 		{
-			edit: ( { attributes } ) => {
-				const { authorId } = attributes;
-				const blockProps = useBlockProps( {
-					className: 'troy-server-block-plugin-author',
-				} );
-
-				const postAuthor = useSelect(
-					select => select( 'core/editor' ).getEditedPostAttribute( 'author' ),
-					[],
-				);
-
+			edit: () => {
 				const {
 					data: storeData,
 					setValue: setStoreValue,
 				} = troyServerGetPluginStore();
+				const postAuthorId = useSelect(
+					select => +select( 'core/editor' ).getEditedPostAttribute( 'author' ) || 0,
+					[],
+				);
+				const pluginAuthor = storeData.author_id || postAuthorId;
 
-				// Determine the author ID to use (store > post > attribute)
-				const authorIdToUse = storeData.author_id || postAuthor || authorId;
-
-				// Seed store once when it has no author yet
+				// Set store if it has no author yet.
 				useEffect(
 					() => {
-						if ( ! storeData.author_id && authorIdToUse )
-							setStoreValue( 'author_id', authorIdToUse );
+						if ( ! storeData.author_id && pluginAuthor )
+							setStoreValue( 'author_id', pluginAuthor );
 					},
-					[ storeData.author_id, authorIdToUse ],
+					[ storeData.author_id, pluginAuthor ],
 				);
 
 				// Resolve author name from core store
 				const authorName = useSelect(
-					select => authorIdToUse
-						? select( 'core' ).getUser( authorIdToUse )?.name || ''
+					select => pluginAuthor
+						? select( 'core' ).getUser( pluginAuthor )?.name || ''
 						: '',
-					[ authorIdToUse ],
+					[ pluginAuthor ],
 				);
 
 				return JSX(
 					'div',
 					{
-						...blockProps,
+						...useBlockProps( {
+							className: 'troy-server-block-plugin-author',
+						} ),
 						className: 'troy-server-block-plugin-author-wrap',
 					},
 					JSX(
@@ -570,6 +564,7 @@
 							}`,
 						},
 						authorName
+							/* translators: %s is the plugin author name */
 							? sprintf( __( 'By %s', 'troy-server' ), authorName )
 							: __( 'Set plugin author in the sidebar…', 'troy-server' ),
 					),
