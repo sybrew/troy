@@ -25,17 +25,11 @@
 'use strict';
 
 ( wp => {
-	const { registerPlugin } = wp.plugins;
-	const { PluginDocumentSettingPanel } = wp.editor;
-	const {
-		createElement: JSX,
-		Fragment,
-	} = wp.element;
-	const {
-		__,
-		sprintf,
-	} = wp.i18n;
-	const { useDispatch } = wp.data;
+	const { registerPlugin }               = wp.plugins;
+	const { PluginDocumentSettingPanel }   = wp.editor;
+	const { createElement: JSX, Fragment } = wp.element;
+	const { __, sprintf }                  = wp.i18n;
+	const { useDispatch }                  = wp.data;
 
 	// Experimental components
 	const VStack  = wp.components?.VStack || wp.components?.__experimentalVStack;

@@ -640,8 +640,8 @@ const TroyServerPluginEditorStore = new class {
  */
 function troyServerGetPluginStore() {
 	const { useEffect, useMemo } = wp.element;
-	const { useSelect } = wp.data;
-	const { sortVersions } = troyServerEditorUtils;
+	const { useSelect }          = wp.data;
+	const { sortVersions }       = troyServerEditorUtils;
 
 	const postId = useSelect(
 		select => select( 'core/editor' ).getCurrentPostId(),

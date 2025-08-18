@@ -523,22 +523,9 @@
 			edit: () => {
 				const {
 					data: storeData,
-					setValue: setStoreValue,
 				} = troyServerGetPluginStore();
-				const postAuthorId = useSelect(
-					select => +select( 'core/editor' ).getEditedPostAttribute( 'author' ) || 0,
-					[],
-				);
-				const pluginAuthor = storeData.author_id || postAuthorId;
 
-				// Set store if it has no author yet.
-				useEffect(
-					() => {
-						if ( ! storeData.author_id && pluginAuthor )
-							setStoreValue( 'author_id', pluginAuthor );
-					},
-					[ storeData.author_id, pluginAuthor ],
-				);
+				const pluginAuthor = storeData.author_id;
 
 				// Resolve author name from core store
 				const authorName = useSelect(

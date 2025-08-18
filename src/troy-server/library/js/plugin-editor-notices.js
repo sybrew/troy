@@ -25,10 +25,10 @@
 'use strict';
 
 ( wp => {
-	const { registerPlugin } = wp.plugins;
-	const { useEffect } = wp.element;
+	const { registerPlugin }         = wp.plugins;
+	const { useEffect }              = wp.element;
 	const { useSelect, useDispatch } = wp.data;
-	const { __ } = wp.i18n;
+	const { __ }                     = wp.i18n;
 
 	/**
 	 * Configuration for different notice types.
@@ -81,9 +81,7 @@
 			select => select( 'core/notices' ).getNotices(),
 			[],
 		);
-		const {
-			data: storeData,
-		} = troyServerGetPluginStore();
+		const { data: storeData } = troyServerGetPluginStore();
 
 		const { createNotice, removeNotice } = useDispatch( 'core/notices' );
 

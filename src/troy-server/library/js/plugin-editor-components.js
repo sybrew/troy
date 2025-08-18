@@ -1555,18 +1555,22 @@ window.troyServerPluginEditorComponents = ( wp => {
 
 		const [ selectedAuthorId, setSelectedAuthorId ] = useState( authorId || 0 );
 
+		const authorArgs = useMemo(
+			() => ( {
+				who:      'authors',
+				per_page: -1,
+				_fields:  'id,name',
+				context:  'view',
+			} ),
+			[],
+		);
+
 		const { authors, isLoading } = useSelect(
 			select => {
 				const { getUsers, isResolving } = select( 'core' );
-				const args = {
-					who:      'authors',
-					per_page: -1,
-					_fields:  'id,name',
-					context:  'view',
-				};
 				return {
-					authors:   getUsers( args ) || [],
-					isLoading: isResolving( 'getUsers', [ args ] ),
+					authors:   getUsers( authorArgs ) || [],
+					isLoading: isResolving( 'getUsers', [ authorArgs ] ),
 				};
 			},
 			[],

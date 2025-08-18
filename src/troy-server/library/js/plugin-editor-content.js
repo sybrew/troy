@@ -35,9 +35,7 @@
 		useSelect,
 		useDispatch,
 	} = wp.data;
-	const {
-		store: blockEditorStore,
-	} = wp.blockEditor;
+	const { store: blockEditorStore } = wp.blockEditor;
 	const apiFetch = wp.apiFetch;
 	const { addQueryArgs } = wp.url;
 
