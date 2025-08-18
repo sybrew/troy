@@ -186,6 +186,18 @@ window.troyServerEditorUtils = ( () => {
 	}
 
 	/**
+	 * Delays script execution. The caller must be asynchronous.
+	 *
+	 * @since 0.0.1184
+	 *
+	 * @param {Int} ms The milliseconds to delay script execution.
+	 * @return {Promise}
+	 */
+	function delay( ms ) {
+		return new Promise( resolve => setTimeout( resolve, ms ) );
+	}
+
+	/**
 	 * Converts a number of bytes into a human-readable string using binary
 	 * prefixes (KiB, MiB, etc.).
 	 *
@@ -260,6 +272,7 @@ window.troyServerEditorUtils = ( () => {
 		assignDeepObject,
 		sortVersions,
 		debounce,
+		delay,
 		bytesToIbiBytes,
 		sanitizeRepoUrl,
 	};

@@ -33,10 +33,12 @@ Follow these rules:
 - Put function args on a new line when >30 chars or for objects/arrays
 - Unless there's a conditional follow-up construct, do not add braces in constructs (if/do/for etc.) followed by only a single-line statement
 - Do not write inline comments that state the obvious
+- Do not add comments about your executions
 - Write detailed docblocks for all functions, classes, and methods
 - Add a newline after a function opening brace, unless its body is a single line
 - A tab is 4 spaces
 - Use tabs for indentation, not spaces
+- When there's an operator in an argument, split all arguments into separate lines
 
 ## WordPress PHP
 
@@ -74,7 +76,8 @@ Follow these rules:
 - Apply PHP's spacing standards, including vertical alignment
 - Use const instead of import
 - Do not add parentheses to lone parameters in arrow functions
-- When creating a callback that contains an anonymous function, write each argument on a new line
+- Put each argument on a new line when any is an anonymous function, array, or object
+- When creating an object with a single property, make it a single line
 
 ## Avoid
 
@@ -84,6 +87,7 @@ Follow these rules:
 - Cruft
 - Compliments
 - Affirmations
+- Changing the meaning of existing comments unless it improves clarity
 
 ## Be
 

@@ -581,6 +581,15 @@ final class REST {
 					'data'   => $status,
 					'status' => 200,
 				];
+
+				// We no longer need the status, so we can delete it.
+				\delete_post_meta( $post_id, 'troy_server_plugin_update_status' );
+				break;
+			case 'processing':
+				$response = [
+					'data'   => $status,
+					'status' => 425,
+				];
 				break;
 			default:
 				$response = [
@@ -590,9 +599,6 @@ final class REST {
 					'status' => 409,
 				];
 		}
-
-		// We no longer need the status, so we can delete it.
-		\delete_post_meta( $post_id, 'troy_server_plugin_update_status' );
 
 		return new \WP_REST_Response( $response['data'], $response['status'] );
 	}

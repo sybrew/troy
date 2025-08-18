@@ -301,13 +301,14 @@ const TroyServerPluginEditorStore = new class {
 		const { dispatch, subscribe, select } = wp.data;
 		const { __ }                          = wp.i18n;
 		const { addQueryArgs }                = wp.url;
-		const { assignDeepObject }            = troyServerEditorUtils;
+		const { assignDeepObject, delay }     = troyServerEditorUtils;
 		// const { doAction }                    = wp.hooks;
 
 		const { setIsLoading, setEditorData } = dispatch( this.storeName );
 
 		const {
 			createSuccessNotice,
+			createInfoNotice,
 			createErrorNotice,
 			removeNotice,
 		} = dispatch( 'core/notices' );
@@ -374,10 +375,15 @@ const TroyServerPluginEditorStore = new class {
 			setIsLoading( true );
 
 			const actuallySaved = await new Promise( ( resolve, reject ) => {
+				const editor = select( 'core/editor' );
 				let didPostSaveRequestSucceed = false;
 
 				const unsubscribe = subscribe( () => {
-					if ( select( 'core/editor' ).didPostSaveRequestSucceed() ) {
+					if (
+						   ! editor.isSavingPost()
+						&& editor.didPostSaveRequestSucceed()
+						// && ! editor.isSavingNonPostEntityChanges() // side-effect of other plugins or themes // TODO check if this is needed
+					) {
 						unsubscribe();
 						didPostSaveRequestSucceed = true;
 						resolve();
@@ -406,26 +412,77 @@ const TroyServerPluginEditorStore = new class {
 			};
 
 			let response = null;
+			let errorStatus = null;
+
+			const getSaveStatus = async () => {
+				const response = await apiFetch( {
+					url:    addQueryArgs(
+						`${troyPluginEditorData.restUrls.getSaveStatus}`,
+						{ post_id: postId },
+					),
+					method: 'GET',
+					parse:  false,
+				} );
+
+				if ( response.ok )
+					return await response.json();
+
+				throw { status: response.status };
+			};
+
+			createInfoNotice(
+				__( 'Saving plugin data…', 'troy-server' ),
+				{
+					...noticeOps,
+					isDismissible: false,
+				}
+			);
 
 			if ( ! actuallySaved ) {
 				createErrorNotice(
 					__( 'Failed to synchronize plugin data. Try saving again if saving failed. Otherwise, please reload the editor.', 'troy-server' ),
 					noticeOps,
 				);
-			} else try {
-				response = await apiFetch( {
-					url:    addQueryArgs(
-						`${troyPluginEditorData.restUrls.getSaveStatus}`,
-						{ post_id: postId },
-					),
-					method: 'GET',
-				} );
-			} catch ( error ) {
-				console.error( 'Failed to synchronize plugin data after saving:', error );
-				createErrorNotice(
-					__( 'Failed to synchronize plugin data after saving.', 'troy-server' ),
-					noticeOps,
-				);
+			} else {
+				// First attempt to get save status with a short delay. This is the answer to life, the universe, and everything.
+				await delay( 42 ); // Also, theseoframework.com's admin area is about this fast.
+				try {
+					response = await getSaveStatus();
+				} catch ( error ) {
+					errorStatus = error?.status || null;
+				}
+
+				// Special case: server replied 425 Too Early — wait 3s with a countdown, then retry once.
+				if ( 425 === errorStatus ) {
+					const countdownId = 'troy-server-post-save-countdown-notice';
+					let seconds = 3;
+					const updateCountdown = () => createInfoNotice(
+						__( `Server is still processing. Retrying in ${seconds}…`, 'troy-server' ),
+						{
+							id:            countdownId,
+							isDismissible: false,
+							speak:         3 === seconds, // Speak only on the first notice
+						},
+					);
+					await new Promise( resolve => {
+						const interval = setInterval(
+							() => {
+								updateCountdown();
+								if ( --seconds < 0 ) {
+									clearInterval( interval );
+									resolve();
+								}
+							},
+							1000,
+						);
+					} );
+
+					try {
+						response = await getSaveStatus();
+					} catch ( error ) {} // Fall through to error notice below
+
+					removeNotice( countdownId );
+				}
 			}
 
 			if ( response?.type === 'updated' ) {

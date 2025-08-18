@@ -209,6 +209,15 @@ final class Store {
 			|| ! \current_user_can( 'edit_post', $post_id ) // Redundant sanity check.
 		) return;
 
+		\update_post_meta(
+			$post_id,
+			'troy_server_plugin_update_status',
+			[
+				'type'    => 'processing',
+				'message' => \__( 'Started plugin save handler.', 'troy-server' ),
+			],
+		);
+
 		// Sanitization is also done in the `sanitize_callback` of `register_post_meta()`, but appears unreliable.
 		$data = array_merge(
 			self::get_default_plugin_data(),
@@ -233,7 +242,6 @@ final class Store {
 			);
 			return;
 		}
-
 		switch ( true ) {
 			case empty( $data['plugin_id'] ):
 			case empty( $data['slug'] ):
@@ -264,7 +272,7 @@ final class Store {
 
 				// Find the plugin-tabs block
 				foreach ( $parsed_blocks as $block ) {
-					if ( 'troy-server/plugin-tabs' !== $block['blockName'])
+					if ( 'troy-server/plugin-tabs' !== $block['blockName'] )
 						continue;
 
 					// Iterate each tab
