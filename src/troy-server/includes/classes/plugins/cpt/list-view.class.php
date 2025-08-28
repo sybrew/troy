@@ -202,16 +202,16 @@ final class List_View {
 
 		$after_counts = [];
 
-		foreach ( static::get_columns() as $index => $config ) {
+		foreach ( static::get_columns() as $index => $conf ) {
 			$column_keys = array_keys( $columns );
 			$offset      = false;
 
 			// Find first valid position
 			foreach ( [ 'before', 'after' ] as $type ) {
-				if ( empty( $config[ $type ] ) )
+				if ( empty( $conf[ $type ] ) )
 					continue;
 
-				foreach ( $config[ $type ] as $key ) {
+				foreach ( $conf[ $type ] as $key ) {
 					// This offset is also used for 'before'; don't move it down.
 					$offset = array_search( $key, $column_keys, true );
 
@@ -228,10 +228,10 @@ final class List_View {
 			}
 
 			if ( false === $offset ) {
-				$columns[ $index ] = $config['label'];
+				$columns[ $index ] = $conf['label'];
 			} else {
 				$before  = array_splice( $columns, 0, $offset );
-				$columns = $before + [ $index => $config['label'] ] + $columns;
+				$columns = $before + [ $index => $conf['label'] ] + $columns;
 			}
 		}
 
@@ -249,8 +249,8 @@ final class List_View {
 	 */
 	public static function register_sortable_columns( $columns ) {
 
-		foreach ( static::get_columns() as $index => $args ) {
-			if ( empty( $args['orderby'] ) )
+		foreach ( static::get_columns() as $index => $conf ) {
+			if ( empty( $conf['orderby'] ) )
 				continue;
 
 			$columns[ $index ] = $index;

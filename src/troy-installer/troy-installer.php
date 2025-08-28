@@ -95,8 +95,8 @@ const OPTIONS = [
  *     An array of plugins to install.
  *
  *     @type string $slug The plugin slug.
- *     @type array  $args {
- *         An array of installation arguments.
+ *     @type array  $conf {
+ *         An array of installation configuration arguments.
  *
  *         @type string $repo           Required. The repository URI.
  *         @type string $name           Required. The plugin name.
@@ -343,15 +343,15 @@ function install_plugins() {
 	$not_installed = [];
 	$not_activated = [];
 
-	foreach ( $install as $slug => &$args ) {
-		$args = array_merge( $install_defaults, $args );
+	foreach ( $install as $slug => &$conf ) {
+		$conf = array_merge( $install_defaults, $conf );
 
-		$args['network'] = $is_multisite ? $args['network'] : false;
+		$conf['network'] = $is_multisite ? $conf['network'] : false;
 
-		if ( isset( $slug_repos[ $slug ] ) && empty( $args['overwrite_troy'] ) )
+		if ( isset( $slug_repos[ $slug ] ) && empty( $conf['overwrite_troy'] ) )
 			continue;
 
-		$to_install[ $slug ] = $args;
+		$to_install[ $slug ] = $conf;
 	}
 
 	require_once \ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
@@ -367,25 +367,25 @@ function install_plugins() {
 		2,
 	);
 
-	foreach ( $to_install as $slug => $args ) {
+	foreach ( $to_install as $slug => $conf ) {
 		// Write to $plugin_url so that the filter above can use it. This is a referenced variable.
-		$plugin_url = "{$args['repo']}plugin/get/zip/$slug/{$args['version']}/"; // Ref.
+		$plugin_url = "{$conf['repo']}plugin/get/zip/$slug/{$conf['version']}/"; // Ref.
 
 		$result = ( new \Plugin_Upgrader( $skin ) )->install(
 			$plugin_url,
 			[
-				'overwrite_package' => $args['overwrite'] ?? false,
+				'overwrite_package' => $conf['overwrite'] ?? false,
 			],
 		);
 
 		if ( true === $result ) {
-			$installed[] = $args['name'];
+			$installed[] = $conf['name'];
 		} else {
-			$not_installed[] = $args['name'];
+			$not_installed[] = $conf['name'];
 			$notice_args     = [
 				'before' => \sprintf(
 					'Plugin "%s" could not be installed. This will be retried until you deactivate plugin "%s."',
-					$args['name'],
+					$conf['name'],
 					$plugins[ $installer ]['Name'],
 				),
 				'type'   => 'error',
