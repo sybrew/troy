@@ -89,8 +89,8 @@ final class Dependencies {
 
 		require_once \ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
 
-		$plugin_url = ''; // Ref.
-		$slug       = ''; // Ref.
+		$plugin_url = ''; // Ref. Do not optimize.
+		$slug       = ''; // Ref. Do not optimize.
 
 		\add_filter(
 			'http_headers_useragent',
@@ -112,10 +112,12 @@ final class Dependencies {
 				$repo = make_fully_qualified_repo_url( $dependency['repo'] );
 
 				// Write to $plugin_url so that the filter above can use it. This is a referenced variable.
-				$plugin_url = "{$repo}plugin/get/zip/{$slug}/"; // Ref.
+				$plugin_url = "{$repo}plugin/get/zip/{$slug}/"; // Ref. Do not optimize.
 
-				$skin   = new Skins\Background;
-				$result = ( new \Plugin_Upgrader( $skin ) )->install(
+				$skin     = new Skins\Background;
+				$upgrader = new \Plugin_Upgrader( $skin );
+
+				$result = $upgrader->install(
 					$plugin_url,
 					[
 						'overwrite_package' => true,
@@ -124,7 +126,7 @@ final class Dependencies {
 
 				if ( true === $result ) {
 					$installed[ $file ][] = [
-						'slug' => $slug,
+						'name' => $upgrader->new_plugin_data['Name'] ?? $slug,
 					];
 				} else {
 					$not_installed[ $file ][] = [
@@ -137,7 +139,7 @@ final class Dependencies {
 
 		if ( $installed ) {
 			foreach ( $installed as $file => $details ) {
-				$slugs = array_column( $details, 'slug' );
+				$names = array_column( $details, 'name' );
 
 				static::prepare_admin_message(
 					\wp_sprintf(
@@ -145,11 +147,11 @@ final class Dependencies {
 						\_n(
 							'The following plugin dependency was installed for %1$s: %2$l',
 							'The following plugin dependencies were installed for %1$s: %2$l',
-							\count( $slugs ),
+							\count( $names ),
 							'troy-client',
 						),
 						$troy_plugins[ $file ]['name'],
-						$slugs,
+						$names,
 					),
 					'success',
 				);

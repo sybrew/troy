@@ -139,13 +139,17 @@ final class PluginsAPI {
 
 		$php_version = phpversion();
 
-		// Privacy by design.
+		// Privacy by design: do not share plugin data from other repos.
 		foreach ( get_troy_plugin_slugs_per_repo() as $repo => $slugs ) {
 			$active_plugins_data   = [];
 			$inactive_plugins_data = [];
 			$repo_translations     = [];
 
 			foreach ( $slugs as $slug ) {
+				// The slug might be of a dependency that isn't a Troy plugin or isn't a installed -- either way, don't leak.
+				if ( ! isset( $troy_plugins_by_slug[ $slug ] ) )
+					continue;
+
 				$plugin_data = $troy_plugins_by_slug[ $slug ];
 				$textdomain  = $plugin_data['textdomain'];
 
@@ -157,6 +161,10 @@ final class PluginsAPI {
 
 				$repo_translations[ $textdomain ] = $translations[ $textdomain ] ?? [];
 			}
+
+			// Skip: no Troy plugins are installed from this repo. This can only happen for unavailable dependencies.
+			if ( empty( $active_plugins_data ) && empty( $inactive_plugins_data ) )
+				continue;
 
 			$request = make_troy_api_request_cached(
 				"update_plugins-$repo",
@@ -172,6 +180,7 @@ final class PluginsAPI {
 				],
 			);
 
+			// Skip failed requests. It won't fall back to WordPress's API.
 			if ( \is_wp_error( $request ) )
 				continue;
 
