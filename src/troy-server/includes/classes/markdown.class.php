@@ -118,13 +118,15 @@ final class Markdown {
 
 		$base_dir = ABSPATH . 'vendor/markdown/';
 
+		// Note: All these libraries use PSR-2 style class and file naming. Hence, we do not lowercase the class name.
+		// Note to future developers: use lowercase. PHP is case-insensitive with class names, but the file system may not be.
 		$prefix_map = [
-			'dflydev\dotaccessdata\\' => "{$base_dir}dflydev-dflydev-dot-access-data/src/",
-			'league\commonmark\\'     => "{$base_dir}thephpleague-commonmark/src/",
-			'league\config\\'         => "{$base_dir}thephpleague-config/src/",
-			'nette\schema\\'          => "{$base_dir}nette-schema/src/Schema/",
-			'nette\\'                 => "{$base_dir}nette-utils/src/", // Note it's after the schema namespace.
-			'psr\eventdispatcher\\'   => "{$base_dir}php-fig-event-dispatcher/src/",
+			'Dflydev\DotAccessData\\' => "{$base_dir}dflydev-dflydev-dot-access-data/src/",
+			'League\CommonMark\\'     => "{$base_dir}thephpleague-commonmark/src/",
+			'League\Config\\'         => "{$base_dir}thephpleague-config/src/",
+			'Nette\Schema\\'          => "{$base_dir}nette-schema/src/Schema/",
+			'Nette\\'                 => "{$base_dir}nette-utils/src/", // Note it's after the schema namespace.
+			'Psr\EventDispatcher\\'   => "{$base_dir}php-fig-event-dispatcher/src/",
 		];
 
 		// These cannot feasibly be autoloaded -- too many classes in one file.
@@ -132,21 +134,18 @@ final class Markdown {
 
 		spl_autoload_register(
 			function ( $class ) use ( $prefix_map ) {
-				$class = strtolower( $class );
-
 				foreach ( $prefix_map as $prefix => $path ) {
 					// Check if the class uses the namespace prefix.
 					if ( ! str_starts_with( $class, $prefix ) )
 						continue;
 
-					// Get the relative class name.
-					$relative_class = substr( $class, \strlen( $prefix ) );
+					$filename = str_replace(
+						'\\',
+						'/',
+						substr( $class, \strlen( $prefix ) ), // The $path supplements the $prefix
+					);
 
-					// Replace the namespace prefix with the base directory, replace
-					// namespace separators with directory separators, and append .php
-					$file = $path . str_replace( '\\', '/', $relative_class ) . '.php';
-
-					require $file;
+					require "{$path}{$filename}.php";
 					break;
 				}
 			},
