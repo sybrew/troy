@@ -51,11 +51,11 @@ Troy Client looks for updates for itself from the Troy Server `repo.deploytroy.o
 
 ## Troy Client Daemon
 
-Troy Client Daemon is a must-use plugin forces the installation and activation of the Troy Client on a WordPress site.
+Troy Client Daemon is a must-use plugin that enforces Troy Client on a site and prevents data leaks to WordPress.org.
 
-Troy Client Daemon blocks the update API if the Troy Client is not installed, and will automatically install and activate the Troy Client if it is not already installed.
+The daemon installs Troy Client automatically if missing, and activates it if inactive. It blocks WordPress.org update APIs until Troy Client is active.
 
-You must install the daemon's PHP file in the `/wp-content/mu-plugins/` directory of your WordPress site, or it will not work.
+To use it, place `troy-client-daemon.php` directly in `/wp-content/mu-plugins/` (not in a subfolder); no activation is required — WordPress loads MU plugins automatically.
 
 ## Troy Installer
 

@@ -68,25 +68,28 @@ const ACTIVE = true;
 
 /**
  * Force-activates the Troy Client plugin.
- * If the plugin is not installed, it will be installed from the Deploy Troy repository.
+ * If the plugin is not installed, it will be installed from the DeployTroy repository.
  *
  * @hook muplugins_loaded 10
  * @since 0.0.1184
  */
 function force_activate_troy_client() {
+
 	$plugin_file  = 'troy-client/troy-client.php';
 	$is_multisite = \is_multisite();
 
 	$is_troy_active = $is_multisite
 		? isset( \get_site_option( 'active_sitewide_plugins' )[ $plugin_file ] )
-		: \in_array( $plugin_file, \get_option( 'active_plugins' ) ?: [], true );
+		: \in_array( $plugin_file, \get_option( 'active_plugins' ), true );
 
 	if ( ! $is_troy_active ) {
 		\add_filter( 'pre_http_request', 'Troy\Client\Daemon\block_wordpress_api', 10, 3 );
+	} elseif ( ! $is_multisite ) {
+		// Add a later sanity check for recovery mode where the plugin can still be deactivated.
+		\add_action( 'plugins_loaded', 'Troy\Client\Daemon\check_client_paused' );
+	}
 
-		if ( \wp_installing() )
-			return;
-
+	if ( ! $is_troy_active ) {
 		if ( ! \function_exists( 'get_plugins' ) )
 			require_once \ABSPATH . 'wp-admin/includes/plugin.php';
 
@@ -97,7 +100,7 @@ function force_activate_troy_client() {
 
 			\add_filter(
 				'http_headers_useragent',
-				fn( $user_agent, $url ) => $url === $client_url ? 'Troy Horse' : $user_agent,
+				fn( $user_agent, $url ) => $url === $client_url ? 'Troy Daemon' : $user_agent,
 				10,
 				2,
 			);
@@ -136,6 +139,17 @@ function force_activate_troy_client() {
 		if ( $troy_plugin )
 			\activate_plugin( $plugin_file, '', $is_multisite, true );
 	}
+}
+
+/**
+ * Checks if the Troy Client plugin is paused, and if so, blocks the WordPress API.
+ *
+ * @hook plugins_loaded 10
+ * @since 0.0.1184
+ */
+function check_client_paused() {
+	if ( \is_plugin_paused( 'troy-client/troy-client.php' ) )
+		\add_filter( 'pre_http_request', 'Troy\Client\Daemon\block_wordpress_api', 10, 3 );
 }
 
 /**
