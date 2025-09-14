@@ -74,7 +74,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 	 *
 	 * @since 0.0.1184
 	 *
-	 * @param {Object} props - Component properties passed to the WordPress Dropdown component.
+	 * @param {Object} props Component properties passed to the WordPress Dropdown component.
 	 * @returns {JSX.Element} The rendered MenuDropdown component.
 	 */
 	function MenuDropdown( props ) {
@@ -97,7 +97,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 	 *
 	 * @since 0.0.1184
 	 *
-	 * @param {Object}   props {
+	 * @param {Object} props {
 	 *     Component properties.
 	 *
 	 *     @param {Function} props.onClose       Callback function to close the popover.
@@ -222,7 +222,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 	 *
 	 * @since 0.0.1184
 	 *
-	 * @param {Object}   props {
+	 * @param {Object} props {
 	 *     Component properties.
 	 *
 	 *     @param {string}   props.postId        The ID of the current post.
@@ -281,7 +281,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 	 *
 	 * @since 0.0.1184
 	 *
-	 * @param {Object}   props {
+	 * @param {Object} props {
 	 *     Component properties.
 	 *
 	 *     @param {Function} props.onClose       Callback function to close the popover.
@@ -334,7 +334,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 	 *
 	 * @since 0.0.1184
 	 *
-	 * @param {Object}   props {
+	 * @param {Object} props {
 	 *     Component properties.
 	 *
 	 *     @param {string}   props.status     The current plugin status.
@@ -393,7 +393,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 	 *
 	 * @since 0.0.1184
 	 *
-	 * @param {Object}   props {
+	 * @param {Object} props {
 	 *     Component properties.
 	 *
 	 *     @param {Function} props.onClose       Callback function to close the popover.
@@ -451,7 +451,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 	 *
 	 * @since 0.0.1184
 	 *
-	 * @param {Object}   props {
+	 * @param {Object} props {
 	 *     Component properties.
 	 *
 	 *     @param {Object}   props.storeData  The current plugin store data.
@@ -512,7 +512,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 	 *
 	 * @since 0.0.1184
 	 *
-	 * @param {Object}   props {
+	 * @param {Object} props {
 	 *     Component properties.
 	 *
 	 *     @param {Function} props.onClose    Callback function to close the popover.
@@ -657,7 +657,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 	 *
 	 * @since 0.0.1184
 	 *
-	 * @param {Object}   props {
+	 * @param {Object} props {
 	 *     Component properties.
 	 *
 	 *     @param {Function} props.onClose           Callback function to close the popover.
@@ -710,7 +710,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 	 *
 	 * @since 0.0.1184
 	 *
-	 * @param {Object}   props {
+	 * @param {Object} props {
 	 *     Component properties.
 	 *
 	 *     @param {string}   props.builderType       The current builder type.
@@ -768,7 +768,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 	 *
 	 * @since 0.0.1184
 	 *
-	 * @param {Object}   props {
+	 * @param {Object} props {
 	 *     Component properties.
 	 *
 	 *     @param {string}   props.pluginId           The ID of the plugin to which the version will be added.
@@ -821,7 +821,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 	 *
 	 * @since 0.0.1184
 	 *
-	 * @param {Object}   props {
+	 * @param {Object} props {
 	 *     Component properties.
 	 *
 	 *     @param {Function} props.onClose            Callback function to close the popover.
@@ -1142,7 +1142,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 				},
 				sprintf(
 					/* translators: %s is the current repository URL */
-					__( 'Some versions have repository mismatches with this server. Releasing these will redirect users to other update services. The current repository URL is: %s', 'troy-server' ),
+					__( 'Some versions have repository mismatches with this server. Releasing these will redirect clients to other update servers. The current repository URL is: %s', 'troy-server' ),
 					currentRepoUrl,
 				),
 			),
@@ -1187,7 +1187,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 	 *
 	 * @since 0.0.1184
 	 *
-	 * @param {Object}   props {
+	 * @param {Object} props {
 	 *     Component properties.
 	 *
 	 *     @param {Function} props.onClose                   Callback function to close the popover.
@@ -1425,7 +1425,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 	 *
 	 * @since 0.0.1184
 	 *
-	 * @param {Object}   props {
+	 * @param {Object} props {
 	 *     Component properties.
 	 *
 	 *     @param {Object}   props.version                   The version object data.
@@ -1542,7 +1542,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 	 *
 	 * @since 0.0.1184
 	 *
-	 * @param {Object}   props {
+	 * @param {Object} props {
 	 *     Component properties.
 	 *
 	 *     @param {Function} props.onClose       Callback function to close the popover.
@@ -1604,12 +1604,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 							spacing:   2,
 							alignment: 'center',
 						},
-						JSX(
-							Spinner,
-							{
-								size: 16,
-							},
-						),
+						JSX( Spinner ),
 						JSX(
 							'span',
 							null,
@@ -1647,7 +1642,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 	 *
 	 * @since 0.0.1184
 	 *
-	 * @param {Object}   props {
+	 * @param {Object} props {
 	 *     Component properties.
 	 *
 	 *     @param {number}   props.authorId      The current author ID.

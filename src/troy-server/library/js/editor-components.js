@@ -170,15 +170,15 @@ window.troyServerEditorComponents = ( wp => {
 				'div',
 				{
 					className: children
-						? 'troy-server-panel-row__label'
-						: 'troy-server-panel-row__label--no-control',
+						? 'troy-server-panel__row-label'
+						: 'troy-server-panel__row-label--no-control',
 				},
 				label,
 			),
 			children && JSX(
 				'div',
 				{
-					className: 'troy-server-panel-row__control',
+					className: 'troy-server-panel__row-control',
 				},
 				children,
 			),

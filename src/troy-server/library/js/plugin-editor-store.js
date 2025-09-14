@@ -223,10 +223,12 @@ const TroyServerPluginEditorStore = new class {
 						},
 
 					setIsLoading:           isLoading =>
-						( {
-							type: 'SET_IS_LOADING',
-							isLoading,
-						} ),
+						( { dispatch } ) => {
+							dispatch( {
+								type: 'SET_IS_LOADING',
+								isLoading,
+							} );
+						},
 				},
 				selectors: {
 					getEditorData: state => state.editorData,
@@ -270,12 +272,14 @@ const TroyServerPluginEditorStore = new class {
 			'troy-server/plugin-editor-store',
 		);
 
+		// Hook into the save action to detect when save starts
 		addAction(
 			'editor.savePost',
 			'troy-server/plugin-editor-store',
-			// we must send a synchronous function to the action.
 			( post, options ) => {
-				if ( options.isAutosave ) return;
+
+				if ( options.isAutosave )
+					return;
 
 				// Spawn a new thread to avoid blocking the save thread, which, stupidly, didn't save yet.
 				setTimeout( awaitSaveSync );
@@ -302,7 +306,6 @@ const TroyServerPluginEditorStore = new class {
 		const { __ }                          = wp.i18n;
 		const { addQueryArgs }                = wp.url;
 		const { assignDeepObject, delay }     = troyServerEditorUtils;
-		// const { doAction }                    = wp.hooks;
 
 		const { setIsLoading, setEditorData } = dispatch( this.storeName );
 
@@ -351,8 +354,6 @@ const TroyServerPluginEditorStore = new class {
 				) );
 
 				success = true;
-
-				// doAction( 'troy-server.pluginEditorStore.synced' );
 			} catch ( err ) {
 				console.error( 'Failed to sync store data:', err );
 				error = err;
@@ -365,7 +366,7 @@ const TroyServerPluginEditorStore = new class {
 		}
 
 		/**
-		 * Waits for the save action to complete and then synchronizes the store with the server.
+		 * Waits for the save action to complete by monitoring editor state changes.
 		 * This function handles the loading state and error handling.
 		 *
 		 * @since 0.0.1184
@@ -374,60 +375,11 @@ const TroyServerPluginEditorStore = new class {
 
 			setIsLoading( true );
 
-			const actuallySaved = await new Promise( ( resolve, reject ) => {
-				const editor = select( 'core/editor' );
-				let didPostSaveRequestSucceed = false;
-
-				const unsubscribe = subscribe( () => {
-					if (
-						   ! editor.isSavingPost()
-						&& editor.didPostSaveRequestSucceed()
-						// && ! editor.isSavingNonPostEntityChanges() // side-effect of other plugins or themes // TODO check if this is needed
-					) {
-						unsubscribe();
-						didPostSaveRequestSucceed = true;
-						resolve();
-					}
-				} );
-
-				// Seppuku after 10 seconds of uninterrupted fail.
-				setTimeout(
-					() => {
-						if ( ! didPostSaveRequestSucceed ) {
-							unsubscribe();
-							reject();
-						}
-					},
-					10000,
-				);
-			} )
-				.then( () => true )
-				.catch( () => false );
-
 			const noticeId  = 'troy-server-post-save-editor-notice';
 			const noticeOps = {
 				id:            noticeId,
 				isDismissible: true,
 				speak:         true,
-			};
-
-			let response = null;
-			let errorStatus = null;
-
-			const getSaveStatus = async () => {
-				const response = await apiFetch( {
-					url:    addQueryArgs(
-						`${troyPluginEditorData.restUrls.getSaveStatus}`,
-						{ post_id: postId },
-					),
-					method: 'GET',
-					parse:  false,
-				} );
-
-				if ( response.ok )
-					return await response.json();
-
-				throw { status: response.status };
 			};
 
 			createInfoNotice(
@@ -438,15 +390,66 @@ const TroyServerPluginEditorStore = new class {
 				}
 			);
 
+			// Use a simple polling approach to check save completion
+			const actuallySaved = await new Promise(
+				( resolve, reject ) => {
+					const editor = select( 'core/editor' );
+
+					let timeoutHandler;
+
+					const recheckInterval = setInterval(
+						() => {
+							if ( ! editor.isSavingPost() ) {
+								clearTimeout( timeoutHandler );
+								clearInterval( recheckInterval );
+
+								editor.didPostSaveRequestSucceed() ? resolve() : reject();
+							}
+						},
+						100,
+					);
+
+					// Seppuku after 7 seconds of uninterrupted fail
+					timeoutHandler = setTimeout(
+						() => {
+							clearInterval( recheckInterval );
+							reject();
+						},
+						7000,
+					);
+				},
+			)
+				.then( () => true )
+				.catch( () => false );
+
+			let response = null;
+			let errorStatus = null;
+
 			if ( ! actuallySaved ) {
 				createErrorNotice(
 					__( 'Failed to synchronize plugin data. Try saving again if saving failed. Otherwise, please reload the editor.', 'troy-server' ),
 					noticeOps,
 				);
 			} else {
-				// First attempt to get save status with a short delay. This is the answer to life, the universe, and everything.
-				await delay( 42 ); // Also, theseoframework.com's admin area is about this fast.
+				const getSaveStatus = async () => {
+					const response = await apiFetch( {
+						url:    addQueryArgs(
+							`${troyPluginEditorData.restUrls.getSaveStatus}`,
+							{ post_id: postId },
+						),
+						method: 'GET',
+						parse:  false,
+					} );
+
+					if ( response.ok )
+						return await response.json();
+
+					throw { status: response.status };
+				};
+
 				try {
+					// This is the answer to life, the universe, and everything. Also allows some time for the server to process.
+					await delay( 42 ); // theseoframework.com's admin area is about this fast.
 					response = await getSaveStatus();
 				} catch ( error ) {
 					errorStatus = error?.status || null;
@@ -464,22 +467,25 @@ const TroyServerPluginEditorStore = new class {
 							speak:         3 === seconds, // Speak only on the first notice
 						},
 					);
-					await new Promise( resolve => {
-						const interval = setInterval(
-							() => {
-								updateCountdown();
-								if ( --seconds < 0 ) {
-									clearInterval( interval );
-									resolve();
-								}
-							},
-							1000,
-						);
-					} );
+					// Countdown.
+					await new Promise(
+						resolve => {
+							const interval = setInterval(
+								() => {
+									updateCountdown();
+									if ( --seconds < 0 ) {
+										clearInterval( interval );
+										resolve();
+									}
+								},
+								1000,
+							);
+						},
+					);
 
 					try {
 						response = await getSaveStatus();
-					} catch ( error ) {} // Fall through to error notice below
+					} catch ( error ) {} // Fall through to error notice in the next scope below
 
 					removeNotice( countdownId );
 				}
@@ -618,7 +624,7 @@ const TroyServerPluginEditorStore = new class {
  * fetches initial data based on the current WordPress post ID, and provides
  * reactive data and methods to update the store.
  *
- * @since 0.0.11840
+ * @since 0.0.1184
  * @hook
  *
  * @return {Object} An object containing:
@@ -697,12 +703,12 @@ function troyServerGetPluginStore() {
 	// Return everything needed by components
 	return {
 		postId,
-		data:         editorData, // Reactive data from the store
-		isLoading:    isLoading,
+		data:       editorData, // Reactive data from the store
+		isLoading,
 		sortedVersions,
 		latestVersion,
 		allTabsEmpty,
-		setValue:     TroyServerPluginEditorStore.set.bind( TroyServerPluginEditorStore ),
-		setContent:   TroyServerPluginEditorStore.setContent.bind( TroyServerPluginEditorStore ),
+		setValue:   TroyServerPluginEditorStore.set.bind( TroyServerPluginEditorStore ),
+		setContent: TroyServerPluginEditorStore.setContent.bind( TroyServerPluginEditorStore ),
 	};
 }

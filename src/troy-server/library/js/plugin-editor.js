@@ -36,6 +36,7 @@
 	const HStack  = wp.components?.HStack || wp.components?.__experimentalHStack;
 
 	const { Spinner, Button } = wp.components;
+	const { Fill, Slot } = wp.components;
 	const apiFetch = wp.apiFetch;
 
 	// Import general components from editor-components
@@ -79,28 +80,34 @@
 		return JSX(
 			Fragment,
 			null,
-			isStoreLoading && JSX(
-				PluginDocumentSettingPanel,
+			JSX( // Always render to reserve the slot position.
+				Fill,
 				{
-					name:      'troy-plugin-store-loading-panel',
-					className: 'plugin-editor-loading',
+					name: 'PluginDocumentSettingPanel', // Hack? Not much else is accepted for plugins.
 				},
-				JSX(
-					HStack,
+				isStoreLoading && JSX(
+					VStack,
 					{
-						spacing:   2,
-						alignment: 'center',
+						spacing: 4,
+						className: 'troy-server-panel-loading-container',
 					},
 					JSX(
-						Spinner,
+						HStack,
 						{
-							size: 16,
+							spacing:   2,
+							alignment: 'left',
 						},
-					),
-					JSX(
-						'strong',
-						null,
-						__( 'Loading plugin data…', 'troy-server' ),
+						JSX(
+							Spinner,
+							{
+								className: 'troy-server-panel-loading-spinner',
+							},
+						),
+						JSX(
+							'span',
+							null,
+							__( 'Loading plugin data…', 'troy-server' ),
+						),
 					),
 				),
 			),
@@ -111,6 +118,7 @@
 					title:       __( 'Plugin Settings', 'troy-server' ),
 					icon:        'admin-plugins',
 					initialOpen: ! slugSet,
+					className:   isStoreLoading ? 'troy-server-panel--loading' : '',
 				},
 				JSX(
 					VStack,
@@ -222,6 +230,7 @@
 					title:        __( 'Plugin Versions', 'troy-server' ),
 					initialOpen:  true,
 					icon:         'media-archive',
+					className:    isStoreLoading ? 'troy-server-panel--loading' : '',
 				},
 				JSX(
 					PluginVersionsControl,

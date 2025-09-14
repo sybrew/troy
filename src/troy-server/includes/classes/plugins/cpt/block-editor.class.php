@@ -61,7 +61,7 @@ final class Block_Editor {
 	 *       Any missing fields here will cause the Block Editor to not save the
 	 *       post data, so, this makes the above TODO even more important to allow
 	 *       for extensibility.
-	 * @hook register_post_meta 10
+	 * @hook rest_api_init 10
 	 * @since 0.0.1184
 	 */
 	public static function register_post_meta() {
@@ -806,7 +806,8 @@ final class Block_Editor {
 	}
 
 	/**
-	 * Adjust the theme.json settings for the Block Editor.
+	 * Adjust the theme.json settings for the Block Editor, but only for
+	 * the Troy Plugins post type in the admin area.
 	 *
 	 * @hook wp_theme_json_data_theme 10
 	 * @since 0.0.1184

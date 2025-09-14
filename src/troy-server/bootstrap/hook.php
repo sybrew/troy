@@ -8,11 +8,12 @@ namespace Troy\Server\Bootstrap\Hook;
 
 \defined( 'Troy\Server\ABSPATH' ) or die;
 
+use const Troy\Server\PLUGINS_CPT;
+
 use Troy\Server\{
 	Cron,
 	Endpoints,
 	Plugins,
-	// Themes, // TODO
 };
 
 /**
@@ -45,6 +46,13 @@ use Troy\Server\{
 plugins: {
 	// Register the plugin's post meta fields, but only for REST API requests (i.e. saving).
 	\add_action( 'rest_api_init', [ Plugins\CPT\Block_Editor::class, 'register_post_meta' ] );
+
+	// Handle plugin storage. These hooks can exist on non-admin endpoints (e.g., REST API).
+	\add_action( 'rest_after_insert_' . PLUGINS_CPT, [ Plugins\CPT\Store::class, 'handle_rest_after_insert_post' ] );
+	\add_action( 'trash_' . PLUGINS_CPT, [ Plugins\CPT\Store::class, 'handle_trash_post' ] );
+	\add_action( 'untrashed_post', [ Plugins\CPT\Store::class, 'handle_untrash_post' ] );
+	\add_action( 'delete_post_' . PLUGINS_CPT, [ Plugins\CPT\Store::class, 'handle_delete_post' ] );
+	\add_filter( 'wp_insert_post_empty_content', [ Plugins\CPT\Store::class, 'unset_empty_post' ], 10, 2 );
 
 	// Register plugin cron schedules globally.
 	\add_filter( 'cron_schedules', [ Plugins\Cron::class, 'register_schedules' ] );

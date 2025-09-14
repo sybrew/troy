@@ -56,13 +56,6 @@ use Troy\Server\{
 \add_filter( 'manage_edit-' . PLUGINS_CPT . '_sortable_columns', [ Plugins\CPT\List_View::class, 'register_sortable_columns' ] );
 \add_action( 'load-edit.php', [ Plugins\CPT\List_View::class, 'register_list_edit_hooks' ] );
 
-// Register updating the CPTs.
-\add_action( 'save_post_' . PLUGINS_CPT, [ Plugins\CPT\Store::class, 'handle_save_post' ], 10, 2 );
-\add_action( 'trash_' . PLUGINS_CPT, [ Plugins\CPT\Store::class, 'handle_trash_post' ] );
-\add_action( 'untrashed_post', [ Plugins\CPT\Store::class, 'handle_untrash_post' ] );
-\add_action( 'delete_post_' . PLUGINS_CPT, [ Plugins\CPT\Store::class, 'handle_delete_post' ] );
-\add_filter( 'wp_insert_post_empty_content', [ Plugins\CPT\Store::class, 'unset_empty_post' ], 10, 2 );
-
 // Handle user deletion cleanup.
 \add_action( 'delete_user', [ Plugins\CPT\Store::class, 'handle_user_deletion' ], 10, 2 );
 

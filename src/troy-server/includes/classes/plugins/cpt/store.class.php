@@ -67,6 +67,14 @@ use Troy\Server\Plugins\{
  *
  * Handles the storage of plugin data in the PLUGINS_CPT custom post type.
  *
+ * How the store works:
+ * 1. The metadata is registered via `Troy\Server\Plugins\CPT\Block_Editor::register_post_meta()`.
+ * 2. The post is saved (REST or classic) via WordPress Core, it automatically saves the post meta.
+ * 3. The post meta is sanizied via the `sanitize_callback` of `register_post_meta()`, which is `sanitize_editor_plugin_data()` below.
+ * 4. Once the post is done saving, `handle_after_insert_post()` is called via `wp_after_insert_post`.
+ * 5. `handle_save_post()` extracts the data from the post meta and block content and saves it to custom Troy Server tables.
+ * 6. The function then deletes any redundant data from the post and post meta, such as the content.
+ *
  * @since 0.0.1184
  */
 final class Store {
@@ -189,22 +197,24 @@ final class Store {
 	}
 
 	/**
-	 * Handles the save_post action for the PLUGINS_CPT CPT.
-	 * Extracts data from post meta (as submitted by editor) and block content,
-	 * then saves it to custom tables.
+	 * Handles post insertion/update after all meta is processed via REST.
 	 *
-	 * @hook save_post_{Troy\Server\PLUGINS_CPT} 10
+	 * Extracts data from post meta and block content, then saves it to custom tables.
+	 * Finally, it deletes redundant data from the post and post meta.
+	 *
+	 * @hook rest_after_insert_{Troy\Server\PLUGINS_CPT} 10
 	 * @since 0.0.1184
 	 *
-	 * @param int     $post_id The post ID being saved.
-	 * @param WP_Post $post    The post object being saved.
+	 * @param WP_Post $post The post object.
 	 */
-	public static function handle_save_post( $post_id, $post ) {
+	public static function handle_rest_after_insert_post( $post ) {
+
+		$post_id = $post?->ID;
 
 		if (
 			   empty( $post_id ) // It's technically possible to save a post without an ID. Let's forgo those.
-			|| \wp_is_post_autosave( $post_id ) // Let's assume that the autosave contains unintentional edits.
-			|| \wp_is_post_revision( $post_id ) // Revisions are not supported. Use version control at Hub/Lab/Bucket instead.
+			|| \wp_is_post_autosave( $post ) // Let's assume that the autosave contains unintentional edits. Note that an autosave is a revision.
+			|| \wp_is_post_revision( $post ) // Revisions are not supported. Use version control at Hub/Lab/Bucket instead.
 			|| 'auto-draft' === $post->post_status // We cannot do much if the post is still an auto-draft (i.e., new post).
 			|| ! \current_user_can( 'edit_post', $post_id ) // Redundant sanity check.
 		) return;
@@ -218,16 +228,16 @@ final class Store {
 			],
 		);
 
-		// Sanitization is also done in the `sanitize_callback` of `register_post_meta()`, but appears unreliable.
+		// Sanitization is registered via `register_post_meta()` and done before this callback is run.
 		$data = array_merge(
-			self::get_default_plugin_data(),
+			static::get_default_plugin_data(),
 			// This data has already been sanitized by the callback of register_post_meta.
 			\get_post_meta( $post_id, 'troy_server_plugin_data', true ) ?: [],
 		);
 
 		$plugin_id_by_post_id = get_plugin_id_by_post_id( $post_id );
 
-		// WE don't actually need the plugin ID, for we can fetch it via the post ID.
+		// We don't actually need the plugin ID, for we can fetch it via the post ID.
 		if ( empty( $data['plugin_id'] ) ) {
 			$data['plugin_id'] = $plugin_id_by_post_id;
 		} elseif ( $data['plugin_id'] !== $plugin_id_by_post_id ) {
@@ -242,6 +252,7 @@ final class Store {
 			);
 			return;
 		}
+
 		switch ( true ) {
 			case empty( $data['plugin_id'] ):
 			case empty( $data['slug'] ):
@@ -550,7 +561,7 @@ final class Store {
 			update_infos: {
 				// TODO... locale is a big endeavor. We must add a toggle to the interface, or add a new interface
 				$locale       = \get_locale() ?: 'en_US';
-				$info_version = $working_version ?: 'ò.ó'; // 'ò.ó' is a placeholder for "no version".
+				$info_version = $working_version ?: 'ò.ó'; // 'ò.ó' is a placeholder for "no version" (it may not be empty).
 
 				// JSON decode is significantly inefficient, but we can cache the outputs later.
 				// It takes about 0.0028s to decode TSF's readme.txt, allowing 357 info requests per second.
