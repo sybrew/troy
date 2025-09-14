@@ -526,11 +526,12 @@
 				} = troyServerGetPluginStore();
 
 				const pluginAuthor = storeData.author_id;
+				const { AUTHORS_QUERY } = troyServerConstants;
 
 				// Resolve author name from core store
 				const authorName = useSelect(
 					select => pluginAuthor
-						? select( 'core' ).getUser( pluginAuthor )?.name || ''
+						? select( 'core' ).getUser( pluginAuthor, AUTHORS_QUERY )?.name || ''
 						: '',
 					[ pluginAuthor ],
 				);

@@ -26,7 +26,7 @@
 
 /**
  * @module troy-server-editor-utils
- * @description Components for the Troy Server plugin and theme editor.
+ * @description Utilities for the Troy Server plugin and theme editor.
  * @since 0.0.1184
  * @link
  */

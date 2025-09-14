@@ -42,6 +42,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 		sprintf,
 		_n,
 	} = wp.i18n;
+	const { decodeEntities } = wp.htmlEntities;
 	const {
 		TextControl,
 		Button,
@@ -50,7 +51,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 		Dropdown,
 		RadioControl,
 		SelectControl,
-		Spinner,
+		ComboboxControl,
 	} = wp.components;
 	const { useSelect } = wp.data;
 
@@ -68,6 +69,11 @@ window.troyServerPluginEditorComponents = ( wp => {
 		PanelRow,
 		createPopoverProps,
 	} = troyServerEditorComponents;
+
+	const {
+		AUTHORS_BASE_QUERY,
+		AUTHORS_QUERY,
+	} = troyServerConstants;
 
 	/**
 	 * MenuDropdown component - wrapper around WordPress Dropdown with custom styling.
@@ -543,7 +549,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 				if ( ! placeHolderURL )
 					setPlaceHolderURL( select( 'core/editor' ).getPermalink() );
 			},
-			[],
+			[ placeHolderURL ],
 		);
 
 		return JSX(
@@ -972,13 +978,13 @@ window.troyServerPluginEditorComponents = ( wp => {
 				JSX(
 					TextControl,
 					{
-						label:    __( 'Or Enter ZIP URL', 'troy-server' ),
-						value:    zipUrl,
-						onChange: handleUrlChange,
-						type:     'url',
-						disabled: isLoading,
+						label:                   __( 'Or Enter ZIP URL', 'troy-server' ),
+						value:                   zipUrl,
+						onChange:                handleUrlChange,
+						type:                    'url',
+						disabled:                isLoading,
 						__nextHasNoMarginBottom: true,
-						__next40pxDefaultSize: true,
+						__next40pxDefaultSize:   true,
 					},
 				),
 				JSX(
@@ -1212,8 +1218,11 @@ window.troyServerPluginEditorComponents = ( wp => {
 		handleRemoveToggle,
 	} ) {
 
-		const isRemovedVersion    = version.remove;
-		const { sanitizeRepoUrl } = troyServerEditorUtils;
+		const isRemovedVersion = version.remove;
+		const {
+			sanitizeRepoUrl,
+			bytesToIbiBytes,
+		} = troyServerEditorUtils;
 
 		return JSX(
 			Fragment,
@@ -1314,7 +1323,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 							MetadataItem,
 							{
 								label: __( 'File size:', 'troy-server' ),
-								value: troyServerEditorUtils.bytesToIbiBytes( version.file_size ),
+								value: bytesToIbiBytes( version.file_size ),
 							},
 						),
 						version.tested_wp && JSX(
@@ -1538,6 +1547,73 @@ window.troyServerPluginEditorComponents = ( wp => {
 	}
 
 	/**
+	 * Custom hook for querying authors with search functionality.
+	 *
+	 * @since 0.0.1184
+	 *
+	 * @param {string}  search   The search term to filter authors.
+	 * @returns {Object} Object containing authorOptions, isLoading, and showCombobox.
+	 */
+	function useAuthorsQuery( search = '' ) {
+
+		const showCombobox = useSelect(
+			select => {
+				return select( 'core' ).getUsers( AUTHORS_QUERY )?.length >= 25; // 25 is also used in WordPress core.
+			},
+			[],
+		);
+
+		// Get authors list (and optionally search)
+		const { authors, isLoading } = useSelect(
+			select => {
+				const { getUsers, isResolving } = select( 'core' );
+				const query = { ...AUTHORS_QUERY };
+
+				// Add search if using combobox and search term exists
+				if ( search ) {
+					query.search         = search;
+					query.search_columns = [ 'name' ];
+				}
+
+				return {
+					authors:   getUsers( query ),
+					isLoading: isResolving( 'getUsers', [ query ] ),
+				};
+			},
+			[ search ],
+		);
+
+		// Create author options
+		const authorOptions = useMemo(
+			() => {
+				const fetchedAuthors = ( authors ?? [] )
+					.filter( author => author?.id && author?.name ) // Safety filter
+					.map( author => ( {
+						value: author.id,
+						label: decodeEntities( `${author.name} [${author.id}]` ),
+					} ) );
+
+				// For SelectControl, prepend placeholder when using SelectControl
+				if ( ! showCombobox ) {
+					return [
+						{ value: 0, label: __( 'Select an author…', 'troy-server' ) },
+						...fetchedAuthors,
+					];
+				}
+
+				return fetchedAuthors;
+			},
+			[ authors, showCombobox ],
+		);
+
+		return {
+			authorOptions,
+			isLoading,
+			showCombobox,
+		};
+	}
+
+	/**
 	 * Plugin Author Popover Control component.
 	 *
 	 * @since 0.0.1184
@@ -1554,30 +1630,17 @@ window.troyServerPluginEditorComponents = ( wp => {
 	function PluginAuthorPopover( { onClose, authorId, setStoreValue } ) {
 
 		const [ selectedAuthorId, setSelectedAuthorId ] = useState( authorId || 0 );
+		const [ filterValue, setFilterValue ] = useState( '' );
 
-		const authorArgs = useMemo(
-			() => ( {
-				who:      'authors',
-				per_page: -1,
-				_fields:  'id,name',
-				context:  'view',
-			} ),
-			[],
-		);
+		const { debounce } = troyServerEditorUtils;
 
-		const { authors, isLoading } = useSelect(
-			select => {
-				const { getUsers, isResolving } = select( 'core' );
-				return {
-					authors:   getUsers( authorArgs ) || [],
-					isLoading: isResolving( 'getUsers', [ authorArgs ] ),
-				};
-			},
-			[],
+		// Use the custom hook for all author-related data
+		const { authorOptions, isLoading, showCombobox } = useAuthorsQuery(
+			filterValue,
 		);
 
 		const handleAuthorChange = newAuthorId => {
-			const authorId = parseInt( newAuthorId );
+			const authorId = parseInt( newAuthorId ) || 0;
 			setSelectedAuthorId( authorId );
 			setStoreValue( 'author_id', authorId );
 		};
@@ -1597,40 +1660,35 @@ window.troyServerPluginEditorComponents = ( wp => {
 				{
 					spacing: 4,
 				},
-				isLoading
+				showCombobox
 					? JSX(
-						HStack,
+						ComboboxControl,
 						{
-							spacing:   2,
-							alignment: 'center',
+							label:                   __( 'Author', 'troy-server' ),
+							value:                   selectedAuthorId || '',
+							options:                 authorOptions,
+							onChange:                handleAuthorChange,
+							onFilterValueChange:     debounce( setFilterValue, 300 ),
+							help:                    __( 'Type to search for authors. Choose the author who will be displayed for this plugin.', 'troy-server' ),
+							hideLabelFromVision:     true,
+							isLoading,
+							allowReset:              true,
+							placeholder:             __( 'Search authors…', 'troy-server' ),
+							__nextHasNoMarginBottom: true,
+							__next40pxDefaultSize:   true,
 						},
-						JSX( Spinner ),
-						JSX(
-							'span',
-							null,
-							__( 'Loading authors…', 'troy-server' ),
-						),
 					)
 					: JSX(
 						SelectControl,
 						{
-							label:    __( 'Author', 'troy-server' ),
-							value:    selectedAuthorId,
-							options:  [
-								{
-									label: __( 'Select an author…', 'troy-server' ),
-									value: 0,
-								},
-								...( authors || [] ).map( author => ( {
-									label: `${author.name} [${author.id}]`,
-									value: author.id,
-								} ) ),
-							],
-							onChange: handleAuthorChange,
-							help:     __( 'Choose the author who will be displayed for this plugin.', 'troy-server' ),
-							hideLabelFromVision: true,
+							label:                   __( 'Author', 'troy-server' ),
+							value:                   selectedAuthorId,
+							options:                 authorOptions,
+							onChange:                handleAuthorChange,
+							help:                    __( 'Choose the author who will be displayed for this plugin.', 'troy-server' ),
+							hideLabelFromVision:     true,
 							__nextHasNoMarginBottom: true,
-							__next40pxDefaultSize: true,
+							__next40pxDefaultSize:   true,
 						},
 					),
 			),
@@ -1658,18 +1716,20 @@ window.troyServerPluginEditorComponents = ( wp => {
 			[ popoverAnchor ]
 		);
 
-		// Get author name from WordPress core data store
+		// Get author name directly from WordPress core data store (following WordPress core pattern)
 		const authorName = useSelect(
 			select => {
 				if ( ! authorId ) return '';
 
-				const user = select( 'core' ).getUser( authorId );
+				const user = select( 'core' ).getUser( authorId, AUTHORS_BASE_QUERY );
 				return user?.name || '';
 			},
 			[ authorId ],
 		);
 
-		const displayText = authorName || __( 'No author set', 'troy-server' );
+		const displayText = authorName
+			? decodeEntities( authorName )
+			: __( 'No author set', 'troy-server' );
 
 		return JSX(
 			PanelRow,

@@ -567,6 +567,14 @@ final class Block_Editor {
 		);
 
 		\wp_enqueue_script(
+			'troy-server-constants',
+			"{$dir_url}library/js/constants{$min}.js",
+			[],
+			VERSION,
+			true, // Load in footer.
+		);
+
+		\wp_enqueue_script(
 			'troy-server-plugin-editor-components',
 			"{$dir_url}library/js/plugin-editor-components{$min}.js",
 			[
@@ -577,6 +585,7 @@ final class Block_Editor {
 				'wp-block-editor',
 				'troy-server-editor-utils',
 				'troy-server-editor-components',
+				'troy-server-constants',
 			],
 			VERSION,
 			true, // Load in footer.
@@ -612,6 +621,7 @@ final class Block_Editor {
 				'wp-components',
 				'wp-block-editor',
 				'troy-server-plugin-editor-store',
+				'troy-server-constants',
 			],
 			VERSION,
 			true, // Load in footer.
