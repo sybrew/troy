@@ -63,7 +63,7 @@ namespace Troy\Client\Daemon;
  */
 const ACTIVE = true;
 
-\add_action( 'muplugins_loaded', 'Troy\Client\Daemon\force_activate_troy_client' );
+\add_action( 'muplugins_loaded', 'Troy\Client\Daemon\check_troy_client' );
 \add_action( 'admin_init', 'Troy\Client\Daemon\remove_deactivation_elements' );
 
 /**
@@ -73,7 +73,7 @@ const ACTIVE = true;
  * @hook muplugins_loaded 10
  * @since 0.0.1184
  */
-function force_activate_troy_client() {
+function check_troy_client() {
 
 	$plugin_file  = 'troy-client/troy-client.php';
 	$is_multisite = \is_multisite();
@@ -84,60 +84,10 @@ function force_activate_troy_client() {
 
 	if ( ! $is_troy_active ) {
 		\add_filter( 'pre_http_request', 'Troy\Client\Daemon\block_wordpress_api', 10, 3 );
+		\add_action( 'plugins_loaded', 'Troy\Client\Daemon\install_and_activate_troy_client' );
 	} elseif ( ! $is_multisite ) {
 		// Add a later sanity check for recovery mode where the plugin can still be deactivated.
 		\add_action( 'plugins_loaded', 'Troy\Client\Daemon\check_client_paused' );
-	}
-
-	if ( ! $is_troy_active ) {
-		if ( ! \function_exists( 'get_plugins' ) )
-			require_once \ABSPATH . 'wp-admin/includes/plugin.php';
-
-		$troy_plugin = \get_plugins()[ $plugin_file ] ?? '';
-
-		if ( ! $troy_plugin ) {
-			$client_url = 'https://repo.deploytroy.org/plugin/get/zip/troy-client/';
-
-			\add_filter(
-				'http_headers_useragent',
-				fn( $user_agent, $url ) => $url === $client_url ? 'Troy Daemon' : $user_agent,
-				10,
-				2,
-			);
-
-			$result = ( new \Plugin_Upgrader(
-				// Silent skin class.
-				new class extends \stdClass {
-					/**
-					 * @since 0.0.1184
-					 * @param string $name      The method name.
-					 * @param array  $arguments The method arguments.
-					 * @return mixed|void
-					 */
-					public function __call( $name, $arguments ) {} // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis
-					/**
-					 * @since 0.0.1184
-					 * @param string $name      The method name.
-					 * @param array  $arguments The method arguments.
-					 * @return mixed|void
-					 */
-					public static function __callStatic( $name, $arguments ) {} // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis
-				}
-			) )->install(
-				$client_url,
-				[ 'overwrite_package' => true ],
-			);
-
-			if ( true !== $result )
-				return;
-
-			\wp_clean_plugins_cache();
-
-			$troy_plugin = \get_plugins()[ $plugin_file ] ?? '';
-		}
-
-		if ( $troy_plugin )
-			\activate_plugin( $plugin_file, '', $is_multisite, true );
 	}
 }
 
@@ -150,6 +100,67 @@ function force_activate_troy_client() {
 function check_client_paused() {
 	if ( \is_plugin_paused( 'troy-client/troy-client.php' ) )
 		\add_filter( 'pre_http_request', 'Troy\Client\Daemon\block_wordpress_api', 10, 3 );
+}
+
+/**
+ * Installs and activates the Troy Client plugin.
+ *
+ * If the plugin is not installed, it will be installed from the DeployTroy repository.
+ *
+ * @hook plugins_loaded 10
+ * @since 0.0.1184
+ */
+function install_and_activate_troy_client() {
+
+	if ( ! \function_exists( 'get_plugins' ) )
+		require_once \ABSPATH . 'wp-admin/includes/plugin.php';
+
+	$plugin_file = 'troy-client/troy-client.php';
+	$troy_plugin = \get_plugins()[ $plugin_file ] ?? '';
+
+	if ( ! $troy_plugin ) {
+		$client_url = 'https://repo.deploytroy.org/plugin/get/zip/troy-client/';
+
+		\add_filter(
+			'http_headers_useragent',
+			fn( $user_agent, $url ) => $url === $client_url ? 'Troy Daemon' : $user_agent,
+			10,
+			2,
+		);
+
+		$result = ( new \Plugin_Upgrader(
+			// Silent skin class.
+			new class extends \stdClass {
+				/**
+				 * @since 0.0.1184
+				 * @param string $name      The method name.
+				 * @param array  $arguments The method arguments.
+				 * @return mixed|void
+				 */
+				public function __call( $name, $arguments ) {} // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis
+				/**
+				 * @since 0.0.1184
+				 * @param string $name      The method name.
+				 * @param array  $arguments The method arguments.
+				 * @return mixed|void
+				 */
+				public static function __callStatic( $name, $arguments ) {} // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis
+			}
+		) )->install(
+			$client_url,
+			[ 'overwrite_package' => true ],
+		);
+
+		if ( true !== $result )
+			return;
+
+		\wp_clean_plugins_cache();
+
+		$troy_plugin = \get_plugins()[ $plugin_file ] ?? '';
+	}
+
+	if ( $troy_plugin )
+		\activate_plugin( $plugin_file, '', $is_multisite, true );
 }
 
 /**
