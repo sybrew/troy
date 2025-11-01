@@ -50,9 +50,7 @@
 		'troy-server-plugin-editor-readme-warning': {
 			type:    'warning',
 			message: __( 'No valid readme found in current version.', 'troy-server' ), // TODO explain what a valid readme is, add link to docs
-			options: {
-				isDismissible: false,
-			},
+			options: { isDismissible: false },
 			show: storeData => storeData.slug
 				&& 'readme' === storeData.builder_type
 				&& ! Object.values( storeData.contents || {} ).some( c => c.length ),
@@ -60,11 +58,10 @@
 		'troy-server-store-is-loading': {
 			type:    'info',
 			message: __( 'Loading plugin data…', 'troy-server' ),
-			options: {
-				isDismissible: false,
-			},
+			options: { isDismissible: false },
 			show: storeData => ! storeData || storeData.isLoading,
 		},
+		// TODO add Integration notice here for when an integration has a fail state
 	};
 
 	/**

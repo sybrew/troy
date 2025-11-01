@@ -57,7 +57,6 @@
 			setContent,
 		} = troyServerGetPluginStore();
 
-		// const [ isLoading, setIsLoading ]           = useState( false );
 		const [ hasInitialized, setHasInitialized ] = useState( false );
 
 		const template = useSelect(
@@ -88,16 +87,11 @@
 					|| 'readme' !== storeData.builder_type
 				) return;
 
-				// setIsLoading( true );
-
 				if ( ! latestVersion ) {
 					// Empty all content tabs if no latest version is set (e.g., all versions are marked for removal)
 					Object.keys( troyPluginEditorData.contentTabs ).forEach( tabId => {
 						setContent( tabId, '' );
 					} );
-
-					// Set loading to false; we defer to resetting the template.
-					// setIsLoading( false );
 					return;
 				}
 

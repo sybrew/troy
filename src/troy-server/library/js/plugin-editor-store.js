@@ -102,6 +102,11 @@ const TroyServerPluginEditorStore = new class {
 	 *     @property {string}        contents.api            API documentation for the plugin.
 	 *     @property {string}        contents.changelog      Changelog information for the plugin.
 	 *     @property {string}        contents.screenshots    Screenshots of the plugin in use.
+	 *     @property {?Object}       integrations            Integration configuration for external sources. Null if no integration is set.
+	 *     @property {string}        integrations.mode       The integration mode (e.g., 'github', 'wporg', '').
+	 *     @property {Object}        integrations.settings   Integration-specific settings, with indexes owner_repo, token, slug.
+	 *     @property {Object}        integrations.tags       Fetched tags from integration source, with indexes version, download_url, type.
+	 *     @property {Boolean}       integrations.remove     Whether the integration is marked for removal.
 	 * }
 	 */
 	#defaults = troyPluginEditorStoreData.defaultData;
@@ -703,12 +708,12 @@ function troyServerGetPluginStore() {
 	// Return everything needed by components
 	return {
 		postId,
-		data:       editorData, // Reactive data from the store
+		data:          editorData,
 		isLoading,
 		sortedVersions,
 		latestVersion,
 		allTabsEmpty,
-		setValue:   TroyServerPluginEditorStore.set.bind( TroyServerPluginEditorStore ),
-		setContent: TroyServerPluginEditorStore.setContent.bind( TroyServerPluginEditorStore ),
+		setValue:      TroyServerPluginEditorStore.set.bind( TroyServerPluginEditorStore ),
+		setContent:    TroyServerPluginEditorStore.setContent.bind( TroyServerPluginEditorStore ),
 	};
 }

@@ -27,16 +27,16 @@
 ( wp => {
 	const { registerPlugin }               = wp.plugins;
 	const { PluginDocumentSettingPanel }   = wp.editor;
-	const { createElement: JSX, Fragment } = wp.element;
 	const { __, sprintf }                  = wp.i18n;
 	const { useDispatch }                  = wp.data;
+	const { createElement: JSX, Fragment } = wp.element;
 
 	// Experimental components
 	const VStack  = wp.components?.VStack || wp.components?.__experimentalVStack;
 	const HStack  = wp.components?.HStack || wp.components?.__experimentalHStack;
 
 	const { Spinner, Button } = wp.components;
-	const { Fill, Slot } = wp.components;
+	const { Fill } = wp.components;
 	const apiFetch = wp.apiFetch;
 
 	// Import general components from editor-components
@@ -49,11 +49,13 @@
 	const {
 		PluginSlugControl,
 		PluginStatusControl,
+		AutoProcessTagsControl,
 		PluginAuthorControl,
 		ShortDescriptionControl,
 		UrlsControl,
 		ReadmeSettingsControl,
 		PluginVersionsControl,
+		IntegrationControl,
 	} = troyServerPluginEditorComponents;
 
 	/**
@@ -74,17 +76,40 @@
 		} = troyServerGetPluginStore();
 
 		const { createNotice } = useDispatch( 'core/notices' );
+		const slugSet          = !! storeData.slug;
 
-		const slugSet = !! storeData.slug;
+		const addVersion = versionData => {
+
+			const versions      = storeData.versions || [];
+			const existingIndex = versions.findIndex( v => v.version === versionData.version );
+
+			if ( -1 !== existingIndex ) {
+				const newVersions = [ ...versions ];
+				newVersions[ existingIndex ] = versionData;
+				setStoreValue( 'versions', newVersions );
+			} else {
+				setStoreValue( 'versions', [ ...versions, versionData ] );
+			}
+		};
+
+		const updateVersion = versionData => {
+
+			const versions      = storeData.versions || [];
+			const existingIndex = versions.findIndex( v => v.version === versionData.version );
+
+			if ( -1 !== existingIndex ) {
+				const newVersions = [ ...versions ];
+				newVersions[ existingIndex ] = versionData;
+				setStoreValue( 'versions', newVersions );
+			}
+		};
 
 		return JSX(
 			Fragment,
 			null,
 			JSX( // Always render to reserve the slot position.
 				Fill,
-				{
-					name: 'PluginDocumentSettingPanel', // Hack? Not much else is accepted for plugins.
-				},
+				{ name: 'PluginDocumentSettingPanel' }, // Hack? Not much else is accepted for plugins.
 				isStoreLoading && JSX(
 					VStack,
 					{
@@ -99,9 +124,7 @@
 						},
 						JSX(
 							Spinner,
-							{
-								className: 'troy-server-panel-loading-spinner',
-							},
+							{ className: 'troy-server-panel-loading-spinner' },
 						),
 						JSX(
 							'span',
@@ -122,104 +145,179 @@
 				},
 				JSX(
 					VStack,
-					{
-						spacing: 4,
-					},
-					JSX(
-						VStack,
+					{ spacing: 1 },
+					storeData.plugin_id && JSX(
+						PanelRow,
 						{
-							spacing: 1,
+							label: __( 'Plugin ID', 'troy-server' ),
 						},
-						storeData.plugin_id && JSX(
-							PanelRow,
+						JSX(
+							Button,
 							{
-								label: __( 'Plugin ID', 'troy-server' ),
-							},
-							JSX(
-								Button,
-								{
-									variant:  'tertiary',
-									size:     'compact',
-									// disabled: true, // Let's not disable it, it's too grey.
-									style:    {
-										// No interaction available -- just copying styles.
-										cursor:        'default',
-										pointerEvents: 'none',
-									},
+								variant:  'tertiary',
+								size:     'compact',
+								// disabled: true, // Let's not disable it, it's too grey.
+								style:    {
+									// No interaction available -- just copying styles.
+									cursor:        'default',
+									pointerEvents: 'none',
 								},
-								storeData.plugin_id,
-							),
+							},
+							storeData.plugin_id,
+						),
+					),
+					JSX(
+						PluginSlugControl,
+						{
+							postId,
+							plugin_slug:   storeData.slug,
+							storeSlug:     value => setStoreValue( 'slug', value ),
+							storePluginId: value => setStoreValue( 'plugin_id', value ),
+						},
+					),
+					slugSet && JSX(
+						Fragment,
+						null,
+						JSX(
+							PluginStatusControl,
+							{
+								status:       storeData.status,
+								updateStatus: value => setStoreValue( 'status', value ),
+							},
 						),
 						JSX(
-							PluginSlugControl,
+							PluginAuthorControl,
 							{
-								postId,
-								plugin_slug:   storeData.slug,
-								storeSlug:     value => setStoreValue( 'slug', value ),
-								storePluginId: value => setStoreValue( 'plugin_id', value ),
+								authorId:     storeData.author_id,
+								updateAuthor: value => setStoreValue( 'author_id', value ),
 							},
 						),
-						slugSet && JSX(
-							Fragment,
-							null,
-							JSX(
-								PluginStatusControl,
-								{
-									status: storeData.status,
-									setStoreValue,
-								},
-							),
-							JSX(
-								PluginAuthorControl,
-								{
-									authorId: storeData.author_id,
-									setStoreValue,
-								},
-							),
-							JSX(
-								ShortDescriptionControl,
-								{
-									storeData,
-									setStoreValue,
-								},
-							),
-							JSX(
-								UrlsControl,
-								{
-									storeData,
-									setStoreValue,
-								},
-							),
-							JSX(
-								ImageUploadControl,
-								{
-									label:         __( 'Banner', 'troy-server' ),
-									aspectRatio:   '772/250',
-									value:         storeData.banner_uri,
-									help:          __( 'This image is displayed at the top of the plugin info sections. Recommended size: 1544x500 pixels.', 'troy-server' ),
-									copyToBlock:   'troy-server/plugin-banner',
-									storeImageUri: value => setStoreValue( 'banner_uri', value ),
-								},
-							),
-							JSX(
-								ImageUploadControl,
-								{
-									label:         __( 'Logo', 'troy-server' ),
-									aspectRatio:   '1/1',
-									value:         storeData.logo_uri,
-									help:          __( 'This image is displayed as the plugin logo. Recommended size: 256x256 pixels.', 'troy-server' ),
-									copyToBlock:   'troy-server/plugin-logo',
-									storeImageUri: value => setStoreValue( 'logo_uri', value ),
-								},
-							),
-							JSX(
-								ReadmeSettingsControl,
-								{
-									builderType:       storeData.builder_type,
-									updateBuilderType: value => setStoreValue( 'builder_type', value ),
-								},
-							),
+						JSX(
+							ShortDescriptionControl,
+							{
+								description:       storeData.short_description || '',
+								updateDescription: value => setStoreValue( 'short_description', value ),
+							},
 						),
+						JSX(
+							UrlsControl,
+							{
+								permalink:       storeData.permalink || '',
+								supportUri:      storeData.support_uri || '',
+								updatePermalink: value => setStoreValue( 'permalink', value ),
+								updateSupport:   value => setStoreValue( 'support_uri', value ),
+							},
+						),
+						JSX(
+							ImageUploadControl,
+							{
+								label:         __( 'Banner', 'troy-server' ),
+								aspectRatio:   '772/250',
+								value:         storeData.banner_uri,
+								help:          __( 'This image is displayed at the top of the plugin info sections. Recommended size: 1544x500 pixels.', 'troy-server' ),
+								copyToBlock:   'troy-server/plugin-banner',
+								storeImageUri: value => setStoreValue( 'banner_uri', value ),
+							},
+						),
+						JSX(
+							ImageUploadControl,
+							{
+								label:         __( 'Logo', 'troy-server' ),
+								aspectRatio:   '1/1',
+								value:         storeData.logo_uri,
+								help:          __( 'This image is displayed as the plugin logo. Recommended size: 256x256 pixels.', 'troy-server' ),
+								copyToBlock:   'troy-server/plugin-logo',
+								storeImageUri: value => setStoreValue( 'logo_uri', value ),
+							},
+						),
+						JSX(
+							ReadmeSettingsControl,
+							{
+								builderType:       storeData.builder_type,
+								updateBuilderType: value => setStoreValue( 'builder_type', value ),
+							},
+						),
+					),
+				),
+			),
+			slugSet && JSX(
+				PluginDocumentSettingPanel,
+				{
+					name:        'troy-plugin-integrations-panel',
+					title:       __( 'Integrations', 'troy-server' ),
+					initialOpen: false,
+					icon:        'admin-plugins',
+					className:   isStoreLoading ? 'troy-server-panel--loading' : '',
+				},
+				JSX(
+					VStack,
+					{ spacing: 1 },
+					JSX(
+						Fragment,
+						null,
+						storeData.integrations?.mode && JSX(
+							AutoProcessTagsControl,
+							{
+								autoProcess:    storeData.integrations?.auto_process || 'all',
+								setAutoProcess: value => setStoreValue(
+									'integrations',
+									{
+										...storeData.integrations,
+										auto_process: value,
+									},
+								),
+							},
+						),
+					),
+					JSX(
+						Fragment,
+						null,
+						[
+							{
+								mode:  'github',
+								label: __( 'GitHub', 'troy-server' ),
+							},
+							{
+								mode:  'wporg',
+								label: __( 'WordPress.org', 'troy-server' ),
+							},
+						].map( integration => JSX(
+							IntegrationControl,
+							{
+								key:                   `troy-plugin-integration-control--${integration.mode}`,
+								mode:                  integration.mode,
+								label:                 integration.label,
+								pluginId:              storeData.plugin_id,
+								integration:           storeData.integrations,
+								storeIntegration:      value => setStoreValue( 'integrations', value ),
+								disconnectIntegration: () => setStoreValue( 'integrations', null ),
+								onTagProcessed: ( { tagName, version } ) => {
+
+									const versions      = storeData.versions || [];
+									const existingIndex = versions.findIndex( v => v.version === version.version );
+
+									if ( -1 !== existingIndex ) {
+										updateVersion( version );
+									} else {
+										addVersion( version );
+									}
+
+									createNotice(
+										'success',
+										sprintf(
+											/* translators: %1$s is the tag name, %2$s is the version number */
+											__( 'Tag %1$s is imported as version %2$s.', 'troy-server' ),
+											tagName,
+											version.version,
+										),
+										{
+											isDismissible: true,
+											type:          'snackbar',
+										},
+									);
+								},
+							},
+						) ),
 					),
 				),
 			),
@@ -238,28 +336,8 @@
 						pluginId:      storeData.plugin_id,
 						versions:      sortedVersions,
 						latestVersion,
-						addVersion:    versionData => {
-							const versions      = storeData.versions || [];
-							const existingIndex = versions.findIndex( v => v.version === versionData.version );
-
-							if ( -1 !== existingIndex ) {
-								const newVersions = [ ...versions ];
-								newVersions[ existingIndex ] = versionData;
-								setStoreValue( 'versions', newVersions );
-							} else {
-								setStoreValue( 'versions', [ ...versions, versionData ] );
-							}
-						},
-						updateVersion: versionData => {
-							const versions      = storeData.versions || [];
-							const existingIndex = versions.findIndex( v => v.version === versionData.version );
-
-							if ( -1 !== existingIndex ) {
-								const newVersions = [ ...versions ];
-								newVersions[ existingIndex ] = versionData;
-								setStoreValue( 'versions', newVersions );
-							}
-						},
+						addVersion,
+						updateVersion,
 						removeVersion: version => apiFetch( {
 							url:    troyPluginEditorData.restUrls.removeVersion,
 							method: 'POST',

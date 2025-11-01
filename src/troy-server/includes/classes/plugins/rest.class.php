@@ -100,7 +100,7 @@ final class REST {
 	/**
 	 * Get plugin data for Editor Store.
 	 *
-	 * @rest troy-server/v1/plugins/manage/getEditorStore
+	 * @rest troy-server/v1/plugins/manage/getEditorStore GET
 	 * @since 0.0.1184
 	 *
 	 * @param \WP_REST_Request $request The request object.
@@ -132,6 +132,7 @@ final class REST {
 			$data_infos        = $getdata->get_infos_row();
 			$data_zips         = $getdata->get_zips();
 			$data_contributors = $getdata->get_contributors();
+			$data_integration  = $getdata->get_integration();
 
 			// Remit FETCH_OBJ_R opcode calls every time we'd otherwise use $data_plugins->slug hereinafter.
 			$slug = $data_plugins->slug;
@@ -153,7 +154,7 @@ final class REST {
 					'created_at'     => $zip->created_at,
 					'updated_at'     => $zip->updated_at,
 					'download_uri'   => Files::get_plugin_zip_url_by_slug( $slug, $zip->version ),
-					'remove'         => false,
+					'remove'         => false, // This is a JS-only flag to show/hide the "Confirm deletion" button in the UI.
 				];
 
 			foreach ( $data_contributors as $contributor ) {
@@ -163,7 +164,18 @@ final class REST {
 				];
 			}
 
-			// Null/undefined gets merged to defaults in JS reading Store::get_default_plugin_data.
+			$integrations = null;
+			if ( $data_integration?->mode ) {
+				$integrations = [
+					'mode'           => $data_integration->mode,
+					'settings'       => $data_integration->settings,
+					'auto_process'   => $data_integration->auto_process ?? 'all',
+					'tags'           => $data_integration->tags,
+					'tags_refreshed' => $data_integration->tags_refreshed,
+					'remove'         => false, // This is a JS-only flag to show/hide the "Confirm disconnection" button in the UI.
+				];
+			}
+
 			$data = [
 				'plugin_id'         => $plugin_id,
 				'name'              => $post->post_title,
@@ -178,7 +190,8 @@ final class REST {
 				'banner_uri'        => $data_infos?->banner_uri,
 				'logo_uri'          => $data_metas?->logo_uri,
 				'contributors'      => $contributors,
-				'contents'          => json_decode( $data_infos?->contents ?: 0, true ) ?? [],
+				'contents'          => $data_infos?->contents ?? [],
+				'integrations'      => $integrations,
 			];
 		} else {
 			$data = Store::get_default_plugin_data();
@@ -190,7 +203,7 @@ final class REST {
 	/**
 	 * Register the plugin.
 	 *
-	 * @rest troy-server/v1/plugins/manage/registerSlug
+	 * @rest troy-server/v1/plugins/manage/registerSlug POST
 	 * @since 0.0.1184
 	 *
 	 * @param \WP_REST_Request $request The request object.
@@ -313,7 +326,7 @@ final class REST {
 			$wpdb->query( 'ROLLBACK' );
 
 			return new \WP_REST_Response(
-				[ 'message' => 'Failed to register plugin: ' . $e->getMessage() ],
+				[ 'message' => "Failed to register plugin: {$e->getMessage()}" ],
 				500,
 			);
 		}
@@ -322,7 +335,7 @@ final class REST {
 	/**
 	 * Process ZIP file from upload.
 	 *
-	 * @rest troy-server/v1/plugins/manage/processZipFile
+	 * @rest troy-server/v1/plugins/manage/processZipFile POST
 	 * @since 0.0.1184
 	 *
 	 * @param \WP_REST_Request $request The request object.
@@ -391,7 +404,7 @@ final class REST {
 			$uploader->process_via_file( $file['tmp_name'] );
 		} catch ( \Exception $e ) {
 			return new \WP_REST_Response(
-				[ 'message' => 'Failed to process ZIP file: ' . $e->getMessage() ],
+				[ 'message' => "Failed to process ZIP file: {$e->getMessage()}" ],
 				500,
 			);
 		}
@@ -429,9 +442,9 @@ final class REST {
 					'updated_at'     => $zip->updated_at,
 					'download_uri'   => Files::get_plugin_zip_url_by_slug(
 						$data->get_plugins_row()->slug,
-						$zip->version
+						$zip->version,
 					),
-					'remove'         => false,
+					'remove'         => false, // This is a JS-only flag to show/hide the "Confirm deletion" button in the UI.
 				],
 			],
 			200,
@@ -441,7 +454,7 @@ final class REST {
 	/**
 	 * Process ZIP file from URL.
 	 *
-	 * @rest troy-server/v1/plugins/manage/processZipUrl
+	 * @rest troy-server/v1/plugins/manage/processZipUrl POST
 	 * @since 0.0.1184
 	 *
 	 * @param \WP_REST_Request $request The request object.
@@ -463,7 +476,7 @@ final class REST {
 			$uploader->process_via_url( $zip_url );
 		} catch ( \Exception $e ) {
 			return new \WP_REST_Response(
-				[ 'message' => 'Failed to parse ZIP file: ' . $e->getMessage() ],
+				[ 'message' => "Failed to parse ZIP file: {$e->getMessage()}" ],
 				500,
 			);
 		}
@@ -471,9 +484,21 @@ final class REST {
 		$data = new Data( $plugin_id, $uploader->version_uploaded );
 		$zip  = $data->get_zips_row();
 
+		$zip_existed = $uploader->zip_existed;
+
 		return new \WP_REST_Response(
 			[
-				'message' => 'ZIP file processed successfully',
+				'message' => $zip_existed
+					? \sprintf(
+						/* translators: %s is the version number of the plugin ZIP file. */
+						\esc_html__( 'ZIP file for version %s was already present and has been updated.', 'troy-server' ),
+						\esc_html( $zip->version ),
+					)
+					: \sprintf(
+						/* translators: %s is the version number of the plugin ZIP file. */
+						\esc_html__( 'ZIP file for version %s has been processed successfully.', 'troy-server' ),
+						\esc_html( $zip->version ),
+					),
 				'version' => [
 					'version'        => $zip->version,
 					'type'           => $zip->type ?? 'unreleased',
@@ -491,7 +516,7 @@ final class REST {
 						$data->get_plugins_row()->slug,
 						$zip->version,
 					),
-					'remove'         => false,
+					'remove'         => false, // This is a JS-only flag to show/hide the "Confirm deletion" button in the UI.
 				],
 			],
 			200,
@@ -501,7 +526,7 @@ final class REST {
 	/**
 	 * Get readme data.
 	 *
-	 * @rest troy-server/v1/plugins/manage/getReadmeData
+	 * @rest troy-server/v1/plugins/manage/getReadmeData GET
 	 * @since 0.0.1184
 	 *
 	 * @param \WP_REST_Request $request The request object.
@@ -528,7 +553,7 @@ final class REST {
 			$temp_zip_extraction_dir = new Zip_Extractor( $zip_file_path )->temp_zip_extraction_dir;
 		} catch ( \Exception $e ) {
 			return new \WP_REST_Response(
-				[ 'message' => 'Failed to extract ZIP file: ' . $e->getMessage() ],
+				[ 'message' => "Failed to extract ZIP file: {$e->getMessage()}" ],
 				500,
 			);
 		}
@@ -539,7 +564,7 @@ final class REST {
 			$contents = $parser->contents;
 		} catch ( \Exception $e ) {
 			return new \WP_REST_Response(
-				[ 'message' => 'Failed to parse readme: ' . $e->getMessage() ],
+				[ 'message' => "Failed to parse readme: {$e->getMessage()}" ],
 				500,
 			);
 		}
@@ -556,7 +581,7 @@ final class REST {
 	/**
 	 * Get plugin save status.
 	 *
-	 * @rest troy-server/v1/plugins/manage/getSaveStatus
+	 * @rest troy-server/v1/plugins/manage/getSaveStatus GET
 	 * @since 0.0.1184
 	 *
 	 * @param \WP_REST_Request $request The request object.
@@ -606,7 +631,7 @@ final class REST {
 	/**
 	 * Remove a plugin version.
 	 *
-	 * @rest troy-server/v1/plugins/manage/removeVersion
+	 * @rest troy-server/v1/plugins/manage/removeVersion POST
 	 * @since 0.0.1184
 	 *
 	 * @param \WP_REST_Request $request The request object.
@@ -679,7 +704,7 @@ final class REST {
 			$wpdb->query( 'ROLLBACK' );
 
 			return new \WP_REST_Response(
-				[ 'message' => 'Failed to remove version: ' . $e->getMessage() ],
+				[ 'message' => "Failed to remove version: {$e->getMessage()}" ],
 				500,
 			);
 		}
@@ -688,7 +713,7 @@ final class REST {
 	/**
 	 * Get placeholder logo for the plugin.
 	 *
-	 * @rest troy-server/v1/plugins/manage/getPlaceholderLogo
+	 * @rest troy-server/v1/plugins/manage/getPlaceholderLogo GET
 	 * @since 0.0.1184
 	 *
 	 * @param \WP_REST_Request $request The request object.
@@ -723,16 +748,18 @@ final class REST {
 		$scale_y = $height / 512;
 
 		// Helper function to scale point arrays
-		$scale_points = fn( $points ) => \array_map(
-			fn( $value, $index ) => (int) ( $index & 1
-				? $value * $scale_y
-				: $value * $scale_x ),
+		$scale_points = fn( $points ) => array_map(
+			fn( $value, $index ) => (int) (
+				$index & 1
+					? $value * $scale_y
+					: $value * $scale_x
+			),
 			$points,
 			\array_keys( $points ),
 		);
 
 		// Helper function to add random variation to points
-		$randomize_points = fn( $points, $variation = 5 ) => \array_map(
+		$randomize_points = fn( $points, $variation = 5 ) => array_map(
 			fn( $value ) => $value + mt_rand( -$variation, $variation ),
 			$points,
 			\array_keys( $points ),
@@ -861,10 +888,11 @@ final class REST {
 				$_height,
 			];
 
-			$scaled_rect = \array_map(
-				fn( $value, $index ) => (int) ( $value * (
-					$index & 1 ? $scale_y : $scale_x
-				) ),
+			$scaled_rect = array_map(
+				fn( $value, $index ) => (int) (
+					$value
+					* ( $index & 1 ? $scale_y : $scale_x )
+				),
 				$random_rect,
 				\array_keys( $random_rect )
 			);
@@ -896,7 +924,7 @@ final class REST {
 			mt_rand( 70, 120 ),
 		);
 
-		$burn_rect = \array_map(
+		$burn_rect = array_map(
 			fn( $val ) => (int) ( $val * ( $scale_x + $scale_y ) / 2 ),
 			[
 				mt_rand( 50, 300 ),
@@ -931,7 +959,7 @@ final class REST {
 				? mt_rand( 50, 200 )   // 70% chance in upper area
 				: mt_rand( 150, 300 ); // 30% chance in middle area
 
-			$circle_data = \array_map(
+			$circle_data = array_map(
 				fn( $val ) => (int) ( $val * ( $scale_x + $scale_y ) / 2 ),
 				[
 					mt_rand( 80, 350 ), // x position
@@ -1099,9 +1127,9 @@ final class REST {
 		}
 
 		// Start output buffering to capture the image data
-		\ob_start();
+		ob_start();
 		\imagepng( $image, null, 6 );
-		$image_data = \ob_get_clean();
+		$image_data = ob_get_clean();
 
 		// Destroy the image resource
 		\imagedestroy( $image );

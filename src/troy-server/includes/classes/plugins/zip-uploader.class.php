@@ -1,6 +1,6 @@
 <?php
 /**
- * @package Troy\Server
+ * @package Troy\Server\Plugins
  * @access  public
  */
 
@@ -67,9 +67,21 @@ final class Zip_Uploader {
 	 * @since 0.0.1184
 	 * @var int ZIP_DOWNLOAD_TIMEOUT Timeout for downloading ZIP files.
 	 *                               It takes 5 seconds to download 30MB at 50Mbps.
-	 *                               Don't upload huge plugins, maybe?
+	 *                               We double that to be safe.
 	 */
-	private const ZIP_DOWNLOAD_TIMEOUT = 5;
+	private const ZIP_DOWNLOAD_TIMEOUT = 10;
+
+	/**
+	 * @since 0.0.1184
+	 * @var int MAX_ZIP_DOWNLOAD_SIZE Maximum file size for ZIP file downloads (30MB).
+	 */
+	private const MAX_ZIP_DOWNLOAD_SIZE = 30 * \MB_IN_BYTES;
+
+	/**
+	 * @since 0.0.1184
+	 * @var int MAX_DOWNLOAD_RETRIES Maximum number of download retry attempts.
+	 */
+	private const MAX_DOWNLOAD_RETRIES = 3;
 
 	/**
 	 * @since 0.0.1184
@@ -194,18 +206,24 @@ final class Zip_Uploader {
 	 * @since 0.0.1184
 	 *
 	 * @param string $download_url The URL to download the ZIP file from.
+	 * @param array  $args         Optional. {
+	 *        Arguments for the download request.
+	 *
+	 *        @type array $headers     Custom HTTP headers.
+	 *        @type array $queryParams Query parameters to append to the URL.
+	 *    }
 	 * @throws \Exception If the URL is invalid, download fails, or processing fails.
 	 */
-	public function process_via_url( $download_url ) {
+	public function process_via_url( $download_url, $args = [] ) {
 
-		// Restrict to HTTP for now.
+		// Force HTTPS for now. Maybe we can add other protocols later.
 		$download_url = \sanitize_url( $download_url, [ 'https' ] );
 
 		if ( ! filter_var( $download_url, \FILTER_VALIDATE_URL ) )
 			throw new \Exception( 'Invalid URL provided.' );
 
-		// Download the ZIP file. Limited to 60 seconds instead of 300. Do not verify signature yet (TODO!).
-		$temp_zip_file_path = \download_url( $download_url, static::ZIP_DOWNLOAD_TIMEOUT );
+		// Download the ZIP file using our custom method that supports auth headers.
+		$temp_zip_file_path = static::download_url( $download_url, $args );
 
 		if ( \is_wp_error( $temp_zip_file_path ) ) {
 			throw new \Exception(
@@ -217,7 +235,15 @@ final class Zip_Uploader {
 			);
 		}
 
-		// While PHP cleans up temporary files automatically, we don't trust download_url() to do so.
+		if ( filesize( $temp_zip_file_path ) > static::MAX_ZIP_DOWNLOAD_SIZE ) {
+			throw new \Exception( \sprintf(
+				/* translators: %d: Maximum file size in MB */
+				\__( 'The ZIP file exceeds the maximum allowed size of %dMB.', 'troy-server' ),
+				static::MAX_ZIP_DOWNLOAD_SIZE / \MB_IN_BYTES,
+			) );
+		}
+
+		// Ensure temporary file is cleaned up after processing.
 		// phpcs:ignore WordPress.WP.AlternativeFunctions, WordPress.PHP.NoSilencedErrors -- WP functions are irrelevant here.
 		register_shutdown_function( static fn() => @unlink( $temp_zip_file_path ) );
 
@@ -457,7 +483,7 @@ final class Zip_Uploader {
 			foreach ( $iterator as $file ) {
 				$source_path = $file->getPathname();
 				// Create a path relative to the directory being zipped.
-				$relative_path = \str_replace(
+				$relative_path = str_replace(
 					\trailingslashit( $temp_plugin_dir_path ),
 					'',
 					$source_path,
@@ -628,5 +654,141 @@ final class Zip_Uploader {
 
 		$this->version_uploaded = $version;
 		// phpcs:enable Generic.WhiteSpace.ScopeIndent
+	}
+
+	/**
+	 * Downloads a file from a URL with optional custom headers.
+	 *
+	 * Simplified version of WordPress core's download_url() without signature verification.
+	 *
+	 * @since 0.0.1184
+	 *
+	 * @param string $url  The URL to download from.
+	 * @param array  $args Optional {
+	 *        Arguments for the download request.
+	 *
+	 *        @type array $headers     Custom HTTP headers.
+	 *        @type array $queryParams Query parameters to append to the URL.
+	 *    }
+	 * @return string|\WP_Error Path to the downloaded temporary file on success, WP_Error on failure.
+	 */
+	private static function download_url( $url, $args = [] ) {
+
+		if ( ! $url )
+			return new \WP_Error( 'http_no_url', \__( 'No URL Provided.', 'troy-server' ) );
+
+		if ( ! empty( $args['queryParams'] ) )
+			$url = \add_query_arg( $args['queryParams'], $url );
+
+		$url_path     = parse_url( $url, \PHP_URL_PATH );
+		$url_filename = '';
+
+		if ( \is_string( $url_path ) && '' !== $url_path )
+			$url_filename = basename( $url_path );
+
+		$tmpfname = \wp_tempnam( $url_filename );
+
+		if ( ! $tmpfname )
+			return new \WP_Error( 'http_no_file', \__( 'Could not create temporary file.', 'troy-server' ) );
+
+		$response = \wp_safe_remote_get(
+			$url,
+			[
+				'timeout'  => static::ZIP_DOWNLOAD_TIMEOUT,
+				'stream'   => true,
+				'filename' => $tmpfname,
+				'headers'  => $args['headers'] ?? [],
+			],
+		);
+
+		if ( \is_wp_error( $response ) ) {
+			unlink( $tmpfname );
+
+			return $response;
+		}
+
+		$response_code = \wp_remote_retrieve_response_code( $response );
+
+		if ( 200 !== $response_code ) {
+			$data = [ 'code' => $response_code ];
+
+			// Retrieve a sample of the response body for debugging purposes.
+			$tmpf = fopen( $tmpfname, 'rb' );
+
+			if ( $tmpf ) {
+				$response_size = \apply_filters( 'download_url_error_max_body_size', \KB_IN_BYTES );
+				$data['body']  = fread( $tmpf, $response_size );
+				fclose( $tmpf );
+			}
+
+			unlink( $tmpfname );
+
+			return new \WP_Error(
+				'http_404',
+				trim( \wp_remote_retrieve_response_message( $response ) ),
+				$data,
+			);
+		}
+
+		// Handle Content-Disposition header for proper filename.
+		$content_disposition = \wp_remote_retrieve_header( $response, 'Content-Disposition' );
+
+		if ( $content_disposition ) {
+			$content_disposition = strtolower( $content_disposition );
+
+			if ( str_starts_with( $content_disposition, 'attachment; filename=' ) ) {
+				$tmpfname_disposition = \sanitize_file_name( substr( $content_disposition, 21 ) );
+			} else {
+				$tmpfname_disposition = '';
+			}
+
+			if (
+				$tmpfname_disposition
+				&& \is_string( $tmpfname_disposition )
+				&& ( 0 === \validate_file( $tmpfname_disposition ) )
+			) {
+				$tmpfname_disposition = \dirname( $tmpfname ) . '/' . $tmpfname_disposition;
+
+				if ( rename( $tmpfname, $tmpfname_disposition ) ) {
+					$tmpfname = $tmpfname_disposition;
+				}
+
+				if ( ( $tmpfname !== $tmpfname_disposition ) && file_exists( $tmpfname_disposition ) )
+					unlink( $tmpfname_disposition );
+			}
+		}
+
+		// Correct file extension based on MIME type.
+		$mime_type = \wp_remote_retrieve_header( $response, 'content-type' );
+
+		if ( $mime_type && 'tmp' === pathinfo( $tmpfname, \PATHINFO_EXTENSION ) ) {
+			// We only care about ZIP files for this context.
+			if ( 'application/zip' === $mime_type || 'application/x-zip-compressed' === $mime_type ) {
+				$new_zip_name = substr( $tmpfname, 0, -4 ) . '.zip';
+
+				if ( 0 === \validate_file( $new_zip_name ) ) {
+					if ( rename( $tmpfname, $new_zip_name ) )
+						$tmpfname = $new_zip_name;
+
+					if ( ( $tmpfname !== $new_zip_name ) && file_exists( $new_zip_name ) )
+						unlink( $new_zip_name );
+				}
+			}
+		}
+
+		// Verify Content-MD5 if provided.
+		$content_md5 = \wp_remote_retrieve_header( $response, 'Content-MD5' );
+
+		if ( $content_md5 ) {
+			$md5_check = \verify_file_md5( $tmpfname, $content_md5 );
+
+			if ( \is_wp_error( $md5_check ) ) {
+				unlink( $tmpfname );
+
+				return $md5_check;
+			}
+		}
+
+		return $tmpfname;
 	}
 }

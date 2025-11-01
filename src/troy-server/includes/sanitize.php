@@ -82,8 +82,10 @@ function sanitize_sql_date( $date ) {
 }
 
 /**
- * Sanitizes a slug by converting it to lowercase, replacing non-alphanumeric characters with hyphens,
- * and trimming leading and trailing hyphens.
+/**
+ * Sanitizes a slug by converting it to lowercase, replacing non-alphanumeric
+ * characters with hyphens, collapsing multiple consecutive hyphens into a single
+ * hyphen, trimming leading zeroes and hyphens, and trimming trailing hyphens.
  *
  * Also works to sanitize path names.
  *
@@ -94,22 +96,24 @@ function sanitize_sql_date( $date ) {
  * @return string The sanitized slug.
  */
 function sanitize_slug( $slug ) {
-	return preg_replace(
-		'/^[^a-z]+/',
-		'',
-		preg_replace(
-			'/-{2,}/',
-			'-',
+	return rtrim(
+		ltrim(
 			preg_replace(
-				'/[^a-z0-9-]/',
-				'',
+				'/-{2,}/',
+				'-',
 				preg_replace(
-					'/\s+/',
-					'-',
-					strtolower( $slug ?? '' ),
+					'/[^a-z0-9-]/',
+					'',
+					preg_replace(
+						'/\s+/',
+						'-',
+						strtolower( $slug ?? '' ),
+					),
 				),
 			),
+			'0-',
 		),
+		'-',
 	);
 }
 
@@ -325,7 +329,7 @@ function json_encode_db( $data ) {
 		| \JSON_UNESCAPED_UNICODE
 		| \JSON_INVALID_UTF8_IGNORE
 		| \JSON_PRESERVE_ZERO_FRACTION
-		| \JSON_THROW_ON_ERROR, // Death, dispair, and destruction. May prevent data loss.
+		| \JSON_THROW_ON_ERROR, // Pernicious. Good. May prevent data loss.
 	);
 }
 
@@ -364,7 +368,7 @@ function make_fully_qualified_repo_url( $repo ) {
 		preg_replace(
 			'/^(?:\w*:)?(?:\/\/)?(.*?)$/',
 			'https://$1/',
-			\trim( $repo, ' \\/' ),
+			trim( $repo, ' \\/' ),
 		),
 		[ 'https' ],
 	);
@@ -386,36 +390,82 @@ function sanitize_static_image_url( $url ) {
 	if ( empty( $sanitized_url ) )
 		return '';
 
-	$response = \wp_safe_remote_get(
+	$body = \wp_remote_retrieve_body( \wp_safe_remote_get(
 		$sanitized_url,
 		[
 			'timeout' => 3, // Image should be locally hosted, or at worst at a CDN.
 			'headers' => [ 'Range' => 'bytes=0-20480' ],
 		],
-	);
+	) );
 
-	// Assume a fluke, return the sanitized URL.
-	if ( \is_wp_error( $response ) )
+	// Body becomes empty on error via wp_remote_retrieve_body().
+	// Assume a fluke and immediately return the sanitized URL.
+	if ( empty( $body ) )
 		return $sanitized_url;
 
-	$content = \wp_remote_retrieve_body( $response );
-
-	// Assume a fluke, return the sanitized URL.
-	if ( empty( $content ) )
-		return $sanitized_url;
-
-	$header = substr( $content, 0, 20 );
+	$header = substr( $body, 0, 20 );
 
 	if ( str_starts_with( $header, 'GIF' ) ) {
-		if ( preg_match_all( '#\x00\x21\xF9\x04.{4}\x00[\x2C\x21]#s', $content ) > 1 )
+		if ( preg_match_all( '#\x00\x21\xF9\x04.{4}\x00[\x2C\x21]#s', $body ) > 1 )
 			return '';
 	} elseif ( str_starts_with( $header, "\x89PNG" ) ) { // png
-		if ( str_contains( $content, 'acTL' ) )
+		if ( str_contains( $body, 'acTL' ) )
 			return '';
 	} elseif ( str_starts_with( $header, 'RIFF' ) ) { // webp
-		if ( str_contains( $content, 'ANIM' ) )
+		if ( str_contains( $body, 'ANIM' ) )
 			return '';
 	}
 
 	return $sanitized_url;
+}
+
+/**
+ * Sanitizes an object of tags from integration sources.
+ *
+ * @since 0.0.1184
+ *
+ * @param iterable $tags Raw tags object. {
+ *     Tags indexed by version string.
+ *
+ *     @type string $download_url The download URL.
+ *     @type string $type         The version type, either 'tag' or 'beta'.
+ *                                If not provided, it will be determined based on version pattern.
+ * }
+ * @return object {
+ *     Sanitized tags object indexed by sanitized version string.
+ *
+ *     @type string $download_url The download URL.
+ *     @type string $type         The version type, either 'tag' or 'beta'.
+ * }
+ */
+function sanitize_tags( $tags ) {
+
+	$sanitized = [];
+
+	foreach ( $tags as $version => $data ) {
+		$data = (object) $data;
+
+		$version      = sanitize_semver( $version );
+		$download_url = \sanitize_url( $data->download_url );
+
+		if ( ! $version || ! $download_url )
+			continue;
+
+		$sanitized[ $version ] = (object) [
+			'download_url' => $download_url,
+			'type'         => \in_array(
+				$data->type ?? '',
+				[ 'beta', 'tag' ],
+				true,
+			)
+				? $data->type
+				: (
+					preg_match( '/(dev|alpha|a|beta|b|rc|#|pl|p)([^a-z]|\Z)/i', $version )
+						? 'beta'
+						: 'tag'
+				),
+		];
+	}
+
+	return (object) $sanitized;
 }

@@ -1,6 +1,6 @@
 <?php
 /**
- * @package Troy\Server
+ * @package Troy\Server\Plugins
  * @access  private
  */
 
@@ -127,7 +127,6 @@ final class Readme_Parser {
 		'faq'                        => 'faq',
 		'changelog'                  => 'changelog',
 		// 'screenshots'                => 'screenshots', // TODO implement this.
-		// 'upgrade notice'             => 'upgrade_notice', // TODO implement this? Nobody uses it. Plus, we are version agnostic here.
 
 		// WordPress.org preferred section names, now fallback aliases.
 		'description'                => 'details',
@@ -140,6 +139,7 @@ final class Readme_Parser {
 
 		// WordPress.org recognized section names, not implemented.
 		// 'other notes'                => 'other_notes',
+		// 'upgrade notice'             => 'upgrade_notice', // Implemented on a per-version basis
 	];
 
 	/**
@@ -213,7 +213,7 @@ final class Readme_Parser {
 			throw new \Exception( 'Readme file not found.', static::ERRORS['not_found'] );
 
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- eh?
-		$this->raw_readme_contents = \file_get_contents( $readme_file );
+		$this->raw_readme_contents = file_get_contents( $readme_file );
 
 		if ( empty( $this->raw_readme_contents ) )
 			throw new \Exception( 'Readme file is empty.', static::ERRORS['empty'] );

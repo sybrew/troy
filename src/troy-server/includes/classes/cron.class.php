@@ -60,6 +60,23 @@ class Cron {
 	];
 
 	/**
+	 * Register cron schedules, tasks, and callbacks.
+	 *
+	 * @hook init 10
+	 * @since 0.0.1184
+	 */
+	public static function register() {
+
+		\add_filter( 'cron_schedules', [ static::class, 'register_schedules' ] );
+		\add_action( 'admin_init', [ static::class, 'register_cron_tasks' ] );
+
+		// Because we're only registering during wp_doing_cron, the callbacks won't be visible to WP Crontrol.
+		if ( \wp_doing_cron() )
+			foreach ( static::CRON_JOBS as $hook => $job ) // static: allow overrides
+				\add_action( $hook, $job['callback'] );
+	}
+
+	/**
 	 * Register custom cron schedules.
 	 *
 	 * @hook cron_schedules 10
@@ -70,7 +87,7 @@ class Cron {
 	 */
 	public static function register_schedules( $schedules ) {
 
-		foreach ( self::CRON_JOBS as $job ) {
+		foreach ( static::CRON_JOBS as $job ) { // static: allow overrides
 			if (
 				   isset( $job['interval'] )
 				&& empty( $schedules[ $job['schedule'] ] )
@@ -87,20 +104,16 @@ class Cron {
 	}
 
 	/**
-	 * Register all cron jobs and ensure they're scheduled.
+	 * Schedule all cron jobs if not already scheduled.
 	 *
 	 * @hook admin_init 10
 	 * @since 0.0.1184
 	 */
 	public static function register_cron_tasks() {
 
-		// Check if jobs need scheduling
-		foreach ( self::CRON_JOBS as $hook => $job ) {
+		foreach ( static::CRON_JOBS as $hook => $job ) // static: allow overrides
 			if ( ! \wp_next_scheduled( $hook ) )
 				\wp_schedule_event( time(), $job['schedule'], $hook );
-
-			\add_action( $hook, $job['callback'] );
-		}
 	}
 
 	/**
@@ -112,7 +125,7 @@ class Cron {
 	 */
 	public static function remove_cron_jobs() {
 
-		foreach ( self::CRON_JOBS as $hook => $job ) {
+		foreach ( static::CRON_JOBS as $hook => $job ) { // static: allow overrides
 			$timestamp = \wp_next_scheduled( $hook );
 
 			if ( $timestamp )

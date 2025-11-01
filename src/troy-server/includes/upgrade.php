@@ -315,6 +315,32 @@ function get_initial_db_schema_queries() {
 			index `plugin_id` (`plugin_id`),
 			unique index `plugin_id_version` (`plugin_id`, `version`)
 		) $collate",
+		"CREATE table `{$dbprefix}troy_plugins_integrations` (
+			`id` bigint unsigned NOT null auto_increment,
+			`plugin_id` bigint unsigned NOT null,
+			`mode` varchar(20) NOT null,
+			`settings` longtext NOT null,
+			`auth` longtext DEFAULT null,
+			`tags` longtext NOT null,
+			`tags_refreshed` datetime DEFAULT null,
+			`auto_process` varchar(20) NOT null,
+			`created_at` datetime DEFAULT current_timestamp,
+			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
+			primary key (`id`),
+			index `mode` (`mode`),
+			unique index `plugin_id` (`plugin_id`)
+		) $collate",
+		"CREATE table `{$dbprefix}troy_plugins_integration_logs` (
+			`id` bigint unsigned NOT null auto_increment,
+			`plugin_id` bigint unsigned NOT null,
+			`type` varchar(20) NOT null,
+			`message` longtext NOT null,
+			`created_at` datetime DEFAULT current_timestamp,
+			primary key (`id`),
+			index `plugin_id` (`plugin_id`),
+			index `plugin_id_type` (`plugin_id`, `type`),
+			index `created_at` (`created_at`)
+		) $collate",
 		"CREATE table `{$dbprefix}troy_plugins_zips` (
 			`id` bigint unsigned NOT null auto_increment,
 			`plugin_id` bigint unsigned NOT null,

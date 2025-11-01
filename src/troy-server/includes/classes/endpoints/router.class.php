@@ -59,7 +59,7 @@ final class Router {
 
 		// Remove WordPress's base path from request URI to support subdirectory installations
 		if ( $home_path && str_starts_with( $request_uri, $home_path ) )
-			$request_uri = \substr( $request_uri, \strlen( $home_path ) );
+			$request_uri = substr( $request_uri, \strlen( $home_path ) );
 
 		// Remove leading/trailing slashes and normalize
 		$request_path = trim( $request_uri, '/' );

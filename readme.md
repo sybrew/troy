@@ -22,7 +22,11 @@ Troy Server is a WordPress plugin that allows you to host your own plugin reposi
 
 You can manage plugins via the admin interface, fully integrated with the WordPress admin UI, like list views, the Block Editor, and a modern settings page.
 
-TODO: Statistics are collected about the plugins registered on the server, such as the number of downloads, active installs, and more.
+To upload a plugin, simply create a new plugin post, fill in the required fields, and upload the plugin ZIP file or enter a ZIP URL. The server will automatically extract the plugin information, such as the version, description, and more.
+
+To automate plugin uploads, you can connect your GitHub repository or WordPress.org repository. Once connected, it will automatically fetch and process the latest release ZIP files for redistribution. You can configure it to fetch tags automatically by type (based on version affixes), or process them manually.
+
+TODO: Statistics are collected about the plugins registered on the server, such as the number of downloads, active installs, and more. The data is anonymized via rotating unique identifiers to protect user privacy. You can view the statistics via the admin interface.
 
 TODO: The server provides an interface to generate a Troy Installer, which is a ZIP file that contains the Troy Client and with instructions to install plugins. This installer can be distributed to your clients, allowing them to easily install and activate the Troy Client and its dependencies, starting with only a tiny package.
 
@@ -31,7 +35,7 @@ Providing translations can be done via Polyglots, or by uploading the translatio
 
 It's best to run Troy Server on a standalone WordPress instance, this can even be a Multisite subdomain or subdirectory. Multilingual plugins will never be supported by Troy Server and may interfere with the repo URL generation. Keep in mind that a repo URL is limited to 191 characters.
 
-Troy Server has "up-to-date" server requirements, but nothing too special. You must use MySQL 8.0.13 or higher, PHP 8.4 or higher, and WordPress 6.8 or higher. We recommend running this on a server that can handle Pong. The update service is ridiculously optimized and (TODO) can scale horizontally.
+Troy Server has "up-to-date" server requirements, but nothing too special. You must use MySQL 8.0.13 or higher, PHP 8.4 or higher, and WordPress 6.8 or higher. We recommend running this on a server that can handle Pong. The update service is ridiculously optimized and can (TODO) scale horizontally (most of this is prepared).
 
 Note that the server will exclusively serve via HTTPS. You must have `mbstring` and `ZipArchive` enabled in your PHP configuration. The server user must be owner of the WordPress instance and folder, and the user must be able to write to the `wp-content/` and system temp file directories.
 

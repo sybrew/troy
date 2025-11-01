@@ -70,7 +70,7 @@ document.addEventListener( 'DOMContentLoaded', () => {
 		wrap.addEventListener(
 			'click',
 			preventTooltipHandleClick,
-			captureSupported ? { capture: false } : false
+			captureSupported ? { capture: false } : false,
 		);
 	} );
 
@@ -102,8 +102,7 @@ document.addEventListener( 'DOMContentLoaded', () => {
 		const rect    = tooltip.querySelector( '.troy-server-tooltip-text-wrap' ).getBoundingClientRect();
 
 		tooltip.style.top = `${
-			-rect.height
-			-9
+			-rect.height - 9 // arrow is 9px high
 		}px`;
 		tooltip.style.left = `${
 			-rect.width / 2
@@ -130,7 +129,7 @@ document.addEventListener( 'DOMContentLoaded', () => {
 
 		const tooltip = element.classList.contains( 'troy-server-tooltip' )
 			? element
-			: element?.querySelector( '.troy-server-tooltip' )
+			: element?.querySelector( '.troy-server-tooltip' );
 
 		tooltip?.parentNode.removeChild( tooltip );
 	}
@@ -153,7 +152,9 @@ document.addEventListener( 'DOMContentLoaded', () => {
 				}
 				if ( element instanceof HTMLInputElement && element.id ) {
 					document.querySelectorAll( `label[for="${element.id}"]` ).forEach(
-						label => { label.dataset.preventedClick = 1; }
+						label => {
+							label.dataset.preventedClick = 1;
+						},
 					);
 				}
 			},
@@ -168,7 +169,9 @@ document.addEventListener( 'DOMContentLoaded', () => {
 				}
 				if ( element instanceof HTMLInputElement && element.id ) {
 					document.querySelectorAll( `label[for="${element.id}"]` ).forEach(
-						la => { delete la.dataset.preventedClick; }
+						la => {
+							delete la.dataset.preventedClick;
+						},
 					);
 				}
 			},

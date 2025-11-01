@@ -1,6 +1,6 @@
 <?php
 /**
- * @package Troy\Server
+ * @package Troy\Server\Plugins\CPT
  * @access  private
  */
 

@@ -147,7 +147,7 @@ final class Settings {
 			 * @param array $args The list of removable query args.
 			 * @return array The modified list of removable query args.
 			 */
-			fn( $args ) => \array_merge( $args, [ static::SAVED_RESPONSE ] ),
+			fn( $args ) => array_merge( $args, [ static::SAVED_RESPONSE ] ),
 		);
 
 		\add_action(

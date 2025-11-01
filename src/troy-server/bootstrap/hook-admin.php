@@ -39,9 +39,6 @@ use Troy\Server\{
  * SOFTWARE.
  */
 
-// Register cron tasks for plugins.
-\add_action( 'admin_init', [ Plugins\Cron::class, 'register_cron_tasks' ] );
-
 // Register the admin settings menu.
 \add_action( 'admin_menu', [ Settings::class, 'register_admin_menu' ] );
 

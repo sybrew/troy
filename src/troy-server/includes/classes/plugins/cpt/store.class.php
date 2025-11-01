@@ -1,6 +1,6 @@
 <?php
 /**
- * @package Troy\Server
+ * @package Troy\Server\Plugins\CPT
  * @access  private
  */
 
@@ -29,7 +29,11 @@ use function Troy\Server\Sanitize\{
 	json_encode_db,
 };
 
-use Troy\Server\Zip_Extractor;
+use Troy\Server\{
+	Integrations,
+	Zip_Extractor,
+};
+
 
 use Troy\Server\Plugins\{
 	Data,
@@ -63,7 +67,7 @@ use Troy\Server\Plugins\{
  */
 
 /**
- * Class Troy\Server\Plugins\CPT\Store
+ * Class Troy\Server\Plugins\CPT\Store.
  *
  * Handles the storage of plugin data in the PLUGINS_CPT custom post type.
  *
@@ -108,7 +112,6 @@ final class Store {
 	 * @return array The default plugin data.
 	 */
 	public static function get_default_plugin_data() {
-		// TODO: Apply filters or (better yet,) add options.
 		return [
 			'plugin_id'         => 0,
 			'name'              => '',
@@ -131,6 +134,7 @@ final class Store {
 				'changelog'   => '',
 				'screenshots' => '',
 			],
+			'integrations'      => null,
 		];
 	}
 
@@ -193,6 +197,15 @@ final class Store {
 				fn( $type ) => trim( \wp_kses_post( $data['contents'][ $type ] ?? '' ), " \r\n\v\t" ),
 				[ 'details', 'usage', 'faq', 'api', 'changelog', 'screenshots' ],
 			),
+			'integrations'      => \is_array( $data['integrations'] ?? null )
+				? [
+					// All other data is handled by their respective integration handlers.
+					'auto_process' => array_intersect(
+						[ $data['integrations']['auto_process'] ?? '' ], // Don't flip this, we want index "0"
+						[ 'all', 'tag', 'beta', 'none' ],
+					)[0] ?? 'all',
+				]
+				: null, // Must be null if not an array.
 		];
 	}
 
@@ -383,14 +396,8 @@ final class Store {
 						'id'      => $data['plugin_id'],
 						'post_id' => $post_id,
 					],
-					[
-						'%s',
-						'%s',
-					],
-					[
-						'%d',
-						'%d',
-					],
+					[ '%s', '%s' ],
+					[ '%d', '%d' ],
 				);
 			}
 
@@ -413,22 +420,9 @@ final class Store {
 							'logo_uri'          => $data['logo_uri'],
 							'builder_type'      => $data['builder_type'],
 						],
-						[
-							'id' => $existing_meta_id,
-						],
-						[
-							'%d',
-							'%s',
-							'%d',
-							'%s',
-							'%s',
-							'%s',
-							'%s',
-							'%s',
-						],
-						[
-							'%d',
-						],
+						[ 'id' => $existing_meta_id ],
+						[ '%d', '%s', '%d', '%s', '%s', '%s', '%s', '%s' ],
+						[ '%d' ],
 					);
 				} else {
 					$wpdb->insert(
@@ -443,16 +437,7 @@ final class Store {
 							'logo_uri'          => $data['logo_uri'],
 							'builder_type'      => $data['builder_type'],
 						],
-						[
-							'%d',
-							'%s',
-							'%d',
-							'%s',
-							'%s',
-							'%s',
-							'%s',
-							'%s',
-						],
+						[ '%d', '%s', '%d', '%s', '%s', '%s', '%s', '%s' ],
 					);
 				}
 			}
@@ -473,18 +458,10 @@ final class Store {
 					if ( isset( $contributors_keyed[ $contributor['user_id'] ] ) ) {
 						$wpdb->update(
 							"{$wpdb->prefix}troy_plugins_contributors",
-							[
-								'role' => $contributor['role'],
-							],
-							[
-								'id' => $contributors_keyed[ $contributor['user_id'] ],
-							],
-							[
-								'%s',
-							],
-							[
-								'%d',
-							],
+							[ 'role' => $contributor['role'] ],
+							[ 'id' => $contributors_keyed[ $contributor['user_id'] ] ],
+							[ '%s' ],
+							[ '%d' ],
 						);
 					} else {
 						$wpdb->insert(
@@ -494,11 +471,7 @@ final class Store {
 								'user_id'   => $contributor['user_id'],
 								'role'      => $contributor['role'],
 							],
-							[
-								'%d',
-								'%d',
-								'%s',
-							],
+							[ '%d', '%d', '%s' ],
 						);
 					}
 
@@ -509,12 +482,8 @@ final class Store {
 				foreach ( $contributors_keyed as $contributor_id ) {
 					$wpdb->delete(
 						"{$wpdb->prefix}troy_plugins_contributors",
-						[
-							'id' => $contributor_id,
-						],
-						[
-							'%d',
-						],
+						[ 'id' => $contributor_id ],
+						[ '%d' ],
 					);
 				}
 			}
@@ -541,16 +510,9 @@ final class Store {
 								'upgrade_notice' => $version_data['upgrade_notice'] ?? '',
 								'type'           => $version_data['type'] ?? '',
 							],
-							[
-								'id' => $existing_zip_id,
-							],
-							[
-								'%s',
-								'%s',
-							],
-							[
-								'%d',
-							],
+							[ 'id' => $existing_zip_id ],
+							[ '%s', '%s' ],
+							[ '%d' ],
 						);
 					}
 					// We don't insert new versions here as other data like file_size,
@@ -594,18 +556,9 @@ final class Store {
 							'banner_uri'     => $data['banner_uri'] ?? '',
 							'contents'       => $encoded_content,
 						],
-						[
-							'id' => $existing_revision,
-						],
-						[
-							'%s',
-							'%s',
-							'%s',
-							'%s',
-						],
-						[
-							'%d',
-						],
+						[ 'id' => $existing_revision ],
+						[ '%s', '%s', '%s', '%s' ],
+						[ '%d' ],
 					);
 				} else {
 					$wpdb->insert(
@@ -617,18 +570,34 @@ final class Store {
 							'banner_uri'     => $data['banner_uri'] ?? '',
 							'contents'       => $encoded_content,
 						],
-						[
-							'%d',
-							'%s',
-							'%s',
-							'%s',
-							'%s',
-						],
+						[ '%d', '%s', '%s', '%s', '%s' ],
 					);
 				}
 			}
 
-			update_troy_plugins_settings: {
+			update_integrations: {
+				// Integrations are handled almost entirely via a bespoke REST API.
+				// However, we still need to store the auto_process setting here.
+				$existing_data = $wpdb->get_var( $wpdb->prepare(
+					"SELECT id FROM {$wpdb->prefix}troy_plugins_integrations WHERE plugin_id = %d",
+					$data['plugin_id'],
+				) );
+
+				if ( $existing_data ) {
+					$wpdb->update(
+						"{$wpdb->prefix}troy_plugins_integrations",
+						[
+							'auto_process' => $data['integrations']['auto_process'] ?? 'all',
+						],
+						[ 'id' => $existing_data ],
+						[ '%s' ],
+						[ '%d' ],
+					);
+				}
+				// We do not insert new integration settings here, as they are handled via the bespoke REST API.
+			}
+
+			update_settings: { // TODO rename me to snapshots, and use the latest version as a snapshot identifier.
 				// We fill it for later -- we currently don't use this.
 				// We could use this for restoring plugin settings in the future, perhaps maintaining revisions.
 				$existing_settings = $wpdb->get_var( $wpdb->prepare(
@@ -643,16 +612,9 @@ final class Store {
 							'plugin_id' => $data['plugin_id'],
 							'values'    => json_encode_db( $data ),
 						],
-						[
-							'id' => $existing_settings,
-						],
-						[
-							'%d',
-							'%s',
-						],
-						[
-							'%d',
-						],
+						[ 'id' => $existing_settings ],
+						[ '%d', '%s' ],
+						[ '%d' ],
 					);
 				} else {
 					$wpdb->insert(
@@ -661,10 +623,7 @@ final class Store {
 							'plugin_id' => $data['plugin_id'],
 							'values'    => json_encode_db( $data ),
 						],
-						[
-							'%d',
-							'%s',
-						],
+						[ '%d', '%s' ],
 					);
 				}
 			}

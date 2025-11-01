@@ -135,9 +135,7 @@ window.troyServerEditorComponents = ( wp => {
 			),
 			JSX(
 				'span',
-				{
-					className: 'troy-server-metadata-item__value',
-				},
+				{ className: 'troy-server-metadata-item__value' },
 				value,
 			),
 		);
@@ -177,9 +175,7 @@ window.troyServerEditorComponents = ( wp => {
 			),
 			children && JSX(
 				'div',
-				{
-					className: 'troy-server-panel__row-control',
-				},
+				{ className: 'troy-server-panel__row-control' },
 				children,
 			),
 		);
@@ -250,9 +246,7 @@ window.troyServerEditorComponents = ( wp => {
 			),
 			JSX(
 				VStack,
-				{
-					spacing: 4,
-				},
+				{ spacing: 4 },
 				value && JSX(
 					'div',
 					{
@@ -278,7 +272,9 @@ window.troyServerEditorComponents = ( wp => {
 								updateImageBlockAttributes( { url: media.url } );
 							},
 							allowedTypes: [ 'image' ],
-							value: value ? { url: value } : undefined,
+							value: value
+								? { url: value }
+								: undefined,
 							render: ( { open } ) => JSX(
 								Button,
 								{
@@ -286,7 +282,9 @@ window.troyServerEditorComponents = ( wp => {
 									variant: 'secondary',
 									size:    'compact',
 								},
-								value ? __( 'Replace Image', 'troy-server' ) : __( 'Select Image', 'troy-server' ),
+								value
+									? __( 'Replace Image', 'troy-server' )
+									: __( 'Select Image', 'troy-server' ),
 							),
 						},
 					),

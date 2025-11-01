@@ -1,6 +1,6 @@
 <?php
 /**
- * @package Troy\Server
+ * @package Troy\Server\Plugins
  * @access  public
  */
 
@@ -42,7 +42,8 @@ use function Troy\Server\{
  * This class provides a way for Troy plugins to be dropped from the database.
  * See `Troy\Server\Upgrade\get_initial_db_schema_queries()` for the plugins table.
  *
- * This class also deletes the plugin's ZIP storage directory.
+ * This class also deletes the plugin's ZIP storage directory, although recovery
+ * is possible via the graveyard system.
  *
  * @since 0.0.1184
  */
@@ -51,7 +52,7 @@ final class Drop {
 	/**
 	 * @since 0.0.1184
 	 * @var ?int $plugin_id The plugin ID.
-	 *                     It will always be an integer, even though it is nullable.
+	 *                      It will always be an integer, even though it is nullable.
 	 */
 	public readonly ?int $plugin_id;
 
@@ -114,6 +115,7 @@ final class Drop {
 				'troy_plugins_update_request_stats',
 				'troy_plugins_update_request_locales_stats',
 				'troy_plugins_update_request_stats_live',
+				'troy_plugins_integrations',
 			];
 
 			foreach ( $tables as $table )

@@ -102,7 +102,7 @@ final class Plugin_Info extends Base_Endpoint {
 				$this->send_error( 'Plugin data not available', 404 );
 
 			// Decode info contents once for performance
-			$info_contents = $info_row->contents ? json_decode( $info_row->contents, true ) : [];
+			$info_contents = $info_row->contents ?: [];
 
 			// var_dump() We need to see how this works in practice, hence some stuff is commented out.
 			$response = [

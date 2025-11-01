@@ -1,6 +1,6 @@
 <?php
 /**
- * @package Troy\Server
+ * @package Troy\Server\Plugins\CPT
  * @access  private
  */
 
@@ -39,7 +39,7 @@ use const Troy\Server\{
  */
 
 /**
- * Class Troy\Server\Plugins\CPT\List_View
+ * Class Troy\Server\Plugins\CPT\List_View.
  *
  * @since 0.0.1184
  */
@@ -101,7 +101,7 @@ final class List_View {
 	 *                                     Note that earlier entries will be placed before later ones.
 	 *         @type bool        $mobile   Optional. Whether to show this column on mobile devices. Default true.
 	 *         @type callable    $render   Optional. Callback function to render custom output for the column.
-	 *                                     Receives the column value as parameter.
+	 *                                     Receives the column value as parameter 1, and the post ID as parameter 2.
 	 *     }
 	 * }
 	 */
@@ -134,7 +134,7 @@ final class List_View {
 			'troy_server_plugin_id'         => [
 				'label'    => \__( 'Plugin ID', 'troy-server' ),
 				'where'    => [ 'troy_plugins', 'id' ], // We'll call these "table" and "key" to avoid confusion.
-				'postfind' => 'post_id',               // The post ID index of the where table.
+				'postfind' => 'post_id',                // The post ID index of the where table.
 				'orderby'  => true,
 				'search'   => true,
 				'after'    => [ 'title' ],
@@ -158,6 +158,18 @@ final class List_View {
 				'orderby'  => false,
 				'search'   => true,
 				'after'    => [ 'troy_server_slug' ],
+			],
+			'troy_server_integration' => [
+				'label'    => \__( 'Integration', 'troy-server' ),
+				'where'    => [ 'troy_plugins_integrations', 'mode' ], // We'll call these "table" and "key" to avoid confusion.
+				'postfind' => [ // Complex lookup via through, we want to find the plugin_id from the post_id.
+					'local_key'        => 'plugin_id',              // We know this.
+					'foreign'          => [ 'troy_plugins', 'id' ], // We can match 'on' with this table.
+					'foreign_postfind' => 'post_id',                // Wherein we can find the post ID as this. Let's not loop.
+				],
+				'orderby'  => true,
+				'search'   => true,
+				'after'    => [ 'troy_server_short_description' ],
 			],
 		];
 		// phpcs:enable VariableAnalysis.CodeAnalysis.VariableAnalysis
@@ -471,7 +483,7 @@ final class List_View {
 
 		// Render the value.
 		if ( isset( $sortables[ $column ]['render'] ) && \is_callable( $sortables[ $column ]['render'] ) ) {
-			$sortables[ $column ]['render']( $value );
+			$sortables[ $column ]['render']( $value, $post_id );
 		} else {
 			echo \esc_html( $value );
 		}

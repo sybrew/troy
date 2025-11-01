@@ -14,6 +14,7 @@ use Troy\Server\{
 	Cron,
 	Endpoints,
 	Plugins,
+	Integrations,
 };
 
 /**
@@ -40,8 +41,8 @@ use Troy\Server\{
  * SOFTWARE.
  */
 
-// Register global cron schedules globally.
-\add_filter( 'cron_schedules', [ Cron::class, 'register_schedules' ] );
+// Register general cron tasks.
+\add_action( 'init', [ Cron::class, 'register' ] );
 
 plugins: {
 	// Register the plugin's post meta fields, but only for REST API requests (i.e. saving).
@@ -54,9 +55,6 @@ plugins: {
 	\add_action( 'delete_post_' . PLUGINS_CPT, [ Plugins\CPT\Store::class, 'handle_delete_post' ] );
 	\add_filter( 'wp_insert_post_empty_content', [ Plugins\CPT\Store::class, 'unset_empty_post' ], 10, 2 );
 
-	// Register plugin cron schedules globally.
-	\add_filter( 'cron_schedules', [ Plugins\Cron::class, 'register_schedules' ] );
-
 	// Register the plugins Custom Post Type.
 	\add_action( 'init', [ Plugins\CPT\Init::class, 'register_post_types' ] );
 	\add_action( 'init', [ Plugins\CPT\Init::class, 'register_taxonomies' ] );
@@ -65,6 +63,15 @@ plugins: {
 	\add_action( 'rest_api_init', [ Plugins\REST::class, 'register_rest_routes' ] );
 }
 
+integrations: {
+	// Register the plugin integrations' rest routes.
+	\add_action( 'rest_api_init', [ Integrations\Plugins\REST::class, 'register_rest_routes' ] );
+
+	// Register plugin cron tasks.
+	\add_action( 'init', [ Integrations\Plugins\Cron::class, 'register' ] );
+}
+
 endpoints: {
+	// Handle repo API requests.
 	\add_action( 'init', [ Endpoints\Router::class, 'handle_api_requests' ] );
 }

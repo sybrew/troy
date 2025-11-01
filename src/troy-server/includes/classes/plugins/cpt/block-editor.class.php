@@ -1,6 +1,6 @@
 <?php
 /**
- * @package Troy\Server
+ * @package Troy\Server\Plugins\CPT
  * @access  private
  */
 
@@ -42,7 +42,9 @@ use function Troy\Server\get_origin_url;
  */
 
 /**
- * Class Troy\Server\Plugins\CPT\Block_Editor
+ * Class Troy\Server\Plugins\CPT\Block_Editor.
+ *
+ * Handles the Block Editor integration for the Troy Plugins custom post type.
  *
  * @since 0.0.1184
  */
@@ -65,7 +67,7 @@ final class Block_Editor {
 	 * @since 0.0.1184
 	 */
 	public static function register_post_meta() {
-
+		// phpcs:disable WordPress.Arrays.MultipleStatementAlignment -- Readability.
 		\register_post_meta(
 			PLUGINS_CPT,
 			'troy_server_plugin_data',
@@ -79,7 +81,10 @@ final class Block_Editor {
 							'plugin_id'         => [ 'type' => 'integer' ],
 							'name'              => [ 'type' => 'string' ],
 							'slug'              => [ 'type' => 'string' ],
-							'status'            => [ 'type' => 'string' ],
+							'status'            => [
+								'type' => 'string',
+								'enum' => [ 'public', 'unlisted', 'protected', 'pending', 'disabled' ],
+							],
 							'author_id'         => [ 'type' => 'integer' ],
 							'builder_type'      => [ 'type' => 'string' ],
 							'versions'          => [
@@ -130,14 +135,51 @@ final class Block_Editor {
 									'screenshots' => [ 'type' => 'string' ],
 								],
 							],
+							'integrations'      => [
+								'type'       => [ 'object', 'null' ],
+								'properties' => [
+									'mode'           => [
+										'type' => 'string',
+										'enum' => [ '', 'github', 'wporg' ],
+									],
+									'settings'       => [
+										'type'       => 'object',
+										'properties' => [
+											'has_auth'   => [ 'type' => 'boolean' ],
+											'owner_repo' => [ 'type' => 'string' ],
+											'pat'        => [ 'type' => 'string' ],
+											'slug'       => [ 'type' => 'string' ],
+										],
+									],
+									'tags'           => [
+										'type'                 => 'object',
+										'additionalProperties' => [
+											'type'       => 'object',
+											'properties' => [
+												'download_url' => [ 'type' => 'string' ],
+												'type'         => [ 'type' => 'string' ],
+											],
+										],
+									],
+									'tags_refreshed' => [
+										'type' => [ 'string', 'null' ],
+									],
+									'auto_process'   => [
+										'type' => 'string',
+										'enum' => [ 'all', 'tag', 'beta', 'none' ],
+									],
+									'remove'         => [ 'type' => 'boolean' ], // not stored in db
+								],
+							],
 						],
 					],
 				],
 				'default'           => Store::get_default_plugin_data(),
-				'auth_callback'     => fn() => \current_user_can( 'edit_posts' ),
+				'auth_callback'     => fn() => \current_user_can( REST_NS['plugins_manage']['access_cap'] ),
 				'sanitize_callback' => [ Store::class, 'sanitize_editor_plugin_data' ],
 			],
 		);
+		// phpcs:enable WordPress.Arrays.MultipleStatementAlignment
 	}
 
 	/**
@@ -418,7 +460,7 @@ final class Block_Editor {
 		)
 			return $editor_settings;
 
-		$editor_settings['template'] = [
+		$editor_settings['template']      = [
 			[
 				'troy-server/plugin-headergroup',
 				[
@@ -547,7 +589,9 @@ final class Block_Editor {
 		\wp_enqueue_script(
 			'troy-server-editor-utils',
 			"{$dir_url}library/js/editor-utils{$min}.js",
-			[],
+			[
+				'wp-i18n',
+			],
 			VERSION,
 			true, // Load in footer.
 		);
@@ -575,6 +619,17 @@ final class Block_Editor {
 		);
 
 		\wp_enqueue_script(
+			'troy-server-icons',
+			"{$dir_url}library/js/icons{$min}.js",
+			[
+				'wp-element',
+				'wp-primitives',
+			],
+			VERSION,
+			true, // Load in footer.
+		);
+
+		\wp_enqueue_script(
 			'troy-server-plugin-editor-components',
 			"{$dir_url}library/js/plugin-editor-components{$min}.js",
 			[
@@ -583,9 +638,12 @@ final class Block_Editor {
 				'wp-data',
 				'wp-components',
 				'wp-block-editor',
+				'wp-api-fetch',
+				'wp-url',
 				'troy-server-editor-utils',
 				'troy-server-editor-components',
 				'troy-server-constants',
+				'troy-server-icons',
 			],
 			VERSION,
 			true, // Load in footer.
@@ -597,6 +655,7 @@ final class Block_Editor {
 			[
 				'troy-server-editor-utils',
 				'wp-data',
+				'wp-api-fetch',
 			],
 			VERSION,
 			true, // Load in footer.
@@ -620,6 +679,8 @@ final class Block_Editor {
 				'wp-data',
 				'wp-components',
 				'wp-block-editor',
+				'wp-api-fetch',
+				'wp-url',
 				'troy-server-plugin-editor-store',
 				'troy-server-constants',
 			],
@@ -637,6 +698,7 @@ final class Block_Editor {
 				'wp-data',
 				'wp-block-editor',
 				'wp-api-fetch',
+				'wp-url',
 				'troy-server-plugin-editor-store',
 			],
 			VERSION,
@@ -680,6 +742,7 @@ final class Block_Editor {
 		);
 
 		$rest_plugins_manage = REST_NS['plugins_manage']['namespace'] . '/' . REST_NS['plugins_manage']['base'];
+		$rest_integrations   = REST_NS['plugins_integrations']['namespace'] . '/' . REST_NS['plugins_integrations']['base'];
 
 		\wp_localize_script(
 			'troy-server-plugin-editor',
@@ -698,6 +761,16 @@ final class Block_Editor {
 					'getReadmeData'      => \rest_url( "$rest_plugins_manage/getReadmeData" ),
 					'getSaveStatus'      => \rest_url( "$rest_plugins_manage/getSaveStatus" ),
 					'getPlaceholderLogo' => \rest_url( "$rest_plugins_manage/getPlaceholderLogo" ),
+					'integrations'       => [
+						'connect'     => \rest_url( "$rest_integrations/connect" ),
+						'disconnect'  => \rest_url( "$rest_integrations/disconnect" ),
+						'revealToken' => \rest_url( "$rest_integrations/reveal-token" ),
+						'tags'        => [
+							'get'     => \rest_url( "$rest_integrations/tags/get" ),
+							'refresh' => \rest_url( "$rest_integrations/tags/refresh" ),
+							'process' => \rest_url( "$rest_integrations/tags/process" ),
+						],
+					],
 				],
 				// TODO, look at WP packages\editor\src\components\post-status\index.js
 				'pluginStatuses' => [
@@ -756,6 +829,28 @@ final class Block_Editor {
 						'value'       => 'unreleased',
 						'label'       => \__( 'Unreleased', 'troy-server' ),
 						'description' => \__( 'Not publicly available.', 'troy-server' ),
+					],
+				],
+				'autoProcess'    => [
+					[
+						'value'       => 'all',
+						'label'       => \__( 'All new tags', 'troy-server' ),
+						'description' => \__( 'Automatically import all new tags.', 'troy-server' ),
+					],
+					[
+						'value'       => 'tag',
+						'label'       => \__( 'Stable releases only', 'troy-server' ),
+						'description' => \__( 'Import stable release tags only.', 'troy-server' ),
+					],
+					[
+						'value'       => 'beta',
+						'label'       => \__( 'Beta releases only', 'troy-server' ),
+						'description' => \__( 'Import beta release tags only.', 'troy-server' ),
+					],
+					[
+						'value'       => 'none',
+						'label'       => \__( 'None (manual only)', 'troy-server' ),
+						'description' => \__( 'Do not automatically import any tags.', 'troy-server' ),
 					],
 				],
 				'contentTabs'    => [

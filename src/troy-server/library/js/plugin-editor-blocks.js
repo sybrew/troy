@@ -174,28 +174,26 @@
 						{
 							className: 'troy-server-block-plugin-tabs-nav',
 						},
-						dynamicInnerBlocks.map(
-							( block, index ) => {
-								// Hide the tab if it's empty. But, show if all tabs are empty; a11y: show context.
-								if ( 'readme' === storeData.builder_type && ! allTabsEmpty )
-									if ( ! storeData.contents?.[ block.attributes?.troyServerTabId ]?.length )
-										return null;
+						dynamicInnerBlocks.map( ( block, index ) => {
+							// Hide the tab if it's empty. But, show if all tabs are empty; a11y: show context.
+							if ( 'readme' === storeData.builder_type && ! allTabsEmpty )
+								if ( ! storeData.contents?.[ block.attributes?.troyServerTabId ]?.length )
+									return null;
 
-								return JSX(
-									Button,
-									{
-										key:         block.clientId,
-										isPrimary:   activeTab === index,
-										isSecondary: activeTab !== index,
-										onClick:     () => {
-											setAttributes( { activeTab: index } );
-										},
-										className:   'troy-server-block-plugin-tab-button',
+							return JSX(
+								Button,
+								{
+									key:         block.clientId,
+									isPrimary:   activeTab === index,
+									isSecondary: activeTab !== index,
+									onClick:     () => {
+										setAttributes( { activeTab: index } );
 									},
-									block.attributes.title || `Tab ${ index + 1 }`
-								);
-							},
-						),
+									className:   'troy-server-block-plugin-tab-button',
+								},
+								block.attributes.title || `Tab ${ index + 1 }`
+							);
+						} ),
 					),
 					JSX(
 						'div',
@@ -251,7 +249,7 @@
 			blockProps,
 			{
 				template:       [ [ 'core/paragraph', {} ] ],
-				templateLock:   false,
+				templateLock:   false, // TODO is this necessary?
 				renderAppender: DefaultBlockAppender,
 			},
 		);

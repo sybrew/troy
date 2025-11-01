@@ -35,6 +35,7 @@ namespace Troy\Server\Endpoints;
 /**
  * Abstract base class for Troy Server public API endpoints.
  *
+ * var_dump() add $response and $error properties; work through those. Otherwise, make methods static.
  * @since 0.0.1184
  */
 abstract class Base_Endpoint {

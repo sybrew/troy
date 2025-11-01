@@ -253,8 +253,10 @@ final class Files {
 	 */
 	public static function move_to_graveyard( $plugin_id ) {
 
+		$plugin_id = (int) $plugin_id;
+
 		// Let's guard against invalid plugin IDs before something bad happens.
-		if ( empty( $plugin_id ) || ! is_numeric( $plugin_id ) )
+		if ( $plugin_id <= 0 )
 			throw new \Exception( 'Invalid plugin ID.' );
 
 		// 15 ought to be plenty to rename a few folder indexes.
@@ -263,7 +265,7 @@ final class Files {
 		$source_dir = static::get_plugin_storage_dir_path( $plugin_id );
 
 		// Not every plugin has had filed uploaded to it. Let's check if they have first.
-		if ( \is_dir( $source_dir ) ) {
+		if ( is_dir( $source_dir ) ) {
 			File_Utils::init_wpfs();
 			File_Utils::make_shielded_dir( static::get_plugin_graveyard_dir_path() );
 

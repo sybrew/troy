@@ -347,7 +347,7 @@ function make_fully_qualified_repo_url( $repo ) {
 		preg_replace(
 			'/^(?:\w*:)?(?:\/\/)?(.*?)$/',
 			'https://$1/',
-			\trim( $repo, ' \\/' ),
+			trim( $repo, ' \\/' ),
 		),
 		[ 'https' ],
 	);

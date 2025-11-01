@@ -72,7 +72,7 @@ function get_origin_url() {
 		preg_replace(
 			'/^(?:\w*:)?(?:\/\/)?(.*?)$/',
 			'https://$1/',
-			\trim( \home_url( '', [ 'https' ] ), ' \\/' ),
+			trim( \home_url( '', [ 'https' ] ), ' \\/' ),
 		),
 		[ 'https' ],
 	);
@@ -82,7 +82,7 @@ function get_origin_url() {
  * Returns the latest version from an array of versions, following the same priority logic.
  * Prioritizes 'tag' type versions, then 'beta', and finally 'unreleased'.
  *
- * @since 0.0.1185
+ * @since 0.0.1184
  *
  * @param array $versions Array of version objects with 'version' and optional 'type' keys.
  * @return ?string The latest version string, or null if no versions found.
@@ -213,9 +213,17 @@ function get_latest_public_wordpress_version( $from_version = '' ) {
 		// At the moment of writing, this went back to 1617 days of releases.
 		$body = \wp_remote_retrieve_body( \wp_safe_remote_get(
 			'https://api.github.com/repos/WordPress/wordpress-develop/tags?per_page=100',
-			[ 'timeout' => 3 ],
+			[
+				'timeout'    => 3,
+				'headers'    => [
+					'Accept'     => 'application/json',
+					'User-Agent' => 'Troy Server/' . VERSION, // See WP_Http_Curl::request()
+				],
+				'user-agent' => 'Troy Server/' . VERSION, // See WP_Http::request()
+			],
 		) );
 
+		// Body becomes empty on error via wp_remote_retrieve_body().
 		if ( empty( $body ) ) {
 			// Fallback to previous cache if available.
 			$api_versions = $cache['versions'] ?? [];
@@ -236,7 +244,7 @@ function get_latest_public_wordpress_version( $from_version = '' ) {
 			// e.g., with 6.8, 6.8.1, and 6.8.2, we only set "6.8.2" for key "6.8".
 			$api_versions = [];
 			foreach ( $versions_array as $ver ) {
-				if ( \preg_match( '/^(\d+\.\d+)/', $ver, $matches ) ) {
+				if ( preg_match( '/^(\d+\.\d+)/', $ver, $matches ) ) {
 					$major_major = $matches[1];
 					if (
 						   ! isset( $api_versions[ $major_major ] )

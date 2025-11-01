@@ -8,6 +8,11 @@ namespace Troy\Server\Bootstrap\Deactivation;
 
 \defined( 'Troy\Server\ABSPATH' ) or die;
 
+use Troy\Server\{
+	Cron,
+	Integrations,
+};
+
 /**
  * Troy Server
  *
@@ -36,5 +41,6 @@ namespace Troy\Server\Bootstrap\Deactivation;
 if ( false !== \get_option( 'troy_server_settings' ) )
 	\wp_set_options_autoload( [ 'troy_server_settings' ], false );
 
-// Remove plugin cron jobs.
-\Troy\Server\Plugins\Cron::remove_cron_jobs();
+// Remove cron jobs.
+Cron::remove_cron_jobs();
+Integrations\Cron::remove_cron_jobs();

@@ -25,12 +25,12 @@
 'use strict';
 
 /**
- * @module troy-server-editor-utils
+ * @module troyServerEditorUtils
  * @description Utilities for the Troy Server plugin and theme editor.
  * @since 0.0.1184
- * @link
+ * @param {Object} wp The WordPress global wp object.
  */
-window.troyServerEditorUtils = ( () => {
+window.troyServerEditorUtils = ( ( wp ) => {
 
 	/**
 	 * Recursively assigns properties from the source object to the defaults
@@ -198,6 +198,58 @@ window.troyServerEditorUtils = ( () => {
 	}
 
 	/**
+	 * Formats a UNIX timestamp into a human-readable relative time string.
+	 *
+	 * Examples:
+	 * - "Just now" for timestamps within the last minute.
+	 * - "X minutes ago" for timestamps within the last hour.
+	 * - "X hours ago" for timestamps within the last day.
+	 * - "X days ago" for timestamps older than a day.
+	 *
+	 * @since 0.0.1184
+	 *
+	 * @param {number|string} timestamp The UNIX timestamp to format, or a dateTime string.
+	 * @return {string} A human-readable relative time string.
+	 */
+	const formatTimestamp = timestamp => {
+
+		const { __, _n, sprintf } = wp.i18n;
+
+		if ( 'string' === typeof timestamp )
+			timestamp = Math.floor( new Date( timestamp ).getTime() / 1000 );
+
+		if ( ! +timestamp )
+			return __( 'Never', 'troy-server' );
+
+		const date = new Date( timestamp * 1000 );
+		const now  = new Date();
+		const diff = Math.floor( ( now - date ) / 1000 );
+
+		if ( diff < 60 )
+			return __( 'Just now', 'troy-server' );
+
+		if ( diff < 3600 )
+			return sprintf(
+				/* translators: %d: number of minutes */
+				_n( '%d minute ago', '%d minutes ago', Math.floor( diff / 60 ), 'troy-server' ),
+				Math.floor( diff / 60 ),
+			);
+
+		if ( diff < 86400 )
+			return sprintf(
+				/* translators: %d: number of hours */
+				_n( '%d hour ago', '%d hours ago', Math.floor( diff / 3600 ), 'troy-server' ),
+				Math.floor( diff / 3600 ),
+			);
+
+		return sprintf(
+			/* translators: %d: number of days */
+			_n( '%d day ago', '%d days ago', Math.floor( diff / 86400 ), 'troy-server' ),
+			Math.floor( diff / 86400 ),
+		);
+	}
+
+	/**
 	 * Converts a number of bytes into a human-readable string using binary
 	 * prefixes (KiB, MiB, etc.).
 	 *
@@ -208,7 +260,8 @@ window.troyServerEditorUtils = ( () => {
 	 */
 	function bytesToIbiBytes( bytes, decimals = 2 ) {
 
-		if ( ! bytes ) return '0 bytes';
+		if ( ! bytes )
+			return '0 bytes';
 
 		const k     = 1024;
 		const sizes = [ 'bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB' ];
@@ -273,7 +326,8 @@ window.troyServerEditorUtils = ( () => {
 		sortVersions,
 		debounce,
 		delay,
+		formatTimestamp,
 		bytesToIbiBytes,
 		sanitizeRepoUrl,
 	};
-} )();
+} )( window.wp );

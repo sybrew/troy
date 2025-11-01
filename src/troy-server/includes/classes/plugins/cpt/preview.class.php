@@ -1,6 +1,6 @@
 <?php
 /**
- * @package Troy\Server
+ * @package Troy\Server\Plugins\CPT
  * @access  private
  */
 
@@ -33,17 +33,21 @@ namespace Troy\Server\Plugins\CPT;
  */
 
 /**
- * Class Troy\Server\Plugins\CPT\Preview
+ * Class Troy\Server\Plugins\CPT\Preview.
  *
  * @since 0.0.1184
  */
 final class Preview {
 
-	// TODO: What we want is to preview the plugin thickbox and the plugin card.
-	// See _nag_install_tsf() in Extension Manager, which includes TB_iframe.
-	// We should probably preload those files in the editor. See _prepare_tsf_nag_installer_scripts().
-
-	function preview_thickbox() {
-
+	/**
+	 * Preview thickbox functionality.
+	 *
+	 * @since 0.0.1184
+	 * @todo Implement preview functionality
+	 */
+	public function preview_thickbox() {
+		// TODO: What we want is to preview the plugin thickbox and the plugin card.
+		// See _nag_install_tsf() in Extension Manager, which includes TB_iframe.
+		// We should probably preload those files in the editor. See _prepare_tsf_nag_installer_scripts().
 	}
 }

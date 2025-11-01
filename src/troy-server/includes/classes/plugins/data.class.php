@@ -1,6 +1,6 @@
 <?php
 /**
- * @package Troy\Server
+ * @package Troy\Server\Plugins
  * @access  public
  */
 
@@ -259,7 +259,15 @@ final class Data {
 	 *     @type string locale         The info locale.
 	 *     @type string latest_version The latest version.
 	 *     @type string banner_uri     The banner image URI.
-	 *     @type string contents       The HTML contents, JSON encoded.
+	 *     @type array  contents       {
+	 *         The HTML contents.
+	 *
+	 *         @type string $details     The main plugin details page.
+	 *         @type string $usage       The installation/usage instructions.
+	 *         @type string $faq         The FAQ content.
+	 *         @type string $changelog   The changelog content.
+	 *         @type string $screenshots The screenshots content.
+	 *     }
 	 *     @type string created_at     The row creation timestamp.
 	 *     @type string updated_at     The row last updated timestamp.
 	 * }
@@ -267,10 +275,15 @@ final class Data {
 	public function get_infos_row() {
 		global $wpdb;
 
-		return $wpdb->get_row( $wpdb->prepare(
+		$infos = $wpdb->get_row( $wpdb->prepare(
 			"SELECT * FROM {$wpdb->prefix}troy_plugins_infos WHERE plugin_id = %d",
 			$this->plugin_id,
 		) );
+
+		if ( $infos?->contents )
+			$infos->contents = json_decode( $infos->contents, true );
+
+		return $infos;
 	}
 
 	/**
@@ -785,5 +798,83 @@ final class Data {
 			$this->plugin_id,
 			$this->plugin_version,
 		) );
+	}
+
+	/**
+	 * Gets the plugin integration data.
+	 *
+	 * @since 0.0.1184
+	 *
+	 * @param array $args {
+	 *     Getter arguments.
+	 *
+	 *     @type ?bool $args['get_auth'] Whether to include authentication data.
+	 *                                   Leave null or false to exclude.
+	 * }
+	 * @return ?object {
+	 *     The plugin integration row.
+	 *
+	 *     @type string  $mode           The integration mode. Currently, either 'github', 'wporg'.
+	 *     @type object  $settings       Structure varies by mode:
+	 *         GitHub: {
+	 *             Decoded settings object.
+	 *
+	 *             @type string $owner_repo Repository in owner/repo format.
+	 *             @type bool   $has_auth   Whether authentication is configured.
+	 *         }
+	 *         WordPress.org: {
+	 *             Decoded settings object.
+	 *
+	 *             @type string $slug     Plugin slug.
+	 *             @type bool   $has_auth Whether authentication is configured (always false for WPOrg).
+	 *         }
+	 *     @type ?object $auth           Null if not configured or when get_auth is false.
+	 *                                   Object otherwise, Structure varies by mode: {
+	 *         GitHub: {
+	 *             Authentication data
+	 *
+	 *             @type object $token {
+	 *                 @type string $type  Token type (e.g., 'bearer').
+	 *                 @type mixed  $value Token value. String for PAT, array for OAuth2 (client_id, client_secret, etc.).
+	 *             }
+	 *             @type object $download {
+	 *                 @type array $headers     HTTP headers for authenticated downloads (e.g., ['Authorization' => 'Bearer token']).
+	 *                 @type array $queryParams Query parameters for authenticated downloads (reserved for future use).
+	 *             }
+	 *         }
+	 *     }
+	 *     @type object  $tags           Decoded tags object, indexed by tag name (version). {
+	 *         @type string $download_url The tag download URL.
+	 *         @type string $type         The tag type ('tag' or 'beta').
+	 *     }
+	 *     @type ?string $tags_refreshed The tags last refreshed timestamp. Null if never refreshed.
+	 *     @type string  $auto_process   Auto-process setting ('all', 'tag', 'beta', 'none').
+	 *     @type string  $created_at     The row creation timestamp.
+	 *     @type string  $updated_at     The row last updated timestamp.
+	 * }
+	 */
+	public function get_integration( $args = [] ) {
+
+		global $wpdb;
+
+		$integration = $wpdb->get_row( $wpdb->prepare(
+			"SELECT * FROM {$wpdb->prefix}troy_plugins_integrations WHERE plugin_id = %d",
+			$this->plugin_id,
+		) );
+
+		if ( ! $integration )
+			return null;
+
+		// Decode JSON fields
+		$integration->settings = json_decode( $integration->settings );
+		$integration->tags     = json_decode( $integration->tags );
+
+		if ( $args['get_auth'] ?? false ) {
+			$integration->auth = $integration->auth ? json_decode( $integration->auth ) : null;
+		} else {
+			unset( $integration->auth );
+		}
+
+		return $integration;
 	}
 }

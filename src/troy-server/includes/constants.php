@@ -45,9 +45,14 @@ const PLUGINS_CPT = 'troy-server-plugins';
  * @since 0.0.1184
  */
 const REST_NS = [
-	'plugins_manage' => [
+	'plugins_manage'       => [
 		'namespace'  => 'troy-server/v1',
 		'base'       => 'plugins/manage',
 		'access_cap' => 'edit_pages', // TODO shouldn't this be an option?
+	],
+	'plugins_integrations' => [
+		'namespace'  => 'troy-server/v1',
+		'base'       => 'plugins/integrations',
+		'access_cap' => 'edit_pages',
 	],
 ];

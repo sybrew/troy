@@ -73,7 +73,8 @@ svg.troy-server-panel-loading-spinner {
 	display: flex;
 	align-items: center;
 	word-break: break-all; /* Safari and Firefox support */
-	word-break: auto-phrase;
+	word-break: auto-phrase; /* Prelude to CSS4 */
+	overflow-wrap: anywhere; /* icw auto-phrase, also prevents overflow on WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW */
 	hyphens: auto;
 }
 
