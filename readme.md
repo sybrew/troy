@@ -26,12 +26,12 @@ To upload a plugin, simply create a new plugin post, fill in the required fields
 
 To automate plugin uploads, you can connect your GitHub repository or WordPress.org repository. Once connected, it will automatically fetch and process the latest release ZIP files for redistribution. You can configure it to fetch tags automatically by type (based on version affixes), or process them manually.
 
-TODO: Statistics are collected about the plugins registered on the server, such as the number of downloads, active installs, and more. The data is anonymized via rotating unique identifiers to protect user privacy. You can view the statistics via the admin interface.
+Statistics are collected about the plugins registered on the server, such as the number of downloads, active installs, and more. The data is anonymized via rotating unique identifiers to protect user privacy. <small>Planned: you'll be able to view the statistics via the admin interface.</small>
 
-TODO: The server provides an interface to generate a Troy Installer, which is a ZIP file that contains the Troy Client and with instructions to install plugins. This installer can be distributed to your clients, allowing them to easily install and activate the Troy Client and its dependencies, starting with only a tiny package.
+<small>Planned: The server provides an interface to generate a Troy Installer, which is a ZIP file that contains the Troy Client and with instructions to install plugins. This installer can be distributed to your clients, allowing them to easily install and activate the Troy Client and its dependencies, starting with only a tiny package.</small>
 
-TODO: Translation files are also supported, allowing you to distribute translations for your plugins. The server will automatically generate the translation files for your plugins and themes, and you can manage them via the admin interface. You do not need to bundle the translation files with your plugins, as they will be fetched from the server when needed, saving space and bandwidth.
-Providing translations can be done via Polyglots, or by uploading the translation files directly to the server.
+<small>Planned: Translation files are also supported, allowing you to distribute translations for your plugins. The server will automatically generate the translation files for your plugins and themes, and you can manage them via the admin interface. You do not need to bundle the translation files with your plugins, as they will be fetched from the server when needed, saving space and bandwidth.
+Providing translations can be done via Polyglots, or by uploading the translation files directly to the server.</small>
 
 It's best to run Troy Server on a standalone WordPress instance, this can even be a Multisite subdomain or subdirectory. Multilingual plugins will never be supported by Troy Server and may interfere with the repo URL generation. Keep in mind that a repo URL is limited to 191 characters.
 

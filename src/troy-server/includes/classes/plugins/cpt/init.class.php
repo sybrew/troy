@@ -105,6 +105,7 @@ final class Init {
 
 		// These won't be automatically selectable. That's because get_post_statuses() is hardcoded to suck.
 		// See https://core.trac.wordpress.org/ticket/12706 and https://core.trac.wordpress.org/ticket/23174.
+		// TODO: disable these statuses for now?
 		\register_post_status(
 			'public',
 			[

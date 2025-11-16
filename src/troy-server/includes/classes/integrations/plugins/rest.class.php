@@ -89,7 +89,7 @@ final class REST {
 				[
 					'methods'             => $methods,
 					'callback'            => [ $class, $cb ],
-					'permission_callback' => $permission_cb,
+					'permission_callback' => $permission_cb, // var_dump() add show_in_index => false? This prevents exposure in the WP REST API index.
 				],
 			);
 		}

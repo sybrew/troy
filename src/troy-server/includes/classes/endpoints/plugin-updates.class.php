@@ -112,7 +112,23 @@ final class Plugin_Updates extends Base_Endpoint {
 				continue;
 
 			try {
-				$metas = new Data( $plugin_id )->get_metas_row();
+				$data = new Data( $plugin_id );
+
+				// Check plugin status - only serve updates for public/unlisted plugins
+				switch ( $data->get_plugins_row()->status ) {
+					case 'public':
+					case 'unlisted':
+						// Allowed statuses. Break to continue processing.
+						break;
+					case 'protected':
+					case 'pending':
+					case 'disabled':
+					default:
+						// Skip other statuses. Continue to next plugin.
+						continue 2;
+				}
+
+				$metas = $data->get_metas_row();
 				// Get latest COMPATIBLE plugin zip
 				$zip = Files::get_latest_plugin_zip(
 					$plugin_id,

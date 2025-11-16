@@ -88,62 +88,52 @@ final class Plugin_Info extends Base_Endpoint {
 			$this->send_error( 'Plugin not found', 404 );
 
 		try {
-			$data = new Data( $plugin_id );
+			$data = new Data( $plugin_id, locale: $locale );
 
-			$plugin_row   = $data->get_plugins_row();
-			$meta_row     = $data->get_metas_row();
-			$info_row     = $data->get_infos_row();
-			$latest_zip   = $data->get_zips_row();
-			// $translations = $data->get_translations(); // var_dump() TODO implement me
-			$data_cache   = $data->get_data_caches_row();
-			$contributors = $data->get_contributors();
+			$plugin_row = $data->get_plugins_row();
+			$meta_row   = $data->get_metas_row();
 
 			if ( ! $plugin_row || ! $meta_row )
 				$this->send_error( 'Plugin data not available', 404 );
 
+			// Check plugin status - only serve info for public/unlisted plugins
+			switch ( $plugin_row->status ) {
+				case 'public':
+				case 'unlisted':
+					// Allowed statuses. Break to continue processing.
+					break;
+				case 'protected':
+				case 'pending':
+				case 'disabled':
+				default:
+					$this->send_error( 'Plugin not available', 403 );
+			}
+
+			$info_row     = $data->get_infos_row();
+			$latest_zip   = $data->get_zips_row();
+			$data_cache   = $data->get_data_caches_row();
+			$contributors = $data->get_contributors();
+
 			// Decode info contents once for performance
 			$info_contents = $info_row->contents ?: [];
 
-			// var_dump() We need to see how this works in practice, hence some stuff is commented out.
 			$response = [
-				'name'                     => $meta_row->name,
-				'slug'                     => $plugin_row->slug,
-				'version'                  => $latest_zip->version ?? '',
-				'author'                   => $this->get_author_string( $meta_row->author_id ),
-				// 'author_profile'           => \get_author_posts_url( $meta_row->author_id ),
-				'contributors'             => $this->get_contributors_array( $contributors ),
-				'requires'                 => $latest_zip->requires_wp ?? '',
-				'tested'                   => $latest_zip->tested_wp ?? \Troy\Server\get_latest_public_wordpress_version( $latest_zip->requires_wp ),
-				'requires_php'             => $latest_zip->requires_php ?? '',
-				// 'compatibility'            => [], // What is this?
-				'rating'                   => $this->calculate_rating_percentage( $data_cache ),
-				'ratings'                  => $this->get_ratings_breakdown( $data_cache ),
-				'num_ratings'              => (int) ( $data_cache->rating_count ?? 0 ),
-				// 'support_threads'          => 0,
-				// 'support_threads_resolved' => 0,
-				'downloaded'               => (int) ( $data_cache->active_install_count ?? 0 ),
-				'last_updated'             => $this->format_last_updated( $latest_zip->updated_at ?? '' ),
-				// 'added'                    => $this->format_date_added( $plugin_row->created_at ?? '' ),
-				'homepage'                 => $meta_row->permalink ?? '',
-				// 'short_description'        => $meta_row->short_description ?? '',
-				// 'description'              => $this->get_description_content( $info_contents ),
-				'download_link'            => $this->get_download_link( $plugin_row->slug, $latest_zip ),
-				// 'changelog'                => $this->get_changelog_content( $info_contents ),
-				// 'installation'             => $this->get_installation_content( $info_contents ),
-				// 'faq'                      => $this->get_faq_content( $info_contents ),
-				// 'screenshots'              => $this->get_screenshots_content( $info_contents ),
-				// 'tags'                     => [],
-				// 'versions'                 => $this->get_versions_list( $data ),
-				'sections'                 => $this->get_sections_array( $info_contents ),
-				'donate_link'              => '',
-				'banners'                  => $this->get_banners_array( $info_row ),
-				// 'icons'                    => $this->get_icons_array( $meta_row ),
-				// 'blocks'                   => [],
-				// 'block_assets'             => [],
-				// 'author_block_count'       => 0,
-				// 'author_block_rating'      => 0,
-				// 'blueprints'               => [],
-				// 'preview_link'             => '',
+				'name'          => $meta_row->name,
+				'slug'          => $plugin_row->slug,
+				'version'       => $latest_zip->version ?? '',
+				'author'        => $this->get_author_string( $meta_row->author_id ),
+				'contributors'  => $this->get_contributors_array( $contributors ),
+				'requires'      => $latest_zip->requires_wp ?? '',
+				'tested'        => $latest_zip->tested_wp ?? \Troy\Server\get_latest_public_wordpress_version( $latest_zip->requires_wp ),
+				'requires_php'  => $latest_zip->requires_php ?? '',
+				'downloaded'    => (int) ( $data_cache->active_install_count ?? 0 ),
+				'last_updated'  => $this->format_last_updated( $latest_zip->updated_at ?? '' ),
+				'added'         => $this->format_date_added( $plugin_row->created_at ?? '' ),
+				'homepage'      => $meta_row->permalink ?? '',
+				'download_link' => $this->get_download_link( $plugin_row->slug, $latest_zip ),
+				'sections'      => $this->get_sections_array( $info_contents ),
+				'donate_link'   => '', // Nobody uses this field. Literally, nobody.
+				'banners'       => $this->get_banners_array( $info_row ),
 			];
 
 			// Filter response based on requested fields
@@ -156,7 +146,14 @@ final class Plugin_Info extends Base_Endpoint {
 			$this->send_json_response( $response );
 
 		} catch ( \Exception $e ) {
-			$this->send_error( 'Failed to get plugin information: ' . $e->getMessage(), 500 );
+			$this->send_error(
+				\sprintf(
+					/* translators: %s: Error message */
+					\__( 'Failed to get plugin information: %s', 'troy-server' ),
+					$e->getMessage(),
+				),
+				500,
+			);
 		}
 	}
 
@@ -236,11 +233,11 @@ final class Plugin_Info extends Base_Endpoint {
 		// For now, return empty breakdown
 		// In the future, this could be enhanced with actual rating distribution
 		return [
-			'5' => 69, // var_dump() TODO remove me, testing
-			'4' => 4,
-			'3' => 3,
-			'2' => 2,
-			'1' => 42,
+			'5' => 0,
+			'4' => 0,
+			'3' => 0,
+			'2' => 0,
+			'1' => 0,
 		];
 	}
 

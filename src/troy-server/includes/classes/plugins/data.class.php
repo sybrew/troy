@@ -80,6 +80,12 @@ final class Data {
 	public readonly ?string $date;
 
 	/**
+	 * @since 0.0.1184
+	 * @var string $locale The locale.
+	 */
+	public readonly string $locale;
+
+	/**
 	 * Sets up the plugin data to work with.
 	 *
 	 * @since 0.0.1184
@@ -92,9 +98,10 @@ final class Data {
 	 *                                If left empty, the current UTC day will be assumed.
 	 *                                For relative formats, see https://www.php.net/manual/en/datetime.formats.php#datetime.formats.relative.
 	 * @param ?int    $post_id        Optional. The post ID of the plugin. Will be ignored if $plugin_id is set.
+	 * @param string  $locale         Optional. The locale. If left empty, the default 'en_US' will be used.
 	 * @throws \Exception If both $plugin_id and $post_id are not set.
 	 */
-	public function __construct( $plugin_id = null, $plugin_version = null, $date = null, $post_id = null ) {
+	public function __construct( $plugin_id = null, $plugin_version = null, $date = null, $post_id = null, $locale = null ) {
 
 		if ( ! $plugin_id && ! $post_id )
 			throw new \Exception( 'Either plugin_id or post_id must be set.' );
@@ -103,6 +110,7 @@ final class Data {
 
 		$this->plugin_version = $plugin_version ?? $this->get_latest_version();
 		$this->date           = sanitize_sql_date( $date ?? 'now' ); // TODO create property hook?
+		$this->locale         = $locale ?? 'en_US';
 	}
 
 	/**
@@ -275,10 +283,26 @@ final class Data {
 	public function get_infos_row() {
 		global $wpdb;
 
-		$infos = $wpdb->get_row( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}troy_plugins_infos WHERE plugin_id = %d",
+		$rows = $wpdb->get_results( $wpdb->prepare(
+			"SELECT * FROM {$wpdb->prefix}troy_plugins_infos WHERE plugin_id = %d AND locale IN (%s, 'en_US')",
 			$this->plugin_id,
+			$this->locale,
 		) );
+
+		if ( ! $rows )
+			return null;
+
+		$infos = null;
+
+		foreach ( $rows as $row ) {
+			if ( $row->locale === $this->locale ) {
+				$infos = $row;
+				break;
+			}
+			// Default to en_US if no exact match found.
+			if ( 'en_US' === $row->locale )
+				$infos = $row; // Don't break, keep looking for exact match
+		}
 
 		if ( $infos?->contents )
 			$infos->contents = json_decode( $infos->contents, true );
@@ -412,9 +436,10 @@ final class Data {
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}troy_plugins_translations WHERE plugin_id = %d AND `version` = %s",
+			"SELECT * FROM {$wpdb->prefix}troy_plugins_translations WHERE plugin_id = %d AND `version` = %s AND `locale` = %s",
 			$this->plugin_id,
 			$this->plugin_version,
+			$this->locale,
 		) );
 	}
 

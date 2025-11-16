@@ -772,7 +772,6 @@ final class Block_Editor {
 						],
 					],
 				],
-				// TODO, look at WP packages\editor\src\components\post-status\index.js
 				'pluginStatuses' => [
 					[
 						'value'       => 'public',
@@ -790,7 +789,6 @@ final class Block_Editor {
 					// 	'label'       => \__( 'Protected', 'troy-server' ),
 					// 	'description' => \__( 'Available for download and listing conditionally.', 'troy-server' ),
 					// ],
-					// TODO: var_dump() Implement automated publishing (i.e., add a check on save and test if the plugin is draft or public)
 					[
 						'value'       => 'pending',
 						'label'       => \__( 'Pending', 'troy-server' ),

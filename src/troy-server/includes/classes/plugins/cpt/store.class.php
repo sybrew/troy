@@ -378,6 +378,14 @@ final class Store {
 		// This MUST be done here. We do not want scripts and on-* attributes sent to the Troy Client.
 		$data['contents'] = \wp_kses_post_deep( $data['contents'] );
 
+		// Auto-convert pending → public when WordPress post is published
+		if (
+			   'pending' === $data['status']
+			&& 'publish' === $post->post_status
+		) {
+			$data['status'] = 'public';
+		}
+
 		global $wpdb;
 
 		$wpdb->query( 'START TRANSACTION' );

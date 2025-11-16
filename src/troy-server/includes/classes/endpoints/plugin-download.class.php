@@ -111,13 +111,25 @@ final class Plugin_Download extends Base_Endpoint {
 			$this->send_error( 'Plugin not found', 404 );
 
 		try {
-
 			$data = new Data(
 				$plugin_id,
 				'latest' === $version
 					? null
 					: sanitize_semver( $version ),
 			);
+
+			// Check plugin status - only serve downloads for public/unlisted plugins
+			switch ( $data->get_plugins_row()->status ) {
+				case 'public':
+				case 'unlisted':
+					// Allowed statuses. Break to continue processing.
+					break;
+				case 'protected':
+				case 'pending':
+				case 'disabled':
+				default:
+					$this->send_error( 'Plugin not available for download', 403 );
+			}
 
 			// This is sanitized with the database; overwrite if needed.
 			$version = $data->plugin_version;
