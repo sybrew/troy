@@ -40,6 +40,12 @@ use function Troy\Server\Sanitize\sanitize_sql_date;
  * SOFTWARE.
  */
 
+// TEMP: PHPCS bugged with PHP 8.4 assymetric visibility and property hooks.
+// phpcs:disable Squiz.PHP.NonExecutableCode.Unreachable, Squiz.Commenting.VariableComment.Missing
+// phpcs:disable PSR2.Classes.PropertyDeclaration.ScopeMissing, PSR2.Classes.PropertyDeclaration.Multiple
+// phpcs:disable PHPCompatibility.Syntax.RemovedCurlyBraceArrayAccess.Found, Generic.WhiteSpace.ScopeIndent.IncorrectExact
+// phpcs:disable Squiz.Commenting.VariableComment.WrongStyle
+
 /**
  * Class Troy\Server\Plugins\Data.
  *
@@ -70,20 +76,26 @@ final class Data {
 	 * @var ?string $plugin_version The plugin version.
 	 *                              It will always be a string, even though it is nullable.
 	 */
-	public readonly ?string $plugin_version;
+	public private(set) ?string $plugin_version {
+		get => $this->plugin_version ??= $this->get_latest_version();
+	}
 
 	/**
 	 * @since 0.0.1184
 	 * @var ?string $date The date in "Y-m-d" format.
 	 *                    It will always be a string, even though it is nullable.
 	 */
-	public readonly ?string $date;
+	public private(set) ?string $date = 'now' {
+		get => $this->date ??= sanitize_sql_date( 'now' );
+	}
 
 	/**
 	 * @since 0.0.1184
-	 * @var string $locale The locale.
+	 * @var ?string $locale The locale.
 	 */
-	public readonly string $locale;
+	public private(set) ?string $locale {
+		get => $this->locale ??= 'en_US';
+	}
 
 	/**
 	 * Sets up the plugin data to work with.
@@ -108,9 +120,9 @@ final class Data {
 
 		$this->plugin_id = $plugin_id ?? get_plugin_id_by_post_id( $post_id );
 
-		$this->plugin_version = $plugin_version ?? $this->get_latest_version();
-		$this->date           = sanitize_sql_date( $date ?? 'now' ); // TODO create property hook?
-		$this->locale         = $locale ?? 'en_US';
+		$this->plugin_version = $plugin_version;
+		$this->date           = $date ? sanitize_sql_date( $date ) : null;
+		$this->locale         = $locale;
 	}
 
 	/**

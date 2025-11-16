@@ -121,12 +121,12 @@ final class Readme_Parser {
 		// Troy Server new and preferred section names.
 		'details'                    => 'details',
 		'usage'                      => 'usage',
-		'api'                        => 'api',               // Brand new in Troy.
+		'api'                        => 'api', // Brand new in Troy.
 
 		// WordPress.org default section names.
 		'faq'                        => 'faq',
 		'changelog'                  => 'changelog',
-		// 'screenshots'                => 'screenshots', // TODO implement this.
+		// 'screenshots'                => 'screenshots', // TODO implement this?
 
 		// WordPress.org preferred section names, now fallback aliases.
 		'description'                => 'details',
@@ -135,7 +135,7 @@ final class Readme_Parser {
 		// Fallback aliases
 		'change log'                 => 'changelog',
 		'frequently asked questions' => 'faq',
-		// 'screenshot'                 => 'screenshots', // TODO implement this.
+		// 'screenshot'                 => 'screenshots', // TODO implement this?
 
 		// WordPress.org recognized section names, not implemented.
 		// 'other notes'                => 'other_notes',
