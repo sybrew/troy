@@ -8,7 +8,7 @@ namespace Troy\Client;
 
 \defined( 'Troy\Client\ABSPATH' ) or die;
 
-use function Troy\Client\API\{
+use function Troy\Client\{
 	get_troy_plugins,
 	get_troy_plugin_dependencies,
 	make_fully_qualified_repo_url,
@@ -80,7 +80,7 @@ final class Dependencies {
 		// get_troy_plugins() loads get_plugins() requirements. So switch these up.
 		$troy_plugins = get_troy_plugins();
 		$plugin_slugs = array_map(
-			'Troy\Client\API\get_plugin_slug',
+			'Troy\Client\get_plugin_slug',
 			array_keys( \get_plugins() ),
 		);
 

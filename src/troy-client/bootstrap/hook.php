@@ -10,6 +10,8 @@ namespace Troy\Client\Bootstrap\Hook;
 
 use const Troy\Client\PLUGIN_BASENAME;
 
+use function Troy\Client\recheck_dependencies;
+
 use Troy\Client\{
 	Dependencies,
 	Headers,
@@ -18,8 +20,6 @@ use Troy\Client\{
 	ProtectClient,
 	SiteHealth,
 };
-
-use function Troy\Client\API\recheck_dependencies;
 
 /**
  * Troy Client

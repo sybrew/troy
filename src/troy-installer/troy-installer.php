@@ -268,7 +268,7 @@ function install_plugins() {
 		set_time_limit( max( $ini_max_execution_time, OPTIONS['install_timeout'] ) );
 
 	install_troy:
-	if ( \function_exists( 'Troy\Client\API\get_troy_plugin_repos_per_slug' ) )
+	if ( \function_exists( 'Troy\Client\get_troy_plugin_repos_per_slug' ) )
 		goto install_deps;
 
 	if ( isset( $plugins['troy-client/troy-client.php'] ) )
@@ -310,7 +310,7 @@ function install_plugins() {
 
 	\activate_plugin( 'troy-client/troy-client.php', '', \is_multisite(), true );
 
-	if ( ! \function_exists( 'Troy\Client\API\get_troy_plugin_repos_per_slug' ) ) {
+	if ( ! \function_exists( 'Troy\Client\get_troy_plugin_repos_per_slug' ) ) {
 		register_admin_message(
 			\sprintf(
 				'Plugin "Troy Client" could not be activated. This will be retried until you deactivate plugin "%s."',
@@ -327,7 +327,7 @@ function install_plugins() {
 	\wp_clean_plugins_cache();
 
 	install_deps:
-	$slug_repos   = \Troy\Client\API\get_troy_plugin_repos_per_slug();
+	$slug_repos   = \Troy\Client\get_troy_plugin_repos_per_slug();
 	$is_multisite = \is_multisite();
 
 	$install    = INSTALL;

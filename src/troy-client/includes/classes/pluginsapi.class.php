@@ -8,7 +8,7 @@ namespace Troy\Client;
 
 \defined( 'Troy\Client\ABSPATH' ) or die;
 
-use function Troy\Client\API\{
+use function Troy\Client\{
 	get_troy_plugin_slugs_per_repo,
 	get_troy_plugin_repos_per_slug,
 	get_troy_plugins,
@@ -109,7 +109,7 @@ final class PluginsAPI {
 		$troy_plugins_slugs   = array_column( $troy_plugins, 'slug' );
 		$troy_plugins_by_slug = array_combine( $troy_plugins_slugs, $troy_plugins );
 		$active_slugs_keyed   = array_flip( array_map(
-			'Troy\Client\API\get_plugin_slug',
+			'Troy\Client\get_plugin_slug',
 			(array) \get_option( 'active_plugins' ),
 		) );
 

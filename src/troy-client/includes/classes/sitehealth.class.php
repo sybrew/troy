@@ -8,7 +8,7 @@ namespace Troy\Client;
 
 \defined( 'Troy\Client\ABSPATH' ) or die;
 
-use function Troy\Client\API\{
+use function Troy\Client\{
 	get_troy_plugin_dependencies,
 	get_troy_plugins,
 	get_troy_plugin_slugs_per_repo,
