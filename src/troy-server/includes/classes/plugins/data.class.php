@@ -192,7 +192,6 @@ final class Data {
 	 *
 	 *     @type int    id         The plugin meta ID.
 	 *     @type int    plugin_id  The plugin ID.
-	 *     @type string name       The plugin name.
 	 *     @type string old_slug   The old slug.
 	 *     @type string new_slug   The new slug.
 	 *     @type string created_at The row creation timestamp.
@@ -203,7 +202,7 @@ final class Data {
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}troy_plugin_slug_transfers WHERE plugin_id = %d",
+			"SELECT * FROM {$wpdb->prefix}troy_plugins_slug_transfers WHERE plugin_id = %d",
 			$this->plugin_id,
 		) );
 	}
@@ -323,27 +322,29 @@ final class Data {
 	}
 
 	/**
-	 * Gets the plugin setting.
+	 * Gets the plugin snapshot.
 	 *
 	 * @since 0.0.1184
 	 * @global \wpdb $wpdb
 	 *
 	 * @return ?object {
-	 *     The plugin settings array.
+	 *     The plugin snapshot.
 	 *
-	 *     @type int    id         The settings ID.
+	 *     @type int    id         The snapshot ID.
 	 *     @type int    plugin_id  The plugin ID.
-	 *     @type string values     The settings values.
+	 *     @type string version    The plugin version.
+	 *     @type string values     The snapshot values.
 	 *     @type string created_at The row creation timestamp.
 	 *     @type string updated_at The row last updated timestamp.
 	 * }
 	 */
-	public function get_settings_row() {
+	public function get_snapshots_row() {
 		global $wpdb;
 
 		return $wpdb->get_row( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}troy_plugins_settings WHERE plugin_id = %d",
+			"SELECT * FROM {$wpdb->prefix}troy_plugins_snapshots WHERE plugin_id = %d AND `version` = %s",
 			$this->plugin_id,
+			$this->plugin_version,
 		) );
 	}
 
@@ -551,7 +552,7 @@ final class Data {
 	 *
 	 *     @type int    id                           The stats ID.
 	 *     @type int    plugin_id                    The plugin ID.
-	 *     @type int    date                         The date of the stats.
+	 *     @type string date                         The date of the stats.
 	 *     @type string origin_url                   The origin URL that collected this information.
 	 *     @type int    downloads                    The number of downloads.
 	 *     @type int    views                        The number of views.
@@ -647,9 +648,10 @@ final class Data {
 	 *     @type int    id         The view ID.
 	 *     @type int    plugin_id  The plugin ID.
 	 *     @type string version    The plugin version.
-	 *     @type string origin_url The origin URL that collected this information.
 	 *     @type int    views      The number of views.
 	 *     @type string screen     The screen type: 'thickbox', 'search', etc.
+	 *     @type string locale     The locale of the view.
+	 *     @type string origin_url The origin URL that collected this information.
 	 *     @type string created_at The row creation timestamp.
 	 *     @type string updated_at The row last updated timestamp.
 	 * }
@@ -759,6 +761,7 @@ final class Data {
 	 *
 	 *     @type int    id            The request ID.
 	 *     @type int    plugin_id     The plugin ID.
+	 *     @type int    is_active     Whether the plugin is active on the client site. (1 = active, 0 = inactive)
 	 *     @type string version       The plugin version.
 	 *     @type int    epoch         The update epoch.
 	 *     @type int    request_count The request count.
@@ -788,7 +791,7 @@ final class Data {
 	 *     @type int    id            The request ID.
 	 *     @type int    plugin_id     The plugin ID.
 	 *     @type string version       The plugin version.
-	 *     @type int    locale        The locale.
+	 *     @type string locales       The locales.
 	 *     @type int    request_count The request count.
 	 *     @type string created_at    The row creation timestamp.
 	 *     @type string updated_at    The row last updated timestamp.
@@ -815,7 +818,7 @@ final class Data {
 	 *
 	 *     @type int    id             The request ID.
 	 *     @type int    plugin_id      The plugin ID.
-	 *     @type bool   is_active      Whether the plugin is active on the client site.
+	 *     @type int    is_active      Whether the plugin is active on the client site. (1 = active, 0 = inactive)
 	 *     @type string version        The plugin version.
 	 *     @type string uuid           The UUID of the client.
 	 *     @type int    request_count  The request count.
@@ -851,6 +854,8 @@ final class Data {
 	 * @return ?object {
 	 *     The plugin integration row.
 	 *
+	 *     @type int     id              The integration ID.
+	 *     @type int     plugin_id       The plugin post ID.
 	 *     @type string  $mode           The integration mode. Currently, either 'github', 'wporg'.
 	 *     @type object  $settings       Structure varies by mode:
 	 *         GitHub: {

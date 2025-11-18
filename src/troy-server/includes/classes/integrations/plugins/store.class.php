@@ -50,6 +50,24 @@ use Troy\Server\Plugins; // A namesake import is valid; we're relative to \, not
 final class Store {
 
 	/**
+	 * @since 0.0.1184
+	 * @var string QUEUE_STATUS_PENDING Pending status for queue.
+	 */
+	public const QUEUE_STATUS_PENDING = 'pending';
+
+	/**
+	 * @since 0.0.1184
+	 * @var string QUEUE_STATUS_TEMPORARY_FAILURE Temporary failure status for queue.
+	 */
+	public const QUEUE_STATUS_TEMPORARY_FAILURE = 'temporary-failure';
+
+	/**
+	 * @since 0.0.1184
+	 * @var string QUEUE_STATUS_PERMANENT_FAILURE Permanent failure status for queue.
+	 */
+	public const QUEUE_STATUS_PERMANENT_FAILURE = 'permanent-failure';
+
+	/**
 	 * Connects an integration for a plugin.
 	 * Enforces single active integration per plugin.
 	 * Tags must be updated separately using update_tags().
@@ -231,6 +249,213 @@ final class Store {
 			[ 'plugin_id' => $plugin_id ],
 			[ '%s' ],
 			[ '%d' ],
+		);
+	}
+
+	/**
+	 * Queue a tag for processing.
+	 *
+	 * @since 0.0.1184
+	 * @global \wpdb $wpdb
+	 *
+	 * @param int     $plugin_id    The plugin post ID.
+	 * @param string  $version      The version to queue.
+	 * @param string  $mode         The integration mode.
+	 * @param string  $download_url The download URL.
+	 * @param string  $type         The tag type ('tag', 'beta', 'unreleased').
+	 * @param ?string $revision_id  Optional. The revision ID.
+	 * @param string  $status       Optional. The queue status (use class constants). Default 'pending'.
+	 * @return int|false The number of rows affected, or false on error.
+	 */
+	public static function queue_tag( $plugin_id, $version, $mode, $download_url, $type, $revision_id = null, $status = 'pending' ) {
+
+		global $wpdb;
+
+		// Use replace to avoid duplicate entries.
+		return $wpdb->replace(
+			"{$wpdb->prefix}troy_plugins_integration_queue",
+			[
+				'plugin_id'    => $plugin_id,
+				'version'      => $version,
+				'mode'         => $mode,
+				'download_url' => $download_url,
+				'revision_id'  => $revision_id ?? '',
+				'type'         => $type,
+				'status'       => $status,
+			],
+			[ '%d', '%s', '%s', '%s', '%s', '%s', '%s' ],
+		);
+	}
+
+	/**
+	 * Remove a tag from the processing queue.
+	 *
+	 * @since 0.0.1184
+	 * @global \wpdb $wpdb
+	 *
+	 * @param int    $plugin_id The plugin post ID.
+	 * @param string $version   The version to dequeue.
+	 * @return Boolean True on success, false on failure.
+	 */
+	public static function dequeue_tag( $plugin_id, $version ) {
+
+		global $wpdb;
+
+		return false !== $wpdb->delete(
+			"{$wpdb->prefix}troy_plugins_integration_queue",
+			[
+				'plugin_id' => $plugin_id,
+				'version'   => $version,
+			],
+			[ '%d', '%s' ],
+		);
+	}
+
+	/**
+	 * Get queued tags for processing.
+	 *
+	 * @since 0.0.1184
+	 * @global \wpdb $wpdb
+	 *
+	 * @param int $limit Optional. Maximum number of tags to retrieve. Default 2.
+	 * @return ?object[] {
+	 *     An array of queued tag objects, or null if none are found.
+	 *
+	 *     @type int    id           The queue ID.
+	 *     @type int    plugin_id    The plugin post ID.
+	 *     @type string version      The plugin version.
+	 *     @type string mode         The integration mode.
+	 *     @type string download_url The tag download URL.
+	 *     @type string revision_id  The revision ID.
+	 *     @type string type         The tag type.
+	 *     @type string status       The queue status.
+	 *     @type string created_at   The row creation timestamp.
+	 * }
+	 */
+	public static function get_queued_tags( $limit = 2 ) {
+
+		global $wpdb;
+
+		return $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT *
+				 FROM {$wpdb->prefix}troy_plugins_integration_queue
+				 WHERE status IN (%s, %s)
+				 ORDER BY created_at ASC
+				 LIMIT %d",
+				self::QUEUE_STATUS_PENDING,
+				self::QUEUE_STATUS_TEMPORARY_FAILURE,
+				$limit,
+			),
+		);
+	}
+
+	/**
+	 * Record a processing failure for a tag.
+	 *
+	 * @since 0.0.1184
+	 * @global \wpdb $wpdb
+	 *
+	 * @param int    $plugin_id The plugin post ID.
+	 * @param string $version   The version that failed.
+	 * @param string $mode      The integration mode.
+	 * @param string $reason    The failure reason.
+	 * @param string $details   Optional. Additional failure details.
+	 * @return int|false The number of rows affected, or false on error.
+	 */
+	public static function record_failure( $plugin_id, $version, $mode, $reason, $details = '' ) {
+
+		global $wpdb;
+
+		$existing_attempts = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT attempts FROM {$wpdb->prefix}troy_plugins_integration_failures
+				 WHERE plugin_id = %d AND version = %s",
+				$plugin_id,
+				$version,
+			),
+		);
+
+		if ( $existing_attempts ) {
+			return $wpdb->update(
+				"{$wpdb->prefix}troy_plugins_integration_failures",
+				[
+					'mode'     => $mode,
+					'reason'   => $reason,
+					'details'  => $details,
+					'attempts' => $existing_attempts + 1,
+				],
+				[
+					'plugin_id' => $plugin_id,
+					'version'   => $version,
+				],
+				[ '%s', '%s', '%s', '%d' ],
+				[ '%d', '%s' ],
+			);
+		}
+
+		return $wpdb->insert(
+			"{$wpdb->prefix}troy_plugins_integration_failures",
+			[
+				'plugin_id' => $plugin_id,
+				'version'   => $version,
+				'mode'      => $mode,
+				'reason'    => $reason,
+				'details'   => $details,
+				'attempts'  => 1,
+			],
+			[ '%d', '%s', '%s', '%s', '%s', '%d' ],
+		);
+	}
+
+	/**
+	 * Clear a processing failure for a tag.
+	 *
+	 * @since 0.0.1184
+	 * @global \wpdb $wpdb
+	 *
+	 * @param int    $plugin_id The plugin post ID.
+	 * @param string $version   The version to clear.
+	 * @return Boolean True on success, false on failure.
+	 */
+	public static function clear_failure( $plugin_id, $version ) {
+
+		global $wpdb;
+
+		return false !== $wpdb->delete(
+			"{$wpdb->prefix}troy_plugins_integration_failures",
+			[
+				'plugin_id' => $plugin_id,
+				'version'   => $version,
+			],
+			[ '%d', '%s' ],
+		);
+	}
+
+	/**
+	 * Mark a queued tag with a status.
+	 *
+	 * @since 0.0.1184
+	 * @global \wpdb $wpdb
+	 *
+	 * @param int     $plugin_id The plugin post ID.
+	 * @param string  $version   The version to mark.
+	 * @param ?string $status    The status to set (use class constants or null to clear).
+	 * @return int|false The number of rows affected, or false on error.
+	 */
+	public static function mark_queue_status( $plugin_id, $version, $status ) {
+
+		global $wpdb;
+
+		return $wpdb->update(
+			"{$wpdb->prefix}troy_plugins_integration_queue",
+			[ 'status' => $status ],
+			[
+				'plugin_id' => $plugin_id,
+				'version'   => $version,
+			],
+			[ '%s' ],
+			[ '%d', '%s' ],
 		);
 	}
 }

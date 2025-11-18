@@ -203,11 +203,11 @@ function upgrade_from( $version ) {
  * | Table Name                              | Purpose                                                             |
  * |-----------------------------------------|---------------------------------------------------------------------|
  * | troy_plugins                            | The main plugins table.                                             |
- * | troy_plugin_slug_transfers              | Transfers of plugin slugs (for slug changes).                       |
+ * | troy_plugins_slug_transfers              | Transfers of plugin slugs (for slug changes).                       |
  * | troy_plugins_metas                      | Meta data for plugins (for plugin cards).                           |
  * | troy_plugins_contributors               | Contributors of the plugins (for plugin search and details).        |
  * | troy_plugins_infos                      | Parsed information of plugins (for plugin info page/tickbox).       |
- * | troy_plugins_settings                   | Settings for plugins (for plugin edit page).                        |
+ * | troy_plugins_snapshots                  | Snapshots of plugin data by version (for future restore feature).   |
  * | troy_plugins_zips                       | ZIP locations for plugins (for plugin update/download).             |
  * | troy_plugins_translations               | Translation locations for plugins (for download).                   |
  * | troy_plugins_data_caches                | Cached data for plugins (for search/archives/ranking).              |
@@ -254,7 +254,7 @@ function get_initial_db_schema_queries() {
 			unique index `post_id` (`post_id`),
 			unique index `slug` (`slug`)
 		) $collate",
-		"CREATE table `{$dbprefix}troy_plugin_slug_transfers` (
+		"CREATE table `{$dbprefix}troy_plugins_slug_transfers` (
 			`id` bigint unsigned NOT null auto_increment,
 			`plugin_id` bigint unsigned NOT null,
 			`old_slug` varchar(191) NOT null,
@@ -304,7 +304,7 @@ function get_initial_db_schema_queries() {
 			primary key (`id`),
 			unique index `plugin_id_locale` (`plugin_id`, `locale`)
 		) $collate",
-		"CREATE table `{$dbprefix}troy_plugins_settings` (
+		"CREATE table `{$dbprefix}troy_plugins_snapshots` (
 			`id` bigint unsigned NOT null auto_increment,
 			`plugin_id` bigint unsigned NOT null,
 			`version` varchar(20) NOT null,
@@ -323,12 +323,38 @@ function get_initial_db_schema_queries() {
 			`auth` longtext DEFAULT null,
 			`tags` longtext NOT null,
 			`tags_refreshed` datetime DEFAULT null,
-			`auto_process` varchar(20) NOT null,
+			`auto_process` varchar(20) NOT null DEFAULT 'all',
 			`created_at` datetime DEFAULT current_timestamp,
 			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
 			primary key (`id`),
-			index `mode` (`mode`),
 			unique index `plugin_id` (`plugin_id`)
+		) $collate",
+		"CREATE table `{$dbprefix}troy_plugins_integration_queue` (
+			`id` bigint unsigned NOT null auto_increment,
+			`plugin_id` bigint unsigned NOT null,
+			`version` varchar(20) NOT null,
+			`mode` varchar(20) NOT null,
+			`download_url` text NOT null,
+			`revision_id` varchar(64) NOT null DEFAULT '',
+			`type` varchar(20),
+			`status` varchar(20) NOT null DEFAULT 'pending',
+			`created_at` datetime DEFAULT current_timestamp,
+			primary key (`id`),
+			unique index `plugin_id_version` (`plugin_id`, `version`),
+			index `status` (`status`)
+		) $collate",
+		"CREATE table `{$dbprefix}troy_plugins_integration_failures` (
+			`id` bigint unsigned NOT null auto_increment,
+			`plugin_id` bigint unsigned NOT null,
+			`version` varchar(50) NOT null,
+			`mode` varchar(20) NOT null,
+			`reason` varchar(50) NOT null,
+			`details` text NOT null,
+			`attempts` smallint unsigned NOT null DEFAULT 1,
+			`created_at` datetime DEFAULT current_timestamp,
+			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
+			primary key (`id`),
+			unique index `plugin_id_version` (`plugin_id`, `version`)
 		) $collate",
 		"CREATE table `{$dbprefix}troy_plugins_integration_logs` (
 			`id` bigint unsigned NOT null auto_increment,
@@ -521,25 +547,26 @@ function get_initial_db_schema_queries() {
 		"CREATE table `{$dbprefix}troy_plugins_update_request_stats` (
 			`id` bigint unsigned NOT null auto_increment,
 			`plugin_id` bigint unsigned NOT null,
+			`is_active` tinyint(1) NOT null DEFAULT 0,
 			`version` varchar(20) NOT null,
 			`epoch` bigint unsigned NOT null,
 			`request_count` bigint unsigned NOT null,
 			`created_at` datetime DEFAULT current_timestamp,
 			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
 			primary key (`id`),
-			index `plugin_id` (`plugin_id`)
+			index `plugin_id_is_active` (`plugin_id`, `is_active`),
 		) $collate",
 		"CREATE table `{$dbprefix}troy_plugins_update_request_locales_stats` (
 			`id` bigint unsigned NOT null auto_increment,
 			`plugin_id` bigint unsigned NOT null,
 			`version` varchar(20) NOT null,
-			`locale` bigint unsigned NOT null,
+			`locales` varchar(191) NOT null,
 			`request_count` bigint unsigned NOT null,
 			`created_at` datetime DEFAULT current_timestamp,
 			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
 			primary key (`id`),
 			index `plugin_id` (`plugin_id`),
-			unique index `plugin_id_version_locale` (`plugin_id`, `version`, `locale`)
+			unique index `plugin_id_version_locales` (`plugin_id`, `version`, `locales`)
 		) $collate",
 		"CREATE table `{$dbprefix}troy_plugins_update_request_stats_live` (
 			`id` bigint unsigned NOT null auto_increment,

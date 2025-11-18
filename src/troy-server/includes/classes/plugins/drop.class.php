@@ -95,7 +95,7 @@ final class Drop {
 
 		try {
 			$tables = [
-				'troy_plugin_slug_transfers',
+				'troy_plugins_slug_transfers',
 				'troy_plugins_metas',
 				'troy_plugins_contributors',
 				'troy_plugins_infos',

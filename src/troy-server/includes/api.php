@@ -68,13 +68,8 @@ function get_epoch( $offset = 0 ) {
  */
 function get_origin_url() {
 	static $memo;
-	return $memo ??= \esc_url(
-		preg_replace(
-			'/^(?:\w*:)?(?:\/\/)?(.*?)$/',
-			'https://$1/',
-			trim( \home_url( '', [ 'https' ] ), ' \\/' ),
-		),
-		[ 'https' ],
+	return $memo ??= Sanitize\make_fully_qualified_repo_url(
+		\home_url( '', 'https' ),
 	);
 }
 
@@ -280,6 +275,20 @@ function get_latest_public_wordpress_version( $from_version = '' ) {
 
 	return $api_versions[ preg_replace( '/(\d+\.\d+).*/', '$1', $from_version ) ]
 		?? $from_version;
+}
+
+/**
+ * Determines the version type based on its naming pattern.
+ *
+ * @since 0.0.1184
+ *
+ * @param string $version The version string to evaluate.
+ * @return string 'beta' if the version is a beta/pre-release, 'tag' otherwise.
+ */
+function get_version_type( $version ) {
+	return preg_match( '/(dev|alpha|a|beta|b|rc|#|pl|p)([^a-z]|\Z)/i', $version )
+		? 'beta'
+		: 'tag';
 }
 
 /**

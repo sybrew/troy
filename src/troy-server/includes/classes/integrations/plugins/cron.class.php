@@ -8,6 +8,12 @@ namespace Troy\Server\Integrations\Plugins;
 
 \defined( 'Troy\Server\ABSPATH' ) or die;
 
+use function Troy\Server\{
+	get_origin_url,
+	make_fully_qualified_repo_url,
+	get_version_type,
+};
+
 use Troy\Server\Plugins; // A namesake import is valid; we're relative to \, not \Plugins.
 
 /**
@@ -56,81 +62,89 @@ final class Cron extends \Troy\Server\Cron {
 	 * }
 	 */
 	protected const CRON_JOBS = [
-		'troy_integrations_sync_all' => [
-			'callback' => [ self::class, 'sync_all_integrations' ],
-			'schedule' => 'hourly',
+		'troy_integrations_find_tags' => [
+			'callback' => [ self::class, 'find_all_tags' ],
+			'schedule' => 'halfhourly',
+			'interval' => \HOUR_IN_SECONDS / 2,
+		],
+		'troy_integrations_process_tag_queue' => [
+			'callback' => [ self::class, 'process_tag_queue' ],
+			'schedule' => 'minutely',
+			'interval' => \MINUTE_IN_SECONDS,
 		],
 	];
 
 	/**
-	 * Sync all integrations.
+	 * Find tags from all integrations and queue them for processing.
 	 *
-	 * Dynamically handles different integration types based on their mode.
-	 *
-	 * TODO: When repositories grow large, implement batch processing with an option
-	 * to control batch size and add multiple cron jobs to handle batches.
+	 * Compares fetched tags with existing processed versions and queues new/changed tags.
+	 * Uses commit SHA for GitHub to detect tag updates.
 	 *
 	 * @since 0.0.1184
+	 * @global \wpdb $wpdb
 	 */
-	public static function sync_all_integrations() {
+	public static function find_all_tags() {
 
 		global $wpdb;
 
-		// Get all plugins with integrations
 		$integrations = $wpdb->get_results(
 			"SELECT plugin_id, mode FROM {$wpdb->prefix}troy_plugins_integrations",
-			\ARRAY_A,
 		);
 
 		if ( empty( $integrations ) )
 			return;
 
 		foreach ( $integrations as $integration ) {
-			$plugin_id = $integration['plugin_id'];
-			$mode      = $integration['mode'];
+			$plugin_id = $integration->plugin_id;
+			$mode      = $integration->mode;
 
-			// Route to appropriate handler based on mode
-			$result = self::sync_plugin_integration_by_mode( $plugin_id, $mode );
+			$result = self::find_plugin_tags_by_mode( $plugin_id, $mode );
 
-			// Continue with other integrations on error
 			if ( \is_wp_error( $result ) ) {
 				static::integration_log(
 					$plugin_id,
 					'error',
-					"Failed to sync integration: {$result->get_error_message()}",
+					"Failed to find tags: {$result->get_error_message()}",
 				);
 				continue;
 			}
 
-			// Auto-process new tags if enabled.
-			// TODO offload to separate cron job? We can do this via settings; add "queued" column?
-			self::process_new_tags( $plugin_id );
+			static::integration_log(
+				$plugin_id,
+				'info',
+				"Tag discovery complete: {$result['queued']} queued, {$result['removed']} removed from queue.",
+			);
 		}
 	}
 
 	/**
-	 * Sync a plugin's integration based on its mode.
+	 * Find tags for a plugin's integration based on its mode.
 	 *
 	 * @since 0.0.1184
+	 * @global \wpdb $wpdb
 	 *
 	 * @param int    $plugin_id The plugin post ID.
 	 * @param string $mode      The integration mode.
-	 * @return true|\WP_Error True on success, WP_Error on failure.
+	 * @return array|\WP_Error {
+	 *     Result array on success, WP_Error on failure.
+	 *
+	 *     @type int $queued  Number of tags queued.
+	 *     @type int $removed Number of tags removed from queue.
+	 * }
 	 */
-	public static function sync_plugin_integration_by_mode( $plugin_id, $mode ) {
+	public static function find_plugin_tags_by_mode( $plugin_id, $mode ) {
 
 		$integration = ( new Plugins\Data( $plugin_id ) )->get_integration( [ 'get_auth' => true ] );
 
 		if ( ! $integration )
 			return new \WP_Error( 'no_integration', 'No integration found for this plugin.' );
 
-		// TODO make this agnostic? "process_new_tags" based on plugin_id?
 		$tags = match ( $mode ) {
-			'github' => Repos\GitHub::fetch_tags(
+			'github' => Repos\GitHub::find_tags(
 				$integration->settings->owner_repo,
 				$integration->auth->token->value ?? '',
 			),
-			'wporg'  => Repos\WPOrg::fetch_tags( $integration->settings->slug ),
+			'wporg'  => Repos\WPOrg::find_tags( $integration->settings->slug ),
 			default  => new \WP_Error( 'unsupported_mode', 'Unsupported integration mode' ),
 		};
 
@@ -138,126 +152,207 @@ final class Cron extends \Troy\Server\Cron {
 			return $tags;
 
 		// Update the tags in the database
-		return Store::update_tags( $plugin_id, $mode, $tags )
-			? true
-			: new \WP_Error( 'update_failed', 'Failed to update tags in database' );
-	}
+		if ( ! Store::update_tags( $plugin_id, $mode, $tags ) )
+			return new \WP_Error( 'update_failed', 'Failed to update tags in database' );
 
-	/**
-	 * Process new tags for a plugin based on auto-process settings.
-	 *
-	 * Compares fetched tags with existing versions and processes new ones automatically
-	 * if auto-processing is enabled.
-	 *
-	 * @since 0.0.1184
-	 *
-	 * @param int $plugin_id The plugin post ID.
-	 */
-	public static function process_new_tags( $plugin_id ) {
-
-		$integration = ( new Plugins\Data( $plugin_id ) )->get_integration( [ 'get_auth' => true ] );
-
-		if ( ! $integration ) {
-			static::integration_log( $plugin_id, 'error', 'No integration found for plugin during auto-processing.' );
-			return;
-		}
-
-		// Check if auto-processing is enabled
-		if ( 'none' === $integration->auto_process )
-			return;
-
-		// Get existing versions from database
+		// Get existing processed versions
 		global $wpdb;
 
-		$existing_versions = $wpdb->get_col(
+		$existing_versions = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT version FROM {$wpdb->prefix}troy_plugins_zips WHERE plugin_id = %d",
 				$plugin_id,
 			),
 		);
 
-		$existing_versions = array_flip( $existing_versions );
-		$processed_count   = 0;
-		$error_count       = 0;
+		$processed_versions = array_column( $existing_versions, 'version' );
 
-		// Process limit to avoid long cron runs and spamming APIs obtaining incompatible plugin packages
-		$limit = 2;
+		$queued_tags = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT version, revision_id FROM {$wpdb->prefix}troy_plugins_integration_queue WHERE plugin_id = %d",
+				$plugin_id,
+			),
+		);
 
-		// Process each tag that doesn't exist in the database
-		foreach ( $integration->tags as $version_name => $tag_data ) {
-			// Skip if version already exists
-			if ( isset( $existing_versions[ $version_name ] ) )
+		$queued_count  = 0;
+		$removed_count = 0;
+
+		// Queue new tags or update existing queue entries if revision ID changed
+		foreach ( $tags as $version => $tag_data ) {
+			// Skip if already processed
+			if ( \in_array( $version, $processed_versions, true ) )
 				continue;
 
-			// Check if we should process this tag based on auto_process setting
-			$should_process = match ( $integration->auto_process ) {
-				'all'   => true,
-				'tag'   => ( $tag_data->type ?? 'tag' ) === 'tag',
-				'beta'  => ( $tag_data->type ?? 'tag' ) === 'beta',
-				default => false,
-			};
-
-			if ( ! $should_process )
-				continue;
-
-			if ( ( $processed_count + $error_count ) >= $limit ) {
-				static::integration_log(
-					$plugin_id,
-					'info',
-					'Auto-processing limit reached for this run; remaining tags will be processed in future runs.',
-				);
-				break;
+			// Find existing queue tag by version
+			foreach ( $queued_tags as $queued_tag ) {
+				if ( $queued_tag->version === $version ) {
+					$existing_queue_tag = $queued_tag;
+					break;
+				}
 			}
 
-			$download_url = $tag_data->download_url ?? null;
-
-			if ( ! $download_url ) {
-				static::integration_log(
+			// Queue if new, or if revision ID changed
+			if (
+				   empty( $existing_queue_tag )
+				|| $tag_data->revision_id !== $existing_queue_tag->revision_id
+			) {
+				Store::queue_tag(
 					$plugin_id,
-					'warning',
-					"Tag {$version_name} has no download URL, skipping.",
+					$version,
+					$mode,
+					$tag_data->download_url,
+					$tag_data->type,
+					$tag_data->revision_id,
 				);
+
+				++$queued_count;
+			}
+		}
+
+		// Remove queued tags that no longer exist in the remote repository
+		foreach ( $queued_tags as $queue_data ) {
+			if ( ! isset( $tags->{$queue_data->version} ) ) {
+				Store::dequeue_tag( $plugin_id, $queue_data->version );
+				++$removed_count;
+			}
+		}
+
+		return [
+			'queued'  => $queued_count,
+			'removed' => $removed_count,
+		];
+	}
+
+	/**
+	 * Process queued tags by downloading and validating them.
+	 *
+	 * Processes up to 2 tags at a time to avoid overloading the server.
+	 * Skips tags that have failed 5+ times until manual intervention.
+	 *
+	 * @since 0.0.1184
+	 */
+	public static function process_tag_queue() {
+
+		global $wpdb;
+
+		$queued_tags = Store::get_queued_tags( 2 );
+
+		if ( empty( $queued_tags ) )
+			return;
+
+		foreach ( $queued_tags as $tag ) {
+			$plugin_id = $tag->plugin_id;
+			$version   = $tag->version;
+			$mode      = $tag->mode; // GitHub, WPOrg, etc.
+
+			$integration = new Plugins\Data( $plugin_id )->get_integration( [ 'get_auth' => true ] );
+
+			if ( ! $integration ) {
+				static::integration_log( $plugin_id, 'error', 'No integration found for plugin during queue processing.' );
 				continue;
 			}
 
 			try {
 				$uploader = new Plugins\Zip_Uploader(
 					$plugin_id,
-					$integration->settings->origin_url ?? null,
+					$integration->settings->origin_url ?? null, // Future: distributed origins
 				);
 
 				$uploader->process_via_url(
-					$download_url,
+					$tag->download_url,
 					[
-						'headers'     => (array) ( $integration->auth->download->headers ?? [] ), // headers is likely an object.
-						'queryParams' => (array) ( $integration->auth->download->queryParams ?? [] ), // queryParams is likely an object.
+						'headers'     => (array) ( $integration->auth->download->headers ?? [] ),
+						'queryParams' => (array) ( $integration->auth->download->queryParams ?? [] ),
 					],
 				);
 
-				++$processed_count;
+				// Success: determine type based on repo match and version pattern
 
+				$site_origin_url = get_origin_url();
+				// Get the repo header from the processed ZIP
+				$zip_origin_url = make_fully_qualified_repo_url(
+					$wpdb->get_var( $wpdb->prepare(
+						"SELECT repo FROM {$wpdb->prefix}troy_plugins_zips
+						WHERE plugin_id = %d AND version = %s",
+						$plugin_id,
+						$version,
+					) ),
+				);
+
+				// Check if repo matches the integration's origin URL
+				if ( $zip_origin_url === $site_origin_url ) {
+					$type = get_version_type( $version );
+				} else {
+					// Keep as unreleased if repo doesn't match
+					$type = 'unreleased';
+
+					static::integration_log(
+						$plugin_id,
+						'warning',
+						"Tag {$version} kept as 'unreleased' due to repository mismatch (expected: {$site_origin_url}, got: {$zip_origin_url}).",
+					);
+				}
+
+				$wpdb->update(
+					"{$wpdb->prefix}troy_plugins_zips",
+					[ 'type' => $type ],
+					[
+						'plugin_id' => $plugin_id,
+						'version'   => $version,
+					],
+					[ '%s' ],
+					[ '%d', '%s' ],
+				);
+
+				// Remove from queue and clear any failures
+				Store::dequeue_tag( $plugin_id, $version );
+				Store::clear_failure( $plugin_id, $version );
 				static::integration_log(
 					$plugin_id,
 					'info',
-					"Successfully auto-processed tag {$version_name} (uploaded version: {$uploader->version_uploaded}).",
+					"Successfully processed queued tag {$version} (uploaded version: {$uploader->version_uploaded}).",
 				);
 			} catch ( \Exception $e ) {
-				++$error_count;
+				$error_message = $e->getMessage();
+
+				Store::record_failure( $plugin_id, $version, $mode, $error_message, '' );
+
+				// Determine failure type based on exception code or attempt count
+				$is_permanent = $e->getCode() === Plugins\Zip_Uploader::EXCEPTION_PERMANENT;
+
+				if ( ! $is_permanent ) {
+					// Get current attempt count to decide on permanent vs temporary failure
+					$attempts = $wpdb->get_var(
+						$wpdb->prepare(
+							"SELECT attempts FROM {$wpdb->prefix}troy_plugins_integration_failures
+							 WHERE plugin_id = %d AND version = %s",
+							$plugin_id,
+							$version,
+						),
+					);
+
+					// Mark as permanent failure after 5 attempts
+					$is_permanent = $attempts >= 5;
+				}
+
+				if ( $is_permanent ) {
+					Store::mark_queue_status( $plugin_id, $version, Store::QUEUE_STATUS_PERMANENT_FAILURE );
+
+					static::integration_log(
+						$plugin_id,
+						'error',
+						"Tag {$version} marked as permanently failed: {$error_message}",
+					);
+				} else {
+					Store::mark_queue_status( $plugin_id, $version, Store::QUEUE_STATUS_TEMPORARY_FAILURE );
+				}
 
 				static::integration_log(
 					$plugin_id,
 					'error',
-					"Failed to auto-process tag {$version_name}: {$e->getMessage()}",
+					"Failed to process queued tag {$version}: {$error_message}",
 				);
 			}
-		}
-
-		if ( $processed_count || $error_count ) {
-			static::integration_log(
-				$plugin_id,
-				'info',
-				"Auto-processing complete: {$processed_count} successful, {$error_count} failed.",
-			);
 		}
 	}
 
@@ -281,7 +376,7 @@ final class Cron extends \Troy\Server\Cron {
 			[
 				'plugin_id' => $plugin_id,
 				'type'      => $type,
-				'message'   => $message,
+				'message'   => \wp_strip_all_tags( $message ),
 			],
 			[ '%d', '%s', '%s' ],
 		);

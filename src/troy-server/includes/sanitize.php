@@ -10,7 +10,10 @@ namespace Troy\Server\Sanitize;
 
 \defined( 'Troy\Server\ABSPATH' ) or die;
 
-use function Troy\Server\get_available_locales;
+use function Troy\Server\{
+	get_available_locales,
+	get_version_type,
+};
 
 /**
  * Troy Server
@@ -428,14 +431,16 @@ function sanitize_static_image_url( $url ) {
  *     Tags indexed by version string.
  *
  *     @type string $download_url The download URL.
- *     @type string $type         The version type, either 'tag' or 'beta'.
+ *     @type string $type         Optional. The version type, either 'tag' or 'beta'.
  *                                If not provided, it will be determined based on version pattern.
+ *     @type string $revision_id  Optional. The revision ID.
  * }
  * @return object {
  *     Sanitized tags object indexed by sanitized version string.
  *
  *     @type string $download_url The download URL.
  *     @type string $type         The version type, either 'tag' or 'beta'.
+ *     @type string $revision_id  The revision ID.
  * }
  */
 function sanitize_tags( $tags ) {
@@ -459,11 +464,8 @@ function sanitize_tags( $tags ) {
 				true,
 			)
 				? $data->type
-				: (
-					preg_match( '/(dev|alpha|a|beta|b|rc|#|pl|p)([^a-z]|\Z)/i', $version )
-						? 'beta'
-						: 'tag'
-				),
+				: get_version_type( $version ),
+			'revision_id'  => $data->revision_id ?? '',
 		];
 	}
 

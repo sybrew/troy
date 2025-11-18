@@ -118,7 +118,7 @@ final class GitHub {
 	}
 
 	/**
-	 * Fetch repository tags from GitHub and sanitize them.
+	 * Find repository tags from GitHub and sanitize them.
 	 *
 	 * Tag types are automatically determined based on version naming patterns:
 	 * - 'beta' if version contains pre-release identifiers (e.g., -beta, -rc)
@@ -133,9 +133,10 @@ final class GitHub {
 	 *
 	 *     @type string $download_url The tag download URL.
 	 *     @type string $type         The tag type ('tag' or 'beta'); determined by version pattern.
+	 *     @type string $revision_id  The revision ID for the tag.
 	 * }
 	 */
-	public static function fetch_tags( $owner_repo, $pat = '' ) {
+	public static function find_tags( $owner_repo, $pat = '' ) {
 
 		if ( ! preg_match( '/^([\w\.\-]+)\/([\w\.\-]+)$/', $owner_repo ) )
 			return new \WP_Error(
@@ -158,7 +159,10 @@ final class GitHub {
 		$tags = [];
 
 		foreach ( $response as $tag )
-			$tags[ $tag['name'] ] = [ 'download_url' => $tag['zipball_url'] ];
+			$tags[ $tag['name'] ] = [
+				'download_url' => $tag['zipball_url'],
+				'revision_id'  => $tag['commit']['sha'] ?? '',
+			];
 
 		return sanitize_tags( $tags );
 	}
@@ -167,7 +171,7 @@ final class GitHub {
 	 * Fetch repository tags from GitHub API.
 	 *
 	 * This is a low-level method that doesn't validate the input or response;
-	 * use fetch_tags() for sanitized tags.
+	 * use find_tags() for sanitized tags.
 	 *
 	 * @since 0.0.1184
 	 *

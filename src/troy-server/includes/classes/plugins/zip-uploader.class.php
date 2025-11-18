@@ -95,6 +95,18 @@ final class Zip_Uploader {
 
 	/**
 	 * @since 0.0.1184
+	 * @var int EXCEPTION_PERMANENT Permanent failure exception code (0b01 = 1).
+	 */
+	public const EXCEPTION_PERMANENT = 0b01;
+
+	/**
+	 * @since 0.0.1184
+	 * @var int EXCEPTION_TEMPORARY Temporary failure exception code (0b10 = 2).
+	 */
+	public const EXCEPTION_TEMPORARY = 0b10;
+
+	/**
+	 * @since 0.0.1184
 	 * @var bool $wpfs_initialized Whether the WordPress Filesystem has been initialized.
 	 */
 	private static $wpfs_initialized = false;
@@ -196,7 +208,7 @@ final class Zip_Uploader {
 	public function process_via_file( $temp_zip_file_path ) {
 
 		if ( ! is_readable( $temp_zip_file_path ) || ! is_file( $temp_zip_file_path ) )
-			throw new \Exception( 'Invalid ZIP file provided.' );
+			throw new \Exception( 'Invalid ZIP file provided.', self::EXCEPTION_PERMANENT );
 
 		$this->process( $temp_zip_file_path );
 	}
@@ -221,7 +233,7 @@ final class Zip_Uploader {
 		$download_url = \sanitize_url( $download_url, [ 'https' ] );
 
 		if ( ! filter_var( $download_url, \FILTER_VALIDATE_URL ) )
-			throw new \Exception( 'Invalid URL provided.' );
+			throw new \Exception( 'Invalid URL provided.', self::EXCEPTION_PERMANENT );
 
 		// Download the ZIP file using our custom method that supports auth headers.
 		$temp_zip_file_path = static::download_url( $download_url, $args );
@@ -233,15 +245,19 @@ final class Zip_Uploader {
 					\__( 'Failed to download ZIP file with message: %s', 'troy-server' ),
 					$temp_zip_file_path->get_error_message(),
 				),
+				self::EXCEPTION_TEMPORARY,
 			);
 		}
 
 		if ( filesize( $temp_zip_file_path ) > static::MAX_ZIP_DOWNLOAD_SIZE ) {
-			throw new \Exception( \sprintf(
-				/* translators: %d: Maximum file size in MB */
-				\__( 'The ZIP file exceeds the maximum allowed size of %dMB.', 'troy-server' ),
-				static::MAX_ZIP_DOWNLOAD_SIZE / \MB_IN_BYTES,
-			) );
+			throw new \Exception(
+				\sprintf(
+					/* translators: %d: Maximum file size in MB */
+					\__( 'The ZIP file exceeds the maximum allowed size of %dMB.', 'troy-server' ),
+					static::MAX_ZIP_DOWNLOAD_SIZE / \MB_IN_BYTES,
+				),
+				self::EXCEPTION_PERMANENT,
+			);
 		}
 
 		// Ensure temporary file is cleaned up after processing.
@@ -271,14 +287,20 @@ final class Zip_Uploader {
 		// phpcs:disable Generic.WhiteSpace.ScopeIndent -- no love for goto.
 
 		if ( $this->lock )
-			throw new \Exception( 'Do not process two files in the same ZIP Uploader instance.' );
+			throw new \Exception(
+				'Do not process two files in the same ZIP Uploader instance.',
+				self::EXCEPTION_TEMPORARY,
+			);
 
 		$this->lock = true;
 
 		extract_zip_file: try {
 			$temp_zip_extraction_dir = new Zip_Extractor( $temp_zip_file_path )->temp_zip_extraction_dir;
 		} catch ( \Exception $e ) {
-			throw new \Exception( 'Failed to extract ZIP file: ' . $e->getMessage() );
+			throw new \Exception(
+				"Failed to extract ZIP file: {$e->getMessage()}",
+				self::EXCEPTION_TEMPORARY,
+			);
 		}
 
 		find_temp_zip_main_plugin_file: {
@@ -313,20 +335,21 @@ final class Zip_Uploader {
 			}
 
 			if ( empty( $temp_plugin_file_path ) )
-				throw new \Exception( 'No valid plugin file found in ZIP.' );
+				throw new \Exception( 'No valid plugin file found in ZIP.', self::EXCEPTION_PERMANENT );
 		}
 
 		process_plugin_headers: {
 			// Grab headers early; we need this to determine the plugin version.
 			$plugin_headers = $this->get_plugin_data_with_troy_headers( $temp_plugin_file_path );
 
+			// This is already tested in find_temp_zip_main_plugin_file, but double-check.
 			if ( empty( $plugin_headers['Name'] ) )
-				throw new \Exception( 'Failed to parse plugin headers.' );
+				throw new \Exception( 'Failed to parse plugin headers.', self::EXCEPTION_PERMANENT );
 
 			$version = sanitize_semver( $plugin_headers['Version'] ?? '' );
 
 			if ( ! $version )
-				throw new \Exception( 'No valid version found in plugin headers.' );
+				throw new \Exception( 'No valid version found in plugin headers.', self::EXCEPTION_PERMANENT );
 
 			foreach ( TROY_PLUGIN_HEADERS['tested_wp'] as $header ) {
 				if ( ! empty( $plugin_headers[ $header ] ) ) {
@@ -353,10 +376,10 @@ final class Zip_Uploader {
 
 			// We won't store the sanitized version because this will need to be revalidated later.
 			if ( ! $repo || ! make_fully_qualified_repo_url( $repo ) )
-				throw new \Exception( 'The main plugin file does not have a valid repo header.' );
+				throw new \Exception( 'The main plugin file does not have a valid repo header.', self::EXCEPTION_PERMANENT );
 
 			if ( \strlen( $repo ) > 191 )
-				throw new \Exception( 'Repo header cannot exceed 191 characters.' );
+				throw new \Exception( 'Repo header cannot exceed 191 characters.', self::EXCEPTION_PERMANENT );
 
 			foreach ( TROY_PLUGIN_HEADERS['dependencies'] as $header ) {
 				if ( ! empty( $plugin_headers[ $header ] ) ) {
@@ -367,21 +390,27 @@ final class Zip_Uploader {
 
 			$dependencies = trim( $dependencies ?? '' );
 			if ( \strlen( $dependencies ) > 191 )
-				throw new \Exception( 'Repo Dependencies header cannot exceed 191 characters.' );
+				throw new \Exception( 'Repo Dependencies header cannot exceed 191 characters.', self::EXCEPTION_PERMANENT );
 
 			// Validate dependencies format and count (max 5)
 			if ( ! empty( $dependencies ) ) {
 				$dependency_list = \array_slice( explode( ',', $dependencies ), 0, 5 ); // Limit to 5 dependencies per plugin.
 
 				if ( \count( $dependency_list ) > 5 )
-					throw new \Exception( 'Repo Dependencies header cannot exceed 5 dependencies.' );
+					throw new \Exception(
+						'Repo Dependencies header cannot exceed 5 dependencies.',
+						self::EXCEPTION_PERMANENT,
+					);
 
 				// Validate each dependency format; this isn't stored.
 				foreach ( $dependency_list as $dependency ) {
 					$dependency = trim( $dependency );
 
 					if ( empty( $dependency ) )
-						throw new \Exception( 'Repo Dependencies header cannot contain empty dependency entries.' );
+						throw new \Exception(
+							'Repo Dependencies header cannot contain empty dependency entries.',
+							self::EXCEPTION_PERMANENT,
+						);
 
 					// Parse dependency: "plugin-slug" or "plugin-slug <repo-uri>"
 					[ $dep_slug, $dep_repo ] = array_pad( explode( '<', $dependency ), 2, null );
@@ -426,7 +455,7 @@ final class Zip_Uploader {
 					$readme_contents = [];
 					break;
 				default:
-					$error           = 'Unexpected exception in readme.txt file: ' . $e->getMessage();
+					$error           = "Unexpected exception in readme.txt file: {$e->getMessage()}";
 					$readme_contents = [];
 			}
 
@@ -502,11 +531,14 @@ final class Zip_Uploader {
 
 			// Close the ZIP file to finalize it.
 			if ( ! $zip->close() )
-				throw new \Exception( 'Failed to close the ZIP file after repackaging.' );
+				throw new \Exception( 'Failed to close the ZIP file after repackaging.', self::EXCEPTION_TEMPORARY );
 
 			// Additional validation: ensure the ZIP file exists and is readable.
 			if ( ! is_readable( $plugin_zip_file_path ) || ! is_file( $plugin_zip_file_path ) )
-				throw new \Exception( 'ZIP file was not created or is not readable after repackaging.' );
+				throw new \Exception(
+					'ZIP file was not created or is not readable after repackaging.',
+					self::EXCEPTION_TEMPORARY,
+				);
 		}
 
 		write_db: {

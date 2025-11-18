@@ -1407,26 +1407,6 @@ window.troyServerPluginEditorComponents = ( wp => {
 						onChange: newType => handleTypeChange( index, newType ),
 					},
 				),
-				// var_dump() test me:
-				version.source_url && JSX(
-					VStack,
-					{ spacing: 2 },
-					JSX(
-						'strong',
-						null,
-						__( 'Original source', 'troy-server' ),
-					),
-					JSX(
-						Button,
-						{
-							variant:  'link',
-							href:     version.source_url,
-							target:   '_blank',
-							rel:      'noopener noreferrer',
-						},
-						version.source_url,
-					),
-				),
 				JSX(
 					TextareaControl,
 					{
@@ -1486,6 +1466,14 @@ window.troyServerPluginEditorComponents = ( wp => {
 								value: version.requires_php,
 							},
 						),
+						// We may need this when we merge origin URL support.
+						// JSX(
+						// 	MetadataItem,
+						// 	{
+						// 		label: __( 'Original source:', 'troy-server' ),
+						// 		value: sanitizeRepoUrl( version.origin_url ),
+						// 	},
+						// ),
 						JSX(
 							MetadataItem,
 							{

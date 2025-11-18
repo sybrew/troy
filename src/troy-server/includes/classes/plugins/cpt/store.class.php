@@ -605,33 +605,38 @@ final class Store {
 				// We do not insert new integration settings here, as they are handled via the bespoke REST API.
 			}
 
-			update_settings: { // TODO rename me to snapshots, and use the latest version as a snapshot identifier.
-				// We fill it for later -- we currently don't use this.
-				// We could use this for restoring plugin settings in the future, perhaps maintaining revisions.
-				$existing_settings = $wpdb->get_var( $wpdb->prepare(
-					"SELECT id FROM {$wpdb->prefix}troy_plugins_settings WHERE plugin_id = %d",
+			update_snapshots: {
+				// Store a snapshot of the plugin data for this version.
+				// This allows restoring plugin settings in the future (future feature).
+				$snapshot_version = $working_version ?: '0.0.0';
+
+				$existing_snapshot = $wpdb->get_var( $wpdb->prepare(
+					"SELECT id FROM {$wpdb->prefix}troy_plugins_snapshots WHERE plugin_id = %d AND version = %s",
 					$data['plugin_id'],
+					$snapshot_version,
 				) );
 
-				if ( $existing_settings ) {
+				if ( $existing_snapshot ) {
 					$wpdb->update(
-						"{$wpdb->prefix}troy_plugins_settings",
+						"{$wpdb->prefix}troy_plugins_snapshots",
 						[
 							'plugin_id' => $data['plugin_id'],
+							'version'   => $snapshot_version,
 							'values'    => json_encode_db( $data ),
 						],
-						[ 'id' => $existing_settings ],
-						[ '%d', '%s' ],
+						[ 'id' => $existing_snapshot ],
+						[ '%d', '%s', '%s' ],
 						[ '%d' ],
 					);
 				} else {
 					$wpdb->insert(
-						"{$wpdb->prefix}troy_plugins_settings",
+						"{$wpdb->prefix}troy_plugins_snapshots",
 						[
 							'plugin_id' => $data['plugin_id'],
+							'version'   => $snapshot_version,
 							'values'    => json_encode_db( $data ),
 						],
-						[ '%d', '%s' ],
+						[ '%d', '%s', '%s' ],
 					);
 				}
 			}

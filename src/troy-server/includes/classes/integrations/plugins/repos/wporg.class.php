@@ -100,7 +100,7 @@ final class WPOrg {
 	}
 
 	/**
-	 * Fetch plugin tags from WordPress.org.
+	 * Find plugin tags from WordPress.org.
 	 *
 	 * Tag types are automatically determined based on version naming patterns.
 	 * WordPress.org tags never require authentication.
@@ -115,7 +115,7 @@ final class WPOrg {
 	 *     @type string $type         The tag type ('tag' or 'beta'); determined by version pattern.
 	 * }
 	 */
-	public static function fetch_tags( $slug ) {
+	public static function find_tags( $slug ) {
 
 		$slug = sanitize_slug( $slug );
 
@@ -130,7 +130,7 @@ final class WPOrg {
 		if ( \is_wp_error( $response ) )
 			return $response;
 
-		$versions = $response['version'] ?? [];
+		$versions = $response['versions'] ?? [];
 
 		if ( empty( $versions ) )
 			return new \WP_Error(
@@ -142,10 +142,16 @@ final class WPOrg {
 		// Unset 'trunk' if present, as it's not a valid version.
 		unset( $versions['trunk'] );
 
+		// WordPress doesn't provide commit IDs; use last updated timestamp.
+		$revision_id = sha1( $response['last_updated'] ?? '' );
+
 		$tags = [];
 
 		foreach ( $versions as $version => $url )
-			$tags[ $version ] = [ 'download_url' => $url ];
+			$tags[ $version ] = [
+				'download_url' => $url,
+				'revision_id'  => $revision_id,
+			];
 
 		return sanitize_tags( $tags );
 	}
@@ -154,7 +160,7 @@ final class WPOrg {
 	 * Fetch plugin information from WordPress.org API.
 	 *
 	 * This is a low-level method that doesn't validate the input or response;
-	 * use fetch_tags() for sanitized tags.
+	 * use find_tags() for sanitized tags.
 	 *
 	 * @since 0.0.1184
 	 *
