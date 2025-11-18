@@ -53,6 +53,7 @@ use Troy\Server\{
  */
 
 // phpcs:disable TSF.Performance.Functions -- We require slow file operations for processing ZIP files.
+// phpcs:disable WordPress.WP.AlternativeFunctions -- WP functions are irrelevant here.
 
 /**
  * Class Troy\Server\Plugins\Zip_Uploader.
@@ -244,8 +245,9 @@ final class Zip_Uploader {
 		}
 
 		// Ensure temporary file is cleaned up after processing.
-		// phpcs:ignore WordPress.WP.AlternativeFunctions, WordPress.PHP.NoSilencedErrors -- WP functions are irrelevant here.
-		register_shutdown_function( static fn() => @unlink( $temp_zip_file_path ) );
+		register_shutdown_function(
+			static fn() => is_file( $temp_zip_file_path ) and unlink( $temp_zip_file_path ),
+		);
 
 		$this->process( $temp_zip_file_path );
 	}
@@ -644,7 +646,6 @@ final class Zip_Uploader {
 				// This is a safeguard; we do not want to leave orphaned ZIP files.
 				// Only do this if the ZIP file was not already existing.
 				if ( empty( $existing_zip ) && is_file( $plugin_zip_file_path ) ) {
-					// phpcs:ignore WordPress.WP.AlternativeFunctions -- WP functions are irrelevant here.
 					unlink( $plugin_zip_file_path );
 				}
 
@@ -749,9 +750,8 @@ final class Zip_Uploader {
 			) {
 				$tmpfname_disposition = \dirname( $tmpfname ) . '/' . $tmpfname_disposition;
 
-				if ( rename( $tmpfname, $tmpfname_disposition ) ) {
+				if ( rename( $tmpfname, $tmpfname_disposition ) )
 					$tmpfname = $tmpfname_disposition;
-				}
 
 				if ( ( $tmpfname !== $tmpfname_disposition ) && file_exists( $tmpfname_disposition ) )
 					unlink( $tmpfname_disposition );
