@@ -336,7 +336,7 @@ final class REST {
 
 		switch ( $integration->mode ) {
 			case 'github':
-				$tags = Repos\GitHub::fetch_tags(
+				$tags = Repos\GitHub::find_tags(
 					$integration->settings->owner_repo,
 					$integration->auth->token->value ?? '',
 				);
@@ -353,7 +353,7 @@ final class REST {
 				break;
 
 			case 'wporg':
-				$tags = Repos\WPOrg::fetch_tags( $integration->settings->slug );
+				$tags = Repos\WPOrg::find_tags( $integration->settings->slug );
 
 				if ( \is_wp_error( $tags ) )
 					return new \WP_REST_Response(
@@ -379,7 +379,7 @@ final class REST {
 				500,
 			);
 
-		// $tags are already sanitized in fetch_tags().
+		// $tags are already sanitized in find_tags().
 		// Because the Store succeeded, we can safely assume "current_time" here. UTC datetime.
 		return new \WP_REST_Response(
 			[
@@ -396,13 +396,16 @@ final class REST {
 	 * @rest troy-server/v1/plugins/integrations/tags/process POST
 	 * @since 0.0.1184
 	 *
-	 * @param \WP_REST_Request $request The request object.
+	 * @param \WP_REST_Request $request The request object. {
+	 *     @type int    $plugin_id       The plugin post ID.
+	 *     @type string $package_version The package version name from the tag (not the plugin header version).
+	 * }
 	 * @return \WP_REST_Response|\WP_Error
 	 */
 	public static function process_tag( $request ) {
 
 		$plugin_id    = (int) $request->get_param( 'plugin_id' );
-		$version_name = \sanitize_text_field( $request->get_param( 'version_name' ) );
+		$package_version = \sanitize_text_field( $request->get_param( 'package_version' ) );
 
 		if ( ! $plugin_id )
 			return new \WP_Error(
@@ -411,9 +414,9 @@ final class REST {
 				[ 'status' => 400 ],
 			);
 
-		if ( ! $version_name )
+		if ( ! $package_version )
 			return new \WP_Error(
-				'missing_version_name',
+				'missing_package_version',
 				\__( 'Version name is required.', 'troy-server' ),
 				[ 'status' => 400 ],
 			);
@@ -427,19 +430,19 @@ final class REST {
 				[ 'status' => 400 ],
 			);
 
-		if ( empty( $integration->tags->$version_name ) )
+		if ( empty( $integration->tags->$package_version ) )
 			return new \WP_Error(
-				'version_not_found',
-				\__( 'The specified version was not found in stored tags.', 'troy-server' ),
+				'package_version_not_found',
+				\__( 'The specified package version was not found in stored tags.', 'troy-server' ),
 				[ 'status' => 400 ],
 			);
 
-		$download_url = $integration->tags->$version_name->download_url ?? null;
+		$download_url = $integration->tags->$package_version->download_url ?? null;
 
 		if ( ! $download_url )
 			return new \WP_Error(
 				'missing_download_url',
-				\__( 'Download URL not found for this version.', 'troy-server' ),
+				\__( 'Download URL not found for this package version.', 'troy-server' ),
 				[ 'status' => 500 ],
 			);
 

@@ -2326,8 +2326,8 @@ window.troyServerPluginEditorComponents = ( wp => {
 			url: troyPluginEditorData.restUrls.integrations.tags.process,
 			method: 'POST',
 			data:   {
-				plugin_id:    pluginId,
-				version_name: tagName,
+				plugin_id:       pluginId,
+				package_version: tagName,
 			},
 		} );
 

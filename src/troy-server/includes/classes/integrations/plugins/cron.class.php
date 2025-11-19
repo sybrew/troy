@@ -169,7 +169,7 @@ final class Cron extends \Troy\Server\Cron {
 
 		$queued_tags = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT version, revision_id FROM {$wpdb->prefix}troy_plugins_integration_queue WHERE plugin_id = %d",
+				"SELECT package_version, revision_id FROM {$wpdb->prefix}troy_plugins_integration_queue WHERE plugin_id = %d",
 				$plugin_id,
 			),
 		);
@@ -178,14 +178,14 @@ final class Cron extends \Troy\Server\Cron {
 		$removed_count = 0;
 
 		// Queue new tags or update existing queue entries if revision ID changed
-		foreach ( $tags as $version => $tag_data ) {
+		foreach ( $tags as $package_version => $tag_data ) {
 			// Skip if already processed
-			if ( \in_array( $version, $processed_versions, true ) )
+			if ( \in_array( $package_version, $processed_versions, true ) )
 				continue;
 
-			// Find existing queue tag by version
+			// Find existing queue tag by package_version
 			foreach ( $queued_tags as $queued_tag ) {
-				if ( $queued_tag->version === $version ) {
+				if ( $queued_tag->package_version === $package_version ) {
 					$existing_queue_tag = $queued_tag;
 					break;
 				}
@@ -198,7 +198,7 @@ final class Cron extends \Troy\Server\Cron {
 			) {
 				Store::queue_tag(
 					$plugin_id,
-					$version,
+					$package_version,
 					$mode,
 					$tag_data->download_url,
 					$tag_data->type,
@@ -211,8 +211,8 @@ final class Cron extends \Troy\Server\Cron {
 
 		// Remove queued tags that no longer exist in the remote repository
 		foreach ( $queued_tags as $queue_data ) {
-			if ( ! isset( $tags->{$queue_data->version} ) ) {
-				Store::dequeue_tag( $plugin_id, $queue_data->version );
+			if ( ! isset( $tags->{$queue_data->package_version} ) ) {
+				Store::dequeue_tag( $plugin_id, $queue_data->package_version );
 				++$removed_count;
 			}
 		}
@@ -241,9 +241,9 @@ final class Cron extends \Troy\Server\Cron {
 			return;
 
 		foreach ( $queued_tags as $tag ) {
-			$plugin_id = $tag->plugin_id;
-			$version   = $tag->version;
-			$mode      = $tag->mode; // GitHub, WPOrg, etc.
+			$plugin_id       = $tag->plugin_id;
+			$package_version = $tag->package_version;
+			$mode            = $tag->mode; // GitHub, WPOrg, etc.
 
 			$integration = new Plugins\Data( $plugin_id )->get_integration( [ 'get_auth' => true ] );
 
@@ -275,13 +275,13 @@ final class Cron extends \Troy\Server\Cron {
 						"SELECT repo FROM {$wpdb->prefix}troy_plugins_zips
 						WHERE plugin_id = %d AND version = %s",
 						$plugin_id,
-						$version,
+						$uploader->version_uploaded,
 					) ),
 				);
 
 				// Check if repo matches the integration's origin URL
 				if ( $zip_origin_url === $site_origin_url ) {
-					$type = get_version_type( $version );
+					$type = get_version_type( $package_version );
 				} else {
 					// Keep as unreleased if repo doesn't match
 					$type = 'unreleased';
@@ -289,7 +289,7 @@ final class Cron extends \Troy\Server\Cron {
 					static::integration_log(
 						$plugin_id,
 						'warning',
-						"Tag {$version} kept as 'unreleased' due to repository mismatch (expected: {$site_origin_url}, got: {$zip_origin_url}).",
+						"Tag {$package_version} kept as 'unreleased' due to repository mismatch (expected: {$site_origin_url}, got: {$zip_origin_url}).",
 					);
 				}
 
@@ -298,24 +298,24 @@ final class Cron extends \Troy\Server\Cron {
 					[ 'type' => $type ],
 					[
 						'plugin_id' => $plugin_id,
-						'version'   => $version,
+						'version'   => $uploader->version_uploaded,
 					],
 					[ '%s' ],
 					[ '%d', '%s' ],
 				);
 
 				// Remove from queue and clear any failures
-				Store::dequeue_tag( $plugin_id, $version );
-				Store::clear_failure( $plugin_id, $version );
+				Store::dequeue_tag( $plugin_id, $package_version );
+				Store::clear_failure( $plugin_id, $package_version );
 				static::integration_log(
 					$plugin_id,
 					'info',
-					"Successfully processed queued tag {$version} (uploaded version: {$uploader->version_uploaded}).",
+					"Successfully processed queued tag {$package_version} (uploaded version: {$uploader->version_uploaded}).",
 				);
 			} catch ( \Exception $e ) {
 				$error_message = $e->getMessage();
 
-				Store::record_failure( $plugin_id, $version, $mode, $error_message, '' );
+				Store::record_failure( $plugin_id, $package_version, $mode, $error_message, '' );
 
 				// Determine failure type based on exception code or attempt count
 				$is_permanent = $e->getCode() === Plugins\Zip_Uploader::EXCEPTION_PERMANENT;
@@ -325,9 +325,9 @@ final class Cron extends \Troy\Server\Cron {
 					$attempts = $wpdb->get_var(
 						$wpdb->prepare(
 							"SELECT attempts FROM {$wpdb->prefix}troy_plugins_integration_failures
-							 WHERE plugin_id = %d AND version = %s",
+							 WHERE plugin_id = %d AND package_version = %s",
 							$plugin_id,
-							$version,
+							$package_version,
 						),
 					);
 
@@ -336,21 +336,21 @@ final class Cron extends \Troy\Server\Cron {
 				}
 
 				if ( $is_permanent ) {
-					Store::mark_queue_status( $plugin_id, $version, Store::QUEUE_STATUS_PERMANENT_FAILURE );
+					Store::mark_queue_status( $plugin_id, $package_version, Store::QUEUE_STATUS_PERMANENT_FAILURE );
 
 					static::integration_log(
 						$plugin_id,
 						'error',
-						"Tag {$version} marked as permanently failed: {$error_message}",
+						"Tag {$package_version} marked as permanently failed: {$error_message}",
 					);
 				} else {
-					Store::mark_queue_status( $plugin_id, $version, Store::QUEUE_STATUS_TEMPORARY_FAILURE );
+					Store::mark_queue_status( $plugin_id, $package_version, Store::QUEUE_STATUS_TEMPORARY_FAILURE );
 				}
 
 				static::integration_log(
 					$plugin_id,
 					'error',
-					"Failed to process queued tag {$version}: {$error_message}",
+					"Failed to process queued tag {$package_version}: {$error_message}",
 				);
 			}
 		}

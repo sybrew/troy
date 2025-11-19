@@ -162,18 +162,16 @@ final class Plugin_Info extends Base_Endpoint {
 	 *
 	 * @since 0.0.1184
 	 *
-	 * @param int $author_id Main author ID.
+	 * @param int $author_id Plugin main author ID.
 	 * @return string Author string.
 	 */
 	private function get_author_string( $author_id ) {
-
-		if ( ! $author_id )
-			return 'Unknown Author';
-
-		// false on failure, so no null-safe operator here.
-		$user = \get_user_by( 'id', $author_id );
-
-		return $user ? $user->user_nicename : 'Unknown Author';
+		return ( $author_id
+			// false on failure, so no null-safe operator here.
+			? \get_user_by( 'id', $author_id )->display_name ?? false
+			: false
+		)
+			?: \__( 'Unknown author', 'troy-server' );
 	}
 
 	/**

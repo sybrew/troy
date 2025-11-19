@@ -258,16 +258,16 @@ final class Store {
 	 * @since 0.0.1184
 	 * @global \wpdb $wpdb
 	 *
-	 * @param int     $plugin_id    The plugin post ID.
-	 * @param string  $version      The version to queue.
-	 * @param string  $mode         The integration mode.
-	 * @param string  $download_url The download URL.
-	 * @param string  $type         The tag type ('tag', 'beta', 'unreleased').
-	 * @param ?string $revision_id  Optional. The revision ID.
-	 * @param string  $status       Optional. The queue status (use class constants). Default 'pending'.
+	 * @param int     $plugin_id        The plugin post ID.
+	 * @param string  $package_version  The package version to queue.
+	 * @param string  $mode             The integration mode.
+	 * @param string  $download_url     The download URL.
+	 * @param string  $type             The tag type ('tag', 'beta', 'unreleased').
+	 * @param ?string $revision_id      Optional. The revision ID.
+	 * @param string  $status           Optional. The queue status (use class constants). Default 'pending'.
 	 * @return int|false The number of rows affected, or false on error.
 	 */
-	public static function queue_tag( $plugin_id, $version, $mode, $download_url, $type, $revision_id = null, $status = 'pending' ) {
+	public static function queue_tag( $plugin_id, $package_version, $mode, $download_url, $type, $revision_id = null, $status = 'pending' ) {
 
 		global $wpdb;
 
@@ -275,13 +275,13 @@ final class Store {
 		return $wpdb->replace(
 			"{$wpdb->prefix}troy_plugins_integration_queue",
 			[
-				'plugin_id'    => $plugin_id,
-				'version'      => $version,
-				'mode'         => $mode,
-				'download_url' => $download_url,
-				'revision_id'  => $revision_id ?? '',
-				'type'         => $type,
-				'status'       => $status,
+				'plugin_id'       => $plugin_id,
+				'package_version' => $package_version,
+				'mode'            => $mode,
+				'download_url'    => $download_url,
+				'revision_id'     => $revision_id ?? '',
+				'type'            => $type,
+				'status'          => $status,
 			],
 			[ '%d', '%s', '%s', '%s', '%s', '%s', '%s' ],
 		);
@@ -293,19 +293,19 @@ final class Store {
 	 * @since 0.0.1184
 	 * @global \wpdb $wpdb
 	 *
-	 * @param int    $plugin_id The plugin post ID.
-	 * @param string $version   The version to dequeue.
+	 * @param int    $plugin_id       The plugin post ID.
+	 * @param string $package_version The package version to dequeue.
 	 * @return Boolean True on success, false on failure.
 	 */
-	public static function dequeue_tag( $plugin_id, $version ) {
+	public static function dequeue_tag( $plugin_id, $package_version ) {
 
 		global $wpdb;
 
 		return false !== $wpdb->delete(
 			"{$wpdb->prefix}troy_plugins_integration_queue",
 			[
-				'plugin_id' => $plugin_id,
-				'version'   => $version,
+				'plugin_id'       => $plugin_id,
+				'package_version' => $package_version,
 			],
 			[ '%d', '%s' ],
 		);
@@ -321,15 +321,15 @@ final class Store {
 	 * @return ?object[] {
 	 *     An array of queued tag objects, or null if none are found.
 	 *
-	 *     @type int    id           The queue ID.
-	 *     @type int    plugin_id    The plugin post ID.
-	 *     @type string version      The plugin version.
-	 *     @type string mode         The integration mode.
-	 *     @type string download_url The tag download URL.
-	 *     @type string revision_id  The revision ID.
-	 *     @type string type         The tag type.
-	 *     @type string status       The queue status.
-	 *     @type string created_at   The row creation timestamp.
+	 *     @type int    id              The queue ID.
+	 *     @type int    plugin_id       The plugin post ID.
+	 *     @type string package_version The package version.
+	 *     @type string mode            The integration mode.
+	 *     @type string download_url    The tag download URL.
+	 *     @type string revision_id     The revision ID.
+	 *     @type string type            The tag type.
+	 *     @type string status          The queue status.
+	 *     @type string created_at      The row creation timestamp.
 	 * }
 	 */
 	public static function get_queued_tags( $limit = 2 ) {
@@ -356,23 +356,23 @@ final class Store {
 	 * @since 0.0.1184
 	 * @global \wpdb $wpdb
 	 *
-	 * @param int    $plugin_id The plugin post ID.
-	 * @param string $version   The version that failed.
-	 * @param string $mode      The integration mode.
-	 * @param string $reason    The failure reason.
-	 * @param string $details   Optional. Additional failure details.
+	 * @param int    $plugin_id       The plugin post ID.
+	 * @param string $package_version The package version that failed.
+	 * @param string $mode            The integration mode.
+	 * @param string $reason          The failure reason.
+	 * @param string $details         Optional. Additional failure details.
 	 * @return int|false The number of rows affected, or false on error.
 	 */
-	public static function record_failure( $plugin_id, $version, $mode, $reason, $details = '' ) {
+	public static function record_failure( $plugin_id, $package_version, $mode, $reason, $details = '' ) {
 
 		global $wpdb;
 
 		$existing_attempts = $wpdb->get_var(
 			$wpdb->prepare(
 				"SELECT attempts FROM {$wpdb->prefix}troy_plugins_integration_failures
-				 WHERE plugin_id = %d AND version = %s",
+				 WHERE plugin_id = %d AND package_version = %s",
 				$plugin_id,
-				$version,
+				$package_version,
 			),
 		);
 
@@ -386,8 +386,8 @@ final class Store {
 					'attempts' => $existing_attempts + 1,
 				],
 				[
-					'plugin_id' => $plugin_id,
-					'version'   => $version,
+					'plugin_id'       => $plugin_id,
+					'package_version' => $package_version,
 				],
 				[ '%s', '%s', '%s', '%d' ],
 				[ '%d', '%s' ],
@@ -397,12 +397,12 @@ final class Store {
 		return $wpdb->insert(
 			"{$wpdb->prefix}troy_plugins_integration_failures",
 			[
-				'plugin_id' => $plugin_id,
-				'version'   => $version,
-				'mode'      => $mode,
-				'reason'    => $reason,
-				'details'   => $details,
-				'attempts'  => 1,
+				'plugin_id'       => $plugin_id,
+				'package_version' => $package_version,
+				'mode'            => $mode,
+				'reason'          => $reason,
+				'details'         => $details,
+				'attempts'        => 1,
 			],
 			[ '%d', '%s', '%s', '%s', '%s', '%d' ],
 		);
@@ -414,19 +414,19 @@ final class Store {
 	 * @since 0.0.1184
 	 * @global \wpdb $wpdb
 	 *
-	 * @param int    $plugin_id The plugin post ID.
-	 * @param string $version   The version to clear.
+	 * @param int    $plugin_id       The plugin post ID.
+	 * @param string $package_version The package version to clear.
 	 * @return Boolean True on success, false on failure.
 	 */
-	public static function clear_failure( $plugin_id, $version ) {
+	public static function clear_failure( $plugin_id, $package_version ) {
 
 		global $wpdb;
 
 		return false !== $wpdb->delete(
 			"{$wpdb->prefix}troy_plugins_integration_failures",
 			[
-				'plugin_id' => $plugin_id,
-				'version'   => $version,
+				'plugin_id'       => $plugin_id,
+				'package_version' => $package_version,
 			],
 			[ '%d', '%s' ],
 		);
@@ -438,12 +438,12 @@ final class Store {
 	 * @since 0.0.1184
 	 * @global \wpdb $wpdb
 	 *
-	 * @param int     $plugin_id The plugin post ID.
-	 * @param string  $version   The version to mark.
-	 * @param ?string $status    The status to set (use class constants or null to clear).
+	 * @param int     $plugin_id       The plugin post ID.
+	 * @param string  $package_version The package version to mark.
+	 * @param ?string $status          The status to set (use class constants or null to clear).
 	 * @return int|false The number of rows affected, or false on error.
 	 */
-	public static function mark_queue_status( $plugin_id, $version, $status ) {
+	public static function mark_queue_status( $plugin_id, $package_version, $status ) {
 
 		global $wpdb;
 
@@ -451,8 +451,8 @@ final class Store {
 			"{$wpdb->prefix}troy_plugins_integration_queue",
 			[ 'status' => $status ],
 			[
-				'plugin_id' => $plugin_id,
-				'version'   => $version,
+				'plugin_id'       => $plugin_id,
+				'package_version' => $package_version,
 			],
 			[ '%s' ],
 			[ '%d', '%s' ],

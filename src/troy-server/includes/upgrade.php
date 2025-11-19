@@ -332,7 +332,7 @@ function get_initial_db_schema_queries() {
 		"CREATE table `{$dbprefix}troy_plugins_integration_queue` (
 			`id` bigint unsigned NOT null auto_increment,
 			`plugin_id` bigint unsigned NOT null,
-			`version` varchar(20) NOT null,
+			`package_version` varchar(20) NOT null,
 			`mode` varchar(20) NOT null,
 			`download_url` text NOT null,
 			`revision_id` varchar(64) NOT null DEFAULT '',
@@ -340,13 +340,13 @@ function get_initial_db_schema_queries() {
 			`status` varchar(20) NOT null DEFAULT 'pending',
 			`created_at` datetime DEFAULT current_timestamp,
 			primary key (`id`),
-			unique index `plugin_id_version` (`plugin_id`, `version`),
+			unique index `plugin_id_package_version` (`plugin_id`, `package_version`),
 			index `status` (`status`)
 		) $collate",
 		"CREATE table `{$dbprefix}troy_plugins_integration_failures` (
 			`id` bigint unsigned NOT null auto_increment,
 			`plugin_id` bigint unsigned NOT null,
-			`version` varchar(50) NOT null,
+			`package_version` varchar(50) NOT null,
 			`mode` varchar(20) NOT null,
 			`reason` varchar(50) NOT null,
 			`details` text NOT null,
@@ -354,7 +354,7 @@ function get_initial_db_schema_queries() {
 			`created_at` datetime DEFAULT current_timestamp,
 			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
 			primary key (`id`),
-			unique index `plugin_id_version` (`plugin_id`, `version`)
+			unique index `plugin_id_package_version` (`plugin_id`, `package_version`)
 		) $collate",
 		"CREATE table `{$dbprefix}troy_plugins_integration_logs` (
 			`id` bigint unsigned NOT null auto_increment,
@@ -554,7 +554,7 @@ function get_initial_db_schema_queries() {
 			`created_at` datetime DEFAULT current_timestamp,
 			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
 			primary key (`id`),
-			index `plugin_id_is_active` (`plugin_id`, `is_active`),
+			index `plugin_id_is_active` (`plugin_id`, `is_active`)
 		) $collate",
 		"CREATE table `{$dbprefix}troy_plugins_update_request_locales_stats` (
 			`id` bigint unsigned NOT null auto_increment,
