@@ -8,11 +8,6 @@ namespace Troy\Client;
 
 \defined( 'Troy\Client\ABSPATH' ) or die;
 
-use function Troy\Client\{
-	has_troy_plugins,
-	get_troy_plugins,
-};
-
 /**
  * Troy Client
  *

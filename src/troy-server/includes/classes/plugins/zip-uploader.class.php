@@ -675,6 +675,7 @@ final class Zip_Uploader {
 		}
 
 		$this->version_uploaded = $version;
+		$this->repo_uploaded    = $repo;
 		// phpcs:enable Generic.WhiteSpace.ScopeIndent
 	}
 

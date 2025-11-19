@@ -8,13 +8,6 @@ namespace Troy\Client;
 
 \defined( 'Troy\Client\ABSPATH' ) or die;
 
-use const Troy\Client\{
-	ABSPATH,
-	PLUGIN_BASENAME,
-	TROY_PLUGIN_HEADERS,
-	VERSION,
-};
-
 /**
  * Troy Client
  *
