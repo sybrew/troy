@@ -85,17 +85,20 @@ final class Cron extends \Troy\Server\Cron {
 		global $wpdb;
 
 		$integrations = $wpdb->get_results(
-			"SELECT plugin_id, mode FROM {$wpdb->prefix}troy_plugins_integrations",
+			"SELECT plugin_id, mode, auto_process
+			 FROM {$wpdb->prefix}troy_plugins_integrations
+			 WHERE auto_process != 'none'",
 		);
 
 		if ( empty( $integrations ) )
 			return;
 
 		foreach ( $integrations as $integration ) {
-			$plugin_id = $integration->plugin_id;
-			$mode      = $integration->mode;
+			$plugin_id    = $integration->plugin_id;
+			$mode         = $integration->mode;
+			$auto_process = $integration->auto_process ?? 'all';
 
-			$result = self::find_plugin_tags_by_mode( $plugin_id, $mode );
+			$result = self::find_plugin_tags_by_mode( $plugin_id, $mode, $auto_process );
 
 			if ( \is_wp_error( $result ) ) {
 				static::integration_log(
@@ -120,8 +123,9 @@ final class Cron extends \Troy\Server\Cron {
 	 * @since 0.0.1184
 	 * @global \wpdb $wpdb
 	 *
-	 * @param int    $plugin_id The plugin post ID.
-	 * @param string $mode      The integration mode.
+	 * @param int    $plugin_id    The plugin post ID.
+	 * @param string $mode         The integration mode.
+	 * @param string $auto_process The auto_process setting ('all', 'tag', 'beta', 'none').
 	 * @return array|\WP_Error {
 	 *     Result array on success, WP_Error on failure.
 	 *
@@ -129,7 +133,7 @@ final class Cron extends \Troy\Server\Cron {
 	 *     @type int $removed Number of tags removed from queue.
 	 * }
 	 */
-	public static function find_plugin_tags_by_mode( $plugin_id, $mode ) {
+	public static function find_plugin_tags_by_mode( $plugin_id, $mode, $auto_process = 'all' ) {
 
 		$integration = new Plugins\Data( $plugin_id )->get_integration( [ 'get_auth' => true ] );
 
@@ -179,6 +183,21 @@ final class Cron extends \Troy\Server\Cron {
 			// Skip if already processed
 			if ( \in_array( $package_version, $processed_versions, true ) )
 				continue;
+
+			// Determine the tag type based on version pattern
+			$version_type = API\Utils::get_version_type( $package_version );
+
+			// Filter based on auto_process setting (ignore when 'all')
+			switch ( $auto_process ) {
+				case 'tag':
+					if ( 'beta' === $version_type )
+						continue 2;
+					break;
+
+				case 'beta':
+					if ( 'tag' === $version_type )
+						continue 2;
+			}
 
 			// Find existing queue tag by package_version
 			foreach ( $queued_tags as $queued_tag ) {
@@ -249,6 +268,8 @@ final class Cron extends \Troy\Server\Cron {
 				continue;
 			}
 
+			$auto_process = $integration->auto_process ?? 'all';
+
 			try {
 				$uploader = new Plugins\Zip_Uploader(
 					$plugin_id,
@@ -264,35 +285,51 @@ final class Cron extends \Troy\Server\Cron {
 				);
 
 				// Success: determine type based on repo match and version pattern
+				$site_repo_url = API\Server::get_origin_url();
+				$zip_repo_url  = $uploader->repo;
+				$version_type  = API\Utils::get_version_type( $uploader->version_uploaded );
 
-				$site_origin_url = API\Server::get_origin_url();
-				// Get the repo header from the processed ZIP
-				$zip_origin_url = API\Sanitize::make_fully_qualified_repo_url(
-					$wpdb->get_var( $wpdb->prepare(
-						"SELECT repo FROM {$wpdb->prefix}troy_plugins_zips
-						WHERE plugin_id = %d AND version = %s",
-						$plugin_id,
-						$uploader->version_uploaded,
-					) ),
-				);
+				switch ( $auto_process ) {
+					case 'tag':
+						if ( 'beta' === $version_type ) {
+							$version_type = 'unreleased';
+
+							static::integration_log(
+								$plugin_id,
+								'warning',
+								"Tag {$package_version} kept as 'unreleased' due to auto_process='tag' setting. We thought package version {$package_version} was a tag but the plugin header version {$uploader->version_uploaded} was a beta.",
+							);
+						}
+						break;
+
+					case 'beta':
+						if ( 'tag' === $version_type ) {
+							$version_type = 'unreleased';
+
+							static::integration_log(
+								$plugin_id,
+								'warning',
+								"Tag {$package_version} kept as 'unreleased' due to auto_process='beta' setting. We thought package version {$package_version} was a beta but the plugin header version {$uploader->version_uploaded} was a tag.",
+							);
+						}
+						break;
+				}
 
 				// Check if repo matches the integration's origin URL
-				if ( $zip_origin_url === $site_origin_url ) {
-					$type = API\Utils::get_version_type( $package_version );
-				} else {
+				if ( $zip_repo_url !== $site_repo_url ) {
 					// Keep as unreleased if repo doesn't match
-					$type = 'unreleased';
+					$version_type = 'unreleased';
 
 					static::integration_log(
 						$plugin_id,
 						'warning',
-						"Tag {$package_version} kept as 'unreleased' due to repository mismatch (expected: {$site_origin_url}, got: {$zip_origin_url}).",
+						"Tag {$package_version} kept as 'unreleased' due to repository mismatch (expected: {$site_repo_url}, got: {$zip_repo_url}).",
 					);
 				}
 
 				$wpdb->update(
 					"{$wpdb->prefix}troy_plugins_zips",
-					[ 'type' => $type ],
+					[ 'type' => $version_type ],
 					[
 						'plugin_id' => $plugin_id,
 						'version'   => $uploader->version_uploaded,

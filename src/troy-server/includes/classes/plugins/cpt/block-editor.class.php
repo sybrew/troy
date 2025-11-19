@@ -848,8 +848,8 @@ final class Block_Editor {
 					],
 					[
 						'value'       => 'none',
-						'label'       => \__( 'None (manual only)', 'troy-server' ),
-						'description' => \__( 'Do not automatically import any tags.', 'troy-server' ),
+						'label'       => \__( 'None', 'troy-server' ),
+						'description' => \__( 'Do not automatically find or import any tags.', 'troy-server' ),
 					],
 				],
 				'contentTabs'    => [

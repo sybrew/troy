@@ -241,13 +241,24 @@ final class Store {
 		if ( ! $existing_integration )
 			return false;
 
-		return false !== $wpdb->update(
+		$success = false !== $wpdb->update(
 			"{$wpdb->prefix}troy_plugins_integrations",
 			[ 'auto_process' => $auto_process ],
 			[ 'plugin_id' => $plugin_id ],
 			[ '%s' ],
 			[ '%d' ],
 		);
+
+		// Clear the queue when changing to 'none'
+		if ( $success && 'none' === $auto_process ) {
+			$wpdb->delete(
+				"{$wpdb->prefix}troy_plugins_integration_queue",
+				[ 'plugin_id' => $plugin_id ],
+				[ '%d' ],
+			);
+		}
+
+		return $success;
 	}
 
 	/**

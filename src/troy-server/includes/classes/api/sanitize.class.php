@@ -262,6 +262,27 @@ final class Sanitize {
 	}
 
 	/**
+	 * Sanitizes the auto_process setting.
+	 *
+	 * This function converts the auto_process setting to lowercase and ensures it is one of the allowed values.
+	 * If the setting is not recognized, it defaults to 'all'.
+	 *
+	 * @since 0.0.1184
+	 *
+	 * @param string $auto_process The auto_process setting to sanitize.
+	 * @return string The sanitized auto_process setting.
+	 */
+	public static function auto_process( $auto_process ) {
+
+		$auto_process = strtolower( $auto_process );
+
+		return match ( $auto_process ) {
+			'all', 'tag', 'beta', 'none' => $auto_process,
+			default => 'all',
+		};
+	}
+
+	/**
 	 * Sanitizes an upgrade notice.
 	 *
 	 * This function ensures that the upgrade notice is a string, removes excessive whitespace,

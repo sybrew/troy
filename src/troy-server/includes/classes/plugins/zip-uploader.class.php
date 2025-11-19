@@ -667,9 +667,8 @@ final class Zip_Uploader {
 				// If the database write failed, we should remove the ZIP file.
 				// This is a safeguard; we do not want to leave orphaned ZIP files.
 				// Only do this if the ZIP file was not already existing.
-				if ( empty( $existing_zip ) && is_file( $plugin_zip_file_path ) ) {
+				if ( empty( $existing_zip ) && is_file( $plugin_zip_file_path ) )
 					unlink( $plugin_zip_file_path );
-				}
 
 				throw new \Exception( 'Failed to write ZIP data to the database.' );
 			}
