@@ -193,14 +193,14 @@ final class WPOrg {
 			if ( 404 === $response_code )
 				return new \WP_Error(
 					'wporg_plugin_not_found',
-					\__( 'Plugin not found on WordPress.org', 'troy-server' ),
+					\__( 'Plugin not found on WordPress.org.', 'troy-server' ),
 				);
 
 			return new \WP_Error(
 				'wporg_api_error',
 				\sprintf(
 					/* translators: %d is the HTTP status code. */
-					\__( 'WordPress.org API request failed with status %d', 'troy-server' ),
+					\__( 'WordPress.org API request failed with status %d.', 'troy-server' ),
 					$response_code,
 				)
 			);
@@ -211,7 +211,7 @@ final class WPOrg {
 		if ( \JSON_ERROR_NONE !== \json_last_error() )
 			return new \WP_Error(
 				'json_decode_error',
-				\__( 'Failed to decode WordPress.org API response', 'troy-server' ),
+				\__( 'Failed to decode WordPress.org API response.', 'troy-server' ),
 			);
 
 		return $data;

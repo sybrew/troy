@@ -455,7 +455,7 @@ final class REST {
 				);
 			} catch ( \Exception $e ) {
 				return new \WP_REST_Response(
-					[ 'message' => "Failed to parse ZIP file: {$e->getMessage()}" ],
+					[ 'message' => "Failed to parse ZIP file: {$e->getMessage()}." ],
 					500,
 				);
 			}
@@ -505,7 +505,7 @@ final class REST {
 				'process_failed',
 				\sprintf(
 					/* translators: %s: Error message */
-					\__( 'Failed to process tag: %s', 'troy-server' ),
+					\__( 'Failed to process tag: %s.', 'troy-server' ),
 					$e->getMessage(),
 				),
 				[ 'status' => 500 ],

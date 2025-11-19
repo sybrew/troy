@@ -698,7 +698,10 @@ final class Zip_Uploader {
 	private static function download_url( $url, $args = [] ) {
 
 		if ( ! $url )
-			return new \WP_Error( 'http_no_url', \__( 'No URL Provided.', 'troy-server' ) );
+			return new \WP_Error(
+				'http_no_url',
+				\__( 'No URL Provided.', 'troy-server' ),
+			);
 
 		if ( ! empty( $args['queryParams'] ) )
 			$url = \add_query_arg( $args['queryParams'], $url );
@@ -712,7 +715,10 @@ final class Zip_Uploader {
 		$tmpfname = \wp_tempnam( $url_filename );
 
 		if ( ! $tmpfname )
-			return new \WP_Error( 'http_no_file', \__( 'Could not create temporary file.', 'troy-server' ) );
+			return new \WP_Error(
+				'http_no_file',
+				\__( 'Could not create temporary file.', 'troy-server' ),
+			);
 
 		$response = \wp_safe_remote_get(
 			$url,

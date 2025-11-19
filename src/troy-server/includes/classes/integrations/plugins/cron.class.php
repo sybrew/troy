@@ -142,7 +142,7 @@ final class Cron extends \Troy\Server\Cron {
 				$integration->auth->token->value ?? '',
 			),
 			'wporg'  => Repos\WPOrg::find_tags( $integration->settings->slug ),
-			default  => new \WP_Error( 'unsupported_mode', 'Unsupported integration mode' ),
+			default  => new \WP_Error( 'unsupported_mode', 'Unsupported integration mode.' ),
 		};
 
 		if ( \is_wp_error( $tags ) )
@@ -150,7 +150,7 @@ final class Cron extends \Troy\Server\Cron {
 
 		// Update the tags in the database
 		if ( ! Store::update_tags( $plugin_id, $mode, $tags ) )
-			return new \WP_Error( 'update_failed', 'Failed to update tags in database' );
+			return new \WP_Error( 'update_failed', 'Failed to update tags in database.' );
 
 		// Get existing processed versions
 		global $wpdb;

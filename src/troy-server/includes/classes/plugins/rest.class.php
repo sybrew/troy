@@ -105,7 +105,7 @@ final class REST {
 
 		if ( empty( $post_id ) )
 			return new \WP_REST_Response(
-				[ 'message' => 'Post ID is required' ],
+				[ 'message' => 'Post ID is required.' ],
 				400,
 			);
 
@@ -214,7 +214,7 @@ final class REST {
 
 		if ( ! $params['post_id'] || ! $params['plugin_slug'] )
 			return new \WP_REST_Response(
-				[ 'message' => 'Invalid parameters' ],
+				[ 'message' => 'Invalid parameters.' ],
 				400,
 			);
 
@@ -321,7 +321,7 @@ final class REST {
 			$wpdb->query( 'ROLLBACK' );
 
 			return new \WP_REST_Response(
-				[ 'message' => "Failed to register plugin: {$e->getMessage()}" ],
+				[ 'message' => "Failed to register plugin: {$e->getMessage()}." ],
 				500,
 			);
 		}
@@ -343,19 +343,19 @@ final class REST {
 
 		if ( ! $plugin_id || empty( $file ) )
 			return new \WP_REST_Response(
-				[ 'message' => 'Plugin ID and file are required' ],
+				[ 'message' => 'Plugin ID and file are required.' ],
 				400,
 			);
 
 		if ( ! isset( $file['tmp_name'], $file['name'] ) )
 			return new \WP_REST_Response(
-				[ 'message' => 'Invalid file upload' ],
+				[ 'message' => 'Invalid file upload.' ],
 				400,
 			);
 
 		if ( ! is_uploaded_file( $file['tmp_name'] ) )
 			return new \WP_REST_Response(
-				[ 'message' => 'File is not a valid upload' ],
+				[ 'message' => 'File is not a valid upload.' ],
 				400,
 			);
 
@@ -399,7 +399,7 @@ final class REST {
 			$uploader->process_via_file( $file['tmp_name'] );
 		} catch ( \Exception $e ) {
 			return new \WP_REST_Response(
-				[ 'message' => "Failed to process ZIP file: {$e->getMessage()}" ],
+				[ 'message' => "Failed to process ZIP file: {$e->getMessage()}." ],
 				500,
 			);
 		}
@@ -462,7 +462,7 @@ final class REST {
 
 		if ( ! $plugin_id || ! $zip_url )
 			return new \WP_REST_Response(
-				[ 'message' => 'Plugin ID and ZIP URL are required' ],
+				[ 'message' => 'Plugin ID and ZIP URL are required.' ],
 				400,
 			);
 
@@ -471,7 +471,7 @@ final class REST {
 			$uploader->process_via_url( $zip_url );
 		} catch ( \Exception $e ) {
 			return new \WP_REST_Response(
-				[ 'message' => "Failed to parse ZIP file: {$e->getMessage()}" ],
+				[ 'message' => "Failed to parse ZIP file: {$e->getMessage()}." ],
 				500,
 			);
 		}
@@ -534,7 +534,7 @@ final class REST {
 
 		if ( ! $plugin_id || ! $version )
 			return new \WP_REST_Response(
-				[ 'message' => 'Plugin ID and version are required' ],
+				[ 'message' => 'Plugin ID and version are required.' ],
 				400,
 			);
 
@@ -548,7 +548,7 @@ final class REST {
 			$temp_zip_extraction_dir = new Zip_Extractor( $zip_file_path )->temp_zip_extraction_dir;
 		} catch ( \Exception $e ) {
 			return new \WP_REST_Response(
-				[ 'message' => "Failed to extract ZIP file: {$e->getMessage()}" ],
+				[ 'message' => "Failed to extract ZIP file: {$e->getMessage()}." ],
 				500,
 			);
 		}
@@ -559,7 +559,7 @@ final class REST {
 			$contents = $parser->contents;
 		} catch ( \Exception $e ) {
 			return new \WP_REST_Response(
-				[ 'message' => "Failed to parse readme: {$e->getMessage()}" ],
+				[ 'message' => "Failed to parse readme: {$e->getMessage()}." ],
 				500,
 			);
 		}
@@ -588,7 +588,7 @@ final class REST {
 
 		if ( ! $post_id )
 			return new \WP_REST_Response(
-				[ 'message' => 'Post ID is required' ],
+				[ 'message' => 'Post ID is required.' ],
 				400,
 			);
 
@@ -642,7 +642,7 @@ final class REST {
 
 		if ( ! $plugin_id || ! $version )
 			return new \WP_REST_Response(
-				[ 'message' => 'Plugin ID and version are required' ],
+				[ 'message' => 'Plugin ID and version are required.' ],
 				400,
 			);
 
@@ -657,7 +657,7 @@ final class REST {
 
 		if ( ! $zip_record )
 			return new \WP_REST_Response(
-				[ 'message' => 'Version not found' ],
+				[ 'message' => 'Version not found.' ],
 				400,
 			);
 
@@ -681,7 +681,7 @@ final class REST {
 
 			if ( ! $success )
 				return new \WP_REST_Response(
-					[ 'message' => 'Version not not deleted' ],
+					[ 'message' => 'Version was not deleted.' ],
 					400,
 				);
 
@@ -691,7 +691,7 @@ final class REST {
 
 			return new \WP_REST_Response(
 				[
-					'message' => 'Version removed successfully',
+					'message' => 'Version removed successfully.',
 					'version' => $version,
 				],
 				200,
@@ -700,7 +700,7 @@ final class REST {
 			$wpdb->query( 'ROLLBACK' );
 
 			return new \WP_REST_Response(
-				[ 'message' => "Failed to remove version: {$e->getMessage()}" ],
+				[ 'message' => "Failed to remove version: {$e->getMessage()}." ],
 				500,
 			);
 		}

@@ -142,7 +142,7 @@ final class GitHub {
 		if ( ! preg_match( '/^([\w\.\-]+)\/([\w\.\-]+)$/', $owner_repo ) )
 			return new \WP_Error(
 				'invalid_repo',
-				\__( 'Invalid repository format', 'troy-server' ),
+				\__( 'Invalid repository format.', 'troy-server' ),
 			);
 
 		$response = static::get_repo_tags( $owner_repo, $pat );
@@ -210,7 +210,7 @@ final class GitHub {
 				if ( \JSON_ERROR_NONE !== json_last_error() )
 					return new \WP_Error(
 						'json_decode_error',
-						\__( 'Failed to decode GitHub.com API response', 'troy-server' ),
+						\__( 'Failed to decode GitHub.com API response.', 'troy-server' ),
 					);
 
 				return $data;
@@ -238,7 +238,7 @@ final class GitHub {
 					'github_api_error',
 					\sprintf(
 						/* translators: %d is the HTTP status code. */
-						\__( 'GitHub.com API request failed with status %d', 'troy-server' ),
+						\__( 'GitHub.com API request failed with status %d.', 'troy-server' ),
 						$response_code,
 					),
 				);
