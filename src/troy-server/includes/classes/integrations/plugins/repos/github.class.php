@@ -10,9 +10,10 @@ namespace Troy\Server\Integrations\Plugins\Repos;
 
 use const Troy\Server\VERSION;
 
-use function Troy\Server\Sanitize\sanitize_tags;
-
-use Troy\Server\Integrations\Plugins\Store;
+use Troy\Server\{
+	API,
+	Integrations\Plugins\Store,
+};
 
 /**
  * Troy Server
@@ -155,7 +156,7 @@ final class GitHub {
 				\__( 'No tags found for this repository on GitHub.', 'troy-server' ),
 			);
 
-		// Preformat tags for sanitize_tags().
+		// Preformat tags for API\Sanitize::tags().
 		$tags = [];
 
 		foreach ( $response as $tag )
@@ -164,7 +165,7 @@ final class GitHub {
 				'revision_id'  => $tag['commit']['sha'] ?? '',
 			];
 
-		return sanitize_tags( $tags );
+		return API\Sanitize::tags( $tags );
 	}
 
 	/**

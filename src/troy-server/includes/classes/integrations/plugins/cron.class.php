@@ -8,13 +8,10 @@ namespace Troy\Server\Integrations\Plugins;
 
 \defined( 'Troy\Server\ABSPATH' ) or die;
 
-use function Troy\Server\{
-	get_origin_url,
-	get_version_type,
-	Sanitize\make_fully_qualified_repo_url,
+use Troy\Server\{
+	API,
+	Plugins, // A namesake import is valid; we're relative to \, not \Plugins.
 };
-
-use Troy\Server\Plugins; // A namesake import is valid; we're relative to \, not \Plugins.
 
 /**
  * Troy Server
@@ -134,7 +131,7 @@ final class Cron extends \Troy\Server\Cron {
 	 */
 	public static function find_plugin_tags_by_mode( $plugin_id, $mode ) {
 
-		$integration = ( new Plugins\Data( $plugin_id ) )->get_integration( [ 'get_auth' => true ] );
+		$integration = new Plugins\Data( $plugin_id )->get_integration( [ 'get_auth' => true ] );
 
 		if ( ! $integration )
 			return new \WP_Error( 'no_integration', 'No integration found for this plugin.' );
@@ -268,9 +265,9 @@ final class Cron extends \Troy\Server\Cron {
 
 				// Success: determine type based on repo match and version pattern
 
-				$site_origin_url = get_origin_url();
+				$site_origin_url = API\Server::get_origin_url();
 				// Get the repo header from the processed ZIP
-				$zip_origin_url = make_fully_qualified_repo_url(
+				$zip_origin_url = API\Sanitize::make_fully_qualified_repo_url(
 					$wpdb->get_var( $wpdb->prepare(
 						"SELECT repo FROM {$wpdb->prefix}troy_plugins_zips
 						WHERE plugin_id = %d AND version = %s",
@@ -281,7 +278,7 @@ final class Cron extends \Troy\Server\Cron {
 
 				// Check if repo matches the integration's origin URL
 				if ( $zip_origin_url === $site_origin_url ) {
-					$type = get_version_type( $package_version );
+					$type = API\Utils::get_version_type( $package_version );
 				} else {
 					// Keep as unreleased if repo doesn't match
 					$type = 'unreleased';

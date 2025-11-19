@@ -216,7 +216,9 @@ window.troyServerEditorUtils = ( ( wp ) => {
 		const { __, _n, sprintf } = wp.i18n;
 
 		if ( 'string' === typeof timestamp )
-			timestamp = Math.floor( new Date( timestamp ).getTime() / 1000 );
+			timestamp = Math.floor(
+				new Date( timestamp ).getTime() / 1000,
+			);
 
 		if ( ! +timestamp )
 			return __( 'Never', 'troy-server' );

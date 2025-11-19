@@ -8,17 +8,10 @@ namespace Troy\Server\Plugins;
 
 \defined( 'Troy\Server\ABSPATH' ) or die;
 
-use function Troy\Server\{
-	get_db_version,
-	get_origin_url,
-	get_plugin_id_by_post_id,
-};
-
-use function Troy\Server\Sanitize\sanitize_slug;
-
 use const Troy\Server\REST_NS;
 
 use Troy\Server\{
+	API,
 	File_Utils,
 	Plugins\CPT\Store,
 	Zip_Extractor,
@@ -120,7 +113,7 @@ final class REST {
 		// This is because the post excerpt is used in the Block Editor, enabling easy readouts via SEO plugins etc.
 		// We should also store the content in the post content, but then nullify it as we extract it.
 
-		$plugin_id = get_plugin_id_by_post_id( $post_id );
+		$plugin_id = API\Plugin::get_plugin_id_by_post_id( $post_id );
 
 		if ( $plugin_id ) {
 			// If no $plugin_id is assigned, assume it's a new post, and do not proceed getting the data.
@@ -211,12 +204,13 @@ final class REST {
 	 * @return \WP_REST_Response
 	 */
 	public static function register_slug( $request ) {
+
 		global $wpdb;
 
 		$params = $request->get_params();
 
 		$params['post_id']     = (int) ( $params['post_id'] ?? 0 );
-		$params['plugin_slug'] = sanitize_slug( $params['plugin_slug'] ?? '' );
+		$params['plugin_slug'] = API\Sanitize::slug( $params['plugin_slug'] ?? '' );
 
 		if ( ! $params['post_id'] || ! $params['plugin_slug'] )
 			return new \WP_REST_Response(
@@ -256,8 +250,8 @@ final class REST {
 					'post_id'          => $params['post_id'],
 					'slug'             => $params['plugin_slug'],
 					'status'           => 'pending',
-					'origin_url'       => get_origin_url(),
-					'database_version' => get_db_version(),
+					'origin_url'       => API\Server::get_origin_url(),
+					'database_version' => API\Server::get_db_version(),
 				],
 				[
 					'%d',
@@ -640,6 +634,7 @@ final class REST {
 	 * @throws \Exception If the version cannot be removed.
 	 */
 	public static function remove_version( $request ) {
+
 		global $wpdb;
 
 		$plugin_id = $request->get_param( 'plugin_id' );

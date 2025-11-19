@@ -10,12 +10,10 @@ namespace Troy\Server\Integrations\Plugins\Repos;
 
 use const Troy\Server\VERSION;
 
-use function Troy\Server\Sanitize\{
-	sanitize_slug,
-	sanitize_tags,
+use Troy\Server\{
+	API,
+	Integrations\Plugins\Store,
 };
-
-use Troy\Server\Integrations\Plugins\Store;
 
 /**
  * Troy Server
@@ -74,7 +72,7 @@ final class WPOrg {
 	 */
 	public static function connect( $plugin_id, $data, $auto_process = 'all' ) {
 
-		$settings = [ 'slug' => sanitize_slug( $data['slug'] ?? '' ) ];
+		$settings = [ 'slug' => API\Sanitize::slug( $data['slug'] ?? '' ) ];
 
 		if ( empty( $settings['slug'] ) )
 			return [
@@ -117,7 +115,7 @@ final class WPOrg {
 	 */
 	public static function find_tags( $slug ) {
 
-		$slug = sanitize_slug( $slug );
+		$slug = API\Sanitize::slug( $slug );
 
 		if ( empty( $slug ) )
 			return new \WP_Error(
@@ -153,7 +151,7 @@ final class WPOrg {
 				'revision_id'  => $revision_id,
 			];
 
-		return sanitize_tags( $tags );
+		return API\Sanitize::tags( $tags );
 	}
 
 	/**
@@ -171,7 +169,7 @@ final class WPOrg {
 
 		$url = \sprintf(
 			'https://api.wordpress.org/plugins/info/1.0/%s.json',
-			sanitize_slug( $slug ),
+			API\Sanitize::slug( $slug ),
 		);
 
 		$response = \wp_remote_get(

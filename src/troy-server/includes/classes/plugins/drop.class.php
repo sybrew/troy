@@ -8,9 +8,7 @@ namespace Troy\Server\Plugins;
 
 \defined( 'Troy\Server\ABSPATH' ) or die;
 
-use function Troy\Server\{
-	get_plugin_id_by_post_id,
-};
+use Troy\Server\API;
 
 /**
  * Troy Server
@@ -70,7 +68,7 @@ final class Drop {
 		if ( ! $plugin_id && ! $post_id )
 			throw new \Exception( 'Either plugin_id or post_id must be set.' );
 
-		$this->plugin_id = $plugin_id ?? get_plugin_id_by_post_id( $post_id );
+		$this->plugin_id = $plugin_id ?? API\Plugin::get_plugin_id_by_post_id( $post_id );
 	}
 
 	/**

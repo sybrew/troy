@@ -8,20 +8,10 @@ namespace Troy\Server\Endpoints;
 
 \defined( 'Troy\Server\ABSPATH' ) or die;
 
-use function Troy\Server\{
-	get_origin_url,
-	get_plugin_id_by_slug,
-	get_latest_public_wordpress_version,
-};
-
-use function Troy\Server\Sanitize\{
-	sanitize_slug,
-	sanitize_tested_version,
-};
-
-use Troy\Server\Plugins\{
-	Data,
-	Files,
+use Troy\Server\{
+	API,
+	Plugins\Data,
+	Plugins\Files,
 };
 
 /**
@@ -78,10 +68,10 @@ final class Plugin_Updates extends Base_Endpoint {
 		$inactive_plugins = (array) ( $input['inactive_plugins'] ?? [] );
 
 		$locales      = (array) ( $input['locales'] ?? [] );
-		$origin_url   = get_origin_url();
-		$php_version  = sanitize_tested_version( $input['php_version'] ?? '' );
-		$wp_version   = sanitize_tested_version( $input['wp_version'] ?? '' );
-		$troy_version = sanitize_tested_version( $input['troy_version'] ?? '' );
+		$origin_url   = API\Server::get_origin_url();
+		$php_version  = API\Sanitize::tested_version( $input['php_version'] ?? '' );
+		$wp_version   = API\Sanitize::tested_version( $input['wp_version'] ?? '' );
+		$troy_version = API\Sanitize::tested_version( $input['troy_version'] ?? '' );
 
 		$client_uuid = $this->get_client_uuid();
 
@@ -100,13 +90,13 @@ final class Plugin_Updates extends Base_Endpoint {
 			// We need an unmodified index key to test if the plugin is active.
 			$is_active = isset( $active_plugins[ $slug ] );
 
-			$slug = sanitize_slug( $slug );
+			$slug = API\Sanitize::slug( $slug );
 
 			if ( ! $slug )
 				continue;
 
 			// TODO: Once we support transporting slugs, we should resolve the new slug from this plugin ID.
-			$plugin_id = get_plugin_id_by_slug( $slug );
+			$plugin_id = API\Plugin::get_plugin_id_by_slug( $slug );
 
 			if ( ! $plugin_id )
 				continue;
@@ -175,7 +165,7 @@ final class Plugin_Updates extends Base_Endpoint {
 						[
 							'new_version'    => $zip->version,
 							'package'        => Files::get_plugin_zip_url_by_slug( $slug, $zip->version ),
-							'tested'         => \Troy\Server\get_latest_public_wordpress_version( $zip->tested_wp ),
+							'tested'         => API\Utils::get_latest_public_wordpress_version( $zip->tested_wp ),
 							'requires'       => $zip->requires_wp ?: '',
 							'requires_php'   => $zip->requires_php ?: '',
 							'upgrade_notice' => $zip->upgrade_notice ?: '',
@@ -235,6 +225,7 @@ final class Plugin_Updates extends Base_Endpoint {
 		$wp_version,
 		$client_version,
 	) {
+
 		global $wpdb;
 
 		// Record live update request stat

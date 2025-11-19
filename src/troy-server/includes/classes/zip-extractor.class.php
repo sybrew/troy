@@ -8,8 +8,6 @@ namespace Troy\Server;
 
 \defined( 'Troy\Server\ABSPATH' ) or die;
 
-use function Troy\Server\Sanitize\sanitize_file_path;
-
 /**
  * Troy Server
  *
@@ -75,7 +73,7 @@ final class Zip_Extractor {
 	) {
 		ignore_user_abort( true );
 
-		increase_time_limit_by( self::ZIP_EXTRACT_TIMEOUT );
+		API\Utils::increase_time_limit_by( self::ZIP_EXTRACT_TIMEOUT );
 
 		File_Utils::init_wpfs();
 
@@ -86,7 +84,7 @@ final class Zip_Extractor {
 		$rand   = str_pad( bin2hex( random_bytes( 8 ) ), 16, '0', STR_PAD_LEFT );
 		$minute = round( time() / \MINUTE_IN_SECONDS );
 
-		$name = sanitize_file_path( $zip_file_path ) ?? '_unnamed_';
+		$name = API\Sanitize::file_path( $zip_file_path ) ?: '_unnamed_';
 
 		// This folder needs no shielding, the OS FS will handle that.
 		$this->temp_zip_extraction_dir = \get_temp_dir() . "troy_zip_extractions/plugin_{$name}_{$minute}_{$rand}/";

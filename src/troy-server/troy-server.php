@@ -129,14 +129,11 @@ const TROY_PLUGIN_HEADERS = [
 ];
 
 require ABSPATH . 'includes/constants.php';
-require ABSPATH . 'includes/sanitize.php';
-require ABSPATH . 'includes/api.php';
+require ABSPATH . 'bootstrap/load.php';
 
 // Prepare plugin upgrader before the plugin boots.
-get_db_version() !== DB_VERSION
+API\Server::get_db_version() !== DB_VERSION
 	and require ABSPATH . 'includes/upgrade.php';
-
-require ABSPATH . 'bootstrap/load.php';
 
 if ( \is_admin() )
 	require ABSPATH . 'bootstrap/hook-admin.php';

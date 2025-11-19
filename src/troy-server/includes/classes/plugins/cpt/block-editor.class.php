@@ -9,13 +9,13 @@ namespace Troy\Server\Plugins\CPT;
 \defined( 'Troy\Server\ABSPATH' ) or die;
 
 use const Troy\Server\{
-	VERSION,
 	MAIN_FILE,
 	PLUGINS_CPT,
 	REST_NS,
+	VERSION,
 };
 
-use function Troy\Server\get_origin_url;
+use Troy\Server\API;
 
 /**
  * Troy Server
@@ -752,7 +752,7 @@ final class Block_Editor {
 				'postType'       => PLUGINS_CPT,
 				'maxFileSize'    => \wp_max_upload_size(),
 				'maxFileSizeStr' => \size_format( \wp_max_upload_size() ),
-				'originUrl'      => get_origin_url(),
+				'originUrl'      => API\Server::get_origin_url(),
 				'restUrls'       => [
 					'getEditorStore'     => \rest_url( "$rest_plugins_manage/getEditorStore" ),
 					'registerSlug'       => \rest_url( "$rest_plugins_manage/registerSlug" ),

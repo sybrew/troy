@@ -8,11 +8,9 @@ namespace Troy\Server\Plugins;
 
 \defined( 'Troy\Server\ABSPATH' ) or die;
 
-use Troy\Server\Markdown;
-
-use function Troy\Server\Sanitize\{
-	sanitize_tested_version,
-	sanitize_wp_locale,
+use Troy\Server\{
+	API,
+	Markdown,
 };
 
 /**
@@ -455,14 +453,14 @@ final class Readme_Parser {
 		get {
 			if ( ! ( $this->parsed & static::PARSED['headers'] ) ) {
 				$this->headers['plugin_name']       = \sanitize_text_field( trim( $this->headers_raw['plugin_name'] ) );
-				// $this->headers['tested_wp']      = sanitize_tested_version( $this->headers_raw['tested_wp'] );
-				// $this->headers['tested_php']     = sanitize_tested_version( $this->headers_raw['tested_php'] );
-				// $this->headers['requires_wp']    = sanitize_tested_version( $this->headers_raw['requires_wp'] );
-				// $this->headers['requires_php']   = sanitize_tested_version( $this->headers_raw['requires_php'] );
+				// $this->headers['tested_wp']      = API\Sanitize::tested_version( $this->headers_raw['tested_wp'] );
+				// $this->headers['tested_php']     = API\Sanitize::tested_version( $this->headers_raw['tested_php'] );
+				// $this->headers['requires_wp']    = API\Sanitize::tested_version( $this->headers_raw['requires_wp'] );
+				// $this->headers['requires_php']   = API\Sanitize::tested_version( $this->headers_raw['requires_php'] );
 				// $this->headers['license']        = \sanitize_text_field( $this->headers_raw['license_uri'] );
 				// $this->headers['license_uri']    = \sanitize_url( $this->headers_raw['license_uri'] );
 				$this->headers['homepage_url']      = \sanitize_url( $this->headers_raw['homepage_url'] );
-				$this->headers['locale']            = sanitize_wp_locale( $this->headers_raw['locale'] );
+				$this->headers['locale']            = API\Sanitize::wp_locale( $this->headers_raw['locale'] );
 				$this->headers['support_uri']       = \sanitize_url( $this->headers_raw['support_uri'] );
 				$this->headers['donate_uri']        = \sanitize_url( $this->headers_raw['donate_uri'] );
 				$this->headers['short_description'] = \sanitize_text_field( trim( $this->headers_raw['short_description'] ) );

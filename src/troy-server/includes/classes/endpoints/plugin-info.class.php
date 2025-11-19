@@ -8,17 +8,10 @@ namespace Troy\Server\Endpoints;
 
 \defined( 'Troy\Server\ABSPATH' ) or die;
 
-use function Troy\Server\{
-	get_origin_url,
-	get_plugin_id_by_slug,
-	get_latest_public_wordpress_version,
-};
-
-use function Troy\Server\Sanitize\sanitize_slug;
-
-use Troy\Server\Plugins\{
-	Data,
-	Files,
+use Troy\Server\{
+	API,
+	Plugins\Data,
+	Plugins\Files,
 };
 
 /**
@@ -73,7 +66,7 @@ final class Plugin_Info extends Base_Endpoint {
 		if ( empty( $input['slug'] ) )
 			$this->send_error( 'Missing required parameter: slug', 400 );
 
-		$slug   = sanitize_slug( $input['slug'] );
+		$slug   = API\Sanitize::slug( $input['slug'] );
 		$fields = (array) ( $input['fields'] ?? [] );
 		$locale = \sanitize_text_field( $input['locale'] ?? 'en_US' );
 		$screen = \sanitize_text_field( $input['screen'] ?? 'unknown' );
@@ -82,7 +75,7 @@ final class Plugin_Info extends Base_Endpoint {
 		if ( ! $slug )
 			$this->send_error( 'Invalid slug', 400 );
 
-		$plugin_id = get_plugin_id_by_slug( $slug );
+		$plugin_id = API\Plugin::get_plugin_id_by_slug( $slug );
 
 		if ( ! $plugin_id )
 			$this->send_error( 'Plugin not found', 404 );
@@ -122,7 +115,7 @@ final class Plugin_Info extends Base_Endpoint {
 				'contributors'  => $this->get_contributors_array( $contributors ),
 				'requires'      => $latest_zip->requires_wp ?? '',
 				'tested'        => $latest_zip->tested_wp
-					?? get_latest_public_wordpress_version( $latest_zip->requires_wp ?? '' ),
+					?? API\Utils::get_latest_public_wordpress_version( $latest_zip->requires_wp ?? '' ),
 				'requires_php'  => $latest_zip->requires_php ?? '',
 				'downloaded'    => (int) ( $data_cache->active_install_count ?? 0 ),
 				'last_updated'  => $this->format_last_updated( $latest_zip->updated_at ?? '' ),
@@ -481,6 +474,7 @@ final class Plugin_Info extends Base_Endpoint {
 	 * @param string $screen    The screen name.
 	 */
 	private function record_info_request_stats( $plugin_id, $locale, $screen ) {
+
 		global $wpdb;
 
 		// Record live view stat
@@ -491,7 +485,7 @@ final class Plugin_Info extends Base_Endpoint {
 				'version'    => '',
 				'screen'     => $screen,
 				'locale'     => $locale,
-				'origin_url' => get_origin_url(),
+				'origin_url' => API\Server::get_origin_url(),
 			],
 			[
 				'%d',

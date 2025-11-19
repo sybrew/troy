@@ -8,13 +8,7 @@ namespace Troy\Server\Plugins;
 
 \defined( 'Troy\Server\ABSPATH' ) or die;
 
-use function Troy\Server\{
-	extract_latest_version,
-	get_origin_url,
-	get_plugin_id_by_post_id,
-};
-
-use function Troy\Server\Sanitize\sanitize_sql_date;
+use Troy\Server\API;
 
 /**
  * Troy Server
@@ -58,7 +52,7 @@ use function Troy\Server\Sanitize\sanitize_sql_date;
  * latest version will be assumed.
  * To get all data, you must resort to custom queries.
  *
- * To get the plugin ID by slug, use `Troy\Server\get_plugin_id_by_slug()`.
+ * To get the plugin ID by slug, use `Troy\Server\API\Plugin::get_plugin_id_by_slug()`.
  *
  * @since 0.0.1184
  */
@@ -85,8 +79,8 @@ final class Data {
 	 * @var ?string $date The date in "Y-m-d" format.
 	 *                    It will always be a string, even though it is nullable.
 	 */
-	public private(set) ?string $date = 'now' {
-		get => $this->date ??= sanitize_sql_date( 'now' );
+	public private(set) ?string $date {
+		get => $this->date ??= API\Sanitize::sql_date( 'now' );
 	}
 
 	/**
@@ -118,10 +112,10 @@ final class Data {
 		if ( ! $plugin_id && ! $post_id )
 			throw new \Exception( 'Either plugin_id or post_id must be set.' );
 
-		$this->plugin_id = $plugin_id ?? get_plugin_id_by_post_id( $post_id );
+		$this->plugin_id = $plugin_id ?? API\Plugin::get_plugin_id_by_post_id( $post_id );
 
 		$this->plugin_version = $plugin_version;
-		$this->date           = $date ? sanitize_sql_date( $date ) : null;
+		$this->date           = $date ? API\Sanitize::sql_date( $date ) : null;
 		$this->locale         = $locale;
 	}
 
@@ -150,7 +144,7 @@ final class Data {
 			$zips,
 		);
 
-		return extract_latest_version( $versions );
+		return API\Utils::extract_latest_version( $versions );
 	}
 
 	/**
@@ -173,6 +167,7 @@ final class Data {
 	 * }
 	 */
 	public function get_plugins_row() {
+
 		global $wpdb;
 
 		return $wpdb->get_row( $wpdb->prepare(
@@ -199,6 +194,7 @@ final class Data {
 	 * }
 	 */
 	public function get_slug_transfers() {
+
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
@@ -231,6 +227,7 @@ final class Data {
 	 * }
 	 */
 	public function get_metas_row() {
+
 		global $wpdb;
 
 		return $wpdb->get_row( $wpdb->prepare(
@@ -257,6 +254,7 @@ final class Data {
 	 * }
 	 */
 	public function get_contributors() {
+
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
@@ -293,6 +291,7 @@ final class Data {
 	 * }
 	 */
 	public function get_infos_row() {
+
 		global $wpdb;
 
 		$rows = $wpdb->get_results( $wpdb->prepare(
@@ -340,6 +339,7 @@ final class Data {
 	 * }
 	 */
 	public function get_snapshots_row() {
+
 		global $wpdb;
 
 		return $wpdb->get_row( $wpdb->prepare(
@@ -378,6 +378,7 @@ final class Data {
 	 * }
 	 */
 	public function get_zips() {
+
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
@@ -415,6 +416,7 @@ final class Data {
 	 * }
 	 */
 	public function get_zips_row() {
+
 		global $wpdb;
 
 		return $wpdb->get_row( $wpdb->prepare(
@@ -447,6 +449,7 @@ final class Data {
 	 * }
 	 */
 	public function get_translations() {
+
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
@@ -478,6 +481,7 @@ final class Data {
 	 * }
 	 */
 	public function get_data_caches_row() {
+
 		global $wpdb;
 
 		return $wpdb->get_row( $wpdb->prepare(
@@ -505,6 +509,7 @@ final class Data {
 	 * }
 	 */
 	public function get_ratings() {
+
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
@@ -534,6 +539,7 @@ final class Data {
 	 * }
 	 */
 	public function get_stats_totals() {
+
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
@@ -564,6 +570,7 @@ final class Data {
 	 * }
 	 */
 	public function get_stats_totals_to_date() {
+
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
@@ -595,6 +602,7 @@ final class Data {
 	 * }
 	 */
 	public function get_stats() {
+
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
@@ -627,6 +635,7 @@ final class Data {
 	 * }
 	 */
 	public function get_stats_to_date() {
+
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
@@ -658,6 +667,7 @@ final class Data {
 	 * }
 	 */
 	public function get_view_stats() {
+
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
@@ -686,6 +696,7 @@ final class Data {
 	 * }
 	 */
 	public function get_view_stats_live() {
+
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
@@ -715,6 +726,7 @@ final class Data {
 	 * }
 	 */
 	public function get_download_stats() {
+
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
@@ -742,6 +754,7 @@ final class Data {
 	 * }
 	 */
 	public function get_download_stats_live() {
+
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
@@ -771,6 +784,7 @@ final class Data {
 	 * }
 	 */
 	public function get_update_request_stats() {
+
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
@@ -799,6 +813,7 @@ final class Data {
 	 * }
 	 */
 	public function get_update_request_locales_stats() {
+
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
@@ -832,6 +847,7 @@ final class Data {
 	 * }
 	 */
 	public function get_update_request_stats_live() {
+
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(

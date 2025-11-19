@@ -8,15 +8,8 @@ namespace Troy\Server\Plugins;
 
 \defined( 'Troy\Server\ABSPATH' ) or die;
 
-use function Troy\Server\increase_time_limit_by;
-
-use function Troy\Server\Sanitize\{
-	sanitize_semver,
-	sanitize_tested_version,
-	sanitize_version_type,
-};
-
 use Troy\Server\{
+	API,
 	File_Utils,
 	Plugins\Data,
 };
@@ -113,7 +106,7 @@ final class Files {
 		$version = str_replace(
 			[ ' ', '.', '_' ],
 			'-',
-			sanitize_semver( $version ),
+			API\Sanitize::semver( $version ),
 		);
 
 		return static::get_plugin_storage_dir_path( $plugin_id ) . "version-$version/plugin.zip";
@@ -196,9 +189,9 @@ final class Files {
 		);
 
 		// Unpack the args so we can use them directly, speeding up the loop below.
-		$wp_version  = sanitize_tested_version( $args['wp_version'] );
-		$php_version = sanitize_tested_version( $args['php_version'] );
-		$type        = sanitize_version_type( $args['type'] );
+		$wp_version  = API\Sanitize::tested_version( $args['wp_version'] );
+		$php_version = API\Sanitize::tested_version( $args['php_version'] );
+		$type        = API\Sanitize::version_type( $args['type'] );
 
 		$zips = new Data( $plugin_id )->get_zips();
 
@@ -260,7 +253,7 @@ final class Files {
 			throw new \Exception( 'Invalid plugin ID.' );
 
 		// 15 ought to be plenty to rename a few folder indexes.
-		increase_time_limit_by( 15 );
+		API\Utils::increase_time_limit_by( 15 );
 
 		$source_dir = static::get_plugin_storage_dir_path( $plugin_id );
 

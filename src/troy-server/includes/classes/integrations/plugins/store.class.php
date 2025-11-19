@@ -8,12 +8,10 @@ namespace Troy\Server\Integrations\Plugins;
 
 \defined( 'Troy\Server\ABSPATH' ) or die;
 
-use function Troy\Server\Sanitize\{
-	json_encode_db,
-	sanitize_tags,
+use Troy\Server\{
+	API,
+	Plugins, // A namesake import is valid; we're relative to \, not \Plugins.
 };
-
-use Troy\Server\Plugins; // A namesake import is valid; we're relative to \, not \Plugins.
 
 /**
  * Troy Server
@@ -112,7 +110,7 @@ final class Store {
 
 		$settings['has_auth'] = (bool) $auth;
 
-		$existing_integration = ( new Plugins\Data( $plugin_id ) )->get_integration();
+		$existing_integration = new Plugins\Data( $plugin_id )->get_integration();
 
 		if ( $existing_integration ) {
 			// Race condition / unsynced tabs, gracefully handle by updating existing record.
@@ -120,9 +118,9 @@ final class Store {
 				"{$wpdb->prefix}troy_plugins_integrations",
 				[
 					'mode'           => $mode,
-					'settings'       => json_encode_db( $settings ),
-					'auth'           => $auth ? json_encode_db( $auth ) : null,
-					'tags'           => json_encode_db( [] ),
+					'settings'       => API\Sanitize::json_encode_db( $settings ),
+					'auth'           => $auth ? API\Sanitize::json_encode_db( $auth ) : null,
+					'tags'           => API\Sanitize::json_encode_db( [] ),
 					'tags_refreshed' => null,
 					'auto_process'   => $auto_process,
 				],
@@ -136,9 +134,9 @@ final class Store {
 				[
 					'plugin_id'      => $plugin_id,
 					'mode'           => $mode,
-					'settings'       => json_encode_db( $settings ),
-					'auth'           => $auth ? json_encode_db( $auth ) : null,
-					'tags'           => json_encode_db( [] ),
+					'settings'       => API\Sanitize::json_encode_db( $settings ),
+					'auth'           => $auth ? API\Sanitize::json_encode_db( $auth ) : null,
+					'tags'           => API\Sanitize::json_encode_db( [] ),
 					'tags_refreshed' => null,
 					'auto_process'   => $auto_process,
 				],
@@ -195,7 +193,7 @@ final class Store {
 		if ( ! $plugin_id )
 			return false;
 
-		$existing_integration = ( new Plugins\Data( $plugin_id ) )->get_integration();
+		$existing_integration = new Plugins\Data( $plugin_id )->get_integration();
 
 		if ( ! $existing_integration )
 			return false;
@@ -205,7 +203,7 @@ final class Store {
 		return false !== $wpdb->update(
 			"{$wpdb->prefix}troy_plugins_integrations",
 			[
-				'tags'           => json_encode_db( $tags ),
+				'tags'           => API\Sanitize::json_encode_db( $tags ),
 				'tags_refreshed' => \current_time( 'mysql' ), // Use local time via wp_timezone().
 			],
 			[
@@ -267,7 +265,15 @@ final class Store {
 	 * @param string  $status           Optional. The queue status (use class constants). Default 'pending'.
 	 * @return int|false The number of rows affected, or false on error.
 	 */
-	public static function queue_tag( $plugin_id, $package_version, $mode, $download_url, $type, $revision_id = null, $status = 'pending' ) {
+	public static function queue_tag(
+		$plugin_id,
+		$package_version,
+		$mode,
+		$download_url,
+		$type,
+		$revision_id = null,
+		$status = 'pending',
+	) {
 
 		global $wpdb;
 

@@ -12,7 +12,7 @@ namespace Troy\Server\Upgrade;
 
 use const Troy\Server\DB_VERSION;
 
-use function Troy\Server\get_db_version;
+use Troy\Server\API;
 
 /**
  * Troy Server
@@ -67,7 +67,7 @@ function upgrade() {
 	\wp_cache_flush();
 	\wp_cache_delete( 'alloptions', 'options' );
 
-	$previous_version = get_db_version();
+	$previous_version = API\Server::get_db_version();
 
 	if ( ! \get_option( 'troy_server_initial_db_version' ) )
 		\update_option( 'troy_server_initial_db_version', DB_VERSION, false );
@@ -89,6 +89,7 @@ function upgrade() {
  * @return bool False if a lock couldn't be created or if the lock is still valid. True otherwise.
  */
 function set_upgrade_lock( $release_timeout ) {
+
 	global $wpdb;
 
 	// WP 6.6+: we use 'off' instead of 'no' for autoload.
@@ -178,7 +179,7 @@ function upgrade_from( $version ) {
  * We make plugin versions 20 characters long because we haven't found plugins with a longer version.
  *
  * An epoch is 4 weeks long. Its identifier is calculated by flooring ( current UNIX timestamp / 2419200 seconds ).
- * You can get the current epoch via `Troy\Server\get_epoch()`, and previous epoch via `Troy\Server\get_epoch( 'last' )`.
+ * You can get the current epoch via `Troy\Server\API\Utils::get_epoch()`, and previous epoch via `Troy\Server\API\Utils::get_epoch( 'last' )`.
  *
  * We partition the update request stats by epoch because we expect a lot of data.
  * Partitioning allows accessing data by epoch, which is useful for calculating the active install count quickly.
@@ -246,6 +247,7 @@ function upgrade_from( $version ) {
  * @return string[] The initial database queries.
  */
 function get_initial_db_schema_queries() {
+
 	global $wpdb;
 
 	$collate  = $wpdb->has_cap( 'collation' ) ? $wpdb->get_charset_collate() : '';

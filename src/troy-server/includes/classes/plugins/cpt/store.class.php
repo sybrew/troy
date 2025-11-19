@@ -10,30 +10,12 @@ namespace Troy\Server\Plugins\CPT;
 
 use const Troy\Server\PLUGINS_CPT;
 
-use function Troy\Server\{
-	extract_latest_version,
-	get_plugin_id_by_post_id,
-};
-
-use function Troy\Server\Sanitize\{
-	sanitize_semver,
-	sanitize_sql_date,
-	sanitize_slug,
-	sanitize_url_qualified,
-	sanitize_static_image_url,
-	sanitize_tested_version,
-	sanitize_version_type,
-	sanitize_upgrade_notice,
-	sanitize_user_id,
-	sanitize_contributors,
-	json_encode_db,
-};
 
 use Troy\Server\{
+	API,
 	Integrations,
 	Zip_Extractor,
 };
-
 
 use Troy\Server\Plugins\{
 	Data,
@@ -154,12 +136,12 @@ final class Store {
 		return [
 			'plugin_id'         => \absint( $data['plugin_id'] ?? 0 ),
 			'name'              => \sanitize_text_field( $data['name'] ?? '' ),
-			'slug'              => sanitize_slug( $data['slug'] ?? '' ),
+			'slug'              => API\Sanitize::slug( $data['slug'] ?? '' ),
 			'status'            => array_intersect(
 				[ $data['status'] ?? '' ], // Don't flip this, we want index "0"
 				[ 'public', 'unlisted', 'protected', 'pending', 'disabled' ],
 			)[0] ?? 'pending',
-			'author_id'         => sanitize_user_id( $data['author_id'] ?? 0 ),
+			'author_id'         => API\Sanitize::user_id( $data['author_id'] ?? 0 ),
 			'builder_type'      => array_intersect(
 				[ $data['builder_type'] ?? '' ], // Don't flip this, we want index "0"
 				[ 'readme', 'post' ],
@@ -169,26 +151,26 @@ final class Store {
 					// Any item not listed was processed during the ZIP file upload.
 					fn( $item ) => [
 						// Ref https://semver.org/. Slightly adjusted to trim leading/trailing whitespace and group the first version found in $1.
-						'version'        => sanitize_semver( $item['version'] ?? '' ),
-						'type'           => sanitize_version_type( $item['type'] ?? '' ),
-						'upgrade_notice' => sanitize_upgrade_notice( $item['upgrade_notice'] ?? '' ),
+						'version'        => API\Sanitize::semver( $item['version'] ?? '' ),
+						'type'           => API\Sanitize::version_type( $item['type'] ?? '' ),
+						'upgrade_notice' => API\Sanitize::upgrade_notice( $item['upgrade_notice'] ?? '' ),
 					],
 					$data['versions'] ?? [],
 				),
 				fn( $item ) => $item['version'], // "0" is not a valid version.
 			),
-			'permalink'         => sanitize_url_qualified( $data['permalink'] ?? '' ),
-			'support_uri'       => sanitize_url_qualified( $data['support_uri'] ?? '' ),
-			'donate_uri'        => sanitize_url_qualified( $data['donate_uri'] ?? '' ),
+			'permalink'         => API\Sanitize::url_qualified( $data['permalink'] ?? '' ),
+			'support_uri'       => API\Sanitize::url_qualified( $data['support_uri'] ?? '' ),
+			'donate_uri'        => API\Sanitize::url_qualified( $data['donate_uri'] ?? '' ),
 			'short_description' => \sanitize_text_field( $data['short_description'] ?? '' ), // not textarea
-			'banner_uri'        => sanitize_static_image_url( $data['banner_uri'] ?? '' ),
-			'logo_uri'          => sanitize_static_image_url( $data['logo_uri'] ?? '' ),
-			'contributors'      => sanitize_contributors( $data['contributors'] ?? [] ),
+			'banner_uri'        => API\Sanitize::static_image_url( $data['banner_uri'] ?? '' ),
+			'logo_uri'          => API\Sanitize::static_image_url( $data['logo_uri'] ?? '' ),
+			'contributors'      => API\Sanitize::contributors( $data['contributors'] ?? [] ),
 			'screenshots'       => array_filter(
 				array_map(
 					fn( $item ) => [
 						'id'      => \absint( $item['id'] ?? 0 ),
-						'url'     => sanitize_url_qualified( $item['url'] ?? '' ),
+						'url'     => API\Sanitize::url_qualified( $item['url'] ?? '' ),
 						'caption' => \sanitize_text_field( $item['caption'] ?? '' ),
 					],
 					$data['screenshots'] ?? [],
@@ -250,7 +232,7 @@ final class Store {
 			\get_post_meta( $post_id, 'troy_server_plugin_data', true ) ?: [],
 		);
 
-		$plugin_id_by_post_id = get_plugin_id_by_post_id( $post_id );
+		$plugin_id_by_post_id = API\Plugin::get_plugin_id_by_post_id( $post_id );
 
 		// We don't actually need the plugin ID, for we can fetch it via the post ID.
 		if ( empty( $data['plugin_id'] ) ) {
@@ -283,7 +265,7 @@ final class Store {
 		}
 
 		get_latest_working_version: {
-			$working_version = extract_latest_version( $data['versions'] ?? [] );
+			$working_version = API\Utils::extract_latest_version( $data['versions'] ?? [] );
 		}
 
 		$builder_type       = $data['builder_type'];
@@ -543,7 +525,7 @@ final class Store {
 				// 357 requests/second * 604 800/second/week = 21.5M requests/week
 				// Dividing by per-user weekly requests:
 				// 21.5M requests/week / 0.081 requests/user/week = 267M users served at current usage.
-				$encoded_content = json_encode_db( [
+				$encoded_content = API\Sanitize::json_encode_db( [
 					'details'     => $data['contents']['details'] ?? '', // aka description
 					'usage'       => $data['contents']['usage'] ?? '',
 					'faq'         => $data['contents']['faq'] ?? '',
@@ -626,7 +608,7 @@ final class Store {
 						[
 							'plugin_id' => $data['plugin_id'],
 							'version'   => $snapshot_version,
-							'values'    => json_encode_db( $data ),
+							'values'    => API\Sanitize::json_encode_db( $data ),
 						],
 						[ 'id' => $existing_snapshot ],
 						[ '%d', '%s', '%s' ],
@@ -638,7 +620,7 @@ final class Store {
 						[
 							'plugin_id' => $data['plugin_id'],
 							'version'   => $snapshot_version,
-							'values'    => json_encode_db( $data ),
+							'values'    => API\Sanitize::json_encode_db( $data ),
 						],
 						[ '%d', '%s', '%s' ],
 					);
@@ -699,6 +681,7 @@ final class Store {
 	 * @param int $post_id The post ID being trashed.
 	 */
 	public static function handle_trash_post( $post_id ) {
+
 		global $wpdb;
 
 		\update_post_meta(
@@ -770,6 +753,7 @@ final class Store {
 	 * @param ?int $reassign The ID of the user to reassign posts and links to, if any.
 	 */
 	public static function handle_user_deletion( $user_id, $reassign ) {
+
 		global $wpdb;
 
 		$wpdb->query( 'START TRANSACTION' );

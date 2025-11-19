@@ -8,19 +8,10 @@ namespace Troy\Server\Endpoints;
 
 \defined( 'Troy\Server\ABSPATH' ) or die;
 
-use function Troy\Server\{
-	get_origin_url,
-	get_plugin_id_by_slug,
-};
-
-use function Troy\Server\Sanitize\{
-	sanitize_slug,
-	sanitize_semver,
-};
-
-use Troy\Server\Plugins\{
-	Data,
-	Files,
+use Troy\Server\{
+	API,
+	Plugins\Data,
+	Plugins\Files,
 };
 
 /**
@@ -100,12 +91,12 @@ final class Plugin_Download extends Base_Endpoint {
 			$this->send_error( 'Missing required parameter: slug', 400 );
 
 		// Sanitize slug parameter
-		$slug = sanitize_slug( $slug );
+		$slug = API\Sanitize::slug( $slug );
 
 		if ( ! $slug )
 			$this->send_error( 'Invalid slug', 400 );
 
-		$plugin_id = get_plugin_id_by_slug( $slug );
+		$plugin_id = API\Plugin::get_plugin_id_by_slug( $slug );
 
 		if ( ! $plugin_id )
 			$this->send_error( 'Plugin not found', 404 );
@@ -115,7 +106,7 @@ final class Plugin_Download extends Base_Endpoint {
 				$plugin_id,
 				'latest' === $version
 					? null
-					: sanitize_semver( $version ),
+					: API\Sanitize::semver( $version ),
 			);
 
 			// Check plugin status - only serve downloads for public/unlisted plugins
@@ -188,6 +179,7 @@ final class Plugin_Download extends Base_Endpoint {
 	 * @param string $version   The version being downloaded.
 	 */
 	private function record_download_stats( $plugin_id, $version ) {
+
 		global $wpdb;
 
 		// Determine download type based on context (20 chars max)
@@ -213,7 +205,7 @@ final class Plugin_Download extends Base_Endpoint {
 				'plugin_id'  => $plugin_id,
 				'version'    => $version,
 				'type'       => $type,
-				'origin_url' => get_origin_url(),
+				'origin_url' => API\Server::get_origin_url(),
 			],
 			[
 				'%d',

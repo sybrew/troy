@@ -8,7 +8,7 @@
  * @license   MIT
  * @link      https://github.com/sybrew/troy/
  *
- * <-- @troy-generator -->
+ * @troy-generator * plugin-header
  * @wordpress-plugin
  * Plugin Name: Troy Installer
  * Plugin URI: https://deploytroy.org/
@@ -20,7 +20,7 @@
  * Requires at least: 6.7
  * Requires PHP: 7.4
  * Network: true
- * <!-- @troy-generator -->
+ * @troy-generator * plugin-header
  */
 
 namespace Troy\Installer;
@@ -63,7 +63,7 @@ namespace Troy\Installer;
 // Start editing here. =========================================================
 // =============================================================================
 
-const PLUGIN_NAME = 'Troy Installer';
+const PLUGIN_NAME = 'Troy Installer'; // @troy-generator plugin-name
 
 /**
  * The options for the installer.
@@ -79,12 +79,14 @@ const PLUGIN_NAME = 'Troy Installer';
  *    @type bool $notice_severity          The severity of the notice. Accepts 'summary', 'detailed', 'verbose', and 'silent'.
  * }
  */
+// @troy-generator * plugin-options
 const OPTIONS = [
 	'install_timeout'          => 30,
 	'deactivate_on_completion' => true,
 	'delete_on_completion'     => false,
 	'notice_severity'          => 'detailed',
 ];
+// @troy-generator * plugin-options
 
 /**
  * The plugins to install.
@@ -117,6 +119,7 @@ const OPTIONS = [
  *
  * phpcs:disable WordPress.Arrays.MultipleStatementAlignment.DoubleArrowNotAligned
  */
+// @troy-generator * plugin-install
 const INSTALL = [
 	'test-plugin' => [
 		'name'           => 'Test Plugin',
@@ -128,6 +131,7 @@ const INSTALL = [
 		'overwrite_troy' => false,
 	],
 ];
+// @troy-generator * plugin-install
 
 // =============================================================================
 // Stop editing here. ==========================================================

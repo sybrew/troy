@@ -13,12 +13,9 @@ use const Troy\Server\{
 	REST_NS,
 };
 
-use Troy\Server\Plugins; // A namesake import is valid; we're relative to \, not \Plugins.
-
-use function Troy\Server\{
-	get_plugin_id_by_post_id,
-	Sanitize\sanitize_tags,
-	Sanitize\sanitize_slug,
+use Troy\Server\{
+	API,
+	Plugins, // A namesake import is valid; we're relative to \, not \Plugins.
 };
 
 /**
@@ -89,7 +86,7 @@ final class REST {
 				[
 					'methods'             => $methods,
 					'callback'            => [ $class, $cb ],
-					'permission_callback' => $permission_cb, // var_dump() add show_in_index => false? This prevents exposure in the WP REST API index.
+					'permission_callback' => $permission_cb,
 				],
 			);
 		}
@@ -114,7 +111,7 @@ final class REST {
 				400,
 			);
 
-		$integration = ( new Plugins\Data( $plugin_id ) )->get_integration( [ 'get_auth' => true ] );
+		$integration = new Plugins\Data( $plugin_id )->get_integration( [ 'get_auth' => true ] );
 
 		if ( ! $integration || 'github' !== $integration->mode )
 			return new \WP_REST_Response(
@@ -186,7 +183,7 @@ final class REST {
 					);
 
 				// Our requirements are more stringent than WordPress.org's; TODO: create Repos\WPOrg::parse_slug()?
-				$slug = sanitize_slug( $settings['slug'] );
+				$slug = API\Sanitize::slug( $settings['slug'] );
 
 				if ( empty( $slug ) )
 					return new \WP_REST_Response(
@@ -216,7 +213,7 @@ final class REST {
 				500,
 			);
 
-		$integration = ( new Plugins\Data( $plugin_id ) )->get_integration();
+		$integration = new Plugins\Data( $plugin_id )->get_integration();
 
 		return new \WP_REST_Response(
 			[
@@ -252,7 +249,7 @@ final class REST {
 		$deleted = Store::disconnect( $plugin_id );
 
 		if ( ! $deleted ) {
-			$integration = ( new Plugins\Data( $plugin_id ) )->get_integration();
+			$integration = new Plugins\Data( $plugin_id )->get_integration();
 
 			if ( $integration )
 				return new \WP_REST_Response(
@@ -286,7 +283,7 @@ final class REST {
 				400,
 			);
 
-		$integration = ( new Plugins\Data( $plugin_id ) )->get_integration();
+		$integration = new Plugins\Data( $plugin_id )->get_integration();
 
 		if ( ! $integration )
 			return new \WP_REST_Response(
@@ -324,7 +321,7 @@ final class REST {
 				400,
 			);
 
-		$integration = ( new Plugins\Data( $plugin_id ) )->get_integration( [ 'get_auth' => true ] );
+		$integration = new Plugins\Data( $plugin_id )->get_integration( [ 'get_auth' => true ] );
 
 		if ( ! $integration )
 			return new \WP_REST_Response(
@@ -421,7 +418,7 @@ final class REST {
 				[ 'status' => 400 ],
 			);
 
-		$integration = ( new Plugins\Data( $plugin_id ) )->get_integration( [ 'get_auth' => true ] );
+		$integration = new Plugins\Data( $plugin_id )->get_integration( [ 'get_auth' => true ] );
 
 		if ( ! $integration )
 			return new \WP_Error(

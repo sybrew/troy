@@ -10,20 +10,8 @@ namespace Troy\Server\Plugins;
 
 use const Troy\Server\TROY_PLUGIN_HEADERS;
 
-use function Troy\Server\{
-	get_origin_url,
-	get_latest_public_wordpress_version,
-	increase_time_limit_by,
-};
-
-use function Troy\Server\Sanitize\{
-	sanitize_tested_version,
-	sanitize_semver,
-	sanitize_slug,
-	make_fully_qualified_repo_url,
-};
-
 use Troy\Server\{
+	API,
 	File_Utils,
 	Zip_Extractor,
 };
@@ -156,11 +144,11 @@ final class Zip_Uploader {
 	) {
 		ignore_user_abort( true );
 
-		increase_time_limit_by( static::ZIP_DOWNLOAD_TIMEOUT + static::ZIP_PROCESS_TIMEOUT );
+		API\Utils::increase_time_limit_by( static::ZIP_DOWNLOAD_TIMEOUT + static::ZIP_PROCESS_TIMEOUT );
 
 		File_Utils::init_wpfs();
 
-		$this->origin_url = $origin_url ?? get_origin_url();
+		$this->origin_url = $origin_url ?? API\Server::get_origin_url();
 
 		// Make plugin storage directories if they do not exist.
 		// We want a shield in every plugin storage directory, hence the double call.
@@ -346,14 +334,14 @@ final class Zip_Uploader {
 			if ( empty( $plugin_headers['Name'] ) )
 				throw new \Exception( 'Failed to parse plugin headers.', self::EXCEPTION_PERMANENT );
 
-			$version = sanitize_semver( $plugin_headers['Version'] ?? '' );
+			$version = API\Sanitize::semver( $plugin_headers['Version'] ?? '' );
 
 			if ( ! $version )
 				throw new \Exception( 'No valid version found in plugin headers.', self::EXCEPTION_PERMANENT );
 
 			foreach ( TROY_PLUGIN_HEADERS['tested_wp'] as $header ) {
 				if ( ! empty( $plugin_headers[ $header ] ) ) {
-					$tested_wp = sanitize_tested_version( $plugin_headers[ $header ] );
+					$tested_wp = API\Sanitize::tested_version( $plugin_headers[ $header ] );
 					break; // The first supported tested WP header found is used
 				}
 			}
@@ -375,7 +363,7 @@ final class Zip_Uploader {
 			$repo = trim( $repo ?? '' );
 
 			// We won't store the sanitized version because this will need to be revalidated later.
-			if ( ! $repo || ! make_fully_qualified_repo_url( $repo ) )
+			if ( ! $repo || ! API\Sanitize::make_fully_qualified_repo_url( $repo ) )
 				throw new \Exception( 'The main plugin file does not have a valid repo header.', self::EXCEPTION_PERMANENT );
 
 			if ( \strlen( $repo ) > 191 )
@@ -417,7 +405,7 @@ final class Zip_Uploader {
 					$dep_slug                = trim( $dep_slug );
 
 					// A sanitized slug doesn't mean it was valid, so test additional conditions before
-					if ( empty( $dep_slug ) || str_contains( $dep_slug, ' ' ) || ! sanitize_slug( $dep_slug ) )
+					if ( empty( $dep_slug ) || str_contains( $dep_slug, ' ' ) || ! API\Sanitize::slug( $dep_slug ) )
 						throw new \Exception( 'Repo Dependencies header must specify a valid plugin slug for each dependency.' );
 
 					// If repo part exists, validate the closing bracket
@@ -432,7 +420,7 @@ final class Zip_Uploader {
 					}
 
 					// If repo part exists, validate the URL
-					if ( $dep_repo && ! make_fully_qualified_repo_url( trim( $dep_repo, ' >' ) ) )
+					if ( $dep_repo && ! API\Sanitize::make_fully_qualified_repo_url( trim( $dep_repo, ' >' ) ) )
 						throw new \Exception( 'Repo Dependencies header must use a valid repository URL for each dependency.' );
 				}
 			}
@@ -473,7 +461,9 @@ final class Zip_Uploader {
 		}
 
 		write_zip: {
-			$plugin_slug = sanitize_slug( new Data( $this->plugin_id )->get_plugins_row()?->slug );
+			$plugin_slug = API\Sanitize::slug(
+				new Data( $this->plugin_id )->get_plugins_row()?->slug,
+			);
 
 			if ( ! $plugin_slug )
 				throw new \Exception( 'Failed to sanitize plugin slug.' );
@@ -549,9 +539,9 @@ final class Zip_Uploader {
 				'file_size'        => filesize( $plugin_zip_file_path ),
 				// We're storing the latest version we know about when the plugin misses the header.
 				// This is a safe assumption for the author shouldn't release an unstable version.
-				'tested_wp'        => sanitize_tested_version( $tested_wp ?: get_latest_public_wordpress_version() ),
-				'requires_wp'      => sanitize_tested_version( $plugin_headers['RequiresWP'] ?? '' ),
-				'requires_php'     => sanitize_tested_version( $plugin_headers['RequiresPHP'] ?? '' ),
+				'tested_wp'        => API\Sanitize::tested_version( $tested_wp ?: API\Utils::get_latest_public_wordpress_version() ),
+				'requires_wp'      => API\Sanitize::tested_version( $plugin_headers['RequiresWP'] ?? '' ),
+				'requires_php'     => API\Sanitize::tested_version( $plugin_headers['RequiresPHP'] ?? '' ),
 				'repo'             => $repo,
 				'dependencies'     => $dependencies,
 				'upgrade_notice'   => $readme_contents['upgrade_notice'] ?? '', // Already sanitized in Readme_Parser.
