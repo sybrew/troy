@@ -10,8 +10,8 @@ namespace Troy\Server\Integrations\Plugins;
 
 use function Troy\Server\{
 	get_origin_url,
-	make_fully_qualified_repo_url,
 	get_version_type,
+	Sanitize\make_fully_qualified_repo_url,
 };
 
 use Troy\Server\Plugins; // A namesake import is valid; we're relative to \, not \Plugins.
@@ -318,9 +318,9 @@ final class Cron extends \Troy\Server\Cron {
 				Store::record_failure( $plugin_id, $package_version, $mode, $error_message, '' );
 
 				// Determine failure type based on exception code or attempt count
-				$is_permanent = $e->getCode() === Plugins\Zip_Uploader::EXCEPTION_PERMANENT;
+				$is_permanent_error = $e->getCode() === Plugins\Zip_Uploader::EXCEPTION_PERMANENT;
 
-				if ( ! $is_permanent ) {
+				if ( ! $is_permanent_error ) {
 					// Get current attempt count to decide on permanent vs temporary failure
 					$attempts = $wpdb->get_var(
 						$wpdb->prepare(
@@ -332,10 +332,10 @@ final class Cron extends \Troy\Server\Cron {
 					);
 
 					// Mark as permanent failure after 5 attempts
-					$is_permanent = $attempts >= 5;
+					$is_permanent_error = $attempts >= 5;
 				}
 
-				if ( $is_permanent ) {
+				if ( $is_permanent_error ) {
 					Store::mark_queue_status( $plugin_id, $package_version, Store::QUEUE_STATUS_PERMANENT_FAILURE );
 
 					static::integration_log(

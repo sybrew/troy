@@ -111,6 +111,7 @@ final class Block_Editor {
 							],
 							'permalink'         => [ 'type' => 'string' ],
 							'support_uri'       => [ 'type' => 'string' ],
+							'donate_uri'        => [ 'type' => 'string' ],
 							'short_description' => [ 'type' => 'string' ],
 							'banner_uri'        => [ 'type' => 'string' ],
 							'logo_uri'          => [ 'type' => 'string' ],

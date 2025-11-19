@@ -186,6 +186,7 @@ final class REST {
 				'versions'          => $versions,
 				'permalink'         => $data_metas?->permalink,
 				'support_uri'       => $data_metas?->support_uri,
+				'donate_uri'        => $data_metas?->donate_uri,
 				'short_description' => $data_metas?->short_description,
 				'banner_uri'        => $data_infos?->banner_uri,
 				'logo_uri'          => $data_metas?->logo_uri,

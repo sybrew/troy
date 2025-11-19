@@ -114,9 +114,6 @@ final class Plugin_Info extends Base_Endpoint {
 			$data_cache   = $data->get_data_caches_row();
 			$contributors = $data->get_contributors();
 
-			// Decode info contents once for performance
-			$info_contents = $info_row->contents ?: [];
-
 			$response = [
 				'name'          => $meta_row->name,
 				'slug'          => $plugin_row->slug,
@@ -124,15 +121,16 @@ final class Plugin_Info extends Base_Endpoint {
 				'author'        => $this->get_author_string( $meta_row->author_id ),
 				'contributors'  => $this->get_contributors_array( $contributors ),
 				'requires'      => $latest_zip->requires_wp ?? '',
-				'tested'        => $latest_zip->tested_wp ?? \Troy\Server\get_latest_public_wordpress_version( $latest_zip->requires_wp ),
+				'tested'        => $latest_zip->tested_wp
+					?? get_latest_public_wordpress_version( $latest_zip->requires_wp ?? '' ),
 				'requires_php'  => $latest_zip->requires_php ?? '',
 				'downloaded'    => (int) ( $data_cache->active_install_count ?? 0 ),
 				'last_updated'  => $this->format_last_updated( $latest_zip->updated_at ?? '' ),
 				'added'         => $this->format_date_added( $plugin_row->created_at ?? '' ),
 				'homepage'      => $meta_row->permalink ?? '',
 				'download_link' => $this->get_download_link( $plugin_row->slug, $latest_zip ),
-				'sections'      => $this->get_sections_array( $info_contents ),
-				'donate_link'   => '', // Nobody uses this field. Literally, nobody.
+				'sections'      => $this->get_sections_array( $info_row->contents ?: [] ),
+				'donate_link'   => $meta_row->donate_uri ?? '',
 				'banners'       => $this->get_banners_array( $info_row ),
 			];
 

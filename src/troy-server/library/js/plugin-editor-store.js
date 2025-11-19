@@ -89,6 +89,7 @@ const TroyServerPluginEditorStore = new class {
 	 *     @property {Boolean}       versions.remove         Whether the version is marked for removal.
 	 *     @property {string}        permalink               The permanent URL for the plugin.
 	 *     @property {string}        support_uri             URL for the plugin's support page.
+	 *     @property {string}        donate_uri              URL for the plugin's donate page.
 	 *     @property {string}        short_description       A brief description of the plugin.
 	 *     @property {string}        banner_uri              URI of the plugin's banner image.
 	 *     @property {string}        logo_uri                URI of the plugin's logo image.

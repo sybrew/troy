@@ -661,15 +661,18 @@ window.troyServerPluginEditorComponents = ( wp => {
 	 *     @param {Function} props.onClose          Callback function to close the popover.
 	 *     @param {string}   props.permalink        The current plugin permalink URL.
 	 *     @param {string}   props.supportUri       The current plugin support URI.
+	 *     @param {string}   props.donateUri        The current plugin donate URI.
 	 *     @param {Function} props.updatePermalink  Function to update the permalink.
 	 *     @param {Function} props.updateSupport    Function to update the support URI.
+	 *     @param {Function} props.updateDonate     Function to update the donate URI.
 	 * }
 	 * @returns {JSX.Element} The rendered component.
 	 */
-	function UrlsPopover( { onClose, permalink, supportUri, updatePermalink, updateSupport } ) {
+	function UrlsPopover( { onClose, permalink, supportUri, donateUri, updatePermalink, updateSupport, updateDonate } ) {
 
 		const [ localPermalink, setLocalPermalink ]   = useState( permalink );
 		const [ localSupportUri, setLocalSupportUri ] = useState( supportUri );
+		const [ localDonateUri, setLocalDonateUri ]   = useState( donateUri );
 
 		const [ permalinkPlaceholder, setPermalinkPlaceholder ] = useState( '' );
 
@@ -725,6 +728,21 @@ window.troyServerPluginEditorComponents = ( wp => {
 						__next40pxDefaultSize:   true,
 					},
 				),
+				JSX(
+					TextControl,
+					{
+						label:    __( 'Donate URI', 'troy-server' ),
+						value:    localDonateUri,
+						onChange: value => {
+							setLocalDonateUri( value );
+							updateDonate( value );
+						},
+						type:     'url',
+						help:     __( 'A link to support the plugin author financially.', 'troy-server' ),
+						__nextHasNoMarginBottom: true,
+						__next40pxDefaultSize:   true,
+					},
+				),
 			),
 		);
 	}
@@ -739,12 +757,14 @@ window.troyServerPluginEditorComponents = ( wp => {
 	 *
 	 *     @param {string}   props.permalink        The current plugin permalink.
 	 *     @param {string}   props.supportUri       The current plugin support URI.
+	 *     @param {string}   props.donateUri        The current plugin donate URI.
 	 *     @param {Function} props.updatePermalink  Function to update the permalink.
 	 *     @param {Function} props.updateSupport    Function to update the support URI.
+	 *     @param {Function} props.updateDonate     Function to update the donate URI.
 	 * }
 	 * @returns {JSX.Element} The rendered component.
 	 */
-	function UrlsControl( { permalink, supportUri, updatePermalink, updateSupport } ) {
+	function UrlsControl( { permalink, supportUri, donateUri, updatePermalink, updateSupport, updateDonate } ) {
 
 		const [ popoverAnchor, setPopoverAnchor ] = useState( null );
 
@@ -756,7 +776,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 			[ popoverAnchor ],
 		);
 
-		const hasUrls = permalink || supportUri;
+		const hasUrls = permalink || supportUri || donateUri;
 
 		return JSX(
 			PanelRow,
@@ -787,8 +807,10 @@ window.troyServerPluginEditorComponents = ( wp => {
 							onClose,
 							permalink,
 							supportUri,
+							donateUri,
 							updatePermalink,
 							updateSupport,
+							updateDonate,
 						},
 					),
 				},

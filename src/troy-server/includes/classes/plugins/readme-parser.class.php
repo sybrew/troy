@@ -162,6 +162,7 @@ final class Readme_Parser {
 		// 'tested up to'      => 'tested_wp', // TODO reimplement?
 		// 'requires'          => 'requires_wp', // TODO reimplement?
 		// 'requires at least' => 'requires_wp', // TODO reimplement?
+		'donate link'       => 'donate_uri',
 
 		// WordPress.org recognized header names, not implemented.
 		// 'contributors'      => 'contributors',
@@ -291,6 +292,7 @@ final class Readme_Parser {
 	 *     @type string $homepage_url      The homepage URL of the plugin.
 	 *     @type string $locale            The locale of the plugin.
 	 *     @type string $support_uri       The support URI of the plugin.
+	 *     @type string $donate_uri        The donate URI of the plugin.
 	 *     @type string $short_description The short description of the plugin.
 	 * }
 	 * @throws \Exception If the readme file is invalid or has too many bogus lines.
@@ -306,6 +308,7 @@ final class Readme_Parser {
 		'homepage_url'      => '',
 		'locale'            => '',
 		'support_uri'       => '',
+		'donate_uri'        => '',
 		'short_description' => '',
 	] {
 		get {
@@ -443,6 +446,7 @@ final class Readme_Parser {
 	 *     @type string $homepage_url      The homepage URL of the plugin.
 	 *     @type string $locale            The locale of the plugin.
 	 *     @type string $support_uri       The support URI of the plugin.
+	 *     @type string $donate_uri        The donate URI of the plugin.
 	 *     @type string $short_description The short description of the plugin.
 	 * }
 	 * @throws \Exception (via headers_raw::get) If the readme file is invalid or has too many bogus lines.
@@ -460,6 +464,7 @@ final class Readme_Parser {
 				$this->headers['homepage_url']      = \sanitize_url( $this->headers_raw['homepage_url'] );
 				$this->headers['locale']            = sanitize_wp_locale( $this->headers_raw['locale'] );
 				$this->headers['support_uri']       = \sanitize_url( $this->headers_raw['support_uri'] );
+				$this->headers['donate_uri']        = \sanitize_url( $this->headers_raw['donate_uri'] );
 				$this->headers['short_description'] = \sanitize_text_field( trim( $this->headers_raw['short_description'] ) );
 
 				$this->parsed |= static::PARSED['headers'];

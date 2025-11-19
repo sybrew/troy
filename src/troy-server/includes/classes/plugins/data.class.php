@@ -223,6 +223,7 @@ final class Data {
 	 *     @type string short_description The short description.
 	 *     @type string permalink         The permalink.
 	 *     @type string support_uri       The support URI.
+	 *     @type string donate_uri        The donate URI.
 	 *     @type string logo_uri          The logo image URI.
 	 *     @type string builder_type      The builder type.
 	 *     @type string created_at        The row creation timestamp.

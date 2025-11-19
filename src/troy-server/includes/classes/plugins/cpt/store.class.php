@@ -122,6 +122,7 @@ final class Store {
 			'versions'          => [],
 			'permalink'         => '',
 			'support_uri'       => '',
+			'donate_uri'        => '',
 			'short_description' => '',
 			'banner_uri'        => '',
 			'logo_uri'          => '',
@@ -178,6 +179,7 @@ final class Store {
 			),
 			'permalink'         => sanitize_url_qualified( $data['permalink'] ?? '' ),
 			'support_uri'       => sanitize_url_qualified( $data['support_uri'] ?? '' ),
+			'donate_uri'        => sanitize_url_qualified( $data['donate_uri'] ?? '' ),
 			'short_description' => \sanitize_text_field( $data['short_description'] ?? '' ), // not textarea
 			'banner_uri'        => sanitize_static_image_url( $data['banner_uri'] ?? '' ),
 			'logo_uri'          => sanitize_static_image_url( $data['logo_uri'] ?? '' ),
@@ -425,11 +427,12 @@ final class Store {
 							'short_description' => $data['short_description'],
 							'permalink'         => $data['permalink'] ?? \get_permalink( $post_id ),
 							'support_uri'       => $data['support_uri'],
+							'donate_uri'        => $data['donate_uri'],
 							'logo_uri'          => $data['logo_uri'],
 							'builder_type'      => $data['builder_type'],
 						],
 						[ 'id' => $existing_meta_id ],
-						[ '%d', '%s', '%d', '%s', '%s', '%s', '%s', '%s' ],
+						[ '%d', '%s', '%d', '%s', '%s', '%s', '%s', '%s', '%s' ],
 						[ '%d' ],
 					);
 				} else {
@@ -442,10 +445,11 @@ final class Store {
 							'short_description' => $data['short_description'],
 							'permalink'         => $data['permalink'],
 							'support_uri'       => $data['support_uri'],
+							'donate_uri'        => $data['donate_uri'],
 							'logo_uri'          => $data['logo_uri'],
 							'builder_type'      => $data['builder_type'],
 						],
-						[ '%d', '%s', '%d', '%s', '%s', '%s', '%s', '%s' ],
+						[ '%d', '%s', '%d', '%s', '%s', '%s', '%s', '%s', '%s' ],
 					);
 				}
 			}

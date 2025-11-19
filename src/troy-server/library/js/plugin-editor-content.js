@@ -126,15 +126,20 @@
 							editPost( { title: headers.plugin_name } );
 						}
 
+						// Only store, another effect will handle the actual content update
 						if ( headers?.short_description && ! storeData.short_description?.trim().length )
 							setValue( 'short_description', headers.short_description );
 
-						// Only store, another effect will handle the actual content update
-						if ( contents ) {
+						if ( headers?.donate_uri && ! storeData.donate_uri?.trim().length )
+							setValue( 'donate_uri', headers.donate_uri );
+
+						if ( headers?.support_uri && ! storeData.support_uri?.trim().length )
+							setValue( 'support_uri', headers.support_uri );
+
+						if ( contents )
 							Object.keys( troyPluginEditorData.contentTabs ).forEach( tabId => {
 								setContent( tabId, contents[ tabId ] || '' );
 							} );
-						}
 					} catch ( error ) {
 						if ( ! cancelled )
 							console.error( 'Failed to fetch README data:', error );

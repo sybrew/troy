@@ -188,46 +188,57 @@ function upgrade_from( $version ) {
  * Again, partitioning allows for quickly counting data by day, and deleting old data.
  *
  * We composited indexes:
- * - `plugin_id_version` for the `view_stats` table to force unique view stats per plugin per version, plus they are common.
+ * - `plugin_id_user_id` for the contributors table to force unique contributors per plugin.
+ * - `plugin_id_locale` for the infos table to force unique info per locale per plugin.
+ * - `plugin_id_version` for the snapshots and view_stats tables to force unique snapshots/views per plugin per version.
  * - `plugin_id_user_id` for the ratings table to force unique ratings per user.
  * - `plugin_id_date` for the `stats_total_to_date` table because direct access for these is common.
- * - `plugin_id_version_language` for the translations table to force unique translations per language.
+ * - `plugin_id_version_locale` for the translations table to force unique translations per locale per version.
+ * - `plugin_id_type` for the integration_logs table because direct access for these is common.
+ * - `plugin_id_package_version` for the integration_queue and integration_failures tables to force unique entries per package version.
  * - `plugin_id_date_origin_url` for the `stats_total_to_date` table to force unique stats per plugin per day.
  * - `plugin_id_version_origin_url` for the stats tables to force unique stats per plugin per version per origin URL.
  * - `plugin_id_version_date` for the `stats_to_date` table because direct access for these is common.
  * - `plugin_id_version_date_origin_url` for the `stats_to_date` table to force unique stats per plugin per version per day per origin URL.
+ * - `plugin_id_version_locales` for the update_request_locales_stats table to force unique stats per plugin per version per locales.
+ * - `plugin_id_is_active` for the update_request_stats table because direct access for these is common.
  *
  * Default values are set only for direct database queries. These may differ from the defaults we use in the plugin.
  * Still, we fully rely on the created_at and updated_at fields to be set automatically.
  *
- * | Table Name                              | Purpose                                                             |
- * |-----------------------------------------|---------------------------------------------------------------------|
- * | troy_plugins                            | The main plugins table.                                             |
- * | troy_plugins_slug_transfers              | Transfers of plugin slugs (for slug changes).                       |
- * | troy_plugins_metas                      | Meta data for plugins (for plugin cards).                           |
- * | troy_plugins_contributors               | Contributors of the plugins (for plugin search and details).        |
- * | troy_plugins_infos                      | Parsed information of plugins (for plugin info page/tickbox).       |
- * | troy_plugins_snapshots                  | Snapshots of plugin data by version (for future restore feature).   |
- * | troy_plugins_zips                       | ZIP locations for plugins (for plugin update/download).             |
- * | troy_plugins_translations               | Translation locations for plugins (for download).                   |
- * | troy_plugins_data_caches                | Cached data for plugins (for search/archives/ranking).              |
- * | troy_plugins_ratings                    | Ratings for plugins (for plugin page, review page).                 |
- * | troy_plugins_stats_totals               | Total stats for plugins (accumulated over all time).                |
- * | troy_plugins_stats_totals_to_date       | Total stats for plugins by day (historical).                        |
- * |                                         | This table can get partitioned (e.g., by year).                     |
- * | troy_plugins_stats                      | Stats by version for plugins (accumulated over all time).           |
- * | troy_plugins_stats_to_date              | Stats by version for plugins by day (historical).                   |
- * |                                         | This table can get partitioned (e.g., by year).                     |
- * | troy_plugins_view_stats                 | View stats for plugins (for accumulation in stats).                 |
- * | troy_plugins_view_stats_live            | Live view stats for plugins (for accumulation in view_stats).       |
- * |                                         | This table can get partitioned (e.g., by week).                     |
- * | troy_plugins_download_stats             | Download stats for plugins.                                         |
- * | troy_plugins_download_stats_live        | Live download stats for plugins.                                    |
- * |                                         | This table can get partitioned (e.g., by week).                     |
- * | troy_plugins_update_request_stats       | Update request stats for plugins.                                   |
- * | troy_plugins_update_request_stats_live  | Live update request stats for plugins.                              |
- * |                                         | This table can get partitioned (e.g., by day).                      |
- * |-----------------------------------------|---------------------------------------------------------------------|
+ * | Table Name                                  | Purpose                                                             |
+ * |---------------------------------------------|---------------------------------------------------------------------|
+ * | troy_plugins                                | The main plugins table.                                             |
+ * | troy_plugins_slug_transfers                 | Transfers of plugin slugs (for slug changes).                       |
+ * | troy_plugins_metas                          | Meta data for plugins (for plugin cards).                           |
+ * | troy_plugins_contributors                   | Contributors of the plugins (for plugin search and details).        |
+ * | troy_plugins_infos                          | Parsed information of plugins (for plugin info page/tickbox).       |
+ * | troy_plugins_snapshots                      | Snapshots of plugin data by version (for future restore feature).   |
+ * | troy_plugins_integrations                   | Integration settings for plugins (for automated releases).          |
+ * | troy_plugins_integration_queue              | Queue for integration processing (for automated releases).          |
+ * | troy_plugins_integration_failures           | Failed integration attempts (for debugging and retry).              |
+ * | troy_plugins_integration_logs               | Logs for integration events (for debugging and audit).              |
+ * | troy_plugins_zips                           | ZIP locations for plugins (for plugin update/download).             |
+ * | troy_plugins_translations                   | Translation locations for plugins (for download).                   |
+ * | troy_plugins_data_caches                    | Cached data for plugins (for search/archives/ranking).              |
+ * | troy_plugins_ratings                        | Ratings for plugins (for plugin page, review page).                 |
+ * | troy_plugins_stats_totals                   | Total stats for plugins (accumulated over all time).                |
+ * | troy_plugins_stats_totals_to_date           | Total stats for plugins by day (historical).                        |
+ * |                                             | This table can get partitioned (e.g., by year).                     |
+ * | troy_plugins_stats                          | Stats by version for plugins (accumulated over all time).           |
+ * | troy_plugins_stats_to_date                  | Stats by version for plugins by day (historical).                   |
+ * |                                             | This table can get partitioned (e.g., by year).                     |
+ * | troy_plugins_view_stats                     | View stats for plugins (for accumulation in stats).                 |
+ * | troy_plugins_view_stats_live                | Live view stats for plugins (for accumulation in view_stats).       |
+ * |                                             | This table can get partitioned (e.g., by week).                     |
+ * | troy_plugins_download_stats                 | Download stats for plugins.                                         |
+ * | troy_plugins_download_stats_live            | Live download stats for plugins.                                    |
+ * |                                             | This table can get partitioned (e.g., by week).                     |
+ * | troy_plugins_update_request_stats           | Update request stats for plugins.                                   |
+ * | troy_plugins_update_request_locales_stats   | Update request stats by locales for plugins.                        |
+ * | troy_plugins_update_request_stats_live      | Live update request stats for plugins.                              |
+ * |                                             | This table can get partitioned (e.g., by day).                      |
+ * |---------------------------------------------|---------------------------------------------------------------------|
  *
  * @since 0.0.1184
  * @global \wpdb $wpdb
@@ -272,6 +283,7 @@ function get_initial_db_schema_queries() {
 			`short_description` varchar(191) NOT null,
 			`permalink` varchar(191) NOT null,
 			`support_uri` varchar(191) NOT null,
+			`donate_uri` varchar(191) NOT null,
 			`logo_uri` varchar(191) NOT null,
 			`builder_type` varchar(20) NOT null DEFAULT 'readme',
 			`created_at` datetime DEFAULT current_timestamp,

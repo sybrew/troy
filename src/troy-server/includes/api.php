@@ -199,7 +199,7 @@ function get_latest_public_wordpress_version( $from_version = '' ) {
 
 	$cache = \get_option( 'troy_server_latest_public_wp_version_cache' ) ?: [];
 
-	if ( time() < $cache['expire'] ?? 0 ) {
+	if ( time() < ( $cache['expire'] ?? 0 ) ) {
 		$api_versions = $cache['versions'];
 	} else {
 		$expire = \HOUR_IN_SECONDS * 6;

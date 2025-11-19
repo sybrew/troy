@@ -204,8 +204,10 @@
 							{
 								permalink:       storeData.permalink || '',
 								supportUri:      storeData.support_uri || '',
+								donateUri:       storeData.donate_uri || '',
 								updatePermalink: value => setStoreValue( 'permalink', value ),
 								updateSupport:   value => setStoreValue( 'support_uri', value ),
+								updateDonate:    value => setStoreValue( 'donate_uri', value ),
 							},
 						),
 						JSX(
