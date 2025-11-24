@@ -94,6 +94,18 @@ final class Router {
 				}
 				break;
 
+			case str_starts_with( $request_path, 'package/get/zip/' ):
+			case str_starts_with( $request_path, 'installer/get/zip/' ):
+				// Filter duplicated slashes and reset indexes.
+				$path_parts = array_values( array_filter( explode( '/', $request_path ) ) );
+
+				if ( \count( $path_parts ) >= 4 ) {
+					new Packages\Download(
+						$path_parts[3], // slug
+					)->handle_request();
+				}
+				break;
+
 			default:
 				// Not a Troy API endpoint, let WordPress handle it
 				break;

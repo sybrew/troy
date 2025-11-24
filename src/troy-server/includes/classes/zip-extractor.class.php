@@ -84,6 +84,7 @@ final class Zip_Extractor {
 		$rand   = str_pad( bin2hex( random_bytes( 8 ) ), 16, '0', STR_PAD_LEFT );
 		$minute = round( time() / \MINUTE_IN_SECONDS );
 
+		// Windows MAX_PATH defaults to 260 characters.
 		$name = API\Sanitize::file_path( $zip_file_path ) ?: '_unnamed_';
 
 		// This folder needs no shielding, the OS FS will handle that.

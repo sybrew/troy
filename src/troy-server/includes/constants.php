@@ -40,6 +40,13 @@ namespace Troy\Server;
 const PLUGINS_CPT = 'troy-server-plugins';
 
 /**
+ * The package custom post type.
+ *
+ * @since 0.0.1184
+ */
+const PACKAGES_CPT = 'troy-server-packages';
+
+/**
  * The plugin REST API namespaces and bases.
  *
  * @since 0.0.1184

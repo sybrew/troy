@@ -58,14 +58,14 @@ final class Settings {
 	 *
 	 * @since 0.0.1184
 	 */
-	public const SAVE_ACTION = 'troy_settings_save';
+	public const SAVE_ACTION = 'troy_server_settings_save';
 
 	/**
 	 * The settings save action.
 	 *
 	 * @since 0.0.1184
 	 */
-	public const SAVED_RESPONSE = 'troy_settings_updated';
+	public const SAVED_RESPONSE = 'troy_server_settings_updated';
 
 	/**
 	 * The settings save nonce.
@@ -73,8 +73,8 @@ final class Settings {
 	 * @since 0.0.1184
 	 */
 	public const SAVE_NONCE = [
-		'name'   => '_troy_settings_save_nonce',
-		'action' => '_troy_settings_save',
+		'name'   => '_troy_server_settings_save_nonce',
+		'action' => '_troy_server_settings_save',
 	];
 
 	/**
@@ -94,7 +94,7 @@ final class Settings {
 			static::SETTINGS_PAGE_SLUG,
 			[ __CLASS__, 'render_admin_menu' ],
 			'dashicons-admin-generic',
-			3,
+			3.1184,
 		);
 
 		\add_action( "load-$page", [ __CLASS__, 'init_admin_page' ] );

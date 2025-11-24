@@ -95,12 +95,6 @@ final class Zip_Uploader {
 
 	/**
 	 * @since 0.0.1184
-	 * @var bool $wpfs_initialized Whether the WordPress Filesystem has been initialized.
-	 */
-	private static $wpfs_initialized = false;
-
-	/**
-	 * @since 0.0.1184
 	 * @var bool $lock Whether the ZIP handler is locked.
 	 *                 This prevents processing multiple files in the same instance.
 	 */
@@ -119,6 +113,13 @@ final class Zip_Uploader {
 	 *                                This is set after processing the ZIP file.
 	 */
 	public readonly string $version_uploaded;
+
+	/**
+	 * @since 0.0.1184
+	 * @var ?string $repo_uploaded The repo URL of the plugin that was uploaded.
+	 *                             This is set after processing the ZIP file.
+	 */
+	public readonly string $repo_uploaded;
 
 	/**
 	 * @since 0.0.1184
@@ -142,9 +143,13 @@ final class Zip_Uploader {
 		public readonly int $plugin_id,
 		$origin_url = null,
 	) {
+
+		if ( empty( $this->plugin_id ) )
+			throw new \Exception( 'Invalid plugin ID provided.' );
+
 		ignore_user_abort( true );
 
-		API\Utils::increase_time_limit_by( static::ZIP_DOWNLOAD_TIMEOUT + static::ZIP_PROCESS_TIMEOUT );
+		API\Utils::increase_time_limit_by( self::ZIP_DOWNLOAD_TIMEOUT + self::ZIP_PROCESS_TIMEOUT );
 
 		File_Utils::init_wpfs();
 
@@ -224,7 +229,7 @@ final class Zip_Uploader {
 			throw new \Exception( 'Invalid URL provided.', self::EXCEPTION_PERMANENT );
 
 		// Download the ZIP file using our custom method that supports auth headers.
-		$temp_zip_file_path = static::download_url( $download_url, $args );
+		$temp_zip_file_path = self::download_url( $download_url, $args );
 
 		if ( \is_wp_error( $temp_zip_file_path ) ) {
 			throw new \Exception(
@@ -237,12 +242,12 @@ final class Zip_Uploader {
 			);
 		}
 
-		if ( filesize( $temp_zip_file_path ) > static::MAX_ZIP_DOWNLOAD_SIZE ) {
+		if ( filesize( $temp_zip_file_path ) > self::MAX_ZIP_DOWNLOAD_SIZE ) {
 			throw new \Exception(
 				\sprintf(
 					/* translators: %d: Maximum file size in MB */
 					\__( 'The ZIP file exceeds the maximum allowed size of %dMB.', 'troy-server' ),
-					static::MAX_ZIP_DOWNLOAD_SIZE / \MB_IN_BYTES,
+					self::MAX_ZIP_DOWNLOAD_SIZE / \MB_IN_BYTES,
 				),
 				self::EXCEPTION_PERMANENT,
 			);
@@ -723,7 +728,7 @@ final class Zip_Uploader {
 		$response = \wp_safe_remote_get(
 			$url,
 			[
-				'timeout'  => static::ZIP_DOWNLOAD_TIMEOUT,
+				'timeout'  => self::ZIP_DOWNLOAD_TIMEOUT,
 				'stream'   => true,
 				'filename' => $tmpfname,
 				'headers'  => $args['headers'] ?? [],
@@ -772,7 +777,7 @@ final class Zip_Uploader {
 			}
 
 			if (
-				$tmpfname_disposition
+				   $tmpfname_disposition
 				&& \is_string( $tmpfname_disposition )
 				&& ( 0 === \validate_file( $tmpfname_disposition ) )
 			) {

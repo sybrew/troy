@@ -61,10 +61,10 @@ final class Files {
 	 */
 	public static function get_plugin_storage_dir_path( $plugin_id = 0 ) {
 
-		// TODO make troy-zips an option that cannot be changed and randomize its name?
+		// TODO make troy-plugins an option that cannot be changed and randomize its name?
 		// This makes snooping harder for unhardened servers.
 		$plugin_id = (int) $plugin_id;
-		$base      = \wp_upload_dir()['basedir'] . '/troy-zips/';
+		$base      = \wp_upload_dir()['basedir'] . '/troy-plugins/';
 
 		return $plugin_id
 			? "{$base}plugin-{$plugin_id}/"
@@ -84,7 +84,7 @@ final class Files {
 	public static function get_plugin_graveyard_dir_path( $plugin_id = 0 ) {
 
 		$plugin_id = (int) $plugin_id;
-		$base      = \wp_upload_dir()['basedir'] . '/troy-zips-graveyard/';
+		$base      = \wp_upload_dir()['basedir'] . '/troy-plugins-graveyard/';
 
 		return $plugin_id
 			? "{$base}plugin-{$plugin_id}/"
@@ -195,7 +195,7 @@ final class Files {
 
 		$zips = new Data( $plugin_id )->get_zips();
 
-		usort( $zips, fn ( $a, $b ) => version_compare( $b->version, $a->version ) );
+		usort( $zips, fn( $a, $b ) => version_compare( $b->version, $a->version ) );
 
 		foreach ( $zips as $zip ) {
 			if ( $zip->type !== $type )

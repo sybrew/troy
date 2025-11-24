@@ -192,6 +192,7 @@ final class Dependencies {
 	 *
 	 * @param string $message The message to display.
 	 * @param string $type    The message type.
+	 *                        Accepts 'success', 'error', 'warning', 'info'.
 	 */
 	private static function prepare_admin_message( $message, $type ) {
 		\add_action(

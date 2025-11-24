@@ -592,7 +592,7 @@ final class REST {
 				400,
 			);
 
-		$status = \get_post_meta( $post_id, 'troy_server_plugin_update_status', true ) ?: [];
+		$status = \get_post_meta( $post_id, '_troy_server_plugin_update_status', true ) ?: [];
 
 		switch ( $status['type'] ?? '' ) {
 			case 'updated':
@@ -603,7 +603,7 @@ final class REST {
 				];
 
 				// We no longer need the status, so we can delete it.
-				\delete_post_meta( $post_id, 'troy_server_plugin_update_status' );
+				\delete_post_meta( $post_id, '_troy_server_plugin_update_status' );
 				break;
 			case 'processing':
 				$response = [

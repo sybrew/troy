@@ -55,7 +55,6 @@ final class Init {
 	 */
 	public static function register_post_types() {
 
-		// TODO implement the template Just In Time.
 		\register_post_type(
 			PLUGINS_CPT,
 			[
@@ -71,9 +70,9 @@ final class Init {
 					'ep_mask'    => EP_PERMALINK,
 				],
 				'menu_icon'          => 'dashicons-admin-plugins',
-				'menu_position'      => 2, // Above 'Troy Server'.
+				'menu_position'      => 3.1184_15,
 				'capability_type'    => 'page', // Maybe later: Use something custom.
-				'supports'           => [ 'title', 'editor', 'media', 'custom-fields' ],
+				'supports'           => [ 'title', 'editor', 'media', 'custom-fields' ], // custom-fields are needed to store our data.
 				'labels'             => [
 					'name'                  => \_x( 'Plugins', 'Post type general name', 'troy-server' ),
 					'singular_name'         => \_x( 'Plugin', 'Post type singular name', 'troy-server' ),

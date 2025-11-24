@@ -71,15 +71,15 @@ final class Utils {
 		$filtered_versions = array_column(
 			array_filter(
 				$versions,
-				fn ( $version ) => 'tag' === ( $version['type'] ?? null ),
+				fn( $version ) => 'tag' === ( $version['type'] ?? null ),
 			)
 				?: array_filter(
 					$versions,
-					fn ( $version ) => 'beta' === ( $version['type'] ?? null ),
+					fn( $version ) => 'beta' === ( $version['type'] ?? null ),
 				)
 				?: array_filter(
 					$versions,
-					fn ( $version ) => 'unreleased' === ( $version['type'] ?? null ),
+					fn( $version ) => 'unreleased' === ( $version['type'] ?? null ),
 				),
 			'version',
 		);
@@ -144,7 +144,7 @@ final class Utils {
 
 				// This is for https://api.github.com/repos/WordPress/wordpress-develop/tags
 				$versions_array = array_map(
-					fn ( $tag ) => $tag['name'] ?? '',
+					fn( $tag ) => $tag['name'] ?? '',
 					json_decode( $body, true ) ?: [],
 				);
 

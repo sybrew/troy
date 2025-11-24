@@ -62,7 +62,7 @@ $current_tab = isset( $_GET['tab'], $tabs[ $_GET['tab'] ] ) ? $_GET['tab'] : 'se
 	<div class=troy-server-settings-title-section>
 		<h1><?= \esc_html__( 'Troy Server', 'troy-server' ) ?></h1>
 	</div>
-	<nav class="troy-server-settings-tabs-wrapper hide-if-no-js" aria-label="<?= \esc_attr__( 'Secondary menu', 'default' ); ?>">
+	<nav class="troy-server-settings-tabs-wrapper hide-if-no-js" aria-label="<?= \esc_attr__( 'Secondary menu', 'default' ) ?>">
 		<?php
 		$tab_attributes = [
 			'active'   => 'class="troy-server-settings-tab active" aria-current="true"',
@@ -85,7 +85,7 @@ $current_tab = isset( $_GET['tab'], $tabs[ $_GET['tab'] ] ) ? $_GET['tab'] : 'se
 	<hr class=wp-header-end>
 
 	<div class="notice notice-error hide-if-js inline">
-		<p><?= \esc_html__( 'Troy Server settings require JavaScript.', 'troy-server' ); ?></p>
+		<p><?= \esc_html__( 'Troy Server settings require JavaScript.', 'troy-server' ) ?></p>
 	</div>
 
 	<?php

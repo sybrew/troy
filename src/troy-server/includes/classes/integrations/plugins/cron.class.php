@@ -59,7 +59,7 @@ final class Cron extends \Troy\Server\Cron {
 	 * }
 	 */
 	protected const CRON_JOBS = [
-		'troy_integrations_find_tags' => [
+		'troy_integrations_find_tags'         => [
 			'callback' => [ self::class, 'find_all_tags' ],
 			'schedule' => 'halfhourly',
 			'interval' => \HOUR_IN_SECONDS / 2,
@@ -101,7 +101,7 @@ final class Cron extends \Troy\Server\Cron {
 			$result = self::find_plugin_tags_by_mode( $plugin_id, $mode, $auto_process );
 
 			if ( \is_wp_error( $result ) ) {
-				static::integration_log(
+				self::integration_log(
 					$plugin_id,
 					'error',
 					"Failed to find tags: {$result->get_error_message()}",
@@ -109,7 +109,7 @@ final class Cron extends \Troy\Server\Cron {
 				continue;
 			}
 
-			static::integration_log(
+			self::integration_log(
 				$plugin_id,
 				'info',
 				"Tag discovery complete: {$result['queued']} queued, {$result['removed']} removed from queue.",
@@ -264,7 +264,7 @@ final class Cron extends \Troy\Server\Cron {
 			$integration = new Plugins\Data( $plugin_id )->get_integration( [ 'get_auth' => true ] );
 
 			if ( ! $integration ) {
-				static::integration_log( $plugin_id, 'error', 'No integration found for plugin during queue processing.' );
+				self::integration_log( $plugin_id, 'error', 'No integration found for plugin during queue processing.' );
 				continue;
 			}
 
@@ -286,7 +286,7 @@ final class Cron extends \Troy\Server\Cron {
 
 				// Success: determine type based on repo match and version pattern
 				$site_repo_url = API\Server::get_origin_url();
-				$zip_repo_url  = $uploader->repo;
+				$zip_repo_url  = $uploader->repo_uploaded;
 				$version_type  = API\Utils::get_version_type( $uploader->version_uploaded );
 
 				switch ( $auto_process ) {
@@ -294,7 +294,7 @@ final class Cron extends \Troy\Server\Cron {
 						if ( 'beta' === $version_type ) {
 							$version_type = 'unreleased';
 
-							static::integration_log(
+							self::integration_log(
 								$plugin_id,
 								'warning',
 								"Tag {$package_version} kept as 'unreleased' due to auto_process='tag' setting. We thought package version {$package_version} was a tag but the plugin header version {$uploader->version_uploaded} was a beta.",
@@ -306,7 +306,7 @@ final class Cron extends \Troy\Server\Cron {
 						if ( 'tag' === $version_type ) {
 							$version_type = 'unreleased';
 
-							static::integration_log(
+							self::integration_log(
 								$plugin_id,
 								'warning',
 								"Tag {$package_version} kept as 'unreleased' due to auto_process='beta' setting. We thought package version {$package_version} was a beta but the plugin header version {$uploader->version_uploaded} was a tag.",
@@ -320,7 +320,7 @@ final class Cron extends \Troy\Server\Cron {
 					// Keep as unreleased if repo doesn't match
 					$version_type = 'unreleased';
 
-					static::integration_log(
+					self::integration_log(
 						$plugin_id,
 						'warning',
 						"Tag {$package_version} kept as 'unreleased' due to repository mismatch (expected: {$site_repo_url}, got: {$zip_repo_url}).",
@@ -341,7 +341,7 @@ final class Cron extends \Troy\Server\Cron {
 				// Remove from queue and clear any failures
 				Store::dequeue_tag( $plugin_id, $package_version );
 				Store::clear_failure( $plugin_id, $package_version );
-				static::integration_log(
+				self::integration_log(
 					$plugin_id,
 					'info',
 					"Successfully processed queued tag {$package_version} (uploaded version: {$uploader->version_uploaded}).",
@@ -372,7 +372,7 @@ final class Cron extends \Troy\Server\Cron {
 				if ( $is_permanent_error ) {
 					Store::mark_queue_status( $plugin_id, $package_version, Store::QUEUE_STATUS_PERMANENT_FAILURE );
 
-					static::integration_log(
+					self::integration_log(
 						$plugin_id,
 						'error',
 						"Tag {$package_version} marked as permanently failed: {$error_message}",
@@ -381,7 +381,7 @@ final class Cron extends \Troy\Server\Cron {
 					Store::mark_queue_status( $plugin_id, $package_version, Store::QUEUE_STATUS_TEMPORARY_FAILURE );
 				}
 
-				static::integration_log(
+				self::integration_log(
 					$plugin_id,
 					'error',
 					"Failed to process queued tag {$package_version}: {$error_message}",

@@ -218,7 +218,7 @@ final class Store {
 
 		\update_post_meta(
 			$post_id,
-			'troy_server_plugin_update_status',
+			'_troy_server_plugin_update_status',
 			[
 				'type'    => 'processing',
 				'message' => \__( 'Started plugin save handler.', 'troy-server' ),
@@ -227,7 +227,7 @@ final class Store {
 
 		// Sanitization is registered via `register_post_meta()` and done before this callback is run.
 		$data = array_merge(
-			static::get_default_plugin_data(),
+			self::get_default_plugin_data(),
 			// This data has already been sanitized by the callback of register_post_meta.
 			\get_post_meta( $post_id, 'troy_server_plugin_data', true ) ?: [],
 		);
@@ -241,7 +241,7 @@ final class Store {
 			// The data has been tampered with. We should not allow this for future proofing (plugin author as editor).
 			\update_post_meta(
 				$post_id,
-				'troy_server_plugin_update_status',
+				'_troy_server_plugin_update_status',
 				[
 					'type'    => 'error',
 					'message' => \__( 'The plugin ID is not for this post ID! No changes were stored.', 'troy-server' ),
@@ -255,7 +255,7 @@ final class Store {
 			case empty( $data['slug'] ):
 				\update_post_meta(
 					$post_id,
-					'troy_server_plugin_update_status',
+					'_troy_server_plugin_update_status',
 					[
 						'type'    => 'error',
 						'message' => \__( 'No valid plugin ID or slug found! Please set a plugin slug.', 'troy-server' ),
@@ -327,7 +327,7 @@ final class Store {
 						// Fail if the ZIP extraction fails.
 						\update_post_meta(
 							$post_id,
-							'troy_server_plugin_update_status',
+							'_troy_server_plugin_update_status',
 							[
 								'type'    => 'error',
 								'message' => \sprintf(
@@ -350,7 +350,7 @@ final class Store {
 
 				\update_post_meta(
 					$post_id,
-					'troy_server_plugin_update_status',
+					'_troy_server_plugin_update_status',
 					[
 						'type'    => 'error',
 						'message' => \__( 'Your changes are not saved! No valid builder type found. Please set a valid builder type.', 'troy-server' ),
@@ -644,7 +644,7 @@ final class Store {
 
 			\update_post_meta(
 				$post_id,
-				'troy_server_plugin_update_status',
+				'_troy_server_plugin_update_status',
 				[ 'type' => 'updated' ],
 			);
 		} catch ( \Exception $e ) {
@@ -652,7 +652,7 @@ final class Store {
 
 			\update_post_meta(
 				$post_id,
-				'troy_server_plugin_update_status',
+				'_troy_server_plugin_update_status',
 				[
 					'type'    => 'error',
 					'message' => \sprintf(
@@ -713,7 +713,11 @@ final class Store {
 			return;
 
 		// $previous_status is an optional parameter of the untrash_post action.
-		$previous_plugin_status = \get_post_meta( $post_id, 'troy_server_plugin_trashed_previous_status', true );
+		$previous_plugin_status = \get_post_meta(
+			$post_id,
+			'troy_server_plugin_trashed_previous_status',
+			true,
+		);
 
 		if ( $previous_plugin_status ) {
 			global $wpdb;

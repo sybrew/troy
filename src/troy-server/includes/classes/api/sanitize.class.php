@@ -88,6 +88,7 @@ final class Sanitize {
 	 * Sanitizes a slug by converting it to lowercase, replacing non-alphanumeric
 	 * characters with hyphens, collapsing multiple consecutive hyphens into a single
 	 * hyphen, trimming leading zeroes and hyphens, and trimming trailing hyphens.
+	 * Finally, it limits the slug to a maximum length of 191 characters.
 	 *
 	 * Also works to sanitize path names.
 	 *
@@ -98,29 +99,36 @@ final class Sanitize {
 	 * @return string The sanitized slug.
 	 */
 	public static function slug( $slug ) {
-		return rtrim(
-			ltrim(
-				preg_replace(
-					'/-{2,}/',
-					'-',
+		return substr(
+			rtrim(
+				ltrim(
 					preg_replace(
-						'/[^a-z0-9-]/',
-						'',
+						'/-{2,}/',
+						'-',
 						preg_replace(
-							'/\s+/',
-							'-',
-							strtolower( $slug ?? '' ),
+							'/[^a-z0-9-]/',
+							'',
+							preg_replace(
+								'/\s+/',
+								'-',
+								strtolower( $slug ?? '' ),
+							),
 						),
 					),
+					'0-',
 				),
-				'0-',
+				'-',
 			),
-			'-',
+			0,
+			191,
 		);
 	}
 
 	/**
 	 * Sanitizes a file path.
+	 *
+	 * Windows's MAX_PATH is 260 characters, so the character limit imposed by
+	 * slug() is helpful (at 191 characters) to avoid issues.
 	 *
 	 * @since 0.0.1184
 	 *
@@ -129,6 +137,90 @@ final class Sanitize {
 	 */
 	public static function file_path( $file_path ) {
 		return ltrim( self::slug( $file_path ), '0' );
+	}
+
+	/**
+	 * Sanitizes a value for use in docblocks by removing characters that could break docblock syntax.
+	 *
+	 * @since 0.0.1184
+	 *
+	 * @param string $value The value to sanitize.
+	 * @return string The sanitized value with * and / removed.
+	 */
+	public static function docblock_content( $value ) {
+		return str_replace( [ '*', '/' ], '', $value );
+	}
+
+	/**
+	 * Sanitizes a variable for use in evaluatable PHP code.
+	 *
+	 * This function converts a given value into its PHP code representation,
+	 * suitable for inclusion in generated PHP files.
+	 *
+	 * It handles strings, integers, doubles, booleans, null, and arrays.
+	 * Resources and objects are not supported and will be converted to null.
+	 *
+	 * Note: No opening or closing PHP tags are added.
+	 * Note: This function writes no separating semicolons.
+	 *
+	 * @since 0.0.1184
+	 *
+	 * @param mixed $value     The value to sanitize.
+	 * @param int   $tab_count The tab-count to use for nested structures.
+	 * @return string The evaluatable PHP code representation of the value.
+	 */
+	public static function var_export( $value, $tab_count = 0 ) {
+
+		$tab = str_repeat( "\t", $tab_count );
+
+		switch ( \gettype( $value ) ) {
+			case 'string':
+				$escaped = strtr(
+					$value,
+					[
+						'\\' => '\\\\',
+						"'"  => "\\'",
+					],
+				);
+				return "$tab'$escaped'";
+
+			case 'integer':
+			case 'double':
+				return "$tab$value";
+
+			case 'boolean':
+				return $tab . ( $value ? 'true' : 'false' );
+
+			case 'NULL':
+				return "{$tab}null";
+
+			case 'array':
+				if ( ! $value )
+					return "{$tab}[]";
+
+				$is_list = array_is_list( $value );
+				$entries = [];
+
+				foreach ( $value as $k => $v ) {
+					if ( $is_list ) {
+						$entries[] = self::var_export( $v, $tab_count + 1 );
+					} else {
+						$entry_key   = self::var_export( $k, $tab_count + 1 );
+						$entry_value = \is_scalar( $v )
+							? self::var_export( $v, 0 )
+							: trim( self::var_export( $v, $tab_count + 1 ), "\t" );
+
+						$entries[] = "$entry_key => $entry_value";
+					}
+				}
+
+				$entries = implode( ",\n", $entries );
+
+				return "{$tab}[\n{$entries},\n{$tab}]";
+
+			default:
+				return "{$tab}null";
+		}
 	}
 
 	/**

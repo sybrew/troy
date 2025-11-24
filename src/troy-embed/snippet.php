@@ -13,7 +13,7 @@
  * to hint users about the installation process. Therefore, we recommend using
  * Troy Installer instead of this snippet.
  *
- * @package Troy\Horse
+ * @package Troy\Embed
  */
 
 add_action(
@@ -29,7 +29,7 @@ add_action(
 
 			add_filter(
 				'http_headers_useragent',
-				fn( $user_agent, $url ) => $url === $client_url ? 'Troy Horse' : $user_agent,
+				fn( $user_agent, $url ) => $url === $client_url ? 'Troy Embed' : $user_agent,
 				10,
 				2,
 			);

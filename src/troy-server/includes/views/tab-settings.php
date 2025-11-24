@@ -36,7 +36,7 @@ use Troy\Server\Settings;
  */
 
 ?>
-<h2><?= \esc_html__( 'Troy Server Options', 'troy-server' ); ?></h2>
+<h2><?= \esc_html__( 'Troy Server Options', 'troy-server' ) ?></h2>
 
 <p><?= \esc_html__( 'Troy Server allows you to manage your bespoke repository.', 'troy-server' ) ?></p>
 

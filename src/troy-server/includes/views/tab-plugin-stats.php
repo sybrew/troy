@@ -36,7 +36,7 @@ use Troy\Server\Settings;
  */
 
 ?>
-<h2><?= \esc_html__( 'Troy Server Stats', 'troy-server' ); ?></h2>
+<h2><?= \esc_html__( 'Troy Server Stats', 'troy-server' ) ?></h2>
 
 <p><?= \esc_html__( 'Troy Server collects anonymized data from your plugin users. Here, you can inspect the aggregation.', 'troy-server' ) ?></p>
 

@@ -204,13 +204,15 @@ window.troyServerPluginEditorComponents = ( wp => {
 									.replace( /\s+/g, '-' )
 									.replace( /[^a-z0-9-]/g, '' )
 									.replace( /-{2,}/g, '-' )
-									.replace( /^[^a-z]+/, '' )
+									.replace( /^[^a-z1-9]+/, '' )
+									.slice( 0, 191 ),
 							);
 						},
 						onBlur:   () => {
 							setLocalSlug( localSlug.replace( /-+$/g, '' ) );
 						},
-						pattern:  '[a-z][a-z0-9\\-]*',
+						pattern:  '[a-z1-9][a-z0-9\-]*',
+						maxLength: 191,
 						help: __( 'A unique identifier. This will become the wp-content plugin folder for all future releases and ZIP file names for all downloads and is used to localize updates. Assume it to be permanent until Troy Client supports slug migrations.', 'troy-server' ),
 						disabled: isLoading,
 						hideLabelFromVision: true,
@@ -285,7 +287,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 						Button,
 						{
 							variant:         'tertiary',
-						 size:            'compact',
+							size:            'compact',
 							onClick:         onToggle,
 							'aria-expanded': isOpen,
 						},

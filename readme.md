@@ -64,12 +64,14 @@ To use it, place `troy-client-daemon.php` directly in `/wp-content/mu-plugins/` 
 ## Troy Installer
 
 Troy Installer installs the Troy Client and vendor plugins on your WordPress site.
-Troy Server will be able to generate this installer for you to distribute to your clients.
+Troy Server will be able to generate this installer for you to distribute to your clients via the Troy Packages interface.
+
+Troy Installer filters itself from any update checks.
 
 ## Troy Client Hide (snippet)
 
 Troy Client Hide is a constant snippet that you can put in your wp-config.php file or a custom plugin to hide the Troy Client from the WordPress admin. This is meant to be implemented by the site owner or manager only, not a plugin or theme developer.
 
-## Troy Horse (snippet)
+## Troy Embed (snippet)
 
-Troy Horse is an example snippet that can be added to your WordPress plugins. It installs and activates the Troy Client silently. Once the Troy Client is installed and activated, it'll look for any plugin's Troy and Troy Dependencies headers for updates.
+Troy Embed is an example snippet that can be added to your WordPress plugins. It installs and activates the Troy Client silently. Once the Troy Client is installed and activated, it'll look for any plugin's Troy and Troy Dependencies headers for updates.

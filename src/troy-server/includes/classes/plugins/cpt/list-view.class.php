@@ -46,12 +46,6 @@ use const Troy\Server\{
 final class List_View {
 
 	/**
-	 * @since 0.0.1184
-	 * @var string CPT The name of the custom post type.
-	 */
-	const CPT = PLUGINS_CPT;
-
-	/**
 	 * Defines the columns available for the CPT list table, including sorting and searching configuration.
 	 *
 	 * This method returns a static array defining the columns for the 'troy-plugin' CPT list table.
@@ -187,7 +181,7 @@ final class List_View {
 	public static function register_list_edit_hooks() {
 
 		// Only add the filter if the current screen is the plugins list table.
-		if ( \get_current_screen()->post_type !== static::CPT )
+		if ( \get_current_screen()->post_type !== PLUGINS_CPT )
 			return;
 
 		// Remit FETCH_CLASS_NAME opcode, which performs a function call to check if it's valid.
@@ -210,7 +204,7 @@ final class List_View {
 	 * @param array $columns The columns to register.
 	 * @return array The registered columns.
 	 */
-	public static function register_custom_columns( $columns ) {
+	public static function register_columns( $columns ) {
 
 		$after_counts = [];
 
@@ -284,7 +278,7 @@ final class List_View {
 	public static function register_custom_fields( $join, $query ) {
 
 		// Check if it's the correct post type and main query.
-		if ( $query->get( 'post_type' ) !== static::CPT || ! $query->is_main_query() )
+		if ( $query->get( 'post_type' ) !== PLUGINS_CPT || ! $query->is_main_query() )
 			return $join;
 
 		global $wpdb;
@@ -434,7 +428,7 @@ final class List_View {
 	 * @param string $column The column to render.
 	 * @param int    $post_id The post ID.
 	 */
-	public static function render_custom_columns( $column, $post_id ) {
+	public static function render_columns( $column, $post_id ) {
 
 		$sortables = static::get_columns();
 

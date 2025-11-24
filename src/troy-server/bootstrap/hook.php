@@ -8,12 +8,16 @@ namespace Troy\Server\Bootstrap\Hook;
 
 \defined( 'Troy\Server\ABSPATH' ) or die;
 
-use const Troy\Server\PLUGINS_CPT;
+use const Troy\Server\{
+	PLUGINS_CPT,
+	PACKAGES_CPT,
+};
 
 use Troy\Server\{
 	Cron,
 	Endpoints,
 	Plugins,
+	Packages,
 	Integrations,
 };
 
@@ -45,8 +49,9 @@ use Troy\Server\{
 \add_action( 'init', [ Cron::class, 'register' ] );
 
 plugins: {
-	// Register the plugin's post meta fields, but only for REST API requests (i.e. saving).
-	\add_action( 'rest_api_init', [ Plugins\CPT\Block_Editor::class, 'register_post_meta' ] );
+	// Register the plugins Custom Post Type.
+	\add_action( 'init', [ Plugins\CPT\Init::class, 'register_post_types' ] );
+	\add_action( 'init', [ Plugins\CPT\Init::class, 'register_taxonomies' ] );
 
 	// Handle plugin storage. These hooks can exist on non-admin endpoints (e.g., REST API).
 	\add_action( 'rest_after_insert_' . PLUGINS_CPT, [ Plugins\CPT\Store::class, 'handle_rest_after_insert_post' ] );
@@ -55,12 +60,9 @@ plugins: {
 	\add_action( 'delete_post_' . PLUGINS_CPT, [ Plugins\CPT\Store::class, 'handle_delete_post' ] );
 	\add_filter( 'wp_insert_post_empty_content', [ Plugins\CPT\Store::class, 'unset_empty_post' ], 10, 2 );
 
-	// Register the plugins Custom Post Type.
-	\add_action( 'init', [ Plugins\CPT\Init::class, 'register_post_types' ] );
-	\add_action( 'init', [ Plugins\CPT\Init::class, 'register_taxonomies' ] );
-
 	// Register the plugin's rest routes.
 	\add_action( 'rest_api_init', [ Plugins\REST::class, 'register_rest_routes' ] );
+	\add_action( 'rest_api_init', [ Plugins\CPT\Block_Editor::class, 'register_post_meta' ] );
 }
 
 integrations: {
@@ -69,6 +71,27 @@ integrations: {
 
 	// Register plugin cron tasks.
 	\add_action( 'init', [ Integrations\Plugins\Cron::class, 'register' ] );
+}
+
+packages: {
+	// Register the packages CPT.
+	\add_action( 'init', [ Packages\CPT\Init::class, 'register_post_types' ] );
+
+	// Register package meta boxes.
+	\add_action( 'add_meta_boxes_' . PACKAGES_CPT, [ Packages\Meta_Boxes::class, 'register' ] );
+
+	// Handle package storage.
+	\add_action( 'save_post_' . PACKAGES_CPT, [ Packages\CPT\Store::class, 'handle_save_post' ] );
+	\add_action( 'trash_' . PACKAGES_CPT, [ Packages\CPT\Store::class, 'handle_trash_post' ] );
+	\add_action( 'untrashed_post', [ Packages\CPT\Store::class, 'handle_untrash_post' ] );
+	\add_action( 'delete_post_' . PACKAGES_CPT, [ Packages\CPT\Store::class, 'handle_delete_post' ] );
+	\add_filter( 'wp_insert_post_empty_content', [ Packages\CPT\Store::class, 'unset_empty_post' ], 10, 2 );
+
+	// Package list table customizations.
+	\add_action( 'load-edit.php', [ Packages\CPT\List_View::class, 'register_list_edit_hooks' ] );
+	\add_filter( 'manage_' . PACKAGES_CPT . '_posts_columns', [ Packages\CPT\List_View::class, 'register_columns' ] );
+	\add_filter( 'manage_edit-' . PACKAGES_CPT . '_sortable_columns', [ Packages\CPT\List_View::class, 'register_sortable_columns' ] );
+	\add_action( 'manage_' . PACKAGES_CPT . '_posts_custom_column', [ Packages\CPT\List_View::class, 'render_columns' ], 10, 2 );
 }
 
 endpoints: {

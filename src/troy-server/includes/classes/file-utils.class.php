@@ -33,6 +33,7 @@ namespace Troy\Server;
  */
 
 // phpcs:disable TSF.Performance.Functions -- We require slow file operations here.
+// phpcs:disable WordPress.WP.AlternativeFunctions -- WP functions are irrelevant here.
 
 /**
  * Class Troy\Server\File_Utils.
@@ -102,14 +103,10 @@ final class File_Utils {
 		if ( ! \wp_mkdir_p( $dir ) )
 			throw new \Exception( 'Failed to create zip directory.' );
 
-		// phpcs:ignore WordPress.WP.AlternativeFunctions
 		file_put_contents( "{$dir}index.php", "<?php\n" );
-		// phpcs:ignore WordPress.WP.AlternativeFunctions
 		chmod( "{$dir}index.php", \FS_CHMOD_FILE );
 
-		// phpcs:ignore WordPress.WP.AlternativeFunctions
 		file_put_contents( "{$dir}.htaccess", "Require all denied\n" );
-		// phpcs:ignore WordPress.WP.AlternativeFunctions
 		chmod( "{$dir}.htaccess", \FS_CHMOD_FILE );
 	}
 
@@ -132,15 +129,12 @@ final class File_Utils {
 
 		foreach ( $files as $file ) {
 			if ( $file->isDir() ) {
-				// phpcs:ignore WordPress.WP.AlternativeFunctions -- WP functions are irrelevant here.
 				rmdir( $file->getRealPath() );
 			} else {
-				// phpcs:ignore WordPress.WP.AlternativeFunctions -- WP functions are irrelevant here.
 				unlink( $file->getRealPath() );
 			}
 		}
 
-		// phpcs:ignore WordPress.WP.AlternativeFunctions -- WP functions are irrelevant here.
 		rmdir( $dir );
 	}
 }

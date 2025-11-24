@@ -135,7 +135,7 @@ final class Plugin_Updates extends Base_Endpoint {
 					'id'               => $origin_url,
 					'slug'             => $slug,
 					// The 'plugin' field is expected by WordPress, but overwritten immediately by the original filename.
-					// Then, it remains unused. Ehh...?
+					// Then, it remains unused. Ehh...? TODO reintroduce for future-proofing? We'd have to write the filename.
 					// 'plugin'           => $slug,
 					'new_version'      => null,
 					'url'              => $metas?->permalink ?: '',
@@ -156,6 +156,7 @@ final class Plugin_Updates extends Base_Endpoint {
 					// Compatibility is expected but immediately filtered out by WordPress -- odd.
 					'compatibility'    => [],
 					'upgrade_notice'   => '',
+					'autoupdate'       => false, // var_dump() we can FORCE an update via this.
 				];
 
 				// Feed if the latest compatible version is newer than the current version.
@@ -169,6 +170,7 @@ final class Plugin_Updates extends Base_Endpoint {
 							'requires'       => $zip->requires_wp ?: '',
 							'requires_php'   => $zip->requires_php ?: '',
 							'upgrade_notice' => $zip->upgrade_notice ?: '',
+							'autoupdate'     => false, // var_dump() we can FORCE an update via this. This is dangerous!
 						],
 					);
 				} else {

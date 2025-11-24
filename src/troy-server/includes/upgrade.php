@@ -240,6 +240,12 @@ function upgrade_from( $version ) {
  * | troy_plugins_update_request_stats_live      | Live update request stats for plugins.                              |
  * |                                             | This table can get partitioned (e.g., by day).                      |
  * |---------------------------------------------|---------------------------------------------------------------------|
+ * | troy_packages                               | The main packages table.                                            |
+ * | troy_packages_metas                         | Meta data for packages (for installer generation).                  |
+ * | troy_packages_download_stats                | Download stats for packages.                                        |
+ * | troy_packages_download_stats_live           | Live download stats for packages.                                   |
+ * |                                             | This table can get partitioned (e.g., by week).                     |
+ * |---------------------------------------------|---------------------------------------------------------------------|
  *
  * @since 0.0.1184
  * @global \wpdb $wpdb
@@ -561,7 +567,7 @@ function get_initial_db_schema_queries() {
 		"CREATE table `{$dbprefix}troy_plugins_update_request_stats` (
 			`id` bigint unsigned NOT null auto_increment,
 			`plugin_id` bigint unsigned NOT null,
-			`is_active` tinyint(1) NOT null DEFAULT 0,
+			`is_active` boolean NOT null DEFAULT 0,
 			`version` varchar(20) NOT null,
 			`epoch` bigint unsigned NOT null,
 			`request_count` bigint unsigned NOT null,
@@ -585,10 +591,10 @@ function get_initial_db_schema_queries() {
 		"CREATE table `{$dbprefix}troy_plugins_update_request_stats_live` (
 			`id` bigint unsigned NOT null auto_increment,
 			`plugin_id` bigint unsigned NOT null,
-			`is_active` tinyint(1) NOT null DEFAULT 0,
+			`is_active` boolean NOT null DEFAULT 0,
 			`version` varchar(20) NOT null,
 			`uuid` varchar(100) NOT null,
-			`request_count` int(7) unsigned NOT null,
+			`request_count` int unsigned NOT null,
 			`locales` varchar(191) NOT null,
 			`php_version` varchar(20) NOT null,
 			`wp_version` varchar(20) NOT null,
@@ -597,6 +603,64 @@ function get_initial_db_schema_queries() {
 			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
 			primary key (`id`),
 			index `plugin_id` (`plugin_id`)
+		) $collate",
+		"CREATE table `{$dbprefix}troy_packages` (
+			`id` bigint unsigned NOT null auto_increment,
+			`post_id` bigint unsigned NOT null,
+			`slug` varchar(191) NOT null,
+			`status` varchar(20) NOT null DEFAULT 'pending',
+			`origin_url` varchar(191) NOT null,
+			`database_version` int unsigned NOT null,
+			`created_at` datetime DEFAULT current_timestamp,
+			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
+			primary key (`id`),
+			unique index `post_id` (`post_id`),
+			unique index `slug` (`slug`)
+		) $collate",
+		"CREATE table `{$dbprefix}troy_packages_metas` (
+			`id` bigint unsigned NOT null auto_increment,
+			`package_id` bigint unsigned NOT null,
+			`plugin_uri` varchar(191) NOT null,
+			`name` varchar(191) NOT null,
+			`description` varchar(191) NOT null,
+			`version` varchar(20) NOT null,
+			`author` varchar(191) NOT null,
+			`author_uri` varchar(191) NOT null,
+			`requires_wp` varchar(20) NOT null,
+			`requires_php` varchar(20) NOT null,
+			`network` boolean NOT null DEFAULT 0,
+			`install_timeout` int unsigned NOT null DEFAULT 30,
+			`deactivate_on_completion` boolean NOT null DEFAULT 1,
+			`delete_on_completion` boolean NOT null DEFAULT 0,
+			`notice_severity` varchar(20) NOT null DEFAULT 'detailed',
+			`plugins` longtext NOT null,
+			`themes` longtext NOT null,
+			`created_at` datetime DEFAULT current_timestamp,
+			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
+			primary key (`id`),
+			unique index `package_id` (`package_id`)
+		) $collate",
+		"CREATE table `{$dbprefix}troy_packages_download_stats` (
+			`id` bigint unsigned NOT null auto_increment,
+			`package_id` bigint unsigned NOT null,
+			`version` varchar(20) NOT null,
+			`downloads` bigint unsigned NOT null,
+			`type` varchar(20) NOT null,
+			`origin_url` varchar(191) NOT null,
+			`created_at` datetime DEFAULT current_timestamp,
+			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
+			primary key (`id`),
+			index `package_id` (`package_id`)
+		) $collate",
+		"CREATE table `{$dbprefix}troy_packages_download_stats_live` (
+			`id` bigint unsigned NOT null auto_increment,
+			`package_id` bigint unsigned NOT null,
+			`version` varchar(20) NOT null,
+			`type` varchar(20) NOT null,
+			`origin_url` varchar(191) NOT null,
+			`created_at` datetime DEFAULT current_timestamp,
+			primary key (`id`),
+			index `package_id` (`package_id`)
 		) $collate",
 	];
 }

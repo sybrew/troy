@@ -75,10 +75,10 @@ final class Readme_Parser {
 	 */
 	private const PARSED = [
 		'lines'        => 0b1,
-		'headers_raw'  => 0b1,
-		'headers'      => 0b10,
-		'contents_raw' => 0b100,
-		'contents'     => 0b1000,
+		'headers_raw'  => 0b10,
+		'headers'      => 0b100,
+		'contents_raw' => 0b1000,
+		'contents'     => 0b10000,
 	];
 
 	/**
@@ -211,7 +211,6 @@ final class Readme_Parser {
 		if ( empty( $readme_file ) )
 			throw new \Exception( 'Readme file not found.', static::ERRORS['not_found'] );
 
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- eh?
 		$this->raw_readme_contents = file_get_contents( $readme_file );
 
 		if ( empty( $this->raw_readme_contents ) )
@@ -234,13 +233,12 @@ final class Readme_Parser {
 			if ( ! ( $this->parsed & static::PARSED['lines'] ) ) {
 				$contents = $this->raw_readme_contents;
 
-				// BOMs sorted by most common to least common usage (according to AI).
 				$boms = [
-					"\xEF\xBB\xBF"     => 'UTF-8',
-					"\xFF\xFE"         => 'UTF-16LE',
-					"\xFE\xFF"         => 'UTF-16BE',
+					"\xEF\xBB\xBF"     => 'UTF-8', // Most common first, no collision with UTF-16/32
 					"\xFF\xFE\x00\x00" => 'UTF-32LE',
 					"\x00\x00\xFE\xFF" => 'UTF-32BE',
+					"\xFF\xFE"         => 'UTF-16LE',
+					"\xFE\xFF"         => 'UTF-16BE',
 				];
 
 				// Expected encoding when BOM is not present.
@@ -322,9 +320,9 @@ final class Readme_Parser {
 						[ $field, $value ] = explode( ':', $candidate, 2 );
 						$field             = strtolower( trim( $field ) );
 
-						// If the field is not a valid header, skip it.
-						// We allow "plugin name" as a special case
-						if ( isset( $this->headers[ $field ] ) )
+						// If the field is a valid header, skip and try next line.
+						// We allow "plugin name" as a special case below.
+						if ( isset( static::HEADERS[ $field ] ) )
 							continue;
 
 						// If the field is "plugin name", we take the value as the candidate.
