@@ -602,7 +602,7 @@ function get_initial_db_schema_queries() {
 			`created_at` datetime DEFAULT current_timestamp,
 			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
 			primary key (`id`),
-			index `plugin_id` (`plugin_id`)
+			index `plugin_id_is_active` (`plugin_id`, `is_active`)
 		) $collate",
 		"CREATE table `{$dbprefix}troy_packages` (
 			`id` bigint unsigned NOT null auto_increment,

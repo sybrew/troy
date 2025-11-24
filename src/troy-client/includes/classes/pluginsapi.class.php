@@ -138,6 +138,10 @@ final class PluginsAPI {
 			$inactive_plugins_data = [];
 			$repo_translations     = [];
 
+			// Skip communications for disabled repos.
+			if ( 'disable-all-communications' === $repo )
+				continue;
+
 			foreach ( $slugs as $slug ) {
 				// The slug might be of a dependency that isn't a Troy plugin or isn't a installed -- either way, don't leak.
 				if ( ! isset( $troy_plugins_by_slug[ $slug ] ) )
@@ -290,7 +294,7 @@ final class PluginsAPI {
 			}
 		}
 
-		if ( ! \wp_http_supports( [ 'ssl' ] ) ) {
+		if ( ! \wp_http_supports( [ 'ssl' ] ) )
 			return new \WP_Error(
 				'plugins_api_failed',
 				\sprintf(
@@ -299,9 +303,19 @@ final class PluginsAPI {
 					$plugin_name,
 				),
 			);
-		}
 
-		$repo    = get_troy_plugin_repos_per_slug()[ $slug ];
+		$repo = get_troy_plugin_repos_per_slug()[ $slug ];
+
+		if ( 'disable-all-communications' === $repo )
+			return new \WP_Error(
+				'plugins_api_failed',
+				\sprintf(
+					/* translators: %s = plugin name */
+					\__( 'This plugin ("%s") is set to disable all communications, including updates.', 'troy-client' ),
+					$plugin_name,
+				),
+			);
+
 		$request = make_troy_api_request_cached(
 			"get_plugin_information-$repo-$slug",
 			"{$repo}plugin/get/info/",

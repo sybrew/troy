@@ -125,7 +125,8 @@ function get_troy_plugin_dependencies() {
 	$dependencies = [];
 
 	foreach ( $plugins as $file => $plugin ) {
-		if ( empty( $plugin['dependencies'] ) )
+		// Skip dependencies if the plugin repo is disable-all-communications.
+		if ( empty( $plugin['dependencies'] ) || 'disable-all-communications' === $plugin['repo'] )
 			continue;
 
 		$dependencies[ $file ] = [
@@ -207,7 +208,12 @@ function get_troy_plugin_repos_per_slug() {
 		foreach ( $plugin['dependencies'] as $dependency )
 			$repos[ $dependency['slug'] ] ??= $dependency['repo']; // Only override if not already set.
 
-	return $repos = array_map( 'Troy\Client\make_fully_qualified_repo_url', $repos );
+	return $repos = array_map(
+		fn( $r ) => 'disable-all-communications' === $r
+			? 'disable-all-communications'
+			: make_fully_qualified_repo_url( $r ),
+		$repos,
+	);
 }
 
 /**
@@ -223,7 +229,7 @@ function get_troy_plugin_repos_per_slug() {
  *     @type string $version      The plugin's version.
  *     @type string $textdomain   The plugin's textdomain.
  *     @type string $name         The plugin's name.
- *     @type string $repo         The plugin's Troy repository header value. Filtered.
+ *     @type string $repo         The plugin's Troy repository header value. Unfiltered.
  *     @type string $dependencies The plugin's Troy dependencies header value. Unfiltered.
  *                                See `get_troy_plugin_dependencies()` for the parsed dependencies.
  * }

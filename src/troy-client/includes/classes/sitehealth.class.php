@@ -161,6 +161,30 @@ final class SiteHealth {
 		$has_errors = false;
 
 		foreach ( get_troy_plugin_slugs_per_repo() as $repo => $slugs ) {
+			if ( 'disable-all-communications' === $repo ) {
+				$_plugin_names ??= array_combine(
+					array_column( $plugins, 'slug' ),
+					array_column( $plugins, 'name' ),
+				);
+
+				$result['description'] .= \sprintf(
+					'<p>%s</p>',
+					\wp_sprintf(
+						1 === \count( $slugs )
+							? /* translators: %l: Plugin name. */
+							\__( 'This plugin is intentionally filtered from WordPress.org and all external communications: %l.', 'troy-client' )
+							: /* translators: %l: List of plugin names. */
+							\__( 'These plugins are intentionally filtered from WordPress.org and all external communications: %l.', 'troy-client' ),
+						array_map(
+							fn( $slug ) => $_plugin_names[ $slug ] ?? $slug,
+							$slugs,
+						),
+					),
+				);
+
+				continue;
+			}
+
 			// WordPress features requiring processing.
 			$ping = make_troy_api_request( "{$repo}ping/", '', 'GET' );
 
@@ -202,11 +226,7 @@ final class SiteHealth {
 					),
 					\sprintf(
 						'<span class="dashicons info"></span> %s',
-						\sprintf(
-							/* translators: 1: The IP address WordPress.org resolves to. 2: The error returned by the lookup. */
-							$i18n['error_returned'],
-							$ping->get_error_message(),
-						),
+						\sprintf( $i18n['error_returned'], $ping->get_error_message() ),
 					),
 				);
 			}
@@ -220,7 +240,7 @@ final class SiteHealth {
 					'status'  => 'critical',
 					'actions' => \sprintf(
 						'<p><a href="%s" target="_blank" rel="noopener">%s<span class="screen-reader-text"> %s</span><span aria-hidden="true" class="dashicons dashicons-external"></span></a></p>',
-						'https://deploytroy.org/docs/troy-client/fixing-communication-issues/',
+						'https://deploytroy.org/docs/troy-client/troubleshooting#common-issues',
 						\__( 'Learn how to fix communication issues', 'troy-client' ),
 						/* translators: Hidden accessibility text. */
 						\__( '(opens in a new tab)', 'default' ),
@@ -314,33 +334,42 @@ final class SiteHealth {
 
 		$fields = [];
 		$i18n   = [
+			'disable_all_communications' => \__( 'Disabled all communications', 'troy-client' ),
 			/* translators: %s: The repository URL. */
-			'update_repository'       => \__( 'Update repository: %s', 'troy-client' ),
+			'update_repository'          => \__( 'Update repository: %s', 'troy-client' ),
 			/* translators: %s: The repository URL. */
-			'update_repository_debug' => \__( 'update repository %s', 'troy-client' ),
+			'update_repository_debug'    => \__( 'update repository %s', 'troy-client' ),
 			/* translators: %l: A list of dependencies. */
-			'with_dependencies'       => \__( 'With dependencies %l', 'troy-client' ),
+			'with_dependencies'          => \__( 'With dependencies %l', 'troy-client' ),
 			/* translators: %l: A list of dependencies. */
-			'with_dependencies_debug' => \__( 'with dependencies %l', 'troy-client' ),
+			'with_dependencies_debug'    => \__( 'with dependencies %l', 'troy-client' ),
 			/* translators: %1$s: The dependency repository URL, %2$s: The dependency plugin slug. */
-			'dependency_slug_url'     => \__( '%1$s (slug: %2$s)', 'troy-client' ),
+			'dependency_slug_url'        => \__( '%1$s (slug: %2$s)', 'troy-client' ),
 			/* translators: %1$s: The plugin name, %2$s: The plugin slug. */
-			'plugin_name_slug'        => \__( '%1$s (slug: %2$s)', 'troy-client' ),
+			'plugin_name_slug'           => \__( '%1$s (slug: %2$s)', 'troy-client' ),
 		];
 
 		$dependencies = get_troy_plugin_dependencies();
 
 		foreach ( get_troy_plugins() as $file => $plugin ) {
 
-			$repo = $plugin['repo']
-				? make_fully_qualified_repo_url( $plugin['repo'] )
-				: \__( 'Not set', 'troy-client' );
+			if ( 'disable-all-communications' === $plugin['repo'] ) {
+				$fields[ $file ] = [
+					'label' => \sprintf( $i18n['plugin_name_slug'], $plugin['name'], $plugin['slug'] ),
+					'value' => $i18n['disable_all_communications'],
+					'debug' => $i18n['disable_all_communications'],
+				];
+			} else {
+				$repo = $plugin['repo']
+					? make_fully_qualified_repo_url( $plugin['repo'] )
+					: \__( 'Not set', 'troy-client' );
 
-			$fields[ $file ] = [
-				'label' => \sprintf( $i18n['plugin_name_slug'], $plugin['name'], $plugin['slug'] ),
-				'value' => \sprintf( $i18n['update_repository'], $repo ),
-				'debug' => \sprintf( $i18n['update_repository_debug'], $repo ),
-			];
+				$fields[ $file ] = [
+					'label' => \sprintf( $i18n['plugin_name_slug'], $plugin['name'], $plugin['slug'] ),
+					'value' => \sprintf( $i18n['update_repository'], $repo ),
+					'debug' => \sprintf( $i18n['update_repository_debug'], $repo ),
+				];
+			}
 
 			if ( isset( $dependencies[ $file ]['dependencies'] ) ) {
 				$deps = array_map(
@@ -385,6 +414,7 @@ final class SiteHealth {
 
 		$fields = [];
 		$i18n   = [
+			'communication_blocked'   => \__( 'Communication blocked by plugin settings.', 'troy-client' ),
 			/* translators: %l: The plugin slug. */
 			'communication_for_slug'  => \__( 'Communication for plugin slug: %s', 'troy-client' ),
 			/* translators: %l: A list of plugin slugs. */
@@ -398,6 +428,18 @@ final class SiteHealth {
 		$fields = [];
 
 		foreach ( get_troy_plugin_slugs_per_repo() as $repo => $slugs ) {
+			// Skip disabled repos from external communication checks.
+			if ( 'disable-all-communications' === $repo ) {
+				$fields[ $repo ] = [
+					'label' => 1 === \count( $slugs )
+						? \sprintf( $i18n['communication_for_slug'], $slugs[0] )
+						: \wp_sprintf( $i18n['communication_for_slugs'], $slugs ),
+					'value' => $i18n['communication_blocked'],
+					'debug' => $i18n['communication_blocked'],
+				];
+				continue;
+			}
+
 			// WordPress features requiring processing.
 			$ping = make_troy_api_request( "{$repo}ping/", '', 'GET' );
 
