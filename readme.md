@@ -1,16 +1,12 @@
 <p align="center">
 	<a href="https://deploytroy.org/">
-		<img src="https://github.com/sybrew/troy/blob/main/assets/logo-github-outline-192.png?raw=true" height="96">
+		<img src="https://raw.githubusercontent.com/sybrew/troy/main/assets/logo-github-outline-192.png" height="96">
 		<h3 align="center">Troy</h3>
 	</a>
 </p>
 
 <p align="center">
-
-</p>
-
-<p align="center">
-	<a href="#"><strong>Documentation (TBA)</strong></a> ·
+	<a href="https://deploytroy.org/docs/getting-started/introduction/"><strong>Documentation</strong></a> ·
 	<a href="changelog.md"><strong>Changelog</strong></a>
 </p>
 
@@ -39,6 +35,8 @@ Note that the server will exclusively serve via HTTPS. You must have `mbstring` 
 <small><strong>Planned:</strong> Uploading translation files are also supported, allowing you to distribute your plugins in multiple languages. The server will automatically generate the translation files for your plugins and themes, and you can manage them via the admin interface. You do not need to bundle the translation files with your plugins, as they will be fetched from the server when needed, saving space and bandwidth.
 Providing translations can be done via Polyglots, or by uploading the translation files directly to the server.</small>
 
+Troy Server updates itself via the Troy Server `repo.deploytroy.org`.
+
 ## Troy Client
 
 Troy Client is a WordPress plugin that enables sideloading for plugin updates, plugin translations, and plugin dependencies from any Troy Server.
@@ -47,13 +45,13 @@ It also overrides the plugins API to allow getting information about plugins fro
 
 If a plugin has registered dependencies, future updates for those dependencies will be fetched from the registered Troy Server instead of WordPress.org.
 
-Moreover, Troy Client will remove information plugin information from requests made to WordPress.org, including subsequent translation update requests. You can even use Troy Client to hide plugins from all external communications by setting a `Troy: disable-all-communications` plugin header. This hides your bespoke plugins from prying eyes at WordPress.org.
+Moreover, Troy Client will remove Troy-enabled plugins from any request made to WordPress.org, so they won't know about who's using your plugins. You can even use Troy Client to hide plugins from all external communications by setting a `Troy: disable-all-communications` plugin header. This hides your bespoke plugins from prying eyes at WordPress.org.
 
 Lastly, it overrides the WordPress.org plugin-search results when a plugin's slug is registered with Troy Client, so that the plugin's information is fetched from the Troy Server instead of WordPress.org.
 
-This all works for any plugins with a `Troy: <repo-url>` header, even if they're not activated.
+This all works for any plugin with a `Troy: <repo-url>` header, even if they're not activated.
 
-Troy Client looks for updates for itself from the Troy Server `repo.deploytroy.org`.
+Troy Client updates itself via the Troy Server `repo.deploytroy.org`.
 
 ## Troy Client Daemon
 
@@ -69,6 +67,8 @@ Troy Installer installs the Troy Client and vendor plugins on your WordPress sit
 Troy Server will be able to generate this installer for you to distribute to your clients via the Troy Packages interface.
 
 Troy Installer filters itself from any update checks.
+
+Troy Installer uses repo `disable-all-communications`, so it won't communicate with WordPress.org or any Troy Server.
 
 ## Troy Client Hide (snippet)
 

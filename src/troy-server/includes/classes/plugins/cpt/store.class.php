@@ -10,7 +10,6 @@ namespace Troy\Server\Plugins\CPT;
 
 use const Troy\Server\PLUGINS_CPT;
 
-
 use Troy\Server\{
 	API,
 	Integrations,

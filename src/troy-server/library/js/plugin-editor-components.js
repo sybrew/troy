@@ -1791,7 +1791,6 @@ window.troyServerPluginEditorComponents = ( wp => {
 
 		const { debounce } = troyServerEditorUtils;
 
-
 		const handleAuthorChange = newAuthorId => {
 			const authorId = parseInt( newAuthorId ) || 0;
 			setSelectedAuthorId( authorId );

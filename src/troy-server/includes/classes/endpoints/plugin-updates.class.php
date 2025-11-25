@@ -156,7 +156,7 @@ final class Plugin_Updates extends Base_Endpoint {
 					// Compatibility is expected but immediately filtered out by WordPress -- odd.
 					'compatibility'    => [],
 					'upgrade_notice'   => '',
-					'autoupdate'       => false, // var_dump() we can FORCE an update via this.
+					'autoupdate'       => false, // var_dump() we can FORCE an update via this. We should filter that in Troy Client (from any plugin??)
 				];
 
 				// Feed if the latest compatible version is newer than the current version.
@@ -170,7 +170,7 @@ final class Plugin_Updates extends Base_Endpoint {
 							'requires'       => $zip->requires_wp ?: '',
 							'requires_php'   => $zip->requires_php ?: '',
 							'upgrade_notice' => $zip->upgrade_notice ?: '',
-							'autoupdate'     => false, // var_dump() we can FORCE an update via this. This is dangerous!
+							'autoupdate'     => false, // var_dump() we can FORCE an update via this. This is dangerous! We should filter that in Troy Client (from any plugin??)
 						],
 					);
 				} else {
