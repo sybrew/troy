@@ -71,6 +71,10 @@ plugins: {
 	\add_filter( 'manage_edit-' . PLUGINS_CPT . '_sortable_columns', [ Plugins\CPT\List_View::class, 'register_sortable_columns' ] );
 	\add_action( 'load-edit.php', [ Plugins\CPT\List_View::class, 'register_list_edit_hooks' ] );
 
+	// Disable quick edit and bulk edit for the Plugins CPT.
+	\add_filter( 'quick_edit_enabled_for_post_type', [ Plugins\CPT\List_View::class, 'disable_quick_edit' ], 10, 2 );
+	\add_filter( 'bulk_actions-edit-' . PLUGINS_CPT, [ Plugins\CPT\List_View::class, 'disable_bulk_edit' ] );
+
 	// Handle user deletion cleanup.
 	\add_action( 'delete_user', [ Plugins\CPT\Store::class, 'handle_user_deletion' ], 10, 2 );
 
@@ -94,4 +98,8 @@ packages: {
 	// Register list view columns.
 	\add_filter( 'manage_' . PACKAGES_CPT . '_posts_columns', [ Packages\CPT\List_View::class, 'register_columns' ] );
 	\add_action( 'manage_' . PACKAGES_CPT . '_posts_custom_column', [ Packages\CPT\List_View::class, 'render_columns' ], 10, 2 );
+
+	// Disable quick edit and bulk edit for the Packages CPT.
+	\add_filter( 'quick_edit_enabled_for_post_type', [ Packages\CPT\List_View::class, 'disable_quick_edit' ], 10, 2 );
+	\add_filter( 'bulk_actions-edit-' . PACKAGES_CPT, [ Packages\CPT\List_View::class, 'disable_bulk_edit' ] );
 }

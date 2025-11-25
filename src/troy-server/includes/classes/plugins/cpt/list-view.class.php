@@ -46,6 +46,44 @@ use const Troy\Server\{
 final class List_View {
 
 	/**
+	 * Disable quick edit for the Plugins post type.
+	 *
+	 * Quick edit bypasses our integration system and could cause data inconsistencies.
+	 *
+	 * @hook quick_edit_enabled_for_post_type 10
+	 * @since 0.0.1184
+	 *
+	 * @param Boolean $enabled   Whether quick edit is enabled.
+	 * @param string  $post_type The post type.
+	 * @return Boolean False for plugins, unchanged otherwise.
+	 */
+	public static function disable_quick_edit( $enabled, $post_type ) {
+
+		if ( PLUGINS_CPT === $post_type )
+			return false;
+
+		return $enabled;
+	}
+
+	/**
+	 * Disable bulk edit for the Plugins post type.
+	 *
+	 * Bulk edit bypasses our integration system and could cause data inconsistencies.
+	 *
+	 * @hook bulk_actions-edit-troy_plugins 10
+	 * @since 0.0.1184
+	 *
+	 * @param array $actions The bulk actions.
+	 * @return array The filtered bulk actions.
+	 */
+	public static function disable_bulk_edit( $actions ) {
+
+		unset( $actions['edit'] );
+
+		return $actions;
+	}
+
+	/**
 	 * Defines the columns available for the CPT list table, including sorting and searching configuration.
 	 *
 	 * This method returns a static array defining the columns for the 'troy-plugin' CPT list table.

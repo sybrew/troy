@@ -386,13 +386,28 @@ final class Sanitize {
 	 * @return string The sanitized upgrade notice, truncated to 191 characters.
 	 */
 	public static function upgrade_notice( $notice ) {
+
 		return preg_replace(
 			'/^(.{0,191}).*$/u',
 			'$1',
 			preg_replace(
 				'/\s+/u',
 				' ',
-				\wp_kses_post( $notice ),
+				\wp_kses(
+					$notice,
+					[
+						'a'      => [
+							'href'   => true,
+							'title'  => true,
+							'target' => true,
+							'rel'    => true,
+						],
+						'strong' => [],
+						'em'     => [],
+						'b'      => [],
+						'br'     => [],
+					],
+				),
 			),
 		);
 	}

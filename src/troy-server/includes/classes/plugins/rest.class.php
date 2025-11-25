@@ -689,6 +689,15 @@ final class REST {
 				\dirname( Files::get_plugin_zip_file_path( $plugin_id, $version ) ),
 			);
 
+			// Update latest_version in infos table if the deleted version was the latest.
+			$wpdb->update(
+				"{$wpdb->prefix}troy_plugins_infos",
+				[ 'latest_version' => new Data( $plugin_id )->get_latest_version() ?? '' ],
+				[ 'plugin_id' => $plugin_id ],
+				[ '%s' ],
+				[ '%d' ],
+			);
+
 			return new \WP_REST_Response(
 				[
 					'message' => 'Version removed successfully.',
