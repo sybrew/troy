@@ -174,6 +174,7 @@ final class PluginsAPI {
 					'php_version'      => $php_version,
 					'wp_version'       => $wp_version, // phpcs:ignore VariableAnalysis.CodeAnalysis -- included above.
 					'troy_version'     => VERSION,
+					'channel'          => \defined( 'Troy\Client\CHANNEL' ) ? CHANNEL : 'tag',
 				],
 			);
 

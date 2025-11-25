@@ -125,8 +125,9 @@ final class Files {
 	 *                                If not provided, the test will not be performed.
 	 *     @type ?string $php_version The minimum PHP version to require.
 	 *                                If not provided, the test will not be performed.
-	 *     @type ?string $type        The type of the zip to return.
-	 *                                Options are 'unreleased', 'beta', and 'tag'.
+	 *     @type ?string $channel     The update channel to use. Options are 'tag' and 'beta'.
+	 *                                'tag' returns only stable releases.
+	 *                                'beta' returns the latest of beta or tag, whichever is newer.
 	 *                                Defaults to 'tag'.
 	 * }
 	 * @return string The plugin zip file path for the latest version.
@@ -151,8 +152,9 @@ final class Files {
 	 *                                If not provided, the test will not be performed.
 	 *     @type ?string $php_version The minimum PHP version to require.
 	 *                                If not provided, the test will not be performed.
-	 *     @type ?string $type        The type of the zip to return.
-	 *                                Options are 'unreleased', 'beta', and 'tag'.
+	 *     @type ?string $channel     The update channel to use. Options are 'tag' and 'beta'.
+	 *                                'tag' returns only stable releases.
+	 *                                'beta' returns the latest of beta or tag, whichever is newer.
 	 *                                Defaults to 'tag'.
 	 * }
 	 * @return ?object {
@@ -183,7 +185,7 @@ final class Files {
 			[
 				'wp_version'  => null,
 				'php_version' => null,
-				'type'        => 'tag',
+				'channel'     => 'tag',
 			],
 			$args,
 		);
@@ -191,14 +193,24 @@ final class Files {
 		// Unpack the args so we can use them directly, speeding up the loop below.
 		$wp_version  = API\Sanitize::tested_version( $args['wp_version'] );
 		$php_version = API\Sanitize::tested_version( $args['php_version'] );
-		$type        = API\Sanitize::version_type( $args['type'] );
 
 		$zips = new Data( $plugin_id )->get_zips();
 
 		usort( $zips, fn( $a, $b ) => version_compare( $b->version, $a->version ) );
 
+		switch ( API\Sanitize::channel( $args['channel'] ) ) {
+			case 'beta':
+				// 'beta' channel: 'tag' and 'beta' types allowed (whichever is newest).
+				$allowed_types = [ 'tag', 'beta' ];
+				break;
+
+			default:
+				$allowed_types = [ 'tag' ];
+				break;
+		}
+
 		foreach ( $zips as $zip ) {
-			if ( $zip->type !== $type )
+			if ( ! \in_array( $zip->type, $allowed_types, true ) )
 				continue;
 
 			if ( $wp_version && version_compare( $zip->requires_wp, $wp_version, '>' ) )

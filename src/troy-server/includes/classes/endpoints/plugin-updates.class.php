@@ -72,6 +72,7 @@ final class Plugin_Updates extends Base_Endpoint {
 		$php_version  = API\Sanitize::tested_version( $input['php_version'] ?? '' );
 		$wp_version   = API\Sanitize::tested_version( $input['wp_version'] ?? '' );
 		$troy_version = API\Sanitize::tested_version( $input['troy_version'] ?? '' );
+		$channel      = API\Sanitize::channel( $input['channel'] ?? 'tag' );
 
 		$client_uuid = $this->get_client_uuid();
 
@@ -125,7 +126,7 @@ final class Plugin_Updates extends Base_Endpoint {
 					[
 						'wp_version'  => $wp_version,
 						'php_version' => $php_version,
-						'type'        => 'tag', // TODO implement beta channel support, this must be done via a constant.
+						'channel'     => $channel,
 					]
 				);
 

@@ -354,6 +354,27 @@ final class Sanitize {
 	}
 
 	/**
+	 * Sanitizes the update channel.
+	 *
+	 * This function converts the channel to lowercase and ensures it is one of the allowed values.
+	 * If the channel is not recognized, it defaults to 'tag'.
+	 *
+	 * @since 0.0.1184
+	 *
+	 * @param string $channel The channel to sanitize.
+	 * @return string The sanitized channel, either 'tag' or 'beta'.
+	 */
+	public static function channel( $channel ) {
+
+		$channel = strtolower( $channel );
+
+		return match ( $channel ) {
+			'tag', 'beta' => $channel,
+			default => 'tag',
+		};
+	}
+
+	/**
 	 * Sanitizes the auto_process setting.
 	 *
 	 * This function converts the auto_process setting to lowercase and ensures it is one of the allowed values.
