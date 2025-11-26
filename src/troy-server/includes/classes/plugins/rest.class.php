@@ -321,7 +321,7 @@ final class REST {
 			$wpdb->query( 'ROLLBACK' );
 
 			return new \WP_REST_Response(
-				[ 'message' => "Failed to register plugin: {$e->getMessage()}." ],
+				[ 'message' => "Failed to register plugin: {$e->getMessage()}" ],
 				500,
 			);
 		}
@@ -399,7 +399,7 @@ final class REST {
 			$uploader->process_via_file( $file['tmp_name'] );
 		} catch ( \Exception $e ) {
 			return new \WP_REST_Response(
-				[ 'message' => "Failed to process ZIP file: {$e->getMessage()}." ],
+				[ 'message' => "Failed to process ZIP file: {$e->getMessage()}" ],
 				500,
 			);
 		}
@@ -471,7 +471,7 @@ final class REST {
 			$uploader->process_via_url( $zip_url );
 		} catch ( \Exception $e ) {
 			return new \WP_REST_Response(
-				[ 'message' => "Failed to parse ZIP file: {$e->getMessage()}." ],
+				[ 'message' => "Failed to parse ZIP file: {$e->getMessage()}" ],
 				500,
 			);
 		}
@@ -548,7 +548,7 @@ final class REST {
 			$temp_zip_extraction_dir = new Zip_Extractor( $zip_file_path )->temp_zip_extraction_dir;
 		} catch ( \Exception $e ) {
 			return new \WP_REST_Response(
-				[ 'message' => "Failed to extract ZIP file: {$e->getMessage()}." ],
+				[ 'message' => "Failed to extract ZIP file: {$e->getMessage()}" ],
 				500,
 			);
 		}
@@ -559,7 +559,7 @@ final class REST {
 			$contents = $parser->contents;
 		} catch ( \Exception $e ) {
 			return new \WP_REST_Response(
-				[ 'message' => "Failed to parse readme: {$e->getMessage()}." ],
+				[ 'message' => "Failed to parse readme: {$e->getMessage()}" ],
 				500,
 			);
 		}
@@ -709,7 +709,7 @@ final class REST {
 			$wpdb->query( 'ROLLBACK' );
 
 			return new \WP_REST_Response(
-				[ 'message' => "Failed to remove version: {$e->getMessage()}." ],
+				[ 'message' => "Failed to remove version: {$e->getMessage()}" ],
 				500,
 			);
 		}

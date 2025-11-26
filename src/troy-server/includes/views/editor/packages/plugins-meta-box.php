@@ -9,8 +9,6 @@ namespace Troy\Server\Views\Editor\Packages;
 
 use Troy\Server\Packages\Data;
 
-// phpcs:disable WordPress.WP.GlobalVariablesOverride -- We're not in the global space.
-
 /**
  * Troy Server
  *
@@ -34,6 +32,8 @@ use Troy\Server\Packages\Data;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
+// phpcs:disable WordPress.WP.GlobalVariablesOverride -- We're not in the global space.
 
 [ $post ] = $view_args;
 
@@ -59,9 +59,9 @@ global $wpdb;
 
 $plugins = $wpdb->get_results(
 	"SELECT p.id, p.slug, m.name
-	FROM `{$wpdb->prefix}troy_plugins` p
-	LEFT JOIN `{$wpdb->prefix}troy_plugins_metas` m ON p.id = m.plugin_id
-	ORDER BY m.name ASC",
+	 FROM `{$wpdb->prefix}troy_plugins` p
+	 LEFT JOIN `{$wpdb->prefix}troy_plugins_metas` m ON p.id = m.plugin_id
+	 ORDER BY m.name ASC",
 );
 ?>
 <div class=troy-package-metabox-plugin-list>

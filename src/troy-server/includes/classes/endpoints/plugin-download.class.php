@@ -200,7 +200,7 @@ final class Plugin_Download extends Base_Endpoint {
 
 		// Record live download stat
 		$wpdb->insert(
-			"{$wpdb->prefix}troy_plugins_download_stats_live",
+			"{$wpdb->prefix}troy_plugin_stats_downloads_live",
 			[
 				'plugin_id'  => $plugin_id,
 				'version'    => $version,

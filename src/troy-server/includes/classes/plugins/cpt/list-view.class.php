@@ -127,13 +127,13 @@ final class List_View {
 	 *         @type bool        $orderby  Indicates if the column should be sortable.
 	 *         @type bool        $search   Indicates if the column's data should be included in searches.
 	 *         @type string      $width    Optional. CSS width value for the column (e.g., '48px', '100px').
-	 *         @type array       $before   Optional. Array of column keys to position this column before.
-	 *                                     Note that the order of similar entries determine the display order.
-	 *         @type array       $after    Optional. Array of column keys to position this column after.
-	 *                                     Note that earlier entries will be placed before later ones.
-	 *         @type bool        $mobile   Optional. Whether to show this column on mobile devices. Default true.
-	 *         @type callable    $render   Optional. Callback function to render custom output for the column.
-	 *                                     Receives the column value as parameter 1, and the post ID as parameter 2.
+	 *         @type array       $before  Optional. Array of column keys to position this column before.
+	 *                                    Note that the order of similar entries determine the display order.
+	 *         @type array       $after   Optional. Array of column keys to position this column after.
+	 *                                    Note that earlier entries will be placed before later ones.
+	 *         @type bool        $mobile  Optional. Whether to show this column on mobile devices. Default true.
+	 *         @type callable    $render  Optional. Callback function to render custom output for the column.
+	 *                                    Receives the column value as parameter 1, and the post ID as parameter 2.
 	 *     }
 	 * }
 	 */
@@ -165,43 +165,73 @@ final class List_View {
 			],
 			'troy_server_plugin_id'         => [
 				'label'    => \__( 'Plugin ID', 'troy-server' ),
-				'where'    => [ 'troy_plugins', 'id' ], // We'll call these "table" and "key" to avoid confusion.
-				'postfind' => 'post_id',                // The post ID index of the where table.
+				'where'    => [ 'troy_plugins', 'id' ],
+				'postfind' => 'post_id',
 				'orderby'  => true,
 				'search'   => true,
 				'after'    => [ 'title' ],
 			],
 			'troy_server_slug'              => [
 				'label'    => \__( 'Plugin slug', 'troy-server' ),
-				'where'    => [ 'troy_plugins', 'slug' ], // We'll call these "table" and "key" to avoid confusion.
-				'postfind' => 'post_id',                  // The post ID index of the where table.
+				'where'    => [ 'troy_plugins', 'slug' ],
+				'postfind' => 'post_id',
 				'orderby'  => true,
 				'search'   => true,
 				'after'    => [ 'title', 'troy_server_logo' ],
 			],
 			'troy_server_short_description' => [
 				'label'    => \__( 'Short description', 'troy-server' ),
-				'where'    => [ 'troy_plugins_metas', 'short_description' ], // We'll call these "table" and "key" to avoid confusion.
-				'postfind' => [ // Complex lookup via through, we want to find the plugin_id from the post_id.
-					'local_key'        => 'plugin_id',              // We know this.
-					'foreign'          => [ 'troy_plugins', 'id' ], // We can match 'on' with this table.
-					'foreign_postfind' => 'post_id',                // Wherein we can find the post ID as this. Let's not loop.
+				'where'    => [ 'troy_plugins_metas', 'short_description' ],
+				'postfind' => [
+					'local_key'        => 'plugin_id',
+					'foreign'          => [ 'troy_plugins', 'id' ],
+					'foreign_postfind' => 'post_id',
 				],
 				'orderby'  => false,
 				'search'   => true,
 				'after'    => [ 'troy_server_slug' ],
 			],
-			'troy_server_integration' => [
+			'troy_server_integration'       => [
 				'label'    => \__( 'Integration', 'troy-server' ),
-				'where'    => [ 'troy_plugins_integrations', 'mode' ], // We'll call these "table" and "key" to avoid confusion.
-				'postfind' => [ // Complex lookup via through, we want to find the plugin_id from the post_id.
-					'local_key'        => 'plugin_id',              // We know this.
-					'foreign'          => [ 'troy_plugins', 'id' ], // We can match 'on' with this table.
-					'foreign_postfind' => 'post_id',                // Wherein we can find the post ID as this. Let's not loop.
+				'where'    => [ 'troy_plugins_integrations', 'mode' ],
+				'postfind' => [
+					'local_key'        => 'plugin_id',
+					'foreign'          => [ 'troy_plugins', 'id' ],
+					'foreign_postfind' => 'post_id',
 				],
 				'orderby'  => true,
 				'search'   => true,
 				'after'    => [ 'troy_server_short_description' ],
+			],
+			'troy_server_downloads'         => [
+				'label'    => \__( 'Downloads', 'troy-server' ),
+				'where'    => [ 'troy_plugin_stats_totals', 'downloads' ],
+				'postfind' => [
+					'local_key'        => 'plugin_id',
+					'foreign'          => [ 'troy_plugins', 'id' ],
+					'foreign_postfind' => 'post_id',
+				],
+				'orderby'  => true,
+				'search'   => false,
+				'render'   => function ( $value ) {
+					echo \esc_html( \number_format_i18n( (int) $value ) );
+				},
+				'after'    => [ 'troy_server_integration' ],
+			],
+			'troy_server_active_installs'   => [
+				'label'    => \__( 'Active Installs', 'troy-server' ),
+				'where'    => [ 'troy_plugins_data_caches', 'active_install_count' ],
+				'postfind' => [
+					'local_key'        => 'plugin_id',
+					'foreign'          => [ 'troy_plugins', 'id' ],
+					'foreign_postfind' => 'post_id',
+				],
+				'orderby'  => true,
+				'search'   => false,
+				'render'   => function ( $value ) {
+					echo \esc_html( \number_format_i18n( (int) $value ) );
+				},
+				'after'    => [ 'troy_server_downloads' ],
 			],
 		];
 		// phpcs:enable VariableAnalysis.CodeAnalysis.VariableAnalysis

@@ -46,12 +46,12 @@ final class Utils {
 	 *
 	 * @since 0.0.1184
 	 *
-	 * @param int $offset The offset of the epoch.
+	 * @param string $offset 'current' for the current epoch, 'last' for the previous epoch.
 	 * @return int The epoch.
 	 */
-	public static function get_epoch( $offset = 0 ) {
-		// This is the timeout for the UUID: 4 weeks. int-casting floors.
-		return (int) ( time() / 604_800 ) + $offset;
+	public static function get_epoch( $offset = 'current' ) {
+		// This is the timeout for the UUID: 1 week. int-casting floors.
+		return (int) ( time() / 604_800 ) + ( 'current' === $offset ? 0 : -1 );
 	}
 
 	/**

@@ -588,16 +588,6 @@ final class Block_Editor {
 		);
 
 		\wp_enqueue_script(
-			'troy-server-editor-utils',
-			"{$dir_url}library/js/editor-utils{$min}.js",
-			[
-				'wp-i18n',
-			],
-			VERSION,
-			true, // Load in footer.
-		);
-
-		\wp_enqueue_script(
 			'troy-server-editor-components',
 			"{$dir_url}library/js/editor-components{$min}.js",
 			[
@@ -641,7 +631,9 @@ final class Block_Editor {
 				'wp-block-editor',
 				'wp-api-fetch',
 				'wp-url',
-				'troy-server-editor-utils',
+				'troy-server-sanitize',
+				'troy-server-timing',
+				'troy-server-format',
 				'troy-server-editor-components',
 				'troy-server-constants',
 				'troy-server-icons',
@@ -654,7 +646,9 @@ final class Block_Editor {
 			'troy-server-plugin-editor-store',
 			"{$dir_url}library/js/plugin-editor-store{$min}.js",
 			[
-				'troy-server-editor-utils',
+				'troy-server-assign',
+				'troy-server-timing',
+				'troy-server-sort',
 				'wp-data',
 				'wp-api-fetch',
 			],

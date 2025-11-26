@@ -234,7 +234,7 @@ final class PluginsAPI {
 		if ( 'plugin_information' === $action ) {
 			if ( isset( $args->slug ) ) {
 				$res = isset( get_troy_plugin_repos_per_slug()[ $args->slug ] )
-					? static::get_plugin_information(
+					? self::get_plugin_information(
 						$args->slug,
 						$args->locale,
 						$args->fields ?? [],

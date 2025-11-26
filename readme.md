@@ -6,8 +6,8 @@
 </p>
 
 <p align="center">
-	<a href="https://deploytroy.org/docs/getting-started/introduction/"><strong>Documentation</strong></a> ·
-	<a href="changelog.md"><strong>Changelog</strong></a>
+	<a href="http://deploytroy.org/docs/"><strong>Documentation</strong></a> ·
+	<a href="https://deploytroy.org/changelogs/"><strong>Changelog</strong></a>
 </p>
 
 <br>

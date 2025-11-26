@@ -15,6 +15,7 @@ use const Troy\Server\{
 
 use Troy\Server\{
 	Admin_Menu,
+	Admin_Scripts,
 	Packages,
 	Plugins,
 	Settings,
@@ -47,17 +48,18 @@ use Troy\Server\{
 // phpcs:disable Generic.WhiteSpace.ScopeIndent.IncorrectExact -- no love for goto.
 
 admin: {
+	\add_action( 'admin_init', [ Admin_Scripts::class, 'register_utils' ], 1 );
 	\add_action( 'admin_menu', [ Admin_Menu::class, 'reorder_menu_items' ], 999 );
 }
 
 // We couldn't think of any useful settings yet, so we're disabling settings for now.
-// settings: {
-// 	// Register the admin settings menu.
-// 	\add_action( 'admin_menu', [ Settings::class, 'register_admin_menu' ] );
+settings: {
+	// Register the admin settings menu.
+	\add_action( 'admin_menu', [ Settings\Main::class, 'register_admin_menu' ] );
 
-// 	// Register the settings save action.
-// 	\add_action( 'admin_post_' . Settings::SAVE_ACTION, [ Settings::class, 'process_settings_submission' ] );
-// }
+	// Register the settings save action. TODO: Later, we don't have any settings yet.
+	\add_action( 'admin_post_' . Settings\Main::SAVE_ACTION, [ Settings\Main::class, 'process_settings_submission' ] );
+}
 
 plugins: {
 	// Register the Plugins\CPT assets.

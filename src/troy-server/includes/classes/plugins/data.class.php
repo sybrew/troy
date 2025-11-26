@@ -543,7 +543,7 @@ final class Data {
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}troy_plugins_stats_totals WHERE plugin_id = %d",
+			"SELECT * FROM {$wpdb->prefix}troy_plugin_stats_totals WHERE plugin_id = %d",
 			$this->plugin_id,
 		) );
 	}
@@ -574,7 +574,7 @@ final class Data {
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}troy_plugins_stats_totals_to_date WHERE plugin_id = %d AND `date` = %s",
+			"SELECT * FROM {$wpdb->prefix}troy_plugin_stats_totals_daily WHERE plugin_id = %d AND `date` = %s",
 			$this->plugin_id,
 			$this->date,
 		) );
@@ -606,7 +606,7 @@ final class Data {
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}troy_plugins_stats WHERE plugin_id = %d AND `version` = %s",
+			"SELECT * FROM {$wpdb->prefix}troy_plugin_stats_versions WHERE plugin_id = %d AND `version` = %s",
 			$this->plugin_id,
 			$this->plugin_version,
 		) );
@@ -639,7 +639,7 @@ final class Data {
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}troy_plugins_stats_to_date WHERE plugin_id = %d AND `version` = %s and `date` = %s",
+			"SELECT * FROM {$wpdb->prefix}troy_plugin_stats_versions_daily WHERE plugin_id = %d AND `version` = %s and `date` = %s",
 			$this->plugin_id,
 			$this->plugin_version,
 			$this->date,
@@ -671,7 +671,7 @@ final class Data {
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}troy_plugins_view_stats WHERE plugin_id = %d AND `version` = %s",
+			"SELECT * FROM {$wpdb->prefix}troy_plugin_stats_views WHERE plugin_id = %d AND `version` = %s",
 			$this->plugin_id,
 			$this->plugin_version,
 		) );
@@ -700,7 +700,7 @@ final class Data {
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}troy_plugins_view_stats_live WHERE plugin_id = %d AND `version` = %s",
+			"SELECT * FROM {$wpdb->prefix}troy_plugin_stats_views_live WHERE plugin_id = %d AND `version` = %s",
 			$this->plugin_id,
 			$this->plugin_version,
 		) );
@@ -730,7 +730,7 @@ final class Data {
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}troy_plugins_download_stats WHERE plugin_id = %d AND `version` = %s",
+			"SELECT * FROM {$wpdb->prefix}troy_plugin_stats_downloads WHERE plugin_id = %d AND `version` = %s",
 			$this->plugin_id,
 			$this->plugin_version,
 		) );
@@ -758,7 +758,7 @@ final class Data {
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}troy_plugins_download_stats_live WHERE plugin_id = %d AND `version` = %s",
+			"SELECT * FROM {$wpdb->prefix}troy_plugin_stats_downloads_live WHERE plugin_id = %d AND `version` = %s",
 			$this->plugin_id,
 			$this->plugin_version,
 		) );
@@ -775,9 +775,9 @@ final class Data {
 	 *
 	 *     @type int    id            The request ID.
 	 *     @type int    plugin_id     The plugin ID.
-	 *     @type int    is_active     Whether the plugin is active on the client site. (1 = active, 0 = inactive)
-	 *     @type string version       The plugin version.
 	 *     @type int    epoch         The update epoch.
+	 *     @type string version       The plugin version.
+	 *     @type int    is_active     Whether the plugin is active on the client site. (1 = active, 0 = inactive)
 	 *     @type int    request_count The request count.
 	 *     @type string created_at    The row creation timestamp.
 	 *     @type string updated_at    The row last updated timestamp.
@@ -788,14 +788,14 @@ final class Data {
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}troy_plugins_update_request_stats WHERE plugin_id = %d AND `version` = %s",
+			"SELECT * FROM {$wpdb->prefix}troy_plugin_stats_requests WHERE plugin_id = %d AND `version` = %s",
 			$this->plugin_id,
 			$this->plugin_version,
 		) );
 	}
 
 	/**
-	 * Gets the plugin update request locale stats by version meant for scheduled processing.
+	 * Gets the plugin update request locale stats by version.
 	 *
 	 * @since 0.0.1184
 	 * @global \wpdb $wpdb
@@ -806,8 +806,9 @@ final class Data {
 	 *     @type int    id            The request ID.
 	 *     @type int    plugin_id     The plugin ID.
 	 *     @type string version       The plugin version.
-	 *     @type string locales       The locales.
-	 *     @type int    request_count The request count.
+	 *     @type int    epoch         The update epoch.
+	 *     @type string locale        The locale (e.g., 'en_US').
+	 *     @type int    install_count The number of unique sites using this locale.
 	 *     @type string created_at    The row creation timestamp.
 	 *     @type string updated_at    The row last updated timestamp.
 	 * }
@@ -817,28 +818,29 @@ final class Data {
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}troy_plugins_update_request_locales_stats WHERE plugin_id = %d AND `version` = %s",
+			"SELECT * FROM {$wpdb->prefix}troy_plugin_stats_locales WHERE plugin_id = %d AND `version` = %s",
 			$this->plugin_id,
 			$this->plugin_version,
 		) );
 	}
 
 	/**
-	 * Gets the plugin update request stats by version meant for scheduled processing.
+	 * Gets the live plugin update request stats by version.
 	 *
 	 * @since 0.0.1184
 	 * @global \wpdb $wpdb
 	 *
 	 * @return ?object[] {
-	 *     The plugin update request stats by version meant for scheduled processing, or null if none are found.
+	 *     The live plugin update request stats by version, or null if none are found.
 	 *
 	 *     @type int    id             The request ID.
 	 *     @type int    plugin_id      The plugin ID.
+	 *     @type int    epoch          The update epoch extracted from the UUID.
 	 *     @type int    is_active      Whether the plugin is active on the client site. (1 = active, 0 = inactive)
 	 *     @type string version        The plugin version.
 	 *     @type string uuid           The UUID of the client.
 	 *     @type int    request_count  The request count.
-	 *     @type string locales        The locales supported by the client, comma-separated.
+	 *     @type string locales        The locales supported by the client, JSON-encoded array.
 	 *     @type string php_version    The PHP version.
 	 *     @type string wp_version     The WordPress version.
 	 *     @type string client_version The Troy client version.
@@ -851,7 +853,7 @@ final class Data {
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}troy_plugins_update_request_stats_live WHERE plugin_id = %d AND `version` = %s",
+			"SELECT * FROM {$wpdb->prefix}troy_plugin_stats_requests_live WHERE plugin_id = %d AND `version` = %s",
 			$this->plugin_id,
 			$this->plugin_version,
 		) );

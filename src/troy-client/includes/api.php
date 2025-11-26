@@ -65,7 +65,7 @@ function get_site_unique_id() {
 
 	$uuid = \get_option( 'troy_client_site_unique_id', '' );
 
-	// This is the timeout for the UUID: 4 weeks. int-casting floors.
+	// This is the timeout for the UUID: 1 week. int-casting floors.
 	$epoch = (int) ( time() / 604_800 );
 
 	if ( ! $uuid || (int) strtok( $uuid, '-' ) < $epoch ) {

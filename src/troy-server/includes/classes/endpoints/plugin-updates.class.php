@@ -74,7 +74,10 @@ final class Plugin_Updates extends Base_Endpoint {
 		$troy_version = API\Sanitize::tested_version( $input['troy_version'] ?? '' );
 		$channel      = API\Sanitize::channel( $input['channel'] ?? 'tag' );
 
-		$client_uuid = $this->get_client_uuid();
+		[
+			'epoch' => $epoch,
+			'uuid' => $uuid,
+		] = $this->get_client_uuid();
 
 		// TODO: implement translation updates
 		// $translations = (array) ( $input['translations'] ?? [] );
@@ -88,7 +91,7 @@ final class Plugin_Updates extends Base_Endpoint {
 		// Process active plugins
 		foreach ( array_merge( $active_plugins, $inactive_plugins ) as $slug => $cur_version ) {
 
-			// We need an unmodified index key to test if the plugin is active.
+			// We need an unmodified index key to test if the plugin is active. Do not sanitize yet.
 			$is_active = isset( $active_plugins[ $slug ] );
 
 			$slug = API\Sanitize::slug( $slug );
@@ -157,7 +160,7 @@ final class Plugin_Updates extends Base_Endpoint {
 					// Compatibility is expected but immediately filtered out by WordPress -- odd.
 					'compatibility'    => [],
 					'upgrade_notice'   => '',
-					'autoupdate'       => false, // var_dump() we can FORCE an update via this. We should filter that in Troy Client (from any plugin??)
+					'autoupdate'       => false, // We can FORCE an update via this. Let's block it via Troy Client.
 				];
 
 				// Feed if the latest compatible version is newer than the current version.
@@ -171,7 +174,7 @@ final class Plugin_Updates extends Base_Endpoint {
 							'requires'       => $zip->requires_wp ?: '',
 							'requires_php'   => $zip->requires_php ?: '',
 							'upgrade_notice' => $zip->upgrade_notice ?: '',
-							'autoupdate'     => false, // var_dump() we can FORCE an update via this. This is dangerous! We should filter that in Troy Client (from any plugin??)
+							'autoupdate'     => false, // We can FORCE an update via this. Let's block it via Troy Client.
 						],
 					);
 				} else {
@@ -182,9 +185,10 @@ final class Plugin_Updates extends Base_Endpoint {
 				// Record update request stats
 				$this->record_update_request_stats(
 					$plugin_id,
-					$is_active,
+					$epoch,
 					$cur_version,
-					$client_uuid,
+					$is_active,
+					$uuid,
 					$locales,
 					$origin_url,
 					$php_version,
@@ -208,8 +212,9 @@ final class Plugin_Updates extends Base_Endpoint {
 	 * @global \wpdb $wpdb
 	 *
 	 * @param int    $plugin_id      The plugin ID.
-	 * @param bool   $is_active      Whether the plugin is active.
+	 * @param int    $epoch          The epoch extracted from the client UUID.
 	 * @param string $version        The client's current plugin version.
+	 * @param bool   $is_active      Whether the plugin is active.
 	 * @param string $client_uuid    The client UUID.
 	 * @param array  $locales        The requested locales.
 	 * @param string $origin_url     The origin URL.
@@ -219,8 +224,9 @@ final class Plugin_Updates extends Base_Endpoint {
 	 */
 	private function record_update_request_stats(
 		$plugin_id,
-		$is_active,
+		$epoch,
 		$version,
+		$is_active,
 		$client_uuid,
 		$locales,
 		$origin_url,
@@ -233,14 +239,15 @@ final class Plugin_Updates extends Base_Endpoint {
 
 		// Record live update request stat
 		$wpdb->insert(
-			"{$wpdb->prefix}troy_plugins_update_request_stats_live",
+			"{$wpdb->prefix}troy_plugin_stats_requests_live",
 			[
 				'plugin_id'      => $plugin_id,
-				'is_active'      => $is_active,
+				'epoch'          => $epoch,
 				'version'        => $version,
+				'is_active'      => $is_active,
 				'uuid'           => $client_uuid ?: 'unknown',
 				'request_count'  => 1,
-				'locales'        => json_encode( $locales ),
+				'locales'        => API\Sanitize::json_encode_db( $locales ),
 				'php_version'    => $php_version,
 				'wp_version'     => $wp_version,
 				'client_version' => $client_version,
@@ -249,6 +256,7 @@ final class Plugin_Updates extends Base_Endpoint {
 				'%d',
 				'%d',
 				'%s',
+				'%d',
 				'%s',
 				'%d',
 				'%s',

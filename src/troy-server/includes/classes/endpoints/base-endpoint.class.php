@@ -97,9 +97,17 @@ abstract class Base_Endpoint {
 	/**
 	 * Get and sanitize the client UUID from request headers.
 	 *
+	 * The UUID format is "{epoch}-{64charHexString}", where epoch is 4-5 digits.
+	 * This method extracts the epoch from the UUID for efficient epoch-based aggregation.
+	 *
 	 * @since 0.0.1184
 	 *
-	 * @return string Sanitized client UUID, or empty string if not provided.
+	 * @return array {
+	 *     Client UUID data.
+	 *
+	 *     @type int    $epoch The epoch extracted from the UUID, or current epoch as fallback.
+	 *     @type string $uuid  The full UUID string, or empty if invalid.
+	 * }
 	 */
 	protected function get_client_uuid() {
 
@@ -108,8 +116,16 @@ abstract class Base_Endpoint {
 		// Sanitize UUID: should be epoch-hexstring format like "2345[6]-64charHexString"
 		// This is future proofed to allow 4 or 5 digit epoch values (4 digits would only be valid until 2161)
 		if ( ! $uuid || ! preg_match( '/^\d{4,5}-[a-f0-9]{60,64}$/', $uuid ) )
-			return '';
+			return [
+				'epoch' => API\Utils::get_epoch(),
+				'uuid'  => '',
+			];
 
-		return $uuid;
+		$epoch = (int) strtok( $uuid, '-' );
+
+		return [
+			'epoch' => $epoch ?: API\Utils::get_epoch(),
+			'uuid'  => $uuid,
+		];
 	}
 }

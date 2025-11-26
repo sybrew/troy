@@ -94,8 +94,10 @@ final class Drop {
 		try {
 			$tables = [
 				'troy_packages_metas',
-				'troy_packages_download_stats',
-				'troy_packages_download_stats_live',
+				'troy_package_stats_totals',
+				'troy_package_stats_totals_daily',
+				'troy_package_stats_downloads',
+				'troy_package_stats_downloads_live',
 			];
 
 			foreach ( $tables as $table )

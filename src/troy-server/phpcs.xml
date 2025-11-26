@@ -10,13 +10,6 @@
 		</properties>
 	</rule>
 
-	<rule ref="VariableAnalysis.CodeAnalysis.VariableAnalysis">
-		<properties>
-			<property name="ignoreUnusedRegexp" type="string" value="/network_wide/"/>
-			<property name="validUndefinedVariableRegexp" type="string" value="/network_wide/"/>
-		</properties>
-	</rule>
-
 	<rule ref="WordPress.WP.I18n">
 		<properties>
 			<property name="text_domain" type="array" value="troy-server,default"/>

@@ -1,16 +1,3 @@
-<?php
-/**
- * @package Troy\Server\Views
- */
-
-namespace Troy\Server\Views;
-
-// phpcs:disable WordPress.WP.GlobalVariablesOverride -- We're not in the global space.
-
-\defined( 'Troy\Server\ABSPATH' ) or die;
-
-use Troy\Server\Settings;
-
 /**
  * Troy Server
  *
@@ -35,9 +22,51 @@ use Troy\Server\Settings;
  * SOFTWARE.
  */
 
-?>
-<h2><?= \esc_html__( 'Troy Server Stats', 'troy-server' ) ?></h2>
+'use strict';
 
-<p><?= \esc_html__( 'Troy Server collects anonymized data from your plugin users. Here, you can inspect the aggregation.', 'troy-server' ) ?></p>
+/**
+ * @module troyServerTiming
+ * @description Timing and async control utilities for the Troy Server plugin.
+ * @since 0.0.1184
+ */
+window.troyServerTiming = ( () => {
 
-<hr class=hr-separator>
+	/**
+	 * Debounces the input function.
+	 *
+	 * @since 0.0.1184
+	 *
+	 * @param {CallableFunction} func    The function to debounce.
+	 * @param {number}           timeout The debounce timeout in milliseconds.
+	 * @return {Function} The debounced function.
+	 */
+	function debounce( func, timeout = 0 ) {
+
+		let timeoutId;
+
+		return ( ...args ) => {
+			clearTimeout( timeoutId );
+			return {
+				timeoutId: timeoutId = setTimeout( () => func( ...args ), timeout ),
+				cancel:    () => clearTimeout( timeoutId ),
+			};
+		};
+	}
+
+	/**
+	 * Delays script execution. The caller must be asynchronous.
+	 *
+	 * @since 0.0.1184
+	 *
+	 * @param {number} ms The milliseconds to delay script execution.
+	 * @return {Promise} A promise that resolves after the delay.
+	 */
+	function delay( ms ) {
+		return new Promise( resolve => setTimeout( resolve, ms ) );
+	}
+
+	return {
+		debounce,
+		delay,
+	};
+} )();

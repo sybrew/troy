@@ -479,7 +479,7 @@ final class Plugin_Info extends Base_Endpoint {
 
 		// Record live view stat
 		$wpdb->insert(
-			"{$wpdb->prefix}troy_plugins_view_stats_live",
+			"{$wpdb->prefix}troy_plugin_stats_views_live",
 			[
 				'plugin_id'  => $plugin_id,
 				'version'    => '',

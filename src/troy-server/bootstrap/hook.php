@@ -16,9 +16,11 @@ use const Troy\Server\{
 use Troy\Server\{
 	Cron,
 	Endpoints,
+	Integrations,
 	Plugins,
 	Packages,
-	Integrations,
+	Settings,
+	Stats,
 };
 
 /**
@@ -47,6 +49,14 @@ use Troy\Server\{
 
 // Register general cron tasks.
 \add_action( 'init', [ Cron::class, 'register' ] );
+
+stats: {
+	// Register stats aggregation cron tasks.
+	\add_action( 'init', [ Stats\Cron::class, 'register' ] );
+
+	// Register stats dashboard REST routes.
+	\add_action( 'rest_api_init', [ Settings\REST::class, 'register_rest_routes' ] );
+}
 
 plugins: {
 	// Register the plugins Custom Post Type.

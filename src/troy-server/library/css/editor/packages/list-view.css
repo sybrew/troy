@@ -27,19 +27,14 @@
 	width: 15%;
 }
 
-.wp-list-table .column-troy_server_plugins,
-.wp-list-table .column-troy_server_themes {
+.wp-list-table :where(.column-troy_server_plugins, .column-troy_server_themes) {
 	width: 25%;
 }
 
 /* Mobile visibility */
 @media (max-width: 782px) {
-	.wp-list-table .column-troy_server_slug,
-	.wp-list-table .is-expanded .column-troy_server_slug:not(.hidden),
-	.wp-list-table .column-troy_server_plugins,
-	.wp-list-table .is-expanded .column-troy_server_plugins:not(.hidden),
-	.wp-list-table .column-troy_server_themes,
-	.wp-list-table .is-expanded .column-troy_server_themes:not(.hidden) {
+	.wp-list-table :where(.column-troy_server_slug, .column-troy_server_plugins, .column-troy_server_themes),
+	.wp-list-table .is-expanded :where(.column-troy_server_slug, .column-troy_server_plugins, .column-troy_server_themes):not(.hidden) {
 		display:    none !important;
 		visibility: hidden;
 		height:     0;

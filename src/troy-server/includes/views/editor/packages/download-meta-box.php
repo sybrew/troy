@@ -12,8 +12,6 @@ use Troy\Server\{
 	Packages\Data,
 };
 
-// phpcs:disable WordPress.WP.GlobalVariablesOverride -- We're not in the global space.
-
 /**
  * Troy Server
  *
@@ -37,6 +35,8 @@ use Troy\Server\{
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
+// phpcs:disable WordPress.WP.GlobalVariablesOverride -- We're not in the global space.
 
 [ $post ] = $view_args;
 

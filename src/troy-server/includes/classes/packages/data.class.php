@@ -180,4 +180,60 @@ final class Data {
 
 		return $meta;
 	}
+
+	/**
+	 * Gets the package download stats.
+	 *
+	 * @since 0.0.1184
+	 * @global \wpdb $wpdb
+	 *
+	 * @return ?object[] {
+	 *     An array of package download stats, or null if none are found.
+	 *
+	 *     @type int    id         The download ID.
+	 *     @type int    package_id The package ID.
+	 *     @type string version    The package version.
+	 *     @type int    downloads  The number of downloads.
+	 *     @type string type       The type of download: 'installer'.
+	 *     @type string origin_url The origin URL that collected this information.
+	 *     @type string created_at The row creation timestamp.
+	 *     @type string updated_at The row last updated timestamp.
+	 * }
+	 */
+	public function get_download_stats() {
+
+		global $wpdb;
+
+		return $wpdb->get_results( $wpdb->prepare(
+			"SELECT * FROM {$wpdb->prefix}troy_package_stats_downloads WHERE package_id = %d",
+			$this->package_id,
+		) ) ?: null;
+	}
+
+	/**
+	 * Gets the package download stats meant for scheduled processing.
+	 *
+	 * @since 0.0.1184
+	 * @global \wpdb $wpdb
+	 *
+	 * @return ?object[] {
+	 *     The package download stats meant for scheduled processing, or null if none are found.
+	 *
+	 *     @type int    id         The download ID.
+	 *     @type int    package_id The package ID.
+	 *     @type string version    The package version.
+	 *     @type string type       The type of download: 'installer'.
+	 *     @type string origin_url The origin URL that collected this information.
+	 *     @type string created_at The row creation timestamp.
+	 * }
+	 */
+	public function get_download_stats_live() {
+
+		global $wpdb;
+
+		return $wpdb->get_results( $wpdb->prepare(
+			"SELECT * FROM {$wpdb->prefix}troy_package_stats_downloads_live WHERE package_id = %d",
+			$this->package_id,
+		) ) ?: null;
+	}
 }

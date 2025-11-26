@@ -11,6 +11,7 @@ namespace Troy\Server\Bootstrap\Deactivation;
 use Troy\Server\{
 	Cron,
 	Integrations,
+	Stats,
 };
 
 /**
@@ -44,3 +45,4 @@ if ( false !== \get_option( 'troy_server_settings' ) )
 // Remove cron jobs.
 Cron::remove_cron_jobs();
 Integrations\Cron::remove_cron_jobs();
+Stats\Cron::remove_cron_jobs();

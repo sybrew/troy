@@ -423,7 +423,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 	/**
 	 * Auto-Process Tags Popover Control component.
 	 *
-	 * @since 0.0.1201
+	 * @since 0.0.1184
 	 *
 	 * @param {Object} props {
 	 *     Component properties.
@@ -473,7 +473,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 	/**
 	 * Auto-Process Tags Control component for sidebar display.
 	 *
-	 * @since 0.0.1201
+	 * @since 0.0.1184
 	 *
 	 * @param {Object} props {
 	 *     Component properties.
@@ -1226,15 +1226,15 @@ window.troyServerPluginEditorComponents = ( wp => {
 		const versionsToRemove     = versions.filter( v => true === v.remove );
 		const removedVersionsCount = versionsToRemove.length;
 
-		const { sanitizeRepoUrl } = troyServerEditorUtils;
+		const sanitize = troyServerSanitize;
 
-		const currentRepoUrl           = sanitizeRepoUrl( troyPluginEditorData.originUrl );
+		const currentRepoUrl           = sanitize.repoUrl( troyPluginEditorData.originUrl );
 		const versionsWithRepoMismatch = useMemo(
 			() => {
 				if ( ! versions?.length ) return [];
 
 				return versions.filter(
-					version => sanitizeRepoUrl( version.repo ) !== currentRepoUrl,
+					version => sanitize.repoUrl( version.repo ) !== currentRepoUrl,
 				);
 			},
 			[ versions, currentRepoUrl ],
@@ -1392,10 +1392,8 @@ window.troyServerPluginEditorComponents = ( wp => {
 	} ) {
 
 		const isRemovedVersion = version.remove;
-		const {
-			sanitizeRepoUrl,
-			bytesToIbiBytes,
-		} = troyServerEditorUtils;
+		const sanitize         = troyServerSanitize;
+		const format           = troyServerFormat;
 
 		return JSX(
 			Fragment,
@@ -1466,7 +1464,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 							MetadataItem,
 							{
 								label: __( 'File size:', 'troy-server' ),
-								value: bytesToIbiBytes( version.file_size ),
+								value: format.bytesToIbiBytes( version.file_size ),
 							},
 						),
 						version.tested_wp && JSX(
@@ -1495,14 +1493,14 @@ window.troyServerPluginEditorComponents = ( wp => {
 						// 	MetadataItem,
 						// 	{
 						// 		label: __( 'Original source:', 'troy-server' ),
-						// 		value: sanitizeRepoUrl( version.origin_url ),
+						// 		value: sanitize.repoUrl( version.origin_url ),
 						// 	},
 						// ),
 						JSX(
 							MetadataItem,
 							{
 								label: __( 'Repository:', 'troy-server' ),
-								value: sanitizeRepoUrl( version.repo ),
+								value: sanitize.repoUrl( version.repo ),
 								state: hasRepoMismatch ? 'warning' : undefined,
 							},
 						),
@@ -1789,7 +1787,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 
 		const { authorOptions, isLoading, showCombobox } = useAuthorsQuery( filterValue );
 
-		const { debounce } = troyServerEditorUtils;
+		const timing = troyServerTiming;
 
 		const handleAuthorChange = newAuthorId => {
 			const authorId = parseInt( newAuthorId ) || 0;
@@ -1818,7 +1816,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 							value:               selectedAuthorId || '',
 							options:             authorOptions,
 							onChange:            handleAuthorChange,
-							onFilterValueChange: debounce( setFilterValue, 300 ),
+							onFilterValueChange: timing.debounce( setFilterValue, 300 ),
 							help:                __( 'Type to search for authors. Choose the author who will be displayed for this plugin.', 'troy-server' ),
 							hideLabelFromVision: true,
 							isLoading,
@@ -2181,7 +2179,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 				sprintf(
 					/* translators: %s: relative time */
 					__( 'Last refreshed: %s', 'troy-server' ),
-					troyServerEditorUtils.formatTimestamp( tagsRefreshed ),
+					troyServerFormat.timestamp( tagsRefreshed ),
 				),
 			),
 			JSX(

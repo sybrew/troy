@@ -587,7 +587,7 @@ final class Store {
 				'type'    => 'error',
 				'message' => \sprintf(
 					/* translators: %s: Error message */
-					\__( 'Failed to build package: %s. ', 'troy-server' ),
+					\__( 'Failed to build package: %s', 'troy-server' ),
 					$e->getMessage(),
 				),
 			];

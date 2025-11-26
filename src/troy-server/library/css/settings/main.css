@@ -73,8 +73,8 @@
 }
 
 .troy-server-settings-tabs-wrapper {
-	display: inline-grid;
-	grid-template-columns: 1fr 1fr;
+	display: inline-flex;
+	flex-wrap: wrap;
 }
 
 .troy-server-settings-tab {

@@ -134,7 +134,7 @@ final class Dependencies {
 			foreach ( $installed as $file => $details ) {
 				$names = array_column( $details, 'name' );
 
-				static::prepare_admin_message(
+				self::prepare_admin_message(
 					\wp_sprintf(
 						/* translators: 1: plugin name, 2: list of installed plugins */
 						\_n(
@@ -156,7 +156,7 @@ final class Dependencies {
 			foreach ( $not_installed as $file => $details ) {
 				$slugs = array_column( $details, 'slug' );
 
-				static::prepare_admin_message(
+				self::prepare_admin_message(
 					\wp_sprintf(
 						/* translators: 1: plugin name, 2: list of not-installed plugins */
 						\_n(

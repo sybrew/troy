@@ -1,0 +1,282 @@
+/**
+ * Troy Server Stats Dashboard Styles
+ *
+ * @package Troy\Server
+ * @since 0.0.1184
+ */
+
+/* Date Range Controls */
+.troy-server-stats-date-range {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	margin: 1rem 0;
+	flex-wrap: wrap;
+}
+
+.troy-server-stats-date-range label {
+	display: flex;
+	align-items: center;
+	gap: .5rem;
+}
+
+.troy-server-stats-date-range select {
+	min-width: 150px;
+}
+
+/* Stats Cards Grid */
+.troy-server-stats-cards {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+	gap: 1rem;
+	margin: 1rem 0;
+}
+
+.troy-server-stats-card {
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	padding: 1rem;
+	text-align: center;
+	transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.troy-server-stats-card:hover {
+	border-color: #2271b1;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, .1);
+}
+
+.troy-server-stats-card-label {
+	display: block;
+	font-size: 12px;
+	color: #646970;
+	text-transform: uppercase;
+	letter-spacing: .5px;
+	margin-bottom: .5rem;
+}
+
+.troy-server-stats-card-value {
+	display: block;
+	font-size: 1.75rem;
+	font-weight: 600;
+	color: #1d2327;
+	line-height: 1.2;
+}
+
+.troy-server-stats-card-change {
+	display: block;
+	font-size: 12px;
+	margin-top: .25rem;
+}
+
+/* Stats Tables */
+.troy-server-stats-table {
+	margin-top: 1rem;
+}
+
+.troy-server-stats-table th,
+.troy-server-stats-table td {
+	vertical-align: middle;
+}
+
+.troy-server-stats-table code {
+	font-size: 11px;
+	color: #646970;
+}
+
+.troy-server-stats-table .button-small {
+	min-height: 28px;
+	line-height: 26px;
+	padding: 0 8px;
+}
+
+/* Trend Indicators */
+.troy-server-stats-positive {
+	color: #00a32a;
+	font-weight: 600;
+}
+
+.troy-server-stats-negative {
+	color: #d63638;
+	font-weight: 600;
+}
+
+.troy-server-stats-neutral {
+	color: #646970;
+}
+
+/* Modal Styles */
+.troy-server-stats-modal {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0, 0, 0, .6);
+	z-index: 100100;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 2rem;
+}
+
+.troy-server-stats-modal[hidden] {
+	display: none;
+}
+
+.troy-server-stats-modal-content {
+	background: #fff;
+	border-radius: 4px;
+	max-width: 700px;
+	width: 100%;
+	max-height: 80vh;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+	box-shadow: 0 5px 20px rgba(0, 0, 0, .3);
+}
+
+.troy-server-stats-modal-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 1rem 1.5rem;
+	border-bottom: 1px solid #c3c4c7;
+	background: #f6f7f7;
+}
+
+.troy-server-stats-modal-header h3 {
+	margin: 0;
+	font-size: 1.1rem;
+}
+
+.troy-server-stats-modal-close {
+	background: none;
+	border: none;
+	font-size: 1.5rem;
+	cursor: pointer;
+	padding: 0;
+	width: 30px;
+	height: 30px;
+	line-height: 28px;
+	text-align: center;
+	color: #646970;
+	border-radius: 4px;
+	transition: background .15s ease;
+}
+
+.troy-server-stats-modal-close:hover {
+	background: #dcdcde;
+	color: #1d2327;
+}
+
+.troy-server-stats-modal-body {
+	padding: 1.5rem;
+	overflow-y: auto;
+}
+
+.troy-server-stats-modal-body .troy-server-stats-cards {
+	margin-top: 0;
+}
+
+/* Modal Detail Sections */
+.troy-server-stats-detail-section {
+	margin-bottom: 1.5rem;
+}
+
+.troy-server-stats-detail-section:last-child {
+	margin-bottom: 0;
+}
+
+.troy-server-stats-detail-section h4 {
+	margin: 0 0 .75rem;
+	font-size: .9rem;
+	color: #1d2327;
+	border-bottom: 1px solid #dcdcde;
+	padding-bottom: .5rem;
+}
+
+.troy-server-stats-detail-list {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+	gap: .5rem;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.troy-server-stats-detail-list li {
+	display: flex;
+	justify-content: space-between;
+	padding: .5rem;
+	background: #f6f7f7;
+	border-radius: 3px;
+}
+
+.troy-server-stats-detail-list .label {
+	color: #646970;
+}
+
+.troy-server-stats-detail-list .value {
+	font-weight: 600;
+}
+
+/* Loading State */
+.troy-server-stats-loading {
+	text-align: center;
+	padding: 2rem;
+	color: #646970;
+}
+
+.troy-server-stats-loading::before {
+	content: "";
+	display: inline-block;
+	width: 20px;
+	height: 20px;
+	border: 2px solid #c3c4c7;
+	border-top-color: #2271b1;
+	border-radius: 50%;
+	animation: troy-stats-spin .8s linear infinite;
+	margin-right: .5rem;
+	vertical-align: middle;
+}
+
+@keyframes troy-stats-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+/* Error State */
+.troy-server-stats-error {
+	background: #fcf0f1;
+	border-left: 4px solid #d63638;
+	padding: 1rem;
+	margin: 1rem 0;
+}
+
+/* Responsive */
+@media screen and (max-width: 782px) {
+	.troy-server-stats-date-range {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.troy-server-stats-cards {
+		grid-template-columns: repeat(2, 1fr);
+	}
+
+	.troy-server-stats-modal {
+		padding: 1rem;
+	}
+
+	.troy-server-stats-modal-content {
+		max-height: 90vh;
+	}
+}
+
+@media screen and (max-width: 480px) {
+	.troy-server-stats-cards {
+		grid-template-columns: 1fr;
+	}
+}

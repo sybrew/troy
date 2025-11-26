@@ -311,7 +311,9 @@ const TroyServerPluginEditorStore = new class {
 		const { dispatch, subscribe, select } = wp.data;
 		const { __ }                          = wp.i18n;
 		const { addQueryArgs }                = wp.url;
-		const { assignDeepObject, delay }     = troyServerEditorUtils;
+
+		const assign = troyServerAssign;
+		const timing = troyServerTiming;
 
 		const { setIsLoading, setEditorData } = dispatch( this.storeName );
 
@@ -354,7 +356,7 @@ const TroyServerPluginEditorStore = new class {
 					signal: currentFetchController.signal,
 				} );
 
-				setEditorData( assignDeepObject(
+				setEditorData( assign.deep(
 					this.#defaults,
 					response || {},
 				) );
@@ -455,7 +457,7 @@ const TroyServerPluginEditorStore = new class {
 
 				try {
 					// This is the answer to life, the universe, and everything. Also allows some time for the server to process.
-					await delay( 42 ); // theseoframework.com's admin area is about this fast.
+					await timing.delay( 42 ); // theseoframework.com's admin area is about this fast.
 					response = await getSaveStatus();
 				} catch ( error ) {
 					errorStatus = error?.status || null;
@@ -653,7 +655,8 @@ const TroyServerPluginEditorStore = new class {
 function troyServerGetPluginStore() {
 	const { useEffect, useMemo } = wp.element;
 	const { useSelect }          = wp.data;
-	const { sortVersions }       = troyServerEditorUtils;
+
+	const sort = troyServerSort;
 
 	const postId = useSelect(
 		select => select( 'core/editor' ).getCurrentPostId(),
@@ -682,7 +685,7 @@ function troyServerGetPluginStore() {
 	);
 
 	const sortedVersions = useMemo(
-		() => sortVersions( editorData.versions, 'DESC' ),
+		() => sort.versions( editorData.versions, 'DESC' ),
 		[ editorData.versions ],
 	);
 	const latestVersion = useMemo(

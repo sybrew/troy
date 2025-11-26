@@ -9,6 +9,7 @@ Follow these rules:
 - Use PHP 8.4+ for src/troy-server/\*, PHP 7.4+ for other folders
 - In the root folder files, e.g. troy-server.php, increment the "Version: "-header by "-dev-{number}" when making a PR. If there's no -dev-{number} in the "Version: "-header, add it as -dev-1
 - Never use wp.data.subscribe
+- We use var_dump() in comments to indicate a blocking issue
 
 ## General Guidelines
 
@@ -90,6 +91,11 @@ Follow these rules:
 - Use const instead of import
 - Do not add parentheses to lone parameters in arrow functions
 - Put each chained method call on a new line
+
+## CSS
+
+- Use lowercase hex colors
+- Remove zero before decimal points
 
 ## Avoid
 

@@ -1,12 +1,19 @@
 <?php
 /**
- * @package Troy\Server
+ * @package Troy\Server\Settings
  * @access  private
  */
 
-namespace Troy\Server;
+namespace Troy\Server\Settings;
 
 \defined( 'Troy\Server\ABSPATH' ) or die;
+
+use Troy\Server\Template;
+
+use const Troy\Server\{
+	MAIN_FILE,
+	VERSION,
+};
 
 /**
  * Troy Server
@@ -33,11 +40,11 @@ namespace Troy\Server;
  */
 
 /**
- * Class Troy\Server\Settings.
+ * Class Troy\Server\Settings\Main.
  *
  * @since 0.0.1184
  */
-final class Settings {
+final class Main {
 
 	/**
 	 * The settings page slug.
@@ -90,8 +97,8 @@ final class Settings {
 		$page = \add_menu_page(
 			$name,
 			$name,
-			static::REQUIRED_CAPABILITY,
-			static::SETTINGS_PAGE_SLUG,
+			self::REQUIRED_CAPABILITY,
+			self::SETTINGS_PAGE_SLUG,
 			[ __CLASS__, 'render_admin_menu' ],
 			'dashicons-admin-generic',
 			3.1184,
@@ -107,21 +114,21 @@ final class Settings {
 	 */
 	public static function render_admin_menu() {
 
-		if ( ! \current_user_can( static::REQUIRED_CAPABILITY ) )
+		if ( ! \current_user_can( self::REQUIRED_CAPABILITY ) )
 			\wp_die( \esc_html__( 'You do not have sufficient permissions to access this page.', 'troy-server' ) );
 
-		include ABSPATH . 'includes/views/settings.php';
+		Template::output_view( 'settings/main' );
 	}
 
 	/**
 	 * Initializes the Troy Settings pages.
 	 *
 	 * @since 0.0.1184
-	 * @hook load-{static::SETTINGS_PAGE_SLUG} 10
+	 * @hook load-{self::SETTINGS_PAGE_SLUG} 10
 	 */
 	public static function init_admin_page() {
 
-		if ( ! \current_user_can( static::REQUIRED_CAPABILITY ) )
+		if ( ! \current_user_can( self::REQUIRED_CAPABILITY ) )
 			\wp_die( \esc_html__( 'You do not have sufficient permissions to access this page.', 'troy-server' ) );
 
 		\add_filter(
@@ -147,7 +154,7 @@ final class Settings {
 			 * @param array $args The list of removable query args.
 			 * @return array The modified list of removable query args.
 			 */
-			fn( $args ) => array_merge( $args, [ static::SAVED_RESPONSE ] ),
+			fn( $args ) => array_merge( $args, [ self::SAVED_RESPONSE ] ),
 		);
 
 		\add_action(
@@ -163,17 +170,22 @@ final class Settings {
 
 				\wp_enqueue_style(
 					'troy-server-settings-css',
-					"{$dir_url}library/css/settings{$min}.css",
+					"{$dir_url}library/css/settings/main{$min}.css",
 					[ 'dashicons', 'common', 'forms' ],
 					VERSION,
 				);
 				\wp_enqueue_script(
 					'troy-server-settings-js',
-					"{$dir_url}library/js/settings{$min}.js",
+					"{$dir_url}library/js/settings/main{$min}.js",
 					[],
 					VERSION,
 					true
 				);
+
+				// Enqueue stats assets on plugin-stats and package-stats tabs.
+				// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Affects asset loading only.
+				if ( \in_array( $_GET['tab'] ?? '', [ 'plugin-stats', 'package-stats' ], true ) )
+					Stats::enqueue_assets();
 			}
 		);
 
@@ -187,7 +199,7 @@ final class Settings {
 			 * @param string $current_tab The current settings tab.
 			 */
 			function ( $current_tab ) {
-				include ABSPATH . "includes/views/tab-$current_tab.php";
+				Template::output_view( "settings/tab-$current_tab" );
 			},
 		);
 	}
@@ -195,14 +207,14 @@ final class Settings {
 	/**
 	 * Processes the settings submission.
 	 *
-	 * @hook admin_post_{static::SAVE_ACTION} 10
+	 * @hook admin_post_{self::SAVE_ACTION} 10
 	 * @since 0.0.1184
 	 */
 	public static function process_settings_submission() {
 
-		\check_admin_referer( static::SAVE_NONCE['action'], static::SAVE_NONCE['name'] );
+		\check_admin_referer( self::SAVE_NONCE['action'], self::SAVE_NONCE['name'] );
 
-		if ( ! \current_user_can( static::REQUIRED_CAPABILITY ) )
+		if ( ! \current_user_can( self::REQUIRED_CAPABILITY ) )
 			\wp_die(
 				\esc_html__( 'You do not have sufficient permissions to modify the settings.', 'troy-server' ),
 				403,
@@ -216,7 +228,7 @@ final class Settings {
 			? (int) \update_option( 'troy_server_settings', $settings )
 			: 2;
 
-		\wp_safe_redirect( \add_query_arg( static::SAVED_RESPONSE, $result, \wp_get_referer() ) );
+		\wp_safe_redirect( \add_query_arg( self::SAVED_RESPONSE, $result, \wp_get_referer() ) );
 		exit;
 	}
 }

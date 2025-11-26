@@ -1,13 +1,11 @@
 <?php
 /**
- * @package Troy\Server\Views
+ * @package Troy\Server\Views\Settings
  */
 
-namespace Troy\Server\Views;
+namespace Troy\Server\Views\Settings;
 
-// phpcs:disable WordPress.WP.GlobalVariablesOverride -- We're not in the global space.
-
-\defined( 'Troy\Server\ABSPATH' ) or die;
+( \defined( 'Troy\Server\ABSPATH' ) and \Troy\Server\Template::verify_secret( $secret ) ) or die;
 
 use Troy\Server\Settings;
 
@@ -35,6 +33,8 @@ use Troy\Server\Settings;
  * SOFTWARE.
  */
 
+// phpcs:disable WordPress.WP.GlobalVariablesOverride -- We're not in the global space.
+
 ?>
 <h2><?= \esc_html__( 'Troy Server Options', 'troy-server' ) ?></h2>
 
@@ -44,32 +44,36 @@ use Troy\Server\Settings;
 
 <form method=post action="<?= \esc_url( \admin_url( 'admin-post.php' ) ) ?>">
 	<?php
-	\wp_nonce_field( Settings::SAVE_NONCE['action'], Settings::SAVE_NONCE['name'] );
-	// The next field allows callback to `admin_post_' . Settings::SAVE_ACTION`
+	\wp_nonce_field( Settings\Main::SAVE_NONCE['action'], Settings\Main::SAVE_NONCE['name'] );
+	// The next field allows callback to `admin_post_' . Settings\Main::SAVE_ACTION`
 	?>
-	<input type=hidden name=action value="<?= \esc_attr( Settings::SAVE_ACTION ) ?>">
+	<input type=hidden name=action value="<?= \esc_attr( Settings\Main::SAVE_ACTION ) ?>">
 	<?php
 	$sections = [
-		'general' => [
-			\__( 'General Settings', 'troy-server' ),
-			[
-				'troy_server_settings[test]' => [
-					'checkbox',
-					\get_option( 'troy_server_settings_test', false ),
-					\__( 'Test Mode', 'troy-server' ),
-					\__( 'Enable test mode.', 'troy-server' ),
-					\__( 'This is a tooltip.', 'troy-server' ),
-				],
-			],
-		],
-		'example' => [
-			\__( 'Example Settings', 'troy-server' ),
+		'no_settings_yet' => [
+			\__( 'No settings yet (you can configure your plugins and packages in-place)', 'troy-server' ),
 			[],
 		],
+		// 'general' => [
+		// 	\__( 'General Settings', 'troy-server' ),
+		// 	[
+		// 		'troy_server_settings[test]' => [
+		// 			'checkbox',
+		// 			\get_option( 'troy_server_settings_test', false ),
+		// 			\__( 'Test Mode', 'troy-server' ),
+		// 			\__( 'Enable test mode.', 'troy-server' ),
+		// 			\__( 'This is a tooltip.', 'troy-server' ),
+		// 		],
+		// 	],
+		// ],
+		// 'example' => [
+		// 	\__( 'Example Settings', 'troy-server' ),
+		// 	[],
+		// ],
 	];
 
 	$opened_section = false;
-	$expand_at_load = true;
+	$expand_at_load = false; // TEMP, should be true.
 
 	foreach ( $sections as $section => [ $title, $settings ] ) {
 		if ( $opened_section ) {

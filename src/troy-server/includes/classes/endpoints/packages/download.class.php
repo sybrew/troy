@@ -124,7 +124,7 @@ final class Download extends Base_Endpoint {
 
 		// Record to live stats table (for later aggregation)
 		$wpdb->insert(
-			"{$wpdb->prefix}troy_packages_download_stats_live",
+			"{$wpdb->prefix}troy_package_stats_downloads_live",
 			[
 				'package_id' => $package_id,
 				'version'    => '1.0.0', // Packages don't have versions like plugins

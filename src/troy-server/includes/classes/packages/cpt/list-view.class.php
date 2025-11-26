@@ -140,7 +140,7 @@ final class List_View {
 		// phpcs:disable VariableAnalysis.CodeAnalysis.VariableAnalysis -- Still no support for return null coalescing assignment.
 		static $columns;
 		return $columns ??= [
-			'troy_server_slug'     => [
+			'troy_server_slug'      => [
 				'label'    => \__( 'Slug', 'troy-server' ),
 				'where'    => [ 'troy_packages', 'slug' ],
 				'postfind' => 'post_id',
@@ -148,7 +148,7 @@ final class List_View {
 				'search'   => true,
 				'after'    => [ 'title' ],
 			],
-			'troy_server_plugins'  => [
+			'troy_server_plugins'   => [
 				'label'    => \__( 'Plugins', 'troy-server' ),
 				'where'    => [ 'troy_packages', 'id' ],
 				'postfind' => 'post_id',
@@ -157,7 +157,7 @@ final class List_View {
 				'after'    => [ 'troy_server_slug' ],
 				'render'   => [ static::class, 'render_plugins_column' ],
 			],
-			'troy_server_themes'   => [
+			'troy_server_themes'    => [
 				'label'    => \__( 'Themes', 'troy-server' ),
 				'where'    => [ 'troy_packages_metas', 'themes' ],
 				'postfind' => [
@@ -172,7 +172,22 @@ final class List_View {
 					echo '<span class="package-coming-soon">' . \esc_html__( 'Coming soon', 'troy-server' ) . '</span>';
 				},
 			],
-			'troy_server_download' => [
+			'troy_server_downloads' => [
+				'label'    => \__( 'Downloads', 'troy-server' ),
+				'where'    => [ 'troy_package_stats_totals', 'downloads' ],
+				'postfind' => [
+					'local_key'        => 'package_id',
+					'foreign'          => [ 'troy_packages', 'id' ],
+					'foreign_postfind' => 'post_id',
+				],
+				'orderby'  => true,
+				'search'   => false,
+				'after'    => [ 'troy_server_themes' ],
+				'render'   => function ( $value ) {
+					echo \esc_html( \number_format_i18n( (int) $value ) );
+				},
+			],
+			'troy_server_download'  => [
 				'label'    => \__( 'Download', 'troy-server' ),
 				'where'    => [ 'troy_packages', 'slug' ],
 				'postfind' => 'post_id',
@@ -180,7 +195,7 @@ final class List_View {
 				'search'   => false,
 				'width'    => '100px',
 				'mobile'   => false,
-				'after'    => [ 'troy_server_themes' ],
+				'after'    => [ 'troy_server_downloads' ],
 				'render'   => [ static::class, 'render_download_column' ],
 			],
 		];
@@ -191,6 +206,8 @@ final class List_View {
 	 * Renders the plugins column for a package.
 	 *
 	 * @since 0.0.1184
+	 *
+	 * @param int $package_id The package ID.
 	 */
 	private static function render_plugins_column( $package_id ) {
 

@@ -7,8 +7,6 @@ namespace Troy\Server\Views\Editor\Packages;
 
 ( \defined( 'Troy\Server\ABSPATH' ) and \Troy\Server\Template::verify_secret( $secret ) ) or die;
 
-// phpcs:disable WordPress.WP.GlobalVariablesOverride -- We're not in the global space.
-
 /**
  * Troy Server
  *
@@ -32,6 +30,8 @@ namespace Troy\Server\Views\Editor\Packages;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
+// phpcs:disable WordPress.WP.GlobalVariablesOverride -- We're not in the global space.
 
 ?>
 <p><?= \esc_html__( 'Theme support is coming soon.', 'troy-server' ) ?></p>
