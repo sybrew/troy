@@ -99,6 +99,6 @@ final class Template {
 	 * @return bool
 	 */
 	public static function verify_secret( $value ) {
-		return isset( $value ) && static::$secret === $value;
+		return isset( $value ) && self::$secret === $value;
 	}
 }

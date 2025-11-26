@@ -93,7 +93,7 @@ final class Meta_Boxes {
 		\add_meta_box(
 			'troy_package_plugins',
 			\__( 'Included Plugins', 'troy-server' ),
-			[ static::class, 'render_plugins_metabox' ],
+			[ self::class, 'render_plugins_metabox' ],
 			PACKAGES_CPT,
 			'normal',
 			'default',
@@ -102,7 +102,7 @@ final class Meta_Boxes {
 		\add_meta_box(
 			'troy_package_themes',
 			\__( 'Included Themes', 'troy-server' ),
-			[ static::class, 'render_themes_metabox' ],
+			[ self::class, 'render_themes_metabox' ],
 			PACKAGES_CPT,
 			'normal',
 			'default',
@@ -111,7 +111,7 @@ final class Meta_Boxes {
 		\add_meta_box(
 			'troy_package_settings',
 			\__( 'Package Settings', 'troy-server' ),
-			[ static::class, 'render_settings_metabox' ],
+			[ self::class, 'render_settings_metabox' ],
 			PACKAGES_CPT,
 			'normal',
 			'high',
@@ -120,7 +120,7 @@ final class Meta_Boxes {
 		\add_meta_box(
 			'troy_package_advanced',
 			\__( 'Advanced Package Settings', 'troy-server' ),
-			[ static::class, 'render_advanced_metabox' ],
+			[ self::class, 'render_advanced_metabox' ],
 			PACKAGES_CPT,
 			'normal',
 			'default',
@@ -129,7 +129,7 @@ final class Meta_Boxes {
 		\add_meta_box(
 			'troy_package_download',
 			\__( 'Package Download', 'troy-server' ),
-			[ static::class, 'render_download_metabox' ],
+			[ self::class, 'render_download_metabox' ],
 			PACKAGES_CPT,
 			'side',
 			'high',

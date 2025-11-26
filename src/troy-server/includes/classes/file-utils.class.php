@@ -58,7 +58,7 @@ final class File_Utils {
 	 */
 	public static function init_wpfs() {
 
-		if ( static::$wpfs_initialized )
+		if ( self::$wpfs_initialized )
 			return;
 
 		\wp_raise_memory_limit( 'troy-server-init-fs' );
@@ -72,7 +72,7 @@ final class File_Utils {
 				throw new \Exception( 'Failed to initialize WordPress Filesystem.' );
 		}
 
-		static::$wpfs_initialized = true;
+		self::$wpfs_initialized = true;
 	}
 
 	/**
@@ -93,7 +93,7 @@ final class File_Utils {
 	 */
 	public static function make_shielded_dir( $dir ) {
 
-		static::init_wpfs();
+		self::init_wpfs();
 
 		$dir = \trailingslashit( $dir );
 

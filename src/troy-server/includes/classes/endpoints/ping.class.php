@@ -50,7 +50,7 @@ final class Ping extends Base_Endpoint {
 	public function handle_request() {
 
 		if ( 'GET' !== $_SERVER['REQUEST_METHOD'] )
-			static::send_error( 'Method not allowed', 405 );
+			self::send_error( 'Method not allowed', 405 );
 
 		// Simple pong response
 		$this->send_json_response( [

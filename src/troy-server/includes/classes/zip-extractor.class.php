@@ -138,7 +138,7 @@ final class Zip_Extractor {
 	 * The default threshold is 2 days ago, for "yesterday" could be a few seconds ago,
 	 * which might accidentally delete a directory that is still being processed.
 	 *
-	 * @hook troy_cron_clean_temp 10
+	 * @hook troy_server_cron_clean_temp_dirs 10
 	 * @since 0.0.1184
 	 */
 	public static function cron_clean_old_temp_dirs() {

@@ -89,7 +89,7 @@ final class Markdown {
 	 */
 	public static function process( $content, $type = 'common', $ops = [] ) {
 
-		static::autoload_dependencies();
+		self::autoload_dependencies();
 
 		if ( $ops['convert_wordpress'] ?? true ) {
 			// Convert `= title =` to `## title`. That's it for WP Markdown.

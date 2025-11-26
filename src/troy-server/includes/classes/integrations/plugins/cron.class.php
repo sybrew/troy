@@ -59,12 +59,12 @@ final class Cron extends \Troy\Server\Cron {
 	 * }
 	 */
 	protected const CRON_JOBS = [
-		'troy_integrations_find_tags'         => [
+		'troy_server_cron_integrations_find_tags'         => [
 			'callback' => [ self::class, 'find_all_tags' ],
 			'schedule' => 'halfhourly',
 			'interval' => \HOUR_IN_SECONDS / 2,
 		],
-		'troy_integrations_process_tag_queue' => [
+		'troy_server_cron_integrations_process_tag_queue' => [
 			'callback' => [ self::class, 'process_tag_queue' ],
 			'schedule' => 'minutely',
 			'interval' => \MINUTE_IN_SECONDS,
@@ -77,6 +77,7 @@ final class Cron extends \Troy\Server\Cron {
 	 * Compares fetched tags with existing processed versions and queues new/changed tags.
 	 * Uses commit SHA for GitHub to detect tag updates.
 	 *
+	 * @hook troy_server_cron_integrations_find_tags 10
 	 * @since 0.0.1184
 	 * @global \wpdb $wpdb
 	 */
@@ -245,6 +246,7 @@ final class Cron extends \Troy\Server\Cron {
 	 * Processes up to 2 tags at a time to avoid overloading the server.
 	 * Skips tags that have failed 5+ times until manual intervention.
 	 *
+	 * @hook troy_server_cron_integrations_process_tag_queue 10
 	 * @since 0.0.1184
 	 */
 	public static function process_tag_queue() {

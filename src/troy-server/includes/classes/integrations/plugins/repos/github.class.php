@@ -101,7 +101,7 @@ final class GitHub {
 				'error'   => \__( 'Invalid repository format.', 'troy-server' ),
 			];
 
-		$response = static::get_repo_tags( $settings['owner_repo'], $pat );
+		$response = self::get_repo_tags( $settings['owner_repo'], $pat );
 
 		if ( \is_wp_error( $response ) )
 			return [
@@ -145,7 +145,7 @@ final class GitHub {
 				\__( 'Invalid repository format.', 'troy-server' ),
 			);
 
-		$response = static::get_repo_tags( $owner_repo, $pat );
+		$response = self::get_repo_tags( $owner_repo, $pat );
 
 		if ( \is_wp_error( $response ) )
 			return $response;

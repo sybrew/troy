@@ -197,11 +197,11 @@ final class Readme_Parser {
 		$subdir = glob( "{$plugin_dir}*", GLOB_ONLYDIR )[0] ?? null;
 
 		if ( ! $subdir )
-			throw new \Exception( 'Plugin directory not found.', static::ERRORS['not_found'] );
+			throw new \Exception( 'Plugin directory not found.', self::ERRORS['not_found'] );
 
 		$subdir = "$subdir/";
 
-		foreach ( static::README_NAMES as $file ) {
+		foreach ( self::README_NAMES as $file ) {
 			if ( file_exists( "{$subdir}$file" ) ) {
 				$readme_file = "{$subdir}$file";
 				break;
@@ -209,12 +209,12 @@ final class Readme_Parser {
 		}
 
 		if ( empty( $readme_file ) )
-			throw new \Exception( 'Readme file not found.', static::ERRORS['not_found'] );
+			throw new \Exception( 'Readme file not found.', self::ERRORS['not_found'] );
 
 		$this->raw_readme_contents = file_get_contents( $readme_file );
 
 		if ( empty( $this->raw_readme_contents ) )
-			throw new \Exception( 'Readme file is empty.', static::ERRORS['empty'] );
+			throw new \Exception( 'Readme file is empty.', self::ERRORS['empty'] );
 	}
 
 	/**
@@ -230,7 +230,7 @@ final class Readme_Parser {
 	 */
 	private array $lines = [] {
 		get {
-			if ( ! ( $this->parsed & static::PARSED['lines'] ) ) {
+			if ( ! ( $this->parsed & self::PARSED['lines'] ) ) {
 				$contents = $this->raw_readme_contents;
 
 				$boms = [
@@ -263,7 +263,7 @@ final class Readme_Parser {
 					),
 				);
 
-				$this->parsed |= static::PARSED['lines'];
+				$this->parsed |= self::PARSED['lines'];
 			}
 
 			return $this->lines;
@@ -308,7 +308,7 @@ final class Readme_Parser {
 		'short_description' => '',
 	] {
 		get {
-			if ( ! ( $this->parsed & static::PARSED['headers_raw'] ) ) {
+			if ( ! ( $this->parsed & self::PARSED['headers_raw'] ) ) {
 				// Find name first; it should be the first non-empty line.
 				foreach ( $this->lines as $i => $line ) {
 					$candidate = trim( $line, " \t#=" );
@@ -322,7 +322,7 @@ final class Readme_Parser {
 
 						// If the field is a valid header, skip and try next line.
 						// We allow "plugin name" as a special case below.
-						if ( isset( static::HEADERS[ $field ] ) )
+						if ( isset( self::HEADERS[ $field ] ) )
 							continue;
 
 						// If the field is "plugin name", we take the value as the candidate.
@@ -333,14 +333,14 @@ final class Readme_Parser {
 
 					if ( empty( $candidate ) ) {
 						// Let's not attempt to parse bogus readme.txt files. Bail.
-						if ( $i > static::MAX_HEADER_LENGTH )
-							throw new \Exception( 'Readme file is invalid.', static::ERRORS['untitled'] );
+						if ( $i > self::MAX_HEADER_LENGTH )
+							throw new \Exception( 'Readme file is invalid.', self::ERRORS['untitled'] );
 
 						continue;
 					}
 
 					// Let's discard it if it's too long. Enforce good and consistent practice.
-					if ( mb_strlen( $candidate ) > static::MAX_NAME_LENGTH )
+					if ( mb_strlen( $candidate ) > self::MAX_NAME_LENGTH )
 						break;
 
 					$this->headers_raw['plugin_name'] = $candidate;
@@ -366,7 +366,7 @@ final class Readme_Parser {
 					[ $field, $value ] = explode( ':', $raw, 2 );
 
 					// Trim extraneous whitespace and accidental new header line characters.
-					$h_key = static::HEADERS[ strtolower( trim( $field, " \t*-" ) ) ] ?? null;
+					$h_key = self::HEADERS[ strtolower( trim( $field, " \t*-" ) ) ] ?? null;
 
 					// If valid header, store it in headers_raw. Discard otherwise.
 					if ( isset( $h_key ) && \array_key_exists( $h_key, $this->headers_raw ) )
@@ -374,7 +374,7 @@ final class Readme_Parser {
 
 					// Let's not attempt to parse bogus readme.txt headers.
 					// Bail processing without throwing, we're working now with what we have.
-					if ( $i > static::MAX_HEADER_LENGTH ) {
+					if ( $i > self::MAX_HEADER_LENGTH ) {
 						// Move to the last header line quickly here without processing.
 						foreach ( $this->lines as $line ) {
 							++$i;
@@ -416,7 +416,7 @@ final class Readme_Parser {
 					break;
 				}
 
-				$this->parsed |= static::PARSED['headers_raw'];
+				$this->parsed |= self::PARSED['headers_raw'];
 			}
 
 			return $this->headers_raw;
@@ -449,7 +449,7 @@ final class Readme_Parser {
 	 */
 	public private(set) array $headers = [] {
 		get {
-			if ( ! ( $this->parsed & static::PARSED['headers'] ) ) {
+			if ( ! ( $this->parsed & self::PARSED['headers'] ) ) {
 				$this->headers['plugin_name']       = \sanitize_text_field( trim( $this->headers_raw['plugin_name'] ) );
 				// $this->headers['tested_wp']      = API\Sanitize::tested_version( $this->headers_raw['tested_wp'] );
 				// $this->headers['tested_php']     = API\Sanitize::tested_version( $this->headers_raw['tested_php'] );
@@ -463,7 +463,7 @@ final class Readme_Parser {
 				$this->headers['donate_uri']        = \sanitize_url( $this->headers_raw['donate_uri'] );
 				$this->headers['short_description'] = \sanitize_text_field( trim( $this->headers_raw['short_description'] ) );
 
-				$this->parsed |= static::PARSED['headers'];
+				$this->parsed |= self::PARSED['headers'];
 			}
 
 			return $this->headers;
@@ -497,7 +497,7 @@ final class Readme_Parser {
 		'screenshots' => '',
 	] {
 		get {
-			if ( ! ( $this->parsed & static::PARSED['contents_raw'] ) ) {
+			if ( ! ( $this->parsed & self::PARSED['contents_raw'] ) ) {
 				// We need to skip to the content sections. To do that, we first parse the raw headers.
 				$this->headers_raw;
 
@@ -513,7 +513,7 @@ final class Readme_Parser {
 				// Parse the sections and store them in contents_raw.
 				foreach ( $matches as $match ) {
 					// Trim extraneous whitespace and accidental header characters.
-					$s_key = static::SECTIONS[ strtolower( trim( $match['title'], ' =#' ) ) ] ?? null;
+					$s_key = self::SECTIONS[ strtolower( trim( $match['title'], ' =#' ) ) ] ?? null;
 
 					// Check against default sections, we do not want to accidentally insert rogue sections.
 					if ( \array_key_exists( $s_key, $this->contents_raw ) )
@@ -534,7 +534,7 @@ final class Readme_Parser {
 				// We're done with the lines now, so we can clear them.
 				$this->lines = [];
 
-				$this->parsed |= static::PARSED['contents_raw'];
+				$this->parsed |= self::PARSED['contents_raw'];
 			}
 
 			return $this->contents_raw;
@@ -561,7 +561,7 @@ final class Readme_Parser {
 	 */
 	public private(set) array $contents = [] {
 		get {
-			if ( ! ( $this->parsed & static::PARSED['contents'] ) ) {
+			if ( ! ( $this->parsed & self::PARSED['contents'] ) ) {
 				// Convert the contents_raw to sanitized HTML.
 				foreach ( $this->contents_raw as $key => $content ) { // No ref: we cannot assume others don't mangle it.
 					$this->contents[ $key ] = $content
@@ -580,7 +580,7 @@ final class Readme_Parser {
 						: '';
 				}
 
-				$this->parsed |= static::PARSED['contents'];
+				$this->parsed |= self::PARSED['contents'];
 			}
 
 			return $this->contents;

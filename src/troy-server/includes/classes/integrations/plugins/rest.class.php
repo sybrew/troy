@@ -64,7 +64,7 @@ final class REST {
 
 		$permission_cb = fn() => \current_user_can( REST_NS['plugins_integrations']['access_cap'] );
 
-		$class = static::class;
+		$class = self::class;
 
 		foreach (
 			[

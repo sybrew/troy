@@ -53,7 +53,7 @@ class Cron {
 	 * }
 	 */
 	protected const CRON_JOBS = [
-		'troy_cron_clean_temp' => [
+		'troy_server_cron_clean_temp_dirs' => [
 			'callback' => [ Zip_Extractor::class, 'cron_clean_old_temp_dirs' ],
 			'schedule' => 'daily',
 		],
@@ -67,8 +67,8 @@ class Cron {
 	 */
 	public static function register() {
 
-		\add_filter( 'cron_schedules', [ static::class, 'register_schedules' ] );
-		\add_action( 'admin_init', [ static::class, 'register_cron_tasks' ] );
+		\add_filter( 'cron_schedules', [ static::class, 'register_schedules' ] ); // static: allow overrides
+		\add_action( 'admin_init', [ static::class, 'register_cron_tasks' ] ); // static: allow overrides
 
 		// Because we're only registering during wp_doing_cron, the callbacks won't be visible to WP Crontrol.
 		if ( \wp_doing_cron() )

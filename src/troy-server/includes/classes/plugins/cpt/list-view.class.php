@@ -253,7 +253,7 @@ final class List_View {
 			return;
 
 		// Remit FETCH_CLASS_NAME opcode, which performs a function call to check if it's valid.
-		$class = static::class;
+		$class = self::class;
 
 		\add_filter( 'posts_join', [ $class, 'register_custom_fields' ], 10, 2 );
 		\add_filter( 'posts_orderby', [ $class, 'order_columns_by_custom_fields' ], 10, 2 );
@@ -276,7 +276,7 @@ final class List_View {
 
 		$after_counts = [];
 
-		foreach ( static::get_columns() as $index => $conf ) {
+		foreach ( self::get_columns() as $index => $conf ) {
 			$column_keys = array_keys( $columns );
 			$offset      = false;
 
@@ -323,7 +323,7 @@ final class List_View {
 	 */
 	public static function register_sortable_columns( $columns ) {
 
-		foreach ( static::get_columns() as $index => $conf ) {
+		foreach ( self::get_columns() as $index => $conf ) {
 			if ( empty( $conf['orderby'] ) )
 				continue;
 
@@ -351,7 +351,7 @@ final class List_View {
 
 		global $wpdb;
 
-		$sortables     = static::get_columns();
+		$sortables     = self::get_columns();
 		$joined_tables = []; // Keep track of joined tables to avoid duplicates.
 
 		$primary_table = $wpdb->posts;
@@ -411,7 +411,7 @@ final class List_View {
 	public static function order_columns_by_custom_fields( $orderby, $query ) {
 
 		$order_key = $query->get( 'orderby' );
-		$sortables = static::get_columns();
+		$sortables = self::get_columns();
 
 		if ( empty( $sortables[ $order_key ] ) || empty( $sortables[ $order_key ]['orderby'] ) )
 			return $orderby;
@@ -457,7 +457,7 @@ final class List_View {
 		global $wpdb;
 
 		$like      = \esc_sql( '%' . $wpdb->esc_like( $search_q ) . '%' );
-		$sortables = static::get_columns();
+		$sortables = self::get_columns();
 		$clauses   = [];
 
 		foreach ( $sortables as $sortable ) {
@@ -498,7 +498,7 @@ final class List_View {
 	 */
 	public static function render_columns( $column, $post_id ) {
 
-		$sortables = static::get_columns();
+		$sortables = self::get_columns();
 
 		if ( ! isset( $sortables[ $column ] ) )
 			return;
@@ -520,14 +520,14 @@ final class List_View {
 
 			// Get the foreign key value first
 			$fc_ptr ??= $wpdb->get_var( $wpdb->prepare(
-				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Strings defined at static::get_columns().
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Strings defined at self::get_columns().
 				"SELECT `$f_key` FROM `{$wpdb->prefix}$f_table` WHERE `$f_postfind` = %d",
 				$post_id,
 			) ) ?: false; // Set to false to avoid querying again if not found.
 
 			if ( $fc_ptr ) {
 				$value = $wpdb->get_var( $wpdb->prepare(
-					// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Strings defined at static::get_columns().
+					// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Strings defined at self::get_columns().
 					"SELECT `$key` FROM `{$wpdb->prefix}$table` WHERE `$local_key` = %d",
 					$fc_ptr,
 				) );
@@ -537,7 +537,7 @@ final class List_View {
 		} else {
 			// $postfind is a string.
 			$value = $wpdb->get_var( $wpdb->prepare(
-				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Strings defined at static::get_columns().
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Strings defined at self::get_columns().
 				"SELECT `$key` FROM `{$wpdb->prefix}$table` WHERE `$postfind` = %d",
 				$post_id,
 			) );
@@ -563,7 +563,7 @@ final class List_View {
 		$width_columns         = [];
 		$hidden_mobile_columns = [];
 
-		foreach ( static::get_columns() as $column_id => $config ) {
+		foreach ( self::get_columns() as $column_id => $config ) {
 			// Collect columns with similar properties
 			if ( isset( $config['width'] ) )
 				$width_columns[ $config['width'] ][] = $column_id;

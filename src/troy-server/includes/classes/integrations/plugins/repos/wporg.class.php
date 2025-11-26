@@ -80,7 +80,7 @@ final class WPOrg {
 				'error'   => \__( 'Invalid plugin slug.', 'troy-server' ),
 			];
 
-		$response = static::get_plugin_info( $settings['slug'] );
+		$response = self::get_plugin_info( $settings['slug'] );
 
 		if ( \is_wp_error( $response ) )
 			return [
@@ -123,7 +123,7 @@ final class WPOrg {
 				\__( 'Plugin slug is required.', 'troy-server' ),
 			);
 
-		$response = static::get_plugin_info( $slug );
+		$response = self::get_plugin_info( $slug );
 
 		if ( \is_wp_error( $response ) )
 			return $response;

@@ -78,7 +78,7 @@ final class Store {
 		if ( PACKAGES_CPT !== $post->post_type )
 			return;
 
-		\wp_nonce_field( static::SAVE_NONCE['action'], static::SAVE_NONCE['name'], false );
+		\wp_nonce_field( self::SAVE_NONCE['action'], self::SAVE_NONCE['name'], false );
 	}
 
 	/**
@@ -292,8 +292,8 @@ final class Store {
 			|| \wp_is_post_revision( $post_id )
 			|| ! \current_user_can( 'edit_post', $post_id )
 			|| empty( $_POST['troy_package'] )
-			|| ! isset( $_POST[ static::SAVE_NONCE['name'] ] )
-			|| ! \wp_verify_nonce( $_POST[ static::SAVE_NONCE['name'] ], static::SAVE_NONCE['action'] )
+			|| ! isset( $_POST[ self::SAVE_NONCE['name'] ] )
+			|| ! \wp_verify_nonce( $_POST[ self::SAVE_NONCE['name'] ], self::SAVE_NONCE['action'] )
 		)
 			return;
 

@@ -58,7 +58,7 @@ final class REST {
 
 		$permission_cb = fn() => \current_user_can( Main::REQUIRED_CAPABILITY );
 
-		$class = static::class;
+		$class = self::class;
 
 		foreach (
 			[

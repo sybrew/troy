@@ -106,7 +106,7 @@ final class SiteHealth {
 			[
 				[
 					'methods'             => 'GET',
-					'callback'            => [ static::class, 'test_troy_repo_communications' ],
+					'callback'            => [ self::class, 'test_troy_repo_communications' ],
 					'permission_callback' => fn() => \current_user_can( 'view_site_health_checks' ),
 				],
 			],
@@ -310,14 +310,14 @@ final class SiteHealth {
 		$info['troy-client-plugins'] = [
 			'label'       => \__( 'Troy Client &mdash; Dependent Plugins', 'troy-client' ),
 			'description' => \__( 'The following plugins rely on Troy Client.', 'troy-client' ),
-			'fields'      => static::get_enabled_plugins_list(),
+			'fields'      => self::get_enabled_plugins_list(),
 			'show_count'  => true,
 		];
 
 		$info['troy-client-communications'] = [
 			'label'       => \__( 'Troy Client &mdash; Communications', 'troy-client' ),
 			'description' => \__( 'Shows whether Troy Client can communicate with external resources for updates and dependencies.', 'troy-client' ),
-			'fields'      => static::get_external_blocking_list(),
+			'fields'      => self::get_external_blocking_list(),
 		];
 
 		return $info;

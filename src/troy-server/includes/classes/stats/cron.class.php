@@ -54,12 +54,12 @@ final class Cron extends \Troy\Server\Cron {
 	 * }
 	 */
 	protected const CRON_JOBS = [
-		'troy_stats_take_snapshot'  => [
+		'troy_server_cron_stats_take_snapshot'  => [
 			'callback' => [ self::class, 'run_snapshot' ],
 			'schedule' => 'halfhourly',
 			'interval' => \HOUR_IN_SECONDS / 2,
 		],
-		'troy_stats_finalize_epoch' => [
+		'troy_server_cron_stats_finalize_epoch' => [
 			'callback' => [ self::class, 'run_finalize_epoch' ],
 			'schedule' => 'daily',
 		],
@@ -71,6 +71,7 @@ final class Cron extends \Troy\Server\Cron {
 	 * Aggregates live data from all _live tables into aggregated tables.
 	 * This runs every 30 minutes to keep stats near-realtime.
 	 *
+	 * @hook troy_server_cron_stats_take_snapshot 10
 	 * @since 0.0.1184
 	 */
 	public static function run_snapshot() {
@@ -93,6 +94,7 @@ final class Cron extends \Troy\Server\Cron {
 	 * Finalizes epochs that are older than 48 hours by deleting their live data.
 	 * This runs daily and processes one epoch at a time.
 	 *
+	 * @hook troy_server_cron_stats_finalize_epoch 10
 	 * @since 0.0.1184
 	 */
 	public static function run_finalize_epoch() {

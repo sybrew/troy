@@ -99,7 +99,7 @@ final class Files {
 	 * @return string The package zip file path.
 	 */
 	public static function get_package_zip_file_path( $package_id, $slug ) {
-		return static::get_package_storage_dir_path( $package_id ) . "{$slug}.zip";
+		return self::get_package_storage_dir_path( $package_id ) . "{$slug}.zip";
 	}
 
 	/**
@@ -139,16 +139,16 @@ final class Files {
 		// 15 ought to be plenty to rename a few folder indexes.
 		API\Utils::increase_time_limit_by( 15 );
 
-		$source_dir = static::get_package_storage_dir_path( $package_id );
+		$source_dir = self::get_package_storage_dir_path( $package_id );
 
 		// Not every package has files uploaded to it. Let's check if they have first.
 		if ( \is_dir( $source_dir ) ) {
 			File_Utils::init_wpfs();
-			File_Utils::make_shielded_dir( static::get_package_graveyard_dir_path() );
+			File_Utils::make_shielded_dir( self::get_package_graveyard_dir_path() );
 
 			\move_dir(
 				$source_dir,
-				static::get_package_graveyard_dir_path( $package_id ),
+				self::get_package_graveyard_dir_path( $package_id ),
 				true,
 			);
 		}

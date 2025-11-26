@@ -109,7 +109,7 @@ final class Files {
 			API\Sanitize::semver( $version ),
 		);
 
-		return static::get_plugin_storage_dir_path( $plugin_id ) . "version-$version/plugin.zip";
+		return self::get_plugin_storage_dir_path( $plugin_id ) . "version-$version/plugin.zip";
 	}
 
 	/**
@@ -134,9 +134,9 @@ final class Files {
 	 */
 	public static function get_plugin_zip_file_path_latest( $plugin_id, $args = [] ) {
 
-		$zip = static::get_latest_plugin_zip( $plugin_id, $args );
+		$zip = self::get_latest_plugin_zip( $plugin_id, $args );
 
-		return $zip ? static::get_plugin_zip_file_path( $plugin_id, $zip->version ) : null;
+		return $zip ? self::get_plugin_zip_file_path( $plugin_id, $zip->version ) : null;
 	}
 
 	/**
@@ -267,16 +267,16 @@ final class Files {
 		// 15 ought to be plenty to rename a few folder indexes.
 		API\Utils::increase_time_limit_by( 15 );
 
-		$source_dir = static::get_plugin_storage_dir_path( $plugin_id );
+		$source_dir = self::get_plugin_storage_dir_path( $plugin_id );
 
 		// Not every plugin has had filed uploaded to it. Let's check if they have first.
 		if ( is_dir( $source_dir ) ) {
 			File_Utils::init_wpfs();
-			File_Utils::make_shielded_dir( static::get_plugin_graveyard_dir_path() );
+			File_Utils::make_shielded_dir( self::get_plugin_graveyard_dir_path() );
 
 			\move_dir(
 				$source_dir,
-				static::get_plugin_graveyard_dir_path( $plugin_id ),
+				self::get_plugin_graveyard_dir_path( $plugin_id ),
 				true,
 			);
 		}

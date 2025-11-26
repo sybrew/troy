@@ -62,7 +62,7 @@ final class REST {
 		$permission_cb = fn() => \current_user_can( REST_NS['plugins_manage']['access_cap'] );
 
 		// Remit FETCH_CLASS_NAME opcode, which performs a function call to check if it's valid.
-		$class = static::class;
+		$class = self::class;
 
 		// Register the REST API routes.
 		foreach (
