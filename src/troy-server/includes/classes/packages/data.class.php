@@ -166,7 +166,7 @@ final class Data {
 
 		$meta = $wpdb->get_row(
 			$wpdb->prepare(
-				"SELECT * FROM `{$wpdb->prefix}troy_packages_metas` WHERE package_id = %d",
+				"SELECT * FROM `{$wpdb->prefix}troy_package_metas` WHERE package_id = %d",
 				$this->package_id,
 			),
 		);
@@ -205,7 +205,9 @@ final class Data {
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}troy_package_stats_downloads WHERE package_id = %d",
+			"SELECT *
+			 FROM {$wpdb->prefix}troy_package_stats_downloads
+			 WHERE package_id = %d",
 			$this->package_id,
 		) ) ?: null;
 	}
@@ -232,7 +234,9 @@ final class Data {
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}troy_package_stats_downloads_live WHERE package_id = %d",
+			"SELECT *
+			 FROM {$wpdb->prefix}troy_package_stats_downloads_live
+			 WHERE package_id = %d",
 			$this->package_id,
 		) ) ?: null;
 	}

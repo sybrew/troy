@@ -564,7 +564,7 @@ final class Zip_Uploader {
 
 			try {
 				$existing_zip = $wpdb->get_var( $wpdb->prepare(
-					"SELECT id FROM {$wpdb->prefix}troy_plugins_zips WHERE plugin_id = %d AND version = %s",
+					"SELECT id FROM {$wpdb->prefix}troy_plugin_zips WHERE plugin_id = %d AND version = %s",
 					$this->plugin_id,
 					$zip_db_data['version'],
 				) );
@@ -574,7 +574,7 @@ final class Zip_Uploader {
 				if ( $existing_zip ) {
 					// Update existing plugin zip.
 					$wpdb->update(
-						"{$wpdb->prefix}troy_plugins_zips",
+						"{$wpdb->prefix}troy_plugin_zips",
 						[
 							'type'             => $zip_db_data['type'],
 							'file_size'        => $zip_db_data['file_size'],
@@ -613,7 +613,7 @@ final class Zip_Uploader {
 				} else {
 					// Insert new plugin zip.
 					$wpdb->insert(
-						"{$wpdb->prefix}troy_plugins_zips",
+						"{$wpdb->prefix}troy_plugin_zips",
 						[
 							'plugin_id'        => $this->plugin_id,
 							'version'          => $zip_db_data['version'],

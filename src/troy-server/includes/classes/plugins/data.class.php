@@ -198,7 +198,9 @@ final class Data {
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}troy_plugins_slug_transfers WHERE plugin_id = %d",
+			"SELECT *
+			 FROM {$wpdb->prefix}troy_plugin_slug_transfers
+			 WHERE plugin_id = %d",
 			$this->plugin_id,
 		) );
 	}
@@ -231,7 +233,7 @@ final class Data {
 		global $wpdb;
 
 		return $wpdb->get_row( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}troy_plugins_metas WHERE plugin_id = %d",
+			"SELECT * FROM {$wpdb->prefix}troy_plugin_metas WHERE plugin_id = %d",
 			$this->plugin_id,
 		) );
 	}
@@ -258,7 +260,7 @@ final class Data {
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}troy_plugins_contributors WHERE plugin_id = %d",
+			"SELECT * FROM {$wpdb->prefix}troy_plugin_contributors WHERE plugin_id = %d",
 			$this->plugin_id,
 		) );
 	}
@@ -295,7 +297,10 @@ final class Data {
 		global $wpdb;
 
 		$rows = $wpdb->get_results( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}troy_plugins_infos WHERE plugin_id = %d AND locale IN (%s, 'en_US')",
+			"SELECT *
+			 FROM {$wpdb->prefix}troy_plugin_infos
+			 WHERE plugin_id = %d
+			 	AND locale IN (%s, 'en_US')",
 			$this->plugin_id,
 			$this->locale,
 		) );
@@ -343,7 +348,10 @@ final class Data {
 		global $wpdb;
 
 		return $wpdb->get_row( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}troy_plugins_snapshots WHERE plugin_id = %d AND `version` = %s",
+			"SELECT *
+			 FROM {$wpdb->prefix}troy_plugin_snapshots
+			 WHERE plugin_id = %d
+			 	AND `version` = %s",
 			$this->plugin_id,
 			$this->plugin_version,
 		) );
@@ -382,7 +390,7 @@ final class Data {
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}troy_plugins_zips WHERE plugin_id = %d",
+			"SELECT * FROM {$wpdb->prefix}troy_plugin_zips WHERE plugin_id = %d",
 			$this->plugin_id,
 		) );
 	}
@@ -420,7 +428,10 @@ final class Data {
 		global $wpdb;
 
 		return $wpdb->get_row( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}troy_plugins_zips WHERE plugin_id = %d AND `version` = %s",
+			"SELECT *
+			 FROM {$wpdb->prefix}troy_plugin_zips
+			 WHERE plugin_id = %d
+			 	AND `version` = %s",
 			$this->plugin_id,
 			$this->plugin_version,
 		) );
@@ -453,7 +464,11 @@ final class Data {
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}troy_plugins_translations WHERE plugin_id = %d AND `version` = %s AND `locale` = %s",
+			"SELECT *
+			 FROM {$wpdb->prefix}troy_plugin_translations
+			 WHERE plugin_id = %d
+			 	AND `version` = %s
+			 	AND `locale` = %s",
 			$this->plugin_id,
 			$this->plugin_version,
 			$this->locale,
@@ -485,7 +500,9 @@ final class Data {
 		global $wpdb;
 
 		return $wpdb->get_row( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}troy_plugins_data_caches WHERE plugin_id = %d",
+			"SELECT *
+			 FROM {$wpdb->prefix}troy_plugin_data_caches
+			 WHERE plugin_id = %d",
 			$this->plugin_id,
 		) );
 	}
@@ -513,7 +530,7 @@ final class Data {
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}troy_plugins_ratings WHERE plugin_id = %d",
+			"SELECT * FROM {$wpdb->prefix}troy_plugin_ratings WHERE plugin_id = %d",
 			$this->plugin_id,
 		) );
 	}
@@ -574,7 +591,10 @@ final class Data {
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}troy_plugin_stats_totals_daily WHERE plugin_id = %d AND `date` = %s",
+			"SELECT *
+			 FROM {$wpdb->prefix}troy_plugin_stats_totals_daily
+			 WHERE plugin_id = %d
+			 	AND `date` = %s",
 			$this->plugin_id,
 			$this->date,
 		) );
@@ -606,7 +626,10 @@ final class Data {
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}troy_plugin_stats_versions WHERE plugin_id = %d AND `version` = %s",
+			"SELECT *
+			 FROM {$wpdb->prefix}troy_plugin_stats_views
+			 WHERE plugin_id = %d
+			 	AND `version` = %s",
 			$this->plugin_id,
 			$this->plugin_version,
 		) );
@@ -639,7 +662,11 @@ final class Data {
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}troy_plugin_stats_versions_daily WHERE plugin_id = %d AND `version` = %s and `date` = %s",
+			"SELECT *
+			 FROM {$wpdb->prefix}troy_plugin_stats_versions_daily
+			 WHERE plugin_id = %d
+			 	AND `version` = %s
+			 	AND `date` = %s",
 			$this->plugin_id,
 			$this->plugin_version,
 			$this->date,
@@ -671,7 +698,10 @@ final class Data {
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}troy_plugin_stats_views WHERE plugin_id = %d AND `version` = %s",
+			"SELECT *
+			 FROM {$wpdb->prefix}troy_plugin_stats_views
+			 WHERE plugin_id = %d
+			   AND `version` = %s",
 			$this->plugin_id,
 			$this->plugin_version,
 		) );
@@ -700,7 +730,10 @@ final class Data {
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}troy_plugin_stats_views_live WHERE plugin_id = %d AND `version` = %s",
+			"SELECT *
+			 FROM {$wpdb->prefix}troy_plugin_stats_views_live
+			 WHERE plugin_id = %d
+			 	AND `version` = %s",
 			$this->plugin_id,
 			$this->plugin_version,
 		) );
@@ -730,7 +763,10 @@ final class Data {
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}troy_plugin_stats_downloads WHERE plugin_id = %d AND `version` = %s",
+			"SELECT *
+			 FROM {$wpdb->prefix}troy_plugin_stats_downloads
+			 WHERE plugin_id = %d
+			 	AND `version` = %s",
 			$this->plugin_id,
 			$this->plugin_version,
 		) );
@@ -758,7 +794,10 @@ final class Data {
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}troy_plugin_stats_downloads_live WHERE plugin_id = %d AND `version` = %s",
+			"SELECT *
+			 FROM {$wpdb->prefix}troy_plugin_stats_downloads_live
+			 WHERE plugin_id = %d
+			 	AND `version` = %s",
 			$this->plugin_id,
 			$this->plugin_version,
 		) );
@@ -788,7 +827,10 @@ final class Data {
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}troy_plugin_stats_requests WHERE plugin_id = %d AND `version` = %s",
+			"SELECT *
+			 FROM {$wpdb->prefix}troy_plugin_stats_requests
+			 WHERE plugin_id = %d
+			 	AND `version` = %s",
 			$this->plugin_id,
 			$this->plugin_version,
 		) );
@@ -818,7 +860,10 @@ final class Data {
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}troy_plugin_stats_locales WHERE plugin_id = %d AND `version` = %s",
+			"SELECT *
+			 FROM {$wpdb->prefix}troy_plugin_stats_locales
+			 WHERE plugin_id = %d
+			 	AND `version` = %s",
 			$this->plugin_id,
 			$this->plugin_version,
 		) );
@@ -853,7 +898,10 @@ final class Data {
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}troy_plugin_stats_requests_live WHERE plugin_id = %d AND `version` = %s",
+			"SELECT *
+			 FROM {$wpdb->prefix}troy_plugin_stats_requests_live
+			 WHERE plugin_id = %d
+			 	AND `version` = %s",
 			$this->plugin_id,
 			$this->plugin_version,
 		) );
@@ -919,7 +967,9 @@ final class Data {
 		global $wpdb;
 
 		$integration = $wpdb->get_row( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}troy_plugins_integrations WHERE plugin_id = %d",
+			"SELECT *
+			 FROM {$wpdb->prefix}troy_plugin_integrations
+			 WHERE plugin_id = %d",
 			$this->plugin_id,
 		) );
 

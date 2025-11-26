@@ -87,7 +87,7 @@ final class Cron extends \Troy\Server\Cron {
 
 		$integrations = $wpdb->get_results(
 			"SELECT plugin_id, mode, auto_process
-			 FROM {$wpdb->prefix}troy_plugins_integrations
+			 FROM {$wpdb->prefix}troy_plugin_integrations
 			 WHERE auto_process != 'none'",
 		);
 
@@ -162,7 +162,7 @@ final class Cron extends \Troy\Server\Cron {
 
 		$existing_versions = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT version FROM {$wpdb->prefix}troy_plugins_zips WHERE plugin_id = %d",
+				"SELECT version FROM {$wpdb->prefix}troy_plugin_zips WHERE plugin_id = %d",
 				$plugin_id,
 			),
 		);
@@ -171,7 +171,7 @@ final class Cron extends \Troy\Server\Cron {
 
 		$queued_tags = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT package_version, revision_id FROM {$wpdb->prefix}troy_plugins_integration_queue WHERE plugin_id = %d",
+				"SELECT package_version, revision_id FROM {$wpdb->prefix}troy_plugin_integration_queue WHERE plugin_id = %d",
 				$plugin_id,
 			),
 		);
@@ -330,7 +330,7 @@ final class Cron extends \Troy\Server\Cron {
 				}
 
 				$wpdb->update(
-					"{$wpdb->prefix}troy_plugins_zips",
+					"{$wpdb->prefix}troy_plugin_zips",
 					[ 'type' => $version_type ],
 					[
 						'plugin_id' => $plugin_id,
@@ -360,7 +360,7 @@ final class Cron extends \Troy\Server\Cron {
 					// Get current attempt count to decide on permanent vs temporary failure
 					$attempts = $wpdb->get_var(
 						$wpdb->prepare(
-							"SELECT attempts FROM {$wpdb->prefix}troy_plugins_integration_failures
+							"SELECT attempts FROM {$wpdb->prefix}troy_plugin_integration_failures
 							 WHERE plugin_id = %d AND package_version = %s",
 							$plugin_id,
 							$package_version,
@@ -408,7 +408,7 @@ final class Cron extends \Troy\Server\Cron {
 		global $wpdb;
 
 		return $wpdb->insert(
-			"{$wpdb->prefix}troy_plugins_integration_logs",
+			"{$wpdb->prefix}troy_plugin_integration_logs",
 			[
 				'plugin_id' => $plugin_id,
 				'type'      => $type,

@@ -394,13 +394,13 @@ final class Store {
 
 			update_metas: {
 				$existing_meta_id = $wpdb->get_var( $wpdb->prepare(
-					"SELECT id FROM {$wpdb->prefix}troy_plugins_metas WHERE plugin_id = %d",
+					"SELECT id FROM {$wpdb->prefix}troy_plugin_metas WHERE plugin_id = %d",
 					$data['plugin_id'],
 				) );
 
 				if ( $existing_meta_id ) {
 					$wpdb->update(
-						"{$wpdb->prefix}troy_plugins_metas",
+						"{$wpdb->prefix}troy_plugin_metas",
 						[
 							'plugin_id'         => $data['plugin_id'],
 							'name'              => $data['name'],
@@ -418,7 +418,7 @@ final class Store {
 					);
 				} else {
 					$wpdb->insert(
-						"{$wpdb->prefix}troy_plugins_metas",
+						"{$wpdb->prefix}troy_plugin_metas",
 						[
 							'plugin_id'         => $data['plugin_id'],
 							'name'              => $data['name'],
@@ -440,7 +440,7 @@ final class Store {
 				// However, we must keep track of update timestamps.
 				$contributors_keyed = array_column(
 					$wpdb->get_results( $wpdb->prepare(
-						"SELECT id, user_id FROM {$wpdb->prefix}troy_plugins_contributors WHERE plugin_id = %d",
+						"SELECT id, user_id FROM {$wpdb->prefix}troy_plugin_contributors WHERE plugin_id = %d",
 						$data['plugin_id'],
 					) ), // ARRAY_A is not needed here. array_column() can unpack objects.
 					'id',
@@ -450,7 +450,7 @@ final class Store {
 				foreach ( $data['contributors'] as $contributor ) {
 					if ( isset( $contributors_keyed[ $contributor['user_id'] ] ) ) {
 						$wpdb->update(
-							"{$wpdb->prefix}troy_plugins_contributors",
+							"{$wpdb->prefix}troy_plugin_contributors",
 							[ 'role' => $contributor['role'] ],
 							[ 'id' => $contributors_keyed[ $contributor['user_id'] ] ],
 							[ '%s' ],
@@ -458,7 +458,7 @@ final class Store {
 						);
 					} else {
 						$wpdb->insert(
-							"{$wpdb->prefix}troy_plugins_contributors",
+							"{$wpdb->prefix}troy_plugin_contributors",
 							[
 								'plugin_id' => $data['plugin_id'],
 								'user_id'   => $contributor['user_id'],
@@ -474,7 +474,7 @@ final class Store {
 				// Delete any remaining contributors.
 				foreach ( $contributors_keyed as $contributor_id ) {
 					$wpdb->delete(
-						"{$wpdb->prefix}troy_plugins_contributors",
+						"{$wpdb->prefix}troy_plugin_contributors",
 						[ 'id' => $contributor_id ],
 						[ '%d' ],
 					);
@@ -482,7 +482,7 @@ final class Store {
 			}
 
 			update_versions: {
-				// Process versions data for troy_plugins_zips table
+				// Process versions data for troy_plugin_zips table
 				foreach ( $data['versions'] as $version_data ) {
 					// Skip the 'remove' field as it's editor-only data
 					if ( isset( $version_data['remove'] ) && $version_data['remove'] )
@@ -490,7 +490,7 @@ final class Store {
 
 					// Check if this version already exists
 					$existing_zip_id = $wpdb->get_var( $wpdb->prepare(
-						"SELECT id FROM {$wpdb->prefix}troy_plugins_zips WHERE plugin_id = %d AND version = %s",
+						"SELECT id FROM {$wpdb->prefix}troy_plugin_zips WHERE plugin_id = %d AND version = %s",
 						$data['plugin_id'],
 						$version_data['version'],
 					) );
@@ -498,7 +498,7 @@ final class Store {
 					if ( $existing_zip_id ) {
 						// Update only upgrade_notice and type for existing versions
 						$wpdb->update(
-							"{$wpdb->prefix}troy_plugins_zips",
+							"{$wpdb->prefix}troy_plugin_zips",
 							[
 								'upgrade_notice' => $version_data['upgrade_notice'] ?? '',
 								'type'           => $version_data['type'] ?? '',
@@ -535,14 +535,14 @@ final class Store {
 
 				// Check if a revision already exists for this plugin+version
 				$existing_revision = $wpdb->get_var( $wpdb->prepare(
-					"SELECT id FROM {$wpdb->prefix}troy_plugins_infos WHERE plugin_id = %d AND locale = %s",
+					"SELECT id FROM {$wpdb->prefix}troy_plugin_infos WHERE plugin_id = %d AND locale = %s",
 					$data['plugin_id'],
 					$locale,
 				) );
 
 				if ( $existing_revision ) {
 					$wpdb->update(
-						"{$wpdb->prefix}troy_plugins_infos",
+						"{$wpdb->prefix}troy_plugin_infos",
 						[
 							'locale'         => $locale,
 							'latest_version' => $info_version,
@@ -555,7 +555,7 @@ final class Store {
 					);
 				} else {
 					$wpdb->insert(
-						"{$wpdb->prefix}troy_plugins_infos",
+						"{$wpdb->prefix}troy_plugin_infos",
 						[
 							'plugin_id'      => $data['plugin_id'],
 							'locale'         => $locale,
@@ -572,13 +572,13 @@ final class Store {
 				// Integrations are handled almost entirely via a bespoke REST API.
 				// However, we still need to store the auto_process setting here.
 				$existing_data = $wpdb->get_var( $wpdb->prepare(
-					"SELECT id FROM {$wpdb->prefix}troy_plugins_integrations WHERE plugin_id = %d",
+					"SELECT id FROM {$wpdb->prefix}troy_plugin_integrations WHERE plugin_id = %d",
 					$data['plugin_id'],
 				) );
 
 				if ( $existing_data ) {
 					$wpdb->update(
-						"{$wpdb->prefix}troy_plugins_integrations",
+						"{$wpdb->prefix}troy_plugin_integrations",
 						[
 							'auto_process' => $data['integrations']['auto_process'] ?? 'all',
 						],
@@ -596,14 +596,14 @@ final class Store {
 				$snapshot_version = $working_version ?: '0.0.0';
 
 				$existing_snapshot = $wpdb->get_var( $wpdb->prepare(
-					"SELECT id FROM {$wpdb->prefix}troy_plugins_snapshots WHERE plugin_id = %d AND version = %s",
+					"SELECT id FROM {$wpdb->prefix}troy_plugin_snapshots WHERE plugin_id = %d AND version = %s",
 					$data['plugin_id'],
 					$snapshot_version,
 				) );
 
 				if ( $existing_snapshot ) {
 					$wpdb->update(
-						"{$wpdb->prefix}troy_plugins_snapshots",
+						"{$wpdb->prefix}troy_plugin_snapshots",
 						[
 							'plugin_id' => $data['plugin_id'],
 							'version'   => $snapshot_version,
@@ -615,7 +615,7 @@ final class Store {
 					);
 				} else {
 					$wpdb->insert(
-						"{$wpdb->prefix}troy_plugins_snapshots",
+						"{$wpdb->prefix}troy_plugin_snapshots",
 						[
 							'plugin_id' => $data['plugin_id'],
 							'version'   => $snapshot_version,
@@ -765,7 +765,7 @@ final class Store {
 			if ( $reassign ) {
 				// Reassign user from contributors table
 				$wpdb->update(
-					"{$wpdb->prefix}troy_plugins_contributors",
+					"{$wpdb->prefix}troy_plugin_contributors",
 					[ 'user_id' => $reassign ],
 					[ 'user_id' => $user_id ],
 					[ '%d' ],
@@ -774,7 +774,7 @@ final class Store {
 
 				// Reassign user ratings
 				$wpdb->update(
-					"{$wpdb->prefix}troy_plugins_ratings",
+					"{$wpdb->prefix}troy_plugin_ratings",
 					[ 'user_id' => $reassign ],
 					[ 'user_id' => $user_id ],
 					[ '%d' ],
@@ -783,14 +783,14 @@ final class Store {
 			} else {
 				// Remove user from contributors table
 				$wpdb->delete(
-					"{$wpdb->prefix}troy_plugins_contributors",
+					"{$wpdb->prefix}troy_plugin_contributors",
 					[ 'user_id' => $user_id ],
 					[ '%d' ],
 				);
 
 				// Remove user ratings
 				$wpdb->delete(
-					"{$wpdb->prefix}troy_plugins_ratings",
+					"{$wpdb->prefix}troy_plugin_ratings",
 					[ 'user_id' => $user_id ],
 					[ '%d' ],
 				);
@@ -798,7 +798,7 @@ final class Store {
 
 			// Set author_id to 0 in metas table for deleted users
 			$wpdb->update(
-				"{$wpdb->prefix}troy_plugins_metas",
+				"{$wpdb->prefix}troy_plugin_metas",
 				[ 'author_id' => $reassign ?? 0 ],
 				[ 'author_id' => $user_id ],
 				[ '%d' ],

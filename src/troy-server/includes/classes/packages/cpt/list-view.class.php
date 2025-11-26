@@ -159,7 +159,7 @@ final class List_View {
 			],
 			'troy_server_themes'    => [
 				'label'    => \__( 'Themes', 'troy-server' ),
-				'where'    => [ 'troy_packages_metas', 'themes' ],
+				'where'    => [ 'troy_package_metas', 'themes' ],
 				'postfind' => [
 					'local_key'        => 'package_id',
 					'foreign'          => [ 'troy_packages', 'id' ],

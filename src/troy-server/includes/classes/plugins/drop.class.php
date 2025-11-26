@@ -93,15 +93,15 @@ final class Drop {
 
 		try {
 			$tables = [
-				'troy_plugins_slug_transfers',
-				'troy_plugins_metas',
-				'troy_plugins_contributors',
-				'troy_plugins_infos',
-				'troy_plugins_settings',
-				'troy_plugins_zips',
-				'troy_plugins_translations',
-				'troy_plugins_data_caches',
-				'troy_plugins_ratings',
+				'troy_plugin_slug_transfers',
+				'troy_plugin_metas',
+				'troy_plugin_contributors',
+				'troy_plugin_infos',
+				'troy_plugin_snapshots',
+				'troy_plugin_zips',
+				'troy_plugin_translations',
+				'troy_plugin_data_caches',
+				'troy_plugin_ratings',
 				'troy_plugin_stats_totals',
 				'troy_plugin_stats_totals_daily',
 				'troy_plugin_stats_versions',
@@ -115,7 +115,7 @@ final class Drop {
 				'troy_plugin_stats_locales',
 				'troy_plugin_stats_php',
 				'troy_plugin_stats_wp',
-				'troy_plugins_integrations',
+				'troy_plugin_integrations',
 			];
 
 			foreach ( $tables as $table )

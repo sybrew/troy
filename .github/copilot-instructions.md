@@ -80,6 +80,7 @@ Follow these rules:
 - Avoid output buffering
 - You may use functions str_starts_with, str_ends_with, and str_contains; WordPress provides these
 - You may use logical operators like and, or, and xor
+- For SQL queries over 80 chars: split lines, prefix new lines with a space, indent ANDs and SELECT aliases with tab+space
 
 ## JS
 

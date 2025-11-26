@@ -277,7 +277,7 @@ final class Plugin_Info extends Base_Endpoint {
 	 *
 	 * @since 0.0.1184
 	 *
-	 * @param array $info_contents Decoded contents from troy_plugins_infos table.
+	 * @param array $info_contents Decoded contents from troy_plugin_infos table.
 	 * @return string Description content.
 	 */
 	private function get_description_content( $info_contents ) {
@@ -290,7 +290,7 @@ final class Plugin_Info extends Base_Endpoint {
 	 * @since 0.0.1184
 	 *
 	 * @param string $slug       Plugin slug.
-	 * @param object $latest_zip Latest zip row from troy_plugins_zips table.
+	 * @param object $latest_zip Latest zip row from troy_plugin_zips table.
 	 * @return string Download link.
 	 */
 	private function get_download_link( $slug, $latest_zip ) {
@@ -306,7 +306,7 @@ final class Plugin_Info extends Base_Endpoint {
 	 *
 	 * @since 0.0.1184
 	 *
-	 * @param array $info_contents Decoded contents from troy_plugins_infos table.
+	 * @param array $info_contents Decoded contents from troy_plugin_infos table.
 	 * @return string Changelog content.
 	 */
 	private function get_changelog_content( $info_contents ) {
@@ -318,7 +318,7 @@ final class Plugin_Info extends Base_Endpoint {
 	 *
 	 * @since 0.0.1184
 	 *
-	 * @param array $info_contents Decoded contents from troy_plugins_infos table.
+	 * @param array $info_contents Decoded contents from troy_plugin_infos table.
 	 * @return string Installation content.
 	 */
 	private function get_installation_content( $info_contents ) {
@@ -330,7 +330,7 @@ final class Plugin_Info extends Base_Endpoint {
 	 *
 	 * @since 0.0.1184
 	 *
-	 * @param array $info_contents Decoded contents from troy_plugins_infos table.
+	 * @param array $info_contents Decoded contents from troy_plugin_infos table.
 	 * @return string FAQ content.
 	 */
 	private function get_faq_content( $info_contents ) {
@@ -342,7 +342,7 @@ final class Plugin_Info extends Base_Endpoint {
 	 *
 	 * @since 0.0.1184
 	 *
-	 * @param array $info_contents Decoded contents from troy_plugins_infos table.
+	 * @param array $info_contents Decoded contents from troy_plugin_infos table.
 	 * @return array Screenshots array.
 	 */
 	private function get_screenshots_content( $info_contents ) {
@@ -382,7 +382,7 @@ final class Plugin_Info extends Base_Endpoint {
 	 *
 	 * @since 0.0.1184
 	 *
-	 * @param array $info_contents Decoded contents from troy_plugins_infos table.
+	 * @param array $info_contents Decoded contents from troy_plugin_infos table.
 	 * @return array Sections array.
 	 */
 	private function get_sections_array( $info_contents ) {
@@ -401,7 +401,7 @@ final class Plugin_Info extends Base_Endpoint {
 	 *
 	 * @since 0.0.1184
 	 *
-	 * @param object $info_row Info row from troy_plugins_infos table.
+	 * @param object $info_row Info row from troy_plugin_infos table.
 	 * @return array Banners array.
 	 */
 	private function get_banners_array( $info_row ) {
@@ -418,7 +418,7 @@ final class Plugin_Info extends Base_Endpoint {
 	 *
 	 * @since 0.0.1184
 	 *
-	 * @param object $meta_row Meta row from troy_plugins_metas table.
+	 * @param object $meta_row Meta row from troy_plugin_metas table.
 	 * @return array Icons array.
 	 */
 	private function get_icons_array( $meta_row ) {

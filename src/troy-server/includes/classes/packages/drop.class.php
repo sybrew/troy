@@ -93,7 +93,7 @@ final class Drop {
 
 		try {
 			$tables = [
-				'troy_packages_metas',
+				'troy_package_metas',
 				'troy_package_stats_totals',
 				'troy_package_stats_totals_daily',
 				'troy_package_stats_downloads',

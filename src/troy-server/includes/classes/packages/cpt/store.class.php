@@ -476,13 +476,13 @@ final class Store {
 
 			save_meta_row: {
 				$existing_meta_id = $wpdb->get_var( $wpdb->prepare(
-					"SELECT id FROM {$wpdb->prefix}troy_packages_metas WHERE package_id = %d",
+					"SELECT id FROM {$wpdb->prefix}troy_package_metas WHERE package_id = %d",
 					$package_id,
 				) );
 
 				if ( $existing_meta_id ) {
 					$wpdb->update(
-						"{$wpdb->prefix}troy_packages_metas",
+						"{$wpdb->prefix}troy_package_metas",
 						[
 							'plugin_uri'               => $data['plugin_uri'],
 							'name'                     => $data['name'],
@@ -506,7 +506,7 @@ final class Store {
 					);
 				} else {
 					$wpdb->insert(
-						"{$wpdb->prefix}troy_packages_metas",
+						"{$wpdb->prefix}troy_package_metas",
 						[
 							'package_id'               => $package_id,
 							'plugin_uri'               => $data['plugin_uri'],

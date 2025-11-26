@@ -736,7 +736,7 @@ final class Aggregator {
 			$existing = $wpdb->get_var(
 				$wpdb->prepare(
 					"SELECT id
-					 FROM {$wpdb->prefix}troy_plugins_data_caches
+					 FROM {$wpdb->prefix}troy_plugin_data_caches
 					 WHERE plugin_id = %d",
 					$row->plugin_id,
 				),
@@ -744,7 +744,7 @@ final class Aggregator {
 
 			if ( $existing ) {
 				$wpdb->update(
-					"{$wpdb->prefix}troy_plugins_data_caches",
+					"{$wpdb->prefix}troy_plugin_data_caches",
 					[ 'active_install_count' => $row->active_install_count ],
 					[ 'id' => $existing ],
 					[ '%d' ],
@@ -752,7 +752,7 @@ final class Aggregator {
 				);
 			} else {
 				$wpdb->insert(
-					"{$wpdb->prefix}troy_plugins_data_caches",
+					"{$wpdb->prefix}troy_plugin_data_caches",
 					[
 						'plugin_id'            => $row->plugin_id,
 						'active_install_count' => $row->active_install_count,

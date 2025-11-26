@@ -143,7 +143,7 @@ final class List_View {
 		return $columns ??= [
 			'troy_server_logo'              => [
 				'label'    => \__( 'Logo', 'troy-server' ),
-				'where'    => [ 'troy_plugins_metas', 'logo_uri' ], // We'll call these "table" and "key" to avoid confusion.
+				'where'    => [ 'troy_plugin_metas', 'logo_uri' ], // We'll call these "table" and "key" to avoid confusion.
 				'postfind' => [ // Complex lookup via through, we want to find the plugin_id from the post_id.
 					'local_key'        => 'plugin_id',              // We know this.
 					'foreign'          => [ 'troy_plugins', 'id' ], // We can match 'on' with this table.
@@ -181,7 +181,7 @@ final class List_View {
 			],
 			'troy_server_short_description' => [
 				'label'    => \__( 'Short description', 'troy-server' ),
-				'where'    => [ 'troy_plugins_metas', 'short_description' ],
+				'where'    => [ 'troy_plugin_metas', 'short_description' ],
 				'postfind' => [
 					'local_key'        => 'plugin_id',
 					'foreign'          => [ 'troy_plugins', 'id' ],
@@ -193,7 +193,7 @@ final class List_View {
 			],
 			'troy_server_integration'       => [
 				'label'    => \__( 'Integration', 'troy-server' ),
-				'where'    => [ 'troy_plugins_integrations', 'mode' ],
+				'where'    => [ 'troy_plugin_integrations', 'mode' ],
 				'postfind' => [
 					'local_key'        => 'plugin_id',
 					'foreign'          => [ 'troy_plugins', 'id' ],
@@ -220,7 +220,7 @@ final class List_View {
 			],
 			'troy_server_active_installs'   => [
 				'label'    => \__( 'Active Installs', 'troy-server' ),
-				'where'    => [ 'troy_plugins_data_caches', 'active_install_count' ],
+				'where'    => [ 'troy_plugin_data_caches', 'active_install_count' ],
 				'postfind' => [
 					'local_key'        => 'plugin_id',
 					'foreign'          => [ 'troy_plugins', 'id' ],

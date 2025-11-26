@@ -115,7 +115,7 @@ final class Store {
 		if ( $existing_integration ) {
 			// Race condition / unsynced tabs, gracefully handle by updating existing record.
 			$result = $wpdb->update(
-				"{$wpdb->prefix}troy_plugins_integrations",
+				"{$wpdb->prefix}troy_plugin_integrations",
 				[
 					'mode'           => $mode,
 					'settings'       => API\Sanitize::json_encode_db( $settings ),
@@ -130,7 +130,7 @@ final class Store {
 			);
 		} else {
 			$result = $wpdb->insert(
-				"{$wpdb->prefix}troy_plugins_integrations",
+				"{$wpdb->prefix}troy_plugin_integrations",
 				[
 					'plugin_id'      => $plugin_id,
 					'mode'           => $mode,
@@ -165,7 +165,7 @@ final class Store {
 		global $wpdb;
 
 		return false !== $wpdb->delete(
-			"{$wpdb->prefix}troy_plugins_integrations",
+			"{$wpdb->prefix}troy_plugin_integrations",
 			[ 'plugin_id' => $plugin_id ],
 			[ '%d' ],
 		);
@@ -201,7 +201,7 @@ final class Store {
 		global $wpdb;
 
 		return false !== $wpdb->update(
-			"{$wpdb->prefix}troy_plugins_integrations",
+			"{$wpdb->prefix}troy_plugin_integrations",
 			[
 				'tags'           => API\Sanitize::json_encode_db( $tags ),
 				'tags_refreshed' => \current_time( 'mysql' ), // Use local time via wp_timezone().
@@ -233,7 +233,7 @@ final class Store {
 
 		$existing_integration = $wpdb->get_row(
 			$wpdb->prepare(
-				"SELECT * FROM {$wpdb->prefix}troy_plugins_integrations WHERE plugin_id = %d",
+				"SELECT * FROM {$wpdb->prefix}troy_plugin_integrations WHERE plugin_id = %d",
 				$plugin_id,
 			),
 		);
@@ -242,7 +242,7 @@ final class Store {
 			return false;
 
 		$success = false !== $wpdb->update(
-			"{$wpdb->prefix}troy_plugins_integrations",
+			"{$wpdb->prefix}troy_plugin_integrations",
 			[ 'auto_process' => $auto_process ],
 			[ 'plugin_id' => $plugin_id ],
 			[ '%s' ],
@@ -252,7 +252,7 @@ final class Store {
 		// Clear the queue when changing to 'none'
 		if ( $success && 'none' === $auto_process ) {
 			$wpdb->delete(
-				"{$wpdb->prefix}troy_plugins_integration_queue",
+				"{$wpdb->prefix}troy_plugin_integration_queue",
 				[ 'plugin_id' => $plugin_id ],
 				[ '%d' ],
 			);
@@ -290,7 +290,7 @@ final class Store {
 
 		// Use replace to avoid duplicate entries.
 		return $wpdb->replace(
-			"{$wpdb->prefix}troy_plugins_integration_queue",
+			"{$wpdb->prefix}troy_plugin_integration_queue",
 			[
 				'plugin_id'       => $plugin_id,
 				'package_version' => $package_version,
@@ -319,7 +319,7 @@ final class Store {
 		global $wpdb;
 
 		return false !== $wpdb->delete(
-			"{$wpdb->prefix}troy_plugins_integration_queue",
+			"{$wpdb->prefix}troy_plugin_integration_queue",
 			[
 				'plugin_id'       => $plugin_id,
 				'package_version' => $package_version,
@@ -356,7 +356,7 @@ final class Store {
 		return $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT *
-				 FROM {$wpdb->prefix}troy_plugins_integration_queue
+				 FROM {$wpdb->prefix}troy_plugin_integration_queue
 				 WHERE status IN (%s, %s)
 				 ORDER BY created_at ASC
 				 LIMIT %d",
@@ -386,7 +386,7 @@ final class Store {
 
 		$existing_attempts = $wpdb->get_var(
 			$wpdb->prepare(
-				"SELECT attempts FROM {$wpdb->prefix}troy_plugins_integration_failures
+				"SELECT attempts FROM {$wpdb->prefix}troy_plugin_integration_failures
 				 WHERE plugin_id = %d AND package_version = %s",
 				$plugin_id,
 				$package_version,
@@ -395,7 +395,7 @@ final class Store {
 
 		if ( $existing_attempts ) {
 			return $wpdb->update(
-				"{$wpdb->prefix}troy_plugins_integration_failures",
+				"{$wpdb->prefix}troy_plugin_integration_failures",
 				[
 					'mode'     => $mode,
 					'reason'   => $reason,
@@ -412,7 +412,7 @@ final class Store {
 		}
 
 		return $wpdb->insert(
-			"{$wpdb->prefix}troy_plugins_integration_failures",
+			"{$wpdb->prefix}troy_plugin_integration_failures",
 			[
 				'plugin_id'       => $plugin_id,
 				'package_version' => $package_version,
@@ -440,7 +440,7 @@ final class Store {
 		global $wpdb;
 
 		return false !== $wpdb->delete(
-			"{$wpdb->prefix}troy_plugins_integration_failures",
+			"{$wpdb->prefix}troy_plugin_integration_failures",
 			[
 				'plugin_id'       => $plugin_id,
 				'package_version' => $package_version,
@@ -465,7 +465,7 @@ final class Store {
 		global $wpdb;
 
 		return $wpdb->update(
-			"{$wpdb->prefix}troy_plugins_integration_queue",
+			"{$wpdb->prefix}troy_plugin_integration_queue",
 			[ 'status' => $status ],
 			[
 				'plugin_id'       => $plugin_id,

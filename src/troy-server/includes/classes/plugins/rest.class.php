@@ -272,14 +272,14 @@ final class REST {
 
 			// Check if data cache exists.
 			$existing_cache = $wpdb->get_var( $wpdb->prepare(
-				"SELECT id FROM {$wpdb->prefix}troy_plugins_data_caches WHERE plugin_id = %d",
+				"SELECT id FROM {$wpdb->prefix}troy_plugin_data_caches WHERE plugin_id = %d",
 				$plugin_id,
 			) );
 			if ( ! $existing_cache ) {
 				// Insert initial cache entry
 				// Fun fact: This is the only table that will always have id === plugin_id.
 				$wpdb->insert(
-					"{$wpdb->prefix}troy_plugins_data_caches",
+					"{$wpdb->prefix}troy_plugin_data_caches",
 					[
 						'plugin_id'             => $plugin_id,
 						'average_rating'        => 0,
@@ -649,7 +649,7 @@ final class REST {
 		// Get the ZIP record first to get the file path
 		$zip_record = $wpdb->get_row(
 			$wpdb->prepare(
-				"SELECT * FROM {$wpdb->prefix}troy_plugins_zips WHERE plugin_id = %d AND version = %s",
+				"SELECT * FROM {$wpdb->prefix}troy_plugin_zips WHERE plugin_id = %d AND version = %s",
 				$plugin_id,
 				$version,
 			),
@@ -666,7 +666,7 @@ final class REST {
 		try {
 			// Delete from database
 			$wpdb->delete(
-				"{$wpdb->prefix}troy_plugins_zips",
+				"{$wpdb->prefix}troy_plugin_zips",
 				[
 					'plugin_id' => $plugin_id,
 					'version'   => $version,
@@ -691,7 +691,7 @@ final class REST {
 
 			// Update latest_version in infos table if the deleted version was the latest.
 			$wpdb->update(
-				"{$wpdb->prefix}troy_plugins_infos",
+				"{$wpdb->prefix}troy_plugin_infos",
 				[ 'latest_version' => new Data( $plugin_id )->get_latest_version() ?? '' ],
 				[ 'plugin_id' => $plugin_id ],
 				[ '%s' ],
