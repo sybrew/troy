@@ -727,9 +727,11 @@ final class Aggregator {
 		$install_counts = $wpdb->get_results(
 			"SELECT
 				plugin_id,
-				SUM( GREATEST( installations_current_epoch, installations_previous_epoch ) ) as active_install_count
-			 FROM {$wpdb->prefix}troy_plugin_stats_totals
-			 GROUP BY plugin_id",
+				SUM(
+					GREATEST(installations_current_epoch, installations_previous_epoch)
+				) as active_install_count
+			FROM {$wpdb->prefix}troy_plugin_stats_totals
+			GROUP BY plugin_id",
 		);
 
 		foreach ( $install_counts as $row ) {
@@ -788,7 +790,7 @@ final class Aggregator {
 				views,
 				installations_current_epoch,
 				installations_previous_epoch
-			 FROM {$wpdb->prefix}troy_plugin_stats_versions",
+			FROM {$wpdb->prefix}troy_plugin_stats_versions",
 		);
 
 		foreach ( $stats as $row ) {
@@ -843,7 +845,7 @@ final class Aggregator {
 				views,
 				installations_current_epoch,
 				installations_previous_epoch
-			 FROM {$wpdb->prefix}troy_plugin_stats_totals",
+			FROM {$wpdb->prefix}troy_plugin_stats_totals",
 		);
 
 		foreach ( $stats_totals as $row ) {

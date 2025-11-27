@@ -9,15 +9,15 @@
 .troy-server-stats-date-range {
 	display: flex;
 	align-items: center;
-	gap: 1rem;
-	margin: 1rem 0;
+	gap: 1em;
+	margin: 1em 0;
 	flex-wrap: wrap;
 }
 
 .troy-server-stats-date-range label {
 	display: flex;
 	align-items: center;
-	gap: .5rem;
+	gap: .5em;
 }
 
 .troy-server-stats-date-range select {
@@ -28,15 +28,15 @@
 .troy-server-stats-cards {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-	gap: 1rem;
-	margin: 1rem 0;
+	gap: 1em;
+	margin: 1em 0;
 }
 
 .troy-server-stats-card {
 	background: #fff;
 	border: 1px solid #c3c4c7;
 	border-radius: 4px;
-	padding: 1rem;
+	padding: 1em;
 	text-align: center;
 	transition: border-color .2s ease, box-shadow .2s ease;
 }
@@ -48,16 +48,16 @@
 
 .troy-server-stats-card-label {
 	display: block;
-	font-size: 12px;
+	font-size: smaller;
 	color: #646970;
 	text-transform: uppercase;
 	letter-spacing: .5px;
-	margin-bottom: .5rem;
+	margin-bottom: .5em;
 }
 
 .troy-server-stats-card-value {
 	display: block;
-	font-size: 1.75rem;
+	font-size: 1.75em;
 	font-weight: 600;
 	color: #1d2327;
 	line-height: 1.2;
@@ -65,13 +65,13 @@
 
 .troy-server-stats-card-change {
 	display: block;
-	font-size: 12px;
-	margin-top: .25rem;
+	font-size: smaller;
+	margin-top: .25em;
 }
 
 /* Stats Tables */
 .troy-server-stats-table {
-	margin-top: 1rem;
+	margin-top: 1em;
 }
 
 .troy-server-stats-table th,
@@ -80,7 +80,6 @@
 }
 
 .troy-server-stats-table code {
-	font-size: 11px;
 	color: #646970;
 }
 
@@ -117,7 +116,7 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	padding: 2rem;
+	padding: 2em;
 }
 
 .troy-server-stats-modal[hidden] {
@@ -140,20 +139,20 @@
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	padding: 1rem 1.5rem;
+	padding: 1em 1.5em;
 	border-bottom: 1px solid #c3c4c7;
 	background: #f6f7f7;
 }
 
 .troy-server-stats-modal-header h3 {
 	margin: 0;
-	font-size: 1.1rem;
+	font-size: 1.1em;
 }
 
 .troy-server-stats-modal-close {
 	background: none;
 	border: none;
-	font-size: 1.5rem;
+	font-size: 1.5em;
 	cursor: pointer;
 	padding: 0;
 	width: 30px;
@@ -171,7 +170,7 @@
 }
 
 .troy-server-stats-modal-body {
-	padding: 1.5rem;
+	padding: 1.5em;
 	overflow-y: auto;
 }
 
@@ -181,7 +180,7 @@
 
 /* Modal Detail Sections */
 .troy-server-stats-detail-section {
-	margin-bottom: 1.5rem;
+	margin-bottom: 1.5em;
 }
 
 .troy-server-stats-detail-section:last-child {
@@ -189,17 +188,17 @@
 }
 
 .troy-server-stats-detail-section h4 {
-	margin: 0 0 .75rem;
-	font-size: .9rem;
+	margin: 0 0 .75em;
+	font-size: .9em;
 	color: #1d2327;
 	border-bottom: 1px solid #dcdcde;
-	padding-bottom: .5rem;
+	padding-bottom: .5em;
 }
 
 .troy-server-stats-detail-list {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-	gap: .5rem;
+	gap: .5em;
 	list-style: none;
 	margin: 0;
 	padding: 0;
@@ -208,7 +207,7 @@
 .troy-server-stats-detail-list li {
 	display: flex;
 	justify-content: space-between;
-	padding: .5rem;
+	padding: .5em;
 	background: #f6f7f7;
 	border-radius: 3px;
 }
@@ -224,7 +223,7 @@
 /* Loading State */
 .troy-server-stats-loading {
 	text-align: center;
-	padding: 2rem;
+	padding: 2em;
 	color: #646970;
 }
 
@@ -237,7 +236,7 @@
 	border-top-color: #2271b1;
 	border-radius: 50%;
 	animation: troy-stats-spin .8s linear infinite;
-	margin-right: .5rem;
+	margin-right: .5em;
 	vertical-align: middle;
 }
 
@@ -251,8 +250,8 @@
 .troy-server-stats-error {
 	background: #fcf0f1;
 	border-left: 4px solid #d63638;
-	padding: 1rem;
-	margin: 1rem 0;
+	padding: 1em;
+	margin: 1em 0;
 }
 
 /* Responsive */
@@ -267,7 +266,7 @@
 	}
 
 	.troy-server-stats-modal {
-		padding: 1rem;
+		padding: 1em;
 	}
 
 	.troy-server-stats-modal-content {

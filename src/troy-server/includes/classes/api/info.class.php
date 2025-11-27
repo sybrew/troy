@@ -33,7 +33,7 @@ namespace Troy\Server\API;
  */
 
 /**
- * Holds info-related API methods.
+ * Holds info-related (static strings, objects, etc.) API methods.
  *
  * @since 0.0.1184
  */

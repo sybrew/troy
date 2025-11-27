@@ -64,26 +64,30 @@ $packages_summary = Settings\Stats::get_packages_summary();
 				</tr>
 			</thead>
 			<tbody>
-				<?php if ( empty( $packages_summary ) ) : ?>
-				<tr>
-					<td colspan=4><?= \esc_html__( 'No package data available.', 'troy-server' ) ?></td>
-				</tr>
-				<?php else : ?>
-					<?php foreach ( $packages_summary as $package ) : ?>
-				<tr data-package-id="<?= \esc_attr( $package['package_id'] ) ?>">
-					<td>
-						<strong><?= \esc_html( $package['name'] ) ?></strong> <code>(<?= \esc_html( $package['slug'] ) ?>)</code>
-					</td>
-					<td><?= \esc_html( $package['version'] ) ?></td>
-					<td><?= \esc_html( \number_format_i18n( $package['downloads'] ) ) ?></td>
-					<td>
-						<button type=button class="button button-small troy-server-stats-package-details-btn" data-package-id="<?= \esc_attr( $package['package_id'] ) ?>">
-							<?= \esc_html__( 'Details', 'troy-server' ) ?>
-						</button>
-					</td>
-				</tr>
-					<?php endforeach; ?>
-				<?php endif; ?>
+				<?php
+				if ( empty( $packages_summary ) ) {
+					?>
+					<tr>
+						<td colspan=4><?= \esc_html__( 'No package data available.', 'troy-server' ) ?></td>
+					</tr>
+					<?php
+				} else foreach ( $packages_summary as $package ) {
+					?>
+					<tr data-package-id="<?= \esc_attr( $package['package_id'] ) ?>">
+						<td>
+							<strong><?= \esc_html( $package['name'] ) ?></strong> <code>(<?= \esc_html( $package['slug'] ) ?>)</code>
+						</td>
+						<td><?= \esc_html( $package['version'] ) ?></td>
+						<td><?= \esc_html( \number_format_i18n( $package['downloads'] ) ) ?></td>
+						<td>
+							<button type=button class="button button-small troy-server-stats-package-details-btn" data-package-id="<?= \esc_attr( $package['package_id'] ) ?>">
+								<?= \esc_html__( 'Details', 'troy-server' ) ?>
+							</button>
+						</td>
+					</tr>
+					<?php
+				}
+				?>
 			</tbody>
 		</table>
 	</div>

@@ -71,11 +71,15 @@ $locales          = Settings\Stats::get_locale_stats();
 	<div id=troy-server-stats-overview class=troy-server-settings-accordion-panel>
 		<div class=troy-server-stats-cards id=troy-server-stats-overview-cards>
 			<div class=troy-server-stats-card>
-				<span class=troy-server-stats-card-label><?= \esc_html__( 'Current Epoch', 'troy-server' ) ?></span>
+				<span class=troy-server-stats-card-label><?= \esc_html__( 'Epoch', 'troy-server' ) ?></span>
 				<span class=troy-server-stats-card-value data-stat=current_epoch><?= \esc_html( $overview['current_epoch'] ) ?></span>
 			</div>
 			<div class=troy-server-stats-card>
-				<span class=troy-server-stats-card-label><?= \esc_html__( 'Total Downloads', 'troy-server' ) ?></span>
+				<span class=troy-server-stats-card-label><?= \esc_html__( 'Plugins', 'troy-server' ) ?></span>
+				<span class=troy-server-stats-card-value data-stat=total_plugins><?= \esc_html( \number_format_i18n( $overview['total_plugins'] ) ) ?></span>
+			</div>
+			<div class=troy-server-stats-card>
+				<span class=troy-server-stats-card-label><?= \esc_html__( 'Downloads', 'troy-server' ) ?></span>
 				<span class=troy-server-stats-card-value data-stat=total_downloads><?= \esc_html( \number_format_i18n( $overview['total_downloads'] ) ) ?></span>
 			</div>
 			<div class=troy-server-stats-card>
@@ -87,12 +91,8 @@ $locales          = Settings\Stats::get_locale_stats();
 				<span class=troy-server-stats-card-value data-stat=inactive_installs><?= \esc_html( \number_format_i18n( $overview['inactive_installs'] ) ) ?></span>
 			</div>
 			<div class=troy-server-stats-card>
-				<span class=troy-server-stats-card-label><?= \esc_html__( 'Total Views', 'troy-server' ) ?></span>
+				<span class=troy-server-stats-card-label><?= \esc_html__( 'Views', 'troy-server' ) ?></span>
 				<span class=troy-server-stats-card-value data-stat=total_views><?= \esc_html( \number_format_i18n( $overview['total_views'] ) ) ?></span>
-			</div>
-			<div class=troy-server-stats-card>
-				<span class=troy-server-stats-card-label><?= \esc_html__( 'Total Plugins', 'troy-server' ) ?></span>
-				<span class=troy-server-stats-card-value data-stat=total_plugins><?= \esc_html( \number_format_i18n( $overview['total_plugins'] ) ) ?></span>
 			</div>
 		</div>
 	</div>
@@ -119,28 +119,32 @@ $locales          = Settings\Stats::get_locale_stats();
 				</tr>
 			</thead>
 			<tbody>
-				<?php if ( empty( $top_plugins ) ) : ?>
-				<tr>
-					<td colspan=6><?= \esc_html__( 'No plugin data available.', 'troy-server' ) ?></td>
-				</tr>
-				<?php else : ?>
-					<?php foreach ( $top_plugins as $plugin ) : ?>
-				<tr data-plugin-id="<?= \esc_attr( $plugin['plugin_id'] ) ?>">
-					<td>
-						<strong><?= \esc_html( $plugin['name'] ) ?></strong> <code>(<?= \esc_html( $plugin['slug'] ) ?>)</code>
-					</td>
-					<td><?= \esc_html( \number_format_i18n( $plugin['downloads'] ) ) ?></td>
-					<td><?= \esc_html( \number_format_i18n( $plugin['active_installs'] ) ) ?></td>
-					<td><?= \esc_html( \number_format_i18n( $plugin['inactive_installs'] ) ) ?></td>
-					<td><?= \esc_html( \number_format_i18n( $plugin['views'] ) ) ?></td>
-					<td>
-						<button type=button class="button button-small troy-server-stats-details-btn" data-plugin-id="<?= \esc_attr( $plugin['plugin_id'] ) ?>">
-							<?= \esc_html__( 'Details', 'troy-server' ) ?>
-						</button>
-					</td>
-				</tr>
-					<?php endforeach; ?>
-				<?php endif; ?>
+				<?php
+				if ( empty( $top_plugins ) ) {
+					?>
+					<tr>
+						<td colspan=6><?= \esc_html__( 'No plugin data available.', 'troy-server' ) ?></td>
+					</tr>
+					<?php
+				} else foreach ( $top_plugins as $plugin ) {
+					?>
+					<tr data-plugin-id="<?= \esc_attr( $plugin['plugin_id'] ) ?>">
+						<td>
+							<strong><?= \esc_html( $plugin['name'] ) ?></strong> <code>(<?= \esc_html( $plugin['slug'] ) ?>)</code>
+						</td>
+						<td><?= \esc_html( \number_format_i18n( $plugin['downloads'] ) ) ?></td>
+						<td><?= \esc_html( \number_format_i18n( $plugin['active_installs'] ) ) ?></td>
+						<td><?= \esc_html( \number_format_i18n( $plugin['inactive_installs'] ) ) ?></td>
+						<td><?= \esc_html( \number_format_i18n( $plugin['views'] ) ) ?></td>
+						<td>
+							<button type=button class="button button-small troy-server-stats-details-btn" data-plugin-id="<?= \esc_attr( $plugin['plugin_id'] ) ?>">
+								<?= \esc_html__( 'Details', 'troy-server' ) ?>
+							</button>
+						</td>
+					</tr>
+					<?php
+				}
+				?>
 			</tbody>
 		</table>
 	</div>
@@ -190,7 +194,7 @@ $locales          = Settings\Stats::get_locale_stats();
 					<td><?= \esc_html( \number_format_i18n( $epoch_comparison['previous_requests'] ) ) ?></td>
 					<td class="<?= $epoch_comparison['requests_change_percent'] >= 0 ? 'troy-server-stats-positive' : 'troy-server-stats-negative' ?>">
 						<?php
-						if ( \is_infinite( $epoch_comparison['requests_change_percent'] ) ) {
+						if ( is_infinite( $epoch_comparison['requests_change_percent'] ) ) {
 							echo '+∞%';
 						} else {
 							echo \esc_html( ( $epoch_comparison['requests_change_percent'] >= 0 ? '+' : '' ) . $epoch_comparison['requests_change_percent'] . '%' );
@@ -204,7 +208,7 @@ $locales          = Settings\Stats::get_locale_stats();
 					<td><?= \esc_html( \number_format_i18n( $epoch_comparison['previous_installs'] ) ) ?></td>
 					<td class="<?= $epoch_comparison['installs_change_percent'] >= 0 ? 'troy-server-stats-positive' : 'troy-server-stats-negative' ?>">
 						<?php
-						if ( \is_infinite( $epoch_comparison['installs_change_percent'] ) ) {
+						if ( is_infinite( $epoch_comparison['installs_change_percent'] ) ) {
 							echo '+∞%';
 						} else {
 							echo \esc_html( ( $epoch_comparison['installs_change_percent'] >= 0 ? '+' : '' ) . $epoch_comparison['installs_change_percent'] . '%' );
@@ -237,18 +241,22 @@ $locales          = Settings\Stats::get_locale_stats();
 				</tr>
 			</thead>
 			<tbody>
-				<?php if ( empty( $php_versions ) ) : ?>
-				<tr>
-					<td colspan=2><?= \esc_html__( 'No PHP version data available.', 'troy-server' ) ?></td>
-				</tr>
-				<?php else : ?>
-					<?php foreach ( $php_versions as $version ) : ?>
-				<tr>
-					<td><code><?= \esc_html( $version['version'] ?: \__( 'Not reported', 'troy-server' ) ) ?></code></td>
-					<td><?= \esc_html( \number_format_i18n( $version['count'] ) ) ?></td>
-				</tr>
-					<?php endforeach; ?>
-				<?php endif; ?>
+				<?php
+				if ( empty( $php_versions ) ) {
+					?>
+					<tr>
+						<td colspan=2><?= \esc_html__( 'No PHP version data available.', 'troy-server' ) ?></td>
+					</tr>
+					<?php
+				} else foreach ( $php_versions as $version ) {
+					?>
+					<tr>
+						<td><code><?= \esc_html( $version['version'] ?: \__( 'Not reported', 'troy-server' ) ) ?></code></td>
+						<td><?= \esc_html( \number_format_i18n( $version['count'] ) ) ?></td>
+					</tr>
+					<?php
+				}
+				?>
 			</tbody>
 		</table>
 	</div>
@@ -274,18 +282,22 @@ $locales          = Settings\Stats::get_locale_stats();
 				</tr>
 			</thead>
 			<tbody>
-				<?php if ( empty( $wp_versions ) ) : ?>
-				<tr>
-					<td colspan=2><?= \esc_html__( 'No WordPress version data available.', 'troy-server' ) ?></td>
-				</tr>
-				<?php else : ?>
-					<?php foreach ( $wp_versions as $version ) : ?>
-				<tr>
-					<td><code><?= \esc_html( $version['version'] ?: \__( 'Not reported', 'troy-server' ) ) ?></code></td>
-					<td><?= \esc_html( \number_format_i18n( $version['count'] ) ) ?></td>
-				</tr>
-					<?php endforeach; ?>
-				<?php endif; ?>
+				<?php
+				if ( empty( $wp_versions ) ) {
+					?>
+					<tr>
+						<td colspan=2><?= \esc_html__( 'No WordPress version data available.', 'troy-server' ) ?></td>
+					</tr>
+					<?php
+				} else foreach ( $wp_versions as $version ) {
+					?>
+					<tr>
+						<td><code><?= \esc_html( $version['version'] ?: \__( 'Not reported', 'troy-server' ) ) ?></code></td>
+						<td><?= \esc_html( \number_format_i18n( $version['count'] ) ) ?></td>
+					</tr>
+					<?php
+				}
+				?>
 			</tbody>
 		</table>
 	</div>
@@ -311,18 +323,22 @@ $locales          = Settings\Stats::get_locale_stats();
 				</tr>
 			</thead>
 			<tbody>
-				<?php if ( empty( $locales ) ) : ?>
-				<tr>
-					<td colspan=2><?= \esc_html__( 'No locale data available.', 'troy-server' ) ?></td>
-				</tr>
-				<?php else : ?>
-					<?php foreach ( $locales as $locale ) : ?>
-				<tr>
-					<td><code><?= \esc_html( $locale['locale'] ?: \__( 'Not reported', 'troy-server' ) ) ?></code></td>
-					<td><?= \esc_html( \number_format_i18n( $locale['count'] ) ) ?></td>
-				</tr>
-					<?php endforeach; ?>
-				<?php endif; ?>
+				<?php
+				if ( empty( $locales ) ) {
+					?>
+					<tr>
+						<td colspan=2><?= \esc_html__( 'No locale data available.', 'troy-server' ) ?></td>
+					</tr>
+					<?php
+				} else foreach ( $locales as $locale ) {
+					?>
+					<tr>
+						<td><code><?= \esc_html( $locale['locale'] ?: \__( 'Not reported', 'troy-server' ) ) ?></code></td>
+						<td><?= \esc_html( \number_format_i18n( $locale['count'] ) ) ?></td>
+					</tr>
+					<?php
+				}
+				?>
 			</tbody>
 		</table>
 	</div>

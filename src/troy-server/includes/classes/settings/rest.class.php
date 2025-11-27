@@ -53,6 +53,17 @@ final class REST {
 	 */
 	public static function register_rest_routes() {
 
+		self::register_stats_routes();
+		self::register_logs_routes();
+	}
+
+	/**
+	 * Register stats-related REST routes.
+	 *
+	 * @since 0.0.1184
+	 */
+	private static function register_stats_routes() {
+
 		$namespace = REST_NS['stats_dashboard']['namespace'];
 		$base      = REST_NS['stats_dashboard']['base'];
 
@@ -71,6 +82,41 @@ final class REST {
 				'locales'             => [ \WP_REST_Server::READABLE, 'get_locales' ],
 				'plugin/(?P<id>\d+)'  => [ \WP_REST_Server::READABLE, 'get_plugin_details' ],
 				'package/(?P<id>\d+)' => [ \WP_REST_Server::READABLE, 'get_package_details' ],
+			]
+			as $route => [ $methods, $cb ]
+		) {
+			\register_rest_route(
+				$namespace,
+				"$base/$route",
+				[
+					'methods'             => $methods,
+					'callback'            => [ $class, $cb ],
+					'permission_callback' => $permission_cb,
+				],
+			);
+		}
+	}
+
+	/**
+	 * Register logs-related REST routes.
+	 *
+	 * @since 0.0.1184
+	 */
+	private static function register_logs_routes() {
+
+		$namespace = REST_NS['logs_dashboard']['namespace'];
+		$base      = REST_NS['logs_dashboard']['base'];
+
+		$permission_cb = fn() => \current_user_can( Main::REQUIRED_CAPABILITY );
+
+		$class = self::class;
+
+		foreach (
+			[
+				'failures'       => [ \WP_REST_Server::READABLE, 'get_logs_failures' ],
+				'logs'           => [ \WP_REST_Server::READABLE, 'get_logs_entries' ],
+				'clear-failures' => [ \WP_REST_Server::CREATABLE, 'clear_logs_failures' ],
+				'clear-logs'     => [ \WP_REST_Server::CREATABLE, 'clear_logs_entries' ],
 			]
 			as $route => [ $methods, $cb ]
 		) {
@@ -267,5 +313,79 @@ final class REST {
 			);
 
 		return new \WP_REST_Response( $details, 200 );
+	}
+
+	/**
+	 * Gets integration failures.
+	 *
+	 * @rest troy-server/v1/logs/failures GET
+	 * @since 0.0.1184
+	 *
+	 * @param \WP_REST_Request $request The request object.
+	 * @return \WP_REST_Response
+	 */
+	public static function get_logs_failures( $request ) {
+
+		$limit = min( (int) ( $request->get_param( 'limit' ) ?: 100 ), 500 );
+
+		return new \WP_REST_Response(
+			Logs::get_integration_failures( $limit ),
+			200,
+		);
+	}
+
+	/**
+	 * Gets integration logs.
+	 *
+	 * @rest troy-server/v1/logs/logs GET
+	 * @since 0.0.1184
+	 *
+	 * @param \WP_REST_Request $request The request object.
+	 * @return \WP_REST_Response
+	 */
+	public static function get_logs_entries( $request ) {
+
+		$limit = min( (int) ( $request->get_param( 'limit' ) ?: 100 ), 500 );
+
+		return new \WP_REST_Response(
+			Logs::get_integration_logs( $limit ),
+			200,
+		);
+	}
+
+	/**
+	 * Clears integration failures.
+	 *
+	 * @rest troy-server/v1/logs/clear-failures POST
+	 * @since 0.0.1184
+	 *
+	 * @return \WP_REST_Response
+	 */
+	public static function clear_logs_failures() {
+
+		Logs::clear_integration_failures();
+
+		return new \WP_REST_Response(
+			[ 'success' => true ],
+			200,
+		);
+	}
+
+	/**
+	 * Clears integration logs.
+	 *
+	 * @rest troy-server/v1/logs/clear-logs POST
+	 * @since 0.0.1184
+	 *
+	 * @return \WP_REST_Response
+	 */
+	public static function clear_logs_entries() {
+
+		Logs::clear_integration_logs();
+
+		return new \WP_REST_Response(
+			[ 'success' => true ],
+			200,
+		);
 	}
 }

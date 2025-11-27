@@ -186,6 +186,11 @@ final class Main {
 				// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Affects asset loading only.
 				if ( \in_array( $_GET['tab'] ?? '', [ 'plugin-stats', 'package-stats' ], true ) )
 					Stats::enqueue_assets();
+
+				// Enqueue logs assets on logs tab.
+				// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Affects asset loading only.
+				if ( 'logs' === ( $_GET['tab'] ?? '' ) )
+					Logs::enqueue_assets();
 			}
 		);
 

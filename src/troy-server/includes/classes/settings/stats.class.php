@@ -138,12 +138,10 @@ final class Stats {
 			// Use date-range query from stats_to_date
 			$totals = $wpdb->get_row( $wpdb->prepare(
 				"SELECT
-					 COALESCE(SUM(downloads), 0)
-						as total_downloads,
-					 COALESCE(SUM(views), 0)
-						as total_views
-				 FROM {$wpdb->prefix}troy_plugin_stats_versions_daily
-				 WHERE date BETWEEN %s AND %s",
+					COALESCE(SUM(downloads), 0) as total_downloads,
+					COALESCE(SUM(views), 0) as total_views
+				FROM {$wpdb->prefix}troy_plugin_stats_versions_daily
+				WHERE date BETWEEN %s AND %s",
 				$start_date,
 				$end_date,
 			) );
@@ -151,11 +149,9 @@ final class Stats {
 			// Use totals table for all-time stats
 			$totals = $wpdb->get_row(
 				"SELECT
-					 COALESCE(SUM(downloads), 0)
-						as total_downloads,
-					 COALESCE(SUM(views), 0)
-						as total_views
-				 FROM {$wpdb->prefix}troy_plugin_stats_totals",
+					COALESCE(SUM(downloads), 0) as total_downloads,
+					COALESCE(SUM(views), 0) as total_views
+				FROM {$wpdb->prefix}troy_plugin_stats_totals",
 			);
 		}
 
@@ -164,11 +160,12 @@ final class Stats {
 		// Active installs = current epoch count.
 		$installs = $wpdb->get_row(
 			"SELECT
-				 COALESCE(SUM(installations_current_epoch), 0)
-					as active,
-				 COALESCE(SUM(GREATEST(installations_current_epoch, installations_previous_epoch)), 0)
-					as total
-			 FROM {$wpdb->prefix}troy_plugin_stats_totals",
+				COALESCE(SUM(installations_current_epoch), 0) as active,
+				COALESCE(
+					SUM(GREATEST(installations_current_epoch, installations_previous_epoch)),
+					0
+				) as total
+			FROM {$wpdb->prefix}troy_plugin_stats_totals",
 		);
 
 		$active_installs   = (int) ( $installs->active ?? 0 );
@@ -219,25 +216,25 @@ final class Stats {
 
 		$results = $wpdb->get_results( $wpdb->prepare(
 			"SELECT
-				 p.id
-					as plugin_id,
-				 p.slug,
-				 pm.name,
-				 COALESCE(SUM(s.downloads), 0)
-					as downloads,
-				 COALESCE(SUM(s.views), 0)
-					as views,
-				 COALESCE(SUM(s.installations_current_epoch), 0)
-					as active_installs,
-				 COALESCE(SUM(GREATEST(s.installations_current_epoch, s.installations_previous_epoch)), 0)
-					as total_installs
-			 FROM {$wpdb->prefix}troy_plugins p
-			 LEFT JOIN {$wpdb->prefix}troy_plugin_metas pm ON p.id = pm.plugin_id
-			 LEFT JOIN {$wpdb->prefix}troy_plugin_stats_totals s ON p.id = s.plugin_id
-			 WHERE p.status IN ('public', 'unlisted', 'protected')
-			 GROUP BY p.id, p.slug, pm.name
-			 ORDER BY downloads DESC
-			 LIMIT %d",
+				p.id as plugin_id,
+				p.slug,
+				pm.name,
+				COALESCE(SUM(s.downloads), 0) as downloads,
+				COALESCE(SUM(s.views), 0) as views,
+				COALESCE(SUM(s.installations_current_epoch), 0) as active_installs,
+				COALESCE(
+					SUM(GREATEST(s.installations_current_epoch, s.installations_previous_epoch)),
+					0
+				) as total_installs
+			FROM {$wpdb->prefix}troy_plugins p
+			LEFT JOIN {$wpdb->prefix}troy_plugin_metas pm
+				ON p.id = pm.plugin_id
+			LEFT JOIN {$wpdb->prefix}troy_plugin_stats_totals s
+				ON p.id = s.plugin_id
+			WHERE p.status IN ('public', 'unlisted', 'protected')
+			GROUP BY p.id, p.slug, pm.name
+			ORDER BY downloads DESC
+			LIMIT %d",
 			$limit,
 		) );
 
@@ -281,20 +278,20 @@ final class Stats {
 
 		$results = $wpdb->get_results( $wpdb->prepare(
 			"SELECT
-				 p.id
-					as package_id,
-				 p.slug,
-				 pm.name,
-				 pm.version,
-				 COALESCE(SUM(s.downloads), 0)
-					as downloads
-			 FROM {$wpdb->prefix}troy_packages p
-			 LEFT JOIN {$wpdb->prefix}troy_package_metas pm ON p.id = pm.package_id
-			 LEFT JOIN {$wpdb->prefix}troy_package_stats_downloads s ON p.id = s.package_id
-			 WHERE p.status = 'active'
-			 GROUP BY p.id, p.slug, pm.name, pm.version
-			 ORDER BY downloads DESC
-			 LIMIT %d",
+				p.id as package_id,
+				p.slug,
+				pm.name,
+				pm.version,
+				COALESCE(SUM(s.downloads), 0) as downloads
+			FROM {$wpdb->prefix}troy_packages p
+			LEFT JOIN {$wpdb->prefix}troy_package_metas pm
+				ON p.id = pm.package_id
+			LEFT JOIN {$wpdb->prefix}troy_package_stats_downloads s
+				ON p.id = s.package_id
+			WHERE p.status = 'active'
+			GROUP BY p.id, p.slug, pm.name, pm.version
+			ORDER BY downloads DESC
+			LIMIT %d",
 			$limit,
 		) );
 
@@ -344,27 +341,27 @@ final class Stats {
 		// Request counts by epoch
 		$current_requests = (int) $wpdb->get_var( $wpdb->prepare(
 			"SELECT COALESCE(SUM(request_count), 0)
-			 FROM {$wpdb->prefix}troy_plugin_stats_requests
-			 WHERE epoch = %d",
+			FROM {$wpdb->prefix}troy_plugin_stats_requests
+			WHERE epoch = %d",
 			$current_epoch,
 		) );
 
 		$previous_requests = (int) $wpdb->get_var( $wpdb->prepare(
 			"SELECT COALESCE(SUM(request_count), 0)
-			 FROM {$wpdb->prefix}troy_plugin_stats_requests
-			 WHERE epoch = %d",
+			FROM {$wpdb->prefix}troy_plugin_stats_requests
+			WHERE epoch = %d",
 			$previous_epoch,
 		) );
 
 		// Installation counts by epoch
 		$current_installs = (int) $wpdb->get_var(
 			"SELECT COALESCE(SUM(installations_current_epoch), 0)
-			 FROM {$wpdb->prefix}troy_plugin_stats_totals",
+			FROM {$wpdb->prefix}troy_plugin_stats_totals",
 		);
 
 		$previous_installs = (int) $wpdb->get_var(
 			"SELECT COALESCE(SUM(installations_previous_epoch), 0)
-			 FROM {$wpdb->prefix}troy_plugin_stats_totals",
+			FROM {$wpdb->prefix}troy_plugin_stats_totals",
 		);
 
 		return [
@@ -374,12 +371,12 @@ final class Stats {
 			'previous_requests'       => $previous_requests,
 			'requests_change_percent' => $previous_requests
 				? round( ( ( $current_requests - $previous_requests ) / $previous_requests ) * 100, 1 )
-				: ( $current_requests ? INF : 0.0 ),
+				: ( $current_requests ? \INF : 0.0 ),
 			'current_installs'        => $current_installs,
 			'previous_installs'       => $previous_installs,
 			'installs_change_percent' => $previous_installs
 				? round( ( ( $current_installs - $previous_installs ) / $previous_installs ) * 100, 1 )
-				: ( $current_installs ? INF : 0.0 ),
+				: ( $current_installs ? \INF : 0.0 ),
 		];
 	}
 
@@ -397,10 +394,13 @@ final class Stats {
 		global $wpdb;
 
 		$plugin = $wpdb->get_row( $wpdb->prepare(
-			"SELECT p.*, pm.name
-			 FROM {$wpdb->prefix}troy_plugins p
-			 LEFT JOIN {$wpdb->prefix}troy_plugin_metas pm ON p.id = pm.plugin_id
-			 WHERE p.id = %d",
+			"SELECT
+				p.*,
+				pm.name
+			FROM {$wpdb->prefix}troy_plugins p
+			LEFT JOIN {$wpdb->prefix}troy_plugin_metas pm
+				ON p.id = pm.plugin_id
+			WHERE p.id = %d",
 			$plugin_id,
 		) );
 
@@ -412,12 +412,13 @@ final class Stats {
 		// Version breakdown
 		$versions = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT version, SUM(downloads)
-					as downloads
-				 FROM {$wpdb->prefix}troy_plugin_stats_downloads
-				 WHERE plugin_id = %d
-				 GROUP BY version
-				 ORDER BY downloads DESC",
+				"SELECT
+					version,
+					SUM(downloads) as downloads
+				FROM {$wpdb->prefix}troy_plugin_stats_downloads
+				WHERE plugin_id = %d
+				GROUP BY version
+				ORDER BY downloads DESC",
 				$plugin_id,
 			),
 			\ARRAY_A,
@@ -426,11 +427,12 @@ final class Stats {
 		// Download types breakdown
 		$download_types = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT type, SUM(downloads)
-					as downloads
-				 FROM {$wpdb->prefix}troy_plugin_stats_downloads
-				 WHERE plugin_id = %d
-				 GROUP BY type",
+				"SELECT
+					type,
+					SUM(downloads) as downloads
+				FROM {$wpdb->prefix}troy_plugin_stats_downloads
+				WHERE plugin_id = %d
+				GROUP BY type",
 				$plugin_id,
 			),
 			\ARRAY_A,
@@ -439,13 +441,14 @@ final class Stats {
 		// Locale breakdown from update requests
 		$locales = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT locale, SUM(install_count)
-					as count
-				 FROM {$wpdb->prefix}troy_plugin_stats_locales
-				 WHERE plugin_id = %d
-				 GROUP BY locale
-				 ORDER BY count DESC
-				 LIMIT 10",
+				"SELECT
+					locale,
+					SUM(install_count) as count
+				FROM {$wpdb->prefix}troy_plugin_stats_locales
+				WHERE plugin_id = %d
+				GROUP BY locale
+				ORDER BY count DESC
+				LIMIT 10",
 				$plugin_id,
 			),
 			\ARRAY_A,
@@ -458,12 +461,13 @@ final class Stats {
 		// Active installs = current epoch count.
 		$installs = $wpdb->get_row( $wpdb->prepare(
 			"SELECT
-				 COALESCE(SUM(installations_current_epoch), 0)
-					as active,
-				 COALESCE(SUM(GREATEST(installations_current_epoch, installations_previous_epoch)), 0)
-					as total
-			 FROM {$wpdb->prefix}troy_plugin_stats_totals
-			 WHERE plugin_id = %d",
+				COALESCE(SUM(installations_current_epoch), 0) as active,
+				COALESCE(
+					SUM(GREATEST(installations_current_epoch, installations_previous_epoch)),
+					0
+				) as total
+			FROM {$wpdb->prefix}troy_plugin_stats_totals
+			WHERE plugin_id = %d",
 			$plugin_id,
 		) );
 
@@ -474,15 +478,14 @@ final class Stats {
 		// PHP version breakdown from update requests
 		$php_versions = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT php_version
-					as version,
-				 SUM(install_count)
-					as count
-				 FROM {$wpdb->prefix}troy_plugin_stats_php
-				 WHERE plugin_id = %d
-				 GROUP BY php_version
-				 ORDER BY count DESC
-				 LIMIT 10",
+				"SELECT
+					php_version as version,
+					SUM(install_count) as count
+				FROM {$wpdb->prefix}troy_plugin_stats_php
+				WHERE plugin_id = %d
+				GROUP BY php_version
+				ORDER BY count DESC
+				LIMIT 10",
 				$plugin_id,
 			),
 			\ARRAY_A,
@@ -491,15 +494,14 @@ final class Stats {
 		// WP version breakdown from update requests
 		$wp_versions = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT wp_version
-					as version,
-				 SUM(install_count)
-					as count
-				 FROM {$wpdb->prefix}troy_plugin_stats_wp
-				 WHERE plugin_id = %d
-				 GROUP BY wp_version
-				 ORDER BY count DESC
-				 LIMIT 10",
+				"SELECT
+					wp_version as version,
+					SUM(install_count) as count
+				FROM {$wpdb->prefix}troy_plugin_stats_wp
+				WHERE plugin_id = %d
+				GROUP BY wp_version
+				ORDER BY count DESC
+				LIMIT 10",
 				$plugin_id,
 			),
 			\ARRAY_A,
@@ -536,10 +538,14 @@ final class Stats {
 		global $wpdb;
 
 		$package = $wpdb->get_row( $wpdb->prepare(
-			"SELECT p.*, pm.name, pm.version
-			 FROM {$wpdb->prefix}troy_packages p
-			 LEFT JOIN {$wpdb->prefix}troy_package_metas pm ON p.id = pm.package_id
-			 WHERE p.id = %d",
+			"SELECT
+				p.*,
+				pm.name,
+				pm.version
+			FROM {$wpdb->prefix}troy_packages p
+			LEFT JOIN {$wpdb->prefix}troy_package_metas pm
+				ON p.id = pm.package_id
+			WHERE p.id = %d",
 			$package_id,
 		) );
 
@@ -549,12 +555,13 @@ final class Stats {
 		// Version breakdown
 		$versions = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT version, SUM(downloads)
-					as downloads
-				 FROM {$wpdb->prefix}troy_package_stats_downloads
-				 WHERE package_id = %d
-				 GROUP BY version
-				 ORDER BY downloads DESC",
+				"SELECT
+					version,
+					SUM(downloads) as downloads
+				FROM {$wpdb->prefix}troy_package_stats_downloads
+				WHERE package_id = %d
+				GROUP BY version
+				ORDER BY downloads DESC",
 				$package_id,
 			),
 			\ARRAY_A,
@@ -562,8 +569,8 @@ final class Stats {
 
 		$total_downloads = (int) $wpdb->get_var( $wpdb->prepare(
 			"SELECT COALESCE(SUM(downloads), 0)
-			 FROM {$wpdb->prefix}troy_package_stats_downloads
-			 WHERE package_id = %d",
+			FROM {$wpdb->prefix}troy_package_stats_downloads
+			WHERE package_id = %d",
 			$package_id,
 		) );
 
@@ -597,14 +604,13 @@ final class Stats {
 		global $wpdb;
 
 		$results = $wpdb->get_results( $wpdb->prepare(
-			"SELECT php_version
-				as version,
-			 SUM(install_count)
-				as count
-			 FROM {$wpdb->prefix}troy_plugin_stats_php
-			 GROUP BY php_version
-			 ORDER BY count DESC
-			 LIMIT %d",
+			"SELECT
+				php_version as version,
+				SUM(install_count) as count
+			FROM {$wpdb->prefix}troy_plugin_stats_php
+			GROUP BY php_version
+			ORDER BY count DESC
+			LIMIT %d",
 			$limit,
 		) );
 
@@ -639,14 +645,13 @@ final class Stats {
 		global $wpdb;
 
 		$results = $wpdb->get_results( $wpdb->prepare(
-			"SELECT wp_version
-				as version,
-			 SUM(install_count)
-				as count
-			 FROM {$wpdb->prefix}troy_plugin_stats_wp
-			 GROUP BY wp_version
-			 ORDER BY count DESC
-			 LIMIT %d",
+			"SELECT
+				wp_version as version,
+				SUM(install_count) as count
+			FROM {$wpdb->prefix}troy_plugin_stats_wp
+			GROUP BY wp_version
+			ORDER BY count DESC
+			LIMIT %d",
 			$limit,
 		) );
 
@@ -681,12 +686,13 @@ final class Stats {
 		global $wpdb;
 
 		$results = $wpdb->get_results( $wpdb->prepare(
-			"SELECT locale, SUM(install_count)
-				as count
-			 FROM {$wpdb->prefix}troy_plugin_stats_locales
-			 GROUP BY locale
-			 ORDER BY count DESC
-			 LIMIT %d",
+			"SELECT
+				locale,
+				SUM(install_count) as count
+			FROM {$wpdb->prefix}troy_plugin_stats_locales
+			GROUP BY locale
+			ORDER BY count DESC
+			LIMIT %d",
 			$limit,
 		) );
 

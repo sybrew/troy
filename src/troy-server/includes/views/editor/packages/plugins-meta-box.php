@@ -80,17 +80,20 @@ $plugins = $wpdb->get_results(
 		</label>
 	</div>
 	<?php
-	if ( $plugins ) {
-		foreach ( $plugins as $plugin ) {
+	if ( ! $plugins ) {
+		?>
+		<p><?= \esc_html__( 'No plugins available.', 'troy-server' ) ?></p>
+		<?php
+	} else foreach ( $plugins as $plugin ) {
 
-			$is_selected = isset( $plugin_options[ $plugin->id ] );
-			$options     = $plugin_options[ $plugin->id ] ?? [
-				'network'        => false,
-				'activate'       => true,
-				'overwrite'      => true,
-				'overwrite_troy' => false,
-			];
-			?>
+		$is_selected = isset( $plugin_options[ $plugin->id ] );
+		$options     = $plugin_options[ $plugin->id ] ?? [
+			'network'        => false,
+			'activate'       => true,
+			'overwrite'      => true,
+			'overwrite_troy' => false,
+		];
+		?>
 			<div class=troy-package-plugin-item data-plugin-id="<?= \esc_attr( $plugin->id ) ?>">
 				<label class=troy-package-plugin-main>
 					<input
@@ -159,13 +162,8 @@ $plugins = $wpdb->get_results(
 								<span class=troy-package-plugin-option-desc><?= \esc_html__( 'Overwrite Troy Client if already installed.', 'troy-server' ) ?></span>
 							</span>
 						</label>
-					</div>
 				</div>
-			<?php
-		}
-	} else {
-		?>
-		<p><?= \esc_html__( 'No plugins available.', 'troy-server' ) ?></p>
+			</div>
 		<?php
 	}
 	?>

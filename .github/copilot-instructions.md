@@ -80,7 +80,27 @@ Follow these rules:
 - Avoid output buffering
 - You may use functions str_starts_with, str_ends_with, and str_contains; WordPress provides these
 - You may use logical operators like and, or, and xor
-- For SQL queries over 80 chars: split lines, prefix new lines with a space, indent ANDs and SELECT aliases with tab+space
+- Refrain from colon syntax for conditionals and loops
+
+## SQL Queries
+- Do not create aliases unless necessary
+- When a clause contains an alias, put each item in that clause on its own line
+- For SQL queries over 80 chars:
+	1. Put every clause onto a new line
+	2. If a clause exceeds 60 characters:
+		1. Put every logical operator on a new line
+		1. If there are multiple predicates, put each on new lines
+		2. Set aliases on the same line as the column, unless they contain an operator or exceed 60 characters
+		3. Set expressions on new lines
+		4. Indent every new line by one tab
+	4. Put operators at the start of new lines
+
+## PHP Templates
+
+- When mixing PHP and HTML, indent HTML to match the PHP block scope it's in
+- Coalesce two control structures when the first contains only the second, e.g. `} else foreach {`
+- Close PHP tags on a new line after an opening brace
+- Reopen PHP tags on their own line before the closing brace
 
 ## JS
 
