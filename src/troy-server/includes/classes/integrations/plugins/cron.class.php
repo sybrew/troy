@@ -87,8 +87,8 @@ final class Cron extends \Troy\Server\Cron {
 
 		$integrations = $wpdb->get_results(
 			"SELECT plugin_id, mode, auto_process
-			 FROM {$wpdb->prefix}troy_plugin_integrations
-			 WHERE auto_process != 'none'",
+			FROM {$wpdb->prefix}troy_plugin_integrations
+			WHERE auto_process != 'none'",
 		);
 
 		if ( empty( $integrations ) )
@@ -361,8 +361,8 @@ final class Cron extends \Troy\Server\Cron {
 					$attempts = $wpdb->get_var(
 						$wpdb->prepare(
 							"SELECT attempts
-							 FROM {$wpdb->prefix}troy_plugin_integration_failures
-							 WHERE plugin_id = %d AND package_version = %s",
+							FROM {$wpdb->prefix}troy_plugin_integration_failures
+							WHERE plugin_id = %d AND package_version = %s",
 							$plugin_id,
 							$package_version,
 						),

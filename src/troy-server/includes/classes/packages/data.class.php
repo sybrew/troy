@@ -206,8 +206,8 @@ final class Data {
 
 		return $wpdb->get_results( $wpdb->prepare(
 			"SELECT *
-			 FROM {$wpdb->prefix}troy_package_stats_downloads
-			 WHERE package_id = %d",
+			FROM {$wpdb->prefix}troy_package_stats_downloads
+			WHERE package_id = %d",
 			$this->package_id,
 		) ) ?: null;
 	}
@@ -235,8 +235,8 @@ final class Data {
 
 		return $wpdb->get_results( $wpdb->prepare(
 			"SELECT *
-			 FROM {$wpdb->prefix}troy_package_stats_downloads_live
-			 WHERE package_id = %d",
+			FROM {$wpdb->prefix}troy_package_stats_downloads_live
+			WHERE package_id = %d",
 			$this->package_id,
 		) ) ?: null;
 	}

@@ -356,10 +356,10 @@ final class Store {
 		return $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT *
-				 FROM {$wpdb->prefix}troy_plugin_integration_queue
-				 WHERE status IN (%s, %s)
-				 ORDER BY created_at ASC
-				 LIMIT %d",
+				FROM {$wpdb->prefix}troy_plugin_integration_queue
+				WHERE status IN (%s, %s)
+				ORDER BY created_at ASC
+				LIMIT %d",
 				self::QUEUE_STATUS_PENDING,
 				self::QUEUE_STATUS_TEMPORARY_FAILURE,
 				$limit,
@@ -387,8 +387,8 @@ final class Store {
 		$existing_attempts = $wpdb->get_var(
 			$wpdb->prepare(
 				"SELECT attempts
-				 FROM {$wpdb->prefix}troy_plugin_integration_failures
-				 WHERE plugin_id = %d AND package_version = %s",
+				FROM {$wpdb->prefix}troy_plugin_integration_failures
+				WHERE plugin_id = %d AND package_version = %s",
 				$plugin_id,
 				$package_version,
 			),

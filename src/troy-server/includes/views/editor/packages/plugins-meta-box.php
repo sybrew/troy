@@ -59,9 +59,10 @@ global $wpdb;
 
 $plugins = $wpdb->get_results(
 	"SELECT p.id, p.slug, m.name
-	 FROM `{$wpdb->prefix}troy_plugins` p
-	 LEFT JOIN `{$wpdb->prefix}troy_plugin_metas` m ON p.id = m.plugin_id
-	 ORDER BY m.name ASC",
+	FROM `{$wpdb->prefix}troy_plugins` p
+	LEFT JOIN `{$wpdb->prefix}troy_plugin_metas` m
+		ON p.id = m.plugin_id
+	ORDER BY m.name ASC",
 );
 ?>
 <div class=troy-package-metabox-plugin-list>

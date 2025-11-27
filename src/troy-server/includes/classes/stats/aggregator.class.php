@@ -70,7 +70,7 @@ final class Aggregator {
 		// Fetch all raw rows from live table - minimal SQL work.
 		$live_rows = $wpdb->get_results(
 			"SELECT plugin_id, epoch, version, is_active, uuid, locales, php_version, wp_version
-			 FROM {$wpdb->prefix}troy_plugin_stats_requests_live",
+			FROM {$wpdb->prefix}troy_plugin_stats_requests_live",
 		);
 
 		if ( ! $live_rows )
@@ -236,8 +236,8 @@ final class Aggregator {
 			$existing = $wpdb->get_row(
 				$wpdb->prepare(
 					"SELECT id, downloads, views
-					 FROM {$wpdb->prefix}troy_plugin_stats_versions
-					 WHERE plugin_id = %d AND version = %s",
+					FROM {$wpdb->prefix}troy_plugin_stats_versions
+					WHERE plugin_id = %d AND version = %s",
 					$row['plugin_id'],
 					$row['version'],
 				),
@@ -285,8 +285,8 @@ final class Aggregator {
 			$existing = $wpdb->get_row(
 				$wpdb->prepare(
 					"SELECT id, downloads, views
-					 FROM {$wpdb->prefix}troy_plugin_stats_totals
-					 WHERE plugin_id = %d",
+					FROM {$wpdb->prefix}troy_plugin_stats_totals
+					WHERE plugin_id = %d",
 					$plugin_id,
 				),
 			);
@@ -336,7 +336,7 @@ final class Aggregator {
 		// Fetch all raw rows - no SQL aggregation.
 		$live_rows = $wpdb->get_results(
 			"SELECT plugin_id, version, screen, locale, origin_url
-			 FROM {$wpdb->prefix}troy_plugin_stats_views_live",
+			FROM {$wpdb->prefix}troy_plugin_stats_views_live",
 		);
 
 		if ( ! $live_rows )
@@ -406,8 +406,8 @@ final class Aggregator {
 			$existing = $wpdb->get_var(
 				$wpdb->prepare(
 					"SELECT id
-					 FROM {$wpdb->prefix}troy_plugin_stats_versions
-					 WHERE plugin_id = %d AND version = %s AND origin_url = %s",
+					FROM {$wpdb->prefix}troy_plugin_stats_versions
+					WHERE plugin_id = %d AND version = %s AND origin_url = %s",
 					$row['plugin_id'],
 					$row['version'],
 					$row['origin_url'],
@@ -444,8 +444,8 @@ final class Aggregator {
 			$existing = $wpdb->get_var(
 				$wpdb->prepare(
 					"SELECT id
-					 FROM {$wpdb->prefix}troy_plugin_stats_totals
-					 WHERE plugin_id = %d",
+					FROM {$wpdb->prefix}troy_plugin_stats_totals
+					WHERE plugin_id = %d",
 					$row['plugin_id'],
 				),
 			);
@@ -492,7 +492,7 @@ final class Aggregator {
 		// Fetch all raw plugin download rows - no SQL aggregation.
 		$live_rows = $wpdb->get_results(
 			"SELECT plugin_id, version, type, origin_url
-			 FROM {$wpdb->prefix}troy_plugin_stats_downloads_live",
+			FROM {$wpdb->prefix}troy_plugin_stats_downloads_live",
 		);
 
 		if ( $live_rows ) {
@@ -558,8 +558,8 @@ final class Aggregator {
 				$existing = $wpdb->get_var(
 					$wpdb->prepare(
 						"SELECT id
-						 FROM {$wpdb->prefix}troy_plugin_stats_versions
-						 WHERE plugin_id = %d AND version = %s AND origin_url = %s",
+						FROM {$wpdb->prefix}troy_plugin_stats_versions
+						WHERE plugin_id = %d AND version = %s AND origin_url = %s",
 						$row['plugin_id'],
 						$row['version'],
 						$row['origin_url'],
@@ -596,8 +596,8 @@ final class Aggregator {
 				$existing = $wpdb->get_var(
 					$wpdb->prepare(
 						"SELECT id
-						 FROM {$wpdb->prefix}troy_plugin_stats_totals
-						 WHERE plugin_id = %d",
+						FROM {$wpdb->prefix}troy_plugin_stats_totals
+						WHERE plugin_id = %d",
 						$row['plugin_id'],
 					),
 				);
@@ -629,7 +629,7 @@ final class Aggregator {
 		// Aggregate package downloads separately.
 		$package_live_rows = $wpdb->get_results(
 			"SELECT package_id, version, type, origin_url
-			 FROM {$wpdb->prefix}troy_package_stats_downloads_live",
+			FROM {$wpdb->prefix}troy_package_stats_downloads_live",
 		);
 
 		if ( $package_live_rows ) {
@@ -682,8 +682,8 @@ final class Aggregator {
 				$existing = $wpdb->get_var(
 					$wpdb->prepare(
 						"SELECT id
-						 FROM {$wpdb->prefix}troy_package_stats_totals
-						 WHERE package_id = %d",
+						FROM {$wpdb->prefix}troy_package_stats_totals
+						WHERE package_id = %d",
 						$row['package_id'],
 					),
 				);
@@ -738,8 +738,8 @@ final class Aggregator {
 			$existing = $wpdb->get_var(
 				$wpdb->prepare(
 					"SELECT id
-					 FROM {$wpdb->prefix}troy_plugin_data_caches
-					 WHERE plugin_id = %d",
+					FROM {$wpdb->prefix}troy_plugin_data_caches
+					WHERE plugin_id = %d",
 					$row->plugin_id,
 				),
 			);
@@ -797,8 +797,8 @@ final class Aggregator {
 			$existing = $wpdb->get_var(
 				$wpdb->prepare(
 					"SELECT id
-					 FROM {$wpdb->prefix}troy_plugin_stats_versions_daily
-					 WHERE plugin_id = %d AND version = %s AND date = %s AND origin_url = %s",
+					FROM {$wpdb->prefix}troy_plugin_stats_versions_daily
+					WHERE plugin_id = %d AND version = %s AND date = %s AND origin_url = %s",
 					$row->plugin_id,
 					$row->version,
 					$today,
@@ -852,8 +852,8 @@ final class Aggregator {
 			$existing = $wpdb->get_var(
 				$wpdb->prepare(
 					"SELECT id
-					 FROM {$wpdb->prefix}troy_plugin_stats_totals_daily
-					 WHERE plugin_id = %d AND date = %s",
+					FROM {$wpdb->prefix}troy_plugin_stats_totals_daily
+					WHERE plugin_id = %d AND date = %s",
 					$row->plugin_id,
 					$today,
 				),
@@ -913,7 +913,7 @@ final class Aggregator {
 		$wpdb->query(
 			$wpdb->prepare(
 				"DELETE FROM {$wpdb->prefix}troy_plugin_stats_requests_live
-				 WHERE epoch < %d",
+				WHERE epoch < %d",
 				$current_epoch,
 			),
 		);
