@@ -122,7 +122,7 @@ final class Zip_Builder {
 
 		File_Utils::init_wpfs();
 
-		$this->origin_url = $origin_url ?? API\Server::get_origin_url();
+		$this->origin_url = $origin_url ?? API\Server::get_repo_url();
 
 		// Make plugin storage directories if they do not exist.
 		// We want a shield in every plugin storage directory, hence the double call.

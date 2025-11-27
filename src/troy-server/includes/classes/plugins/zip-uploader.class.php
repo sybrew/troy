@@ -153,7 +153,7 @@ final class Zip_Uploader {
 
 		File_Utils::init_wpfs();
 
-		$this->origin_url = $origin_url ?? API\Server::get_origin_url();
+		$this->origin_url = $origin_url ?? API\Server::get_repo_url();
 
 		// Make plugin storage directories if they do not exist.
 		// We want a shield in every plugin storage directory, hence the double call.
@@ -365,10 +365,9 @@ final class Zip_Uploader {
 				}
 			}
 
-			$repo = trim( $repo ?? '' );
+			$repo = API\Sanitize::bare_repo_url( $repo ?? '' );
 
-			// We won't store the sanitized version because this will need to be revalidated later.
-			if ( ! $repo || ! API\Sanitize::make_fully_qualified_repo_url( $repo ) )
+			if ( ! $repo )
 				throw new \Exception( 'The main plugin file does not have a valid repo header.', self::EXCEPTION_PERMANENT );
 
 			if ( \strlen( $repo ) > 191 )
@@ -382,6 +381,7 @@ final class Zip_Uploader {
 			}
 
 			$dependencies = trim( $dependencies ?? '' );
+
 			if ( \strlen( $dependencies ) > 191 )
 				throw new \Exception( 'Repo Dependencies header cannot exceed 191 characters.', self::EXCEPTION_PERMANENT );
 
@@ -425,7 +425,7 @@ final class Zip_Uploader {
 					}
 
 					// If repo part exists, validate the URL
-					if ( $dep_repo && ! API\Sanitize::make_fully_qualified_repo_url( trim( $dep_repo, ' >' ) ) )
+					if ( $dep_repo && ! API\Sanitize::fully_qualified_repo_url( trim( $dep_repo, ' >' ) ) )
 						throw new \Exception( 'Repo Dependencies header must use a valid repository URL for each dependency.' );
 				}
 			}

@@ -40,9 +40,9 @@ $integration_failures = Settings\Logs::get_integration_failures();
 $integration_logs     = Settings\Logs::get_integration_logs();
 
 ?>
-<h2><?= \esc_html__( 'Integration Logs', 'troy-server' ) ?></h2>
+<h2><?= \esc_html__( 'Server Logs', 'troy-server' ) ?></h2>
 
-<p><?= \esc_html__( 'View integration failures and logs from plugin syncing processes.', 'troy-server' ) ?></p>
+<p><?= \esc_html__( 'View Troy Server logs from various syncing processes.', 'troy-server' ) ?></p>
 
 <div class=troy-server-logs-controls>
 	<button type=button class="button button-secondary" id=troy-server-logs-refresh>

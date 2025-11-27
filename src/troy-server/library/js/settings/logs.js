@@ -133,7 +133,9 @@
 	 */
 	const buildLogRow = log => `
 		<tr data-log-id="${ sanitize.number( log.id ) }" class="troy-server-logs-type-${ escape.string( log.type ) }">
-			<td><strong>${ escape.string( log.plugin_slug ) }</strong><br><code>${ sanitize.number( log.plugin_id ) }</code></td>
+			<td>
+				${ sanitize.number( log.plugin_id ) } <code>(${ escape.string( log.plugin_slug ) })</code>
+			</td>
 			<td>
 				<span class="troy-server-logs-type troy-server-logs-type-${ escape.string( log.type ) }">
 					${ escape.string( log.type ) }

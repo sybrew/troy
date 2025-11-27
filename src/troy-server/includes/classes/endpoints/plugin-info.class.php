@@ -485,7 +485,7 @@ final class Plugin_Info extends Base_Endpoint {
 				'version'    => '',
 				'screen'     => $screen,
 				'locale'     => $locale,
-				'origin_url' => API\Server::get_origin_url(),
+				'origin_url' => API\Server::get_repo_url(),
 			],
 			[
 				'%d',

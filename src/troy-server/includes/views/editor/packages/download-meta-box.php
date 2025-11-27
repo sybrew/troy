@@ -56,7 +56,7 @@ if ( ! $package || ! $package->slug ) {
 	return;
 }
 
-$download_url = API\Server::get_origin_url() . "package/get/zip/{$package->slug}";
+$download_url = API\Server::get_full_repo_url() . "package/get/zip/{$package->slug}";
 ?>
 <p>
 	<a href="<?= \esc_url( $download_url ) ?>" class="button button-primary button-large" target=_blank>

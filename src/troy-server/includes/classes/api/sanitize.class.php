@@ -224,27 +224,6 @@ final class Sanitize {
 	}
 
 	/**
-	 * Sanitize the URL and forces it to become fully qualified.
-	 *
-	 * @since 0.0.1184
-	 *
-	 * @param string $url The URL to sanitize.
-	 * @return string The sanitized URL.
-	 */
-	public static function url_qualified( $url ) {
-		return $url
-			? \sanitize_url(
-				preg_replace(
-					'/^(?:\w*:)?(?:\/\/)?(.*?)$/',
-					'https://$1',
-					$url,
-				),
-				[ 'https' ],
-			)
-			: '';
-	}
-
-	/**
 	 * Sanitizes a version requirement string in the format 'X.Y' or 'X.Y.Z'.
 	 *
 	 * Max length is 20 characters.
@@ -477,12 +456,52 @@ final class Sanitize {
 	public static function json_encode_db( $data ) {
 		return json_encode(
 			$data,
-			\JSON_UNESCAPED_SLASHES
+			  \JSON_UNESCAPED_SLASHES
 			| \JSON_UNESCAPED_UNICODE
 			| \JSON_INVALID_UTF8_IGNORE
 			| \JSON_PRESERVE_ZERO_FRACTION
 			| \JSON_THROW_ON_ERROR, // Pernicious. Good. May prevent data loss.
 		);
+	}
+
+	/**
+	 * Sanitizes a URL and forces it to become fully qualified.
+	 *
+	 * Per IETF RFC 3986, a URI with an authority but empty path is normalized to have a `/` path.
+	 *
+	 * @since 0.0.1184
+	 * @todo PHP 8.5+ support: Use `new Uri\Rfc3986\Uri( $url )->withPath('/')->toString()`.
+	 *
+	 * @param string $url The URL to sanitize.
+	 * @return string The sanitized URL.
+	 */
+	public static function url_qualified( $url ) {
+
+		if ( ! $url )
+			return '';
+
+		$url = \sanitize_url(
+			preg_replace(
+				'/^(?:\w*:)?(?:\/\/)?(.*?)$/',
+				'https://$1',
+				$url,
+			),
+			[ 'https' ],
+		);
+
+		$parsed = parse_url( $url );
+
+		// Enforce trailing slash on domain-only URLs per IETF RFC 3986.
+		if ( empty( $parsed['path'] ) ) {
+			$host     = $parsed['host'];
+			$port     = isset( $parsed['port'] ) ? ":{$parsed['port']}" : '';
+			$query    = isset( $parsed['query'] ) ? "?{$parsed['query']}" : '';
+			$fragment = isset( $parsed['fragment'] ) ? "#{$parsed['fragment']}" : '';
+
+			$url = "https://{$host}{$port}/{$query}{$fragment}";
+		}
+
+		return $url;
 	}
 
 	/**
@@ -515,15 +534,43 @@ final class Sanitize {
 	 * @param string $repo The repository URL to make fully qualified.
 	 * @return string The fully qualified repository URL.
 	 */
-	public static function make_fully_qualified_repo_url( $repo ) {
-		return \esc_url(
+	public static function fully_qualified_repo_url( $repo ) {
+		return \sanitize_url(
 			preg_replace(
 				'/^(?:\w*:)?(?:\/\/)?(.*?)$/',
 				'https://$1/',
-				trim( $repo, ' \\\/' ),
+				trim( $repo, ' \\/' ),
 			),
 			[ 'https' ],
 		);
+	}
+
+	/**
+	 * Returns a bare repository URL, containing only domain/path/query.
+	 *
+	 * This mirrors the JS `sanitize.bareRepoUrl()` function for consistent comparisons.
+	 * Returns a normalized format like `domain.tld/path` without scheme or trailing slash.
+	 *
+	 * @since 0.0.1184
+	 *
+	 * @param string $repo The repository URL to strip.
+	 * @return string The bare repository URL (domain/path only).
+	 */
+	public static function bare_repo_url( $repo ) {
+
+		$repo = trim( $repo ?? '' );
+
+		if ( ! $repo )
+			return '';
+
+		// Remove scheme and leading slashes, normalize to domain/path format
+		$stripped = preg_replace(
+			'/^(?:\w*:)?(?:\/\/)?(.*?)$/',
+			'$1',
+			trim( $repo, ' \\\/' ),
+		);
+
+		return rtrim( $stripped, '/' );
 	}
 
 	/**

@@ -8,6 +8,8 @@ namespace Troy\Server\API;
 
 \defined( 'Troy\Server\ABSPATH' ) or die;
 
+use Troy\Server\API; // We explicitly prefix API methods, possibly easing adoption.
+
 /**
  * Troy Server
  *
@@ -51,20 +53,33 @@ final class Server {
 	}
 
 	/**
-	 * Returns this server's origin URL.
-	 * Forcing HTTPS.
+	 * Returns this server's repository URL in bare format.
+	 *
+	 * Returns a stripped format (domain/path only) for consistent storage and comparison.
+	 * Use `Sanitize::fully_qualified_repo_url()` to reconstruct a full URL when needed.
 	 *
 	 * @since 0.0.1184
 	 *
-	 * @return string The origin URL.
+	 * @return string The repository URL (e.g., 'example.com/repo').
 	 */
-	public static function get_origin_url() {
+	public static function get_repo_url() {
 
 		static $memo;
 
-		return $memo ??= Sanitize::make_fully_qualified_repo_url(
+		return $memo ??= Sanitize::bare_repo_url(
 			\home_url( '', 'https' ),
 		);
+	}
+
+	/**
+	 * Returns this server's fully qualified repository URL.
+	 *
+	 * @since 0.0.1184
+	 *
+	 * @return string The fully qualified repository URL (e.g., 'https://example.com/repo').
+	 */
+	public static function get_full_repo_url() {
+		return API\Sanitize::fully_qualified_repo_url( self::get_repo_url() );
 	}
 
 	/**

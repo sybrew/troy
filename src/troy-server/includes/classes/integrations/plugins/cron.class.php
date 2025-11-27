@@ -287,7 +287,7 @@ final class Cron extends \Troy\Server\Cron {
 				);
 
 				// Success: determine type based on repo match and version pattern
-				$site_repo_url = API\Server::get_origin_url();
+				$site_repo_url = API\Server::get_repo_url();
 				$zip_repo_url  = $uploader->repo_uploaded;
 				$version_type  = API\Utils::get_version_type( $uploader->version_uploaded );
 
@@ -317,7 +317,6 @@ final class Cron extends \Troy\Server\Cron {
 						break;
 				}
 
-				// Check if repo matches the integration's origin URL
 				if ( $zip_repo_url !== $site_repo_url ) {
 					// Keep as unreleased if repo doesn't match
 					$version_type = 'unreleased';
@@ -343,10 +342,11 @@ final class Cron extends \Troy\Server\Cron {
 				// Remove from queue and clear any failures
 				Store::dequeue_tag( $plugin_id, $package_version );
 				Store::clear_failure( $plugin_id, $package_version );
+
 				self::integration_log(
 					$plugin_id,
 					'info',
-					"Successfully processed queued tag {$package_version} (uploaded version: {$uploader->version_uploaded}).",
+					"Successfully processed queued tag {$package_version} (type: {$version_type}, uploaded version: {$uploader->version_uploaded}).",
 				);
 			} catch ( \Exception $e ) {
 				$error_message = $e->getMessage();

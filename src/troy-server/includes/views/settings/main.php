@@ -45,10 +45,6 @@ use Troy\Server\{
 $tabs = \apply_filters(
 	'troy_server_settings_tabs',
 	[
-		'settings'      => [
-			'title' => \_x( 'Settings', 'Tab title', 'troy-server' ),
-			'link'  => \admin_url( 'admin.php?page=' . Settings\Main::SETTINGS_PAGE_SLUG ),
-		],
 		'plugin-stats'  => [
 			'title' => \_x( 'Plugin Stats', 'Tab title', 'troy-server' ),
 			'link'  => \admin_url( 'admin.php?page=' . Settings\Main::SETTINGS_PAGE_SLUG . '&tab=plugin-stats' ),
@@ -61,11 +57,15 @@ $tabs = \apply_filters(
 			'title' => \_x( 'Logs', 'Tab title', 'troy-server' ),
 			'link'  => \admin_url( 'admin.php?page=' . Settings\Main::SETTINGS_PAGE_SLUG . '&tab=logs' ),
 		],
+		// 'settings'      => [
+		// 	'title' => \_x( 'Settings', 'Tab title', 'troy-server' ),
+		// 	'link'  => \admin_url( 'admin.php?page=' . Settings\Main::SETTINGS_PAGE_SLUG ),
+		// ],
 	],
 );
 
 // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Affects output view only.
-$current_tab = isset( $_GET['tab'], $tabs[ $_GET['tab'] ] ) ? $_GET['tab'] : 'settings';
+$current_tab = isset( $_GET['tab'], $tabs[ $_GET['tab'] ] ) ? $_GET['tab'] : 'plugin-stats';
 
 ?>
 <div class=troy-server-settings-header>
@@ -97,8 +97,17 @@ $current_tab = isset( $_GET['tab'], $tabs[ $_GET['tab'] ] ) ? $_GET['tab'] : 'se
 	<div class="notice notice-error hide-if-js inline">
 		<p><?= \esc_html__( 'Troy Server settings require JavaScript.', 'troy-server' ) ?></p>
 	</div>
-
 	<?php
+	/**
+	 * Outputs the notices for the current Troy Server settings page.
+	 *
+	 * @since 0.0.1184
+	 *
+	 * @param string $current_tab The current settings tab.
+	 */
+	\do_action( 'troy_server_settings_notices', $current_tab );
+
+	// var_dump() move me to callback troy_server_settings_notices.
 	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Affects output view only.
 	switch ( (int) ( $_GET[ Settings\Main::SAVED_RESPONSE ] ?? -1 ) ) {
 		case 0:
@@ -123,17 +132,9 @@ $current_tab = isset( $_GET['tab'], $tabs[ $_GET['tab'] ] ) ? $_GET['tab'] : 'se
 			<?php
 	}
 	?>
+
 	<div class=hide-if-no-js>
 		<?php
-		/**
-		 * Outputs the notices for the current Troy Server settings page.
-		 *
-		 * @since 0.0.1184
-		 *
-		 * @param string $current_tab The current settings tab.
-		 */
-		\do_action( 'troy_server_settings_notices', $current_tab );
-
 		/**
 		 * Outputs the content of the current Troy Server settings page.
 		 *

@@ -44,7 +44,7 @@ window.troyServerSanitize = ( () => {
 	}
 
 	/**
-	 * Sanitizes a URL to only include the domain, port, path, and query components.
+	 * Returns a bare repository URL, containing only domain/path/query.
 	 * Supports various repository URL formats including IPv6 addresses.
 	 *
 	 * This won't return a proper fully qualified URL with a protocol scheme.
@@ -52,9 +52,9 @@ window.troyServerSanitize = ( () => {
 	 * @since 0.0.1184
 	 *
 	 * @param {string} repoUrl The URL to sanitize.
-	 * @return {string} The sanitized URL containing only domain/path/query.
+	 * @return {string} The bare URL containing only domain/path/query.
 	 */
-	function repoUrl( repoUrl ) {
+	function bareRepoUrl( repoUrl ) {
 
 		if ( ! repoUrl || 'string' !== typeof repoUrl )
 			return '';
@@ -96,6 +96,6 @@ window.troyServerSanitize = ( () => {
 
 	return {
 		number,
-		repoUrl,
+		bareRepoUrl,
 	};
 } )();

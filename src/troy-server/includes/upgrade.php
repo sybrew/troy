@@ -652,7 +652,7 @@ function get_initial_db_schema_queries() {
 		"CREATE table `{$dbprefix}troy_package_metas` (
 			`id` bigint unsigned NOT null auto_increment,
 			`package_id` bigint unsigned NOT null,
-			`plugin_uri` varchar(191) NOT null,
+			`plugin_uri` varchar(250) NOT null,
 			`name` varchar(191) NOT null,
 			`description` varchar(191) NOT null,
 			`version` varchar(20) NOT null,

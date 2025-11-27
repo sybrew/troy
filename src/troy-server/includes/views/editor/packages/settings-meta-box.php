@@ -56,7 +56,7 @@ if ( ! $meta ) {
 	$current_user = \wp_get_current_user();
 
 	$meta = (object) [
-		'plugin_uri'               => API\Server::get_origin_url(),
+		'plugin_uri'               => API\Server::get_full_repo_url(),
 		'description'              => 'This package installs the "Troy Client" updater and vendor plugins.',
 		'version'                  => '1.0.0',
 		'author'                   => $current_user->display_name ?: '',
@@ -89,7 +89,7 @@ if ( ! $meta ) {
 				printf(
 					/* translators: %s: Full download URL example */
 					\esc_html__( 'The slug used in the download URL (e.g., %s).', 'troy-server' ),
-					'<code>' . \esc_html( API\Server::get_origin_url() . 'package/get/zip/<slug>' ) . '</code>'
+					'<code>' . \esc_html( API\Server::get_full_repo_url() ) . 'package/get/zip/&lt;slug&gt;</code>'
 				);
 				?>
 			</p>
@@ -132,6 +132,7 @@ if ( ! $meta ) {
 				name="troy_package[plugin_uri]"
 				value="<?= \esc_attr( $meta->plugin_uri ) ?>"
 				class=regular-text
+				maxlength=250
 			>
 			<p class=description><?= \esc_html__( 'URL to the package homepage or documentation.', 'troy-server' ) ?></p>
 		</td>

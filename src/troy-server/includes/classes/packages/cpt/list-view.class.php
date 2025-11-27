@@ -295,11 +295,9 @@ final class List_View {
 			return;
 		}
 
-		$download_url = API\Server::get_origin_url() . 'package/get/zip/' . $slug;
-
 		printf(
 			'<a href="%s" class="button button-small" target="_blank">%s</a>',
-			\esc_url( $download_url ),
+			\esc_url( API\Server::get_full_repo_url() . "package/get/zip/$slug" ),
 			\esc_html__( 'Download', 'troy-server' ),
 		);
 	}

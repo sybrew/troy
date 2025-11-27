@@ -191,7 +191,7 @@ final class Store {
 	public static function get_default_package_data() {
 		return [
 			'package_id'               => 0,
-			'plugin_uri'               => API\Server::get_origin_url(),
+			'plugin_uri'               => API\Server::get_full_repo_url(),
 			'description'              => 'This package installs the "Troy Client" updater and vendor plugins.',
 			'version'                  => '1.0.0',
 			'author'                   => '',
@@ -435,7 +435,7 @@ final class Store {
 						[
 							'slug'             => $slug,
 							'status'           => 'pending',
-							'origin_url'       => API\Server::get_origin_url(),
+							'origin_url'       => API\Server::get_repo_url(),
 							'database_version' => DB_VERSION,
 						],
 						[ 'id' => $existing_package_id ],
@@ -449,7 +449,7 @@ final class Store {
 							'post_id'          => $post_id,
 							'slug'             => $slug,
 							'status'           => 'pending',
-							'origin_url'       => API\Server::get_origin_url(),
+							'origin_url'       => API\Server::get_repo_url(),
 							'database_version' => DB_VERSION,
 						],
 						[ '%d', '%s', '%s', '%s', '%d' ],

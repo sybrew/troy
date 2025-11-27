@@ -1226,15 +1226,14 @@ window.troyServerPluginEditorComponents = ( wp => {
 		const versionsToRemove     = versions.filter( v => true === v.remove );
 		const removedVersionsCount = versionsToRemove.length;
 
-		const sanitize = troyServerSanitize;
+		const currentRepoUrl = troyPluginEditorData.repoUrl;
 
-		const currentRepoUrl           = sanitize.repoUrl( troyPluginEditorData.originUrl );
 		const versionsWithRepoMismatch = useMemo(
 			() => {
 				if ( ! versions?.length ) return [];
 
 				return versions.filter(
-					version => sanitize.repoUrl( version.repo ) !== currentRepoUrl,
+					version => version.repo !== currentRepoUrl,
 				);
 			},
 			[ versions, currentRepoUrl ],
@@ -1493,14 +1492,14 @@ window.troyServerPluginEditorComponents = ( wp => {
 						// 	MetadataItem,
 						// 	{
 						// 		label: __( 'Original source:', 'troy-server' ),
-						// 		value: sanitize.repoUrl( version.origin_url ),
+						// 		value: sanitize.bareRepoUrl( version.origin_url ),
 						// 	},
 						// ),
 						JSX(
 							MetadataItem,
 							{
 								label: __( 'Repository:', 'troy-server' ),
-								value: sanitize.repoUrl( version.repo ),
+								value: version.repo,
 								state: hasRepoMismatch ? 'warning' : undefined,
 							},
 						),

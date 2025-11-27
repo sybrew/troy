@@ -250,7 +250,7 @@ final class REST {
 					'post_id'          => $params['post_id'],
 					'slug'             => $params['plugin_slug'],
 					'status'           => 'pending',
-					'origin_url'       => API\Server::get_origin_url(),
+					'origin_url'       => API\Server::get_repo_url(),
 					'database_version' => API\Server::get_db_version(),
 				],
 				[

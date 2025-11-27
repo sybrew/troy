@@ -205,7 +205,7 @@ final class Plugin_Download extends Base_Endpoint {
 				'plugin_id'  => $plugin_id,
 				'version'    => $version,
 				'type'       => $type,
-				'origin_url' => API\Server::get_origin_url(),
+				'origin_url' => API\Server::get_repo_url(),
 			],
 			[
 				'%d',

@@ -68,7 +68,7 @@ final class Plugin_Updates extends Base_Endpoint {
 		$inactive_plugins = (array) ( $input['inactive_plugins'] ?? [] );
 
 		$locales      = (array) ( $input['locales'] ?? [] );
-		$origin_url   = API\Server::get_origin_url();
+		$origin_url   = API\Server::get_repo_url(); // Already sanitized
 		$php_version  = API\Sanitize::tested_version( $input['php_version'] ?? '' );
 		$wp_version   = API\Sanitize::tested_version( $input['wp_version'] ?? '' );
 		$troy_version = API\Sanitize::tested_version( $input['troy_version'] ?? '' );

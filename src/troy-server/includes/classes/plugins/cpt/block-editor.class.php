@@ -746,7 +746,7 @@ final class Block_Editor {
 				'postType'       => PLUGINS_CPT,
 				'maxFileSize'    => \wp_max_upload_size(),
 				'maxFileSizeStr' => \size_format( \wp_max_upload_size() ),
-				'originUrl'      => API\Server::get_origin_url(),
+				'repoUrl'        => API\Server::get_repo_url(),
 				'restUrls'       => [
 					'getEditorStore'     => \rest_url( "$rest_plugins_manage/getEditorStore" ),
 					'registerSlug'       => \rest_url( "$rest_plugins_manage/registerSlug" ),

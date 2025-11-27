@@ -341,7 +341,7 @@ function has_troy_plugins() {
  * @return string The fully qualified repository URL.
  */
 function make_fully_qualified_repo_url( $repo ) {
-	return \esc_url(
+	return \sanitize_url(
 		preg_replace(
 			'/^(?:\w*:)?(?:\/\/)?(.*?)$/',
 			'https://$1/',
