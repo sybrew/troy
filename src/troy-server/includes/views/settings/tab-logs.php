@@ -36,8 +36,8 @@ use Troy\Server\Settings;
 // phpcs:disable WordPress.WP.GlobalVariablesOverride -- We're not in the global space.
 
 // Get initial data for SSR.
-$integration_failures = Settings\Logs::get_integration_failures();
-$integration_logs     = Settings\Logs::get_integration_logs();
+$integration_history = Settings\Logs::get_integration_history();
+$integration_logs    = Settings\Logs::get_integration_logs();
 
 ?>
 <h2><?= \esc_html__( 'Server Logs', 'troy-server' ) ?></h2>
@@ -56,70 +56,81 @@ $integration_logs     = Settings\Logs::get_integration_logs();
 
 <hr class=hr-separator>
 
-<?php // Integration Failures Section ?>
+<?php // Integration History Section ?>
 <div class=troy-server-settings-accordion>
 	<h3 class=troy-server-settings-accordion-heading>
-		<button aria-expanded=false class=troy-server-settings-accordion-trigger aria-controls=troy-server-logs-failures type=button>
+		<button aria-expanded=false class=troy-server-settings-accordion-trigger aria-controls=troy-server-logs-history type=button>
 			<span class=title>
-				<?= \esc_html__( 'Integration Failures', 'troy-server' ) ?>
-				<span class=troy-server-logs-count id=troy-server-logs-failures-count>(<?= \count( $integration_failures ) ?>)</span>
+				<?= \esc_html__( 'Integration History', 'troy-server' ) ?>
+				<span class=troy-server-logs-count id=troy-server-logs-history-count>(<?= \count( $integration_history ) ?>)</span>
 			</span>
 			<span class=icon></span>
 		</button>
 	</h3>
-	<div id=troy-server-logs-failures class=troy-server-settings-accordion-panel hidden>
+	<div id=troy-server-logs-history class=troy-server-settings-accordion-panel hidden>
 		<p class=description>
-			<?= \esc_html__( 'Failed integration attempts are logged here. These are retried automatically, but persistent failures may require manual intervention.', 'troy-server' ) ?>
+			<?= \esc_html__( 'Integration attempts are logged here. Blocked entries may require manual intervention.', 'troy-server' ) ?>
 		</p>
 		<div class=troy-server-logs-table-actions>
-			<button type=button class="button button-secondary button-small troy-server-logs-clear-btn" data-log-type=failures>
-				<?= \esc_html__( 'Clear Failures', 'troy-server' ) ?>
+			<button type=button class="button button-secondary button-small troy-server-logs-clear-btn" data-log-type=history>
+				<?= \esc_html__( 'Clear History', 'troy-server' ) ?>
 			</button>
+			<span data-troy-server-tooltip="<?= \esc_attr__( 'This history is used to monitor process queues. Clearing this will permit reprocessing.', 'troy-server' ) ?>"></span>
 		</div>
-		<div class=troy-server-logs-table-wrap id=troy-server-logs-failures-table-wrap>
-			<table class="widefat striped troy-server-logs-table" id=troy-server-logs-failures-table>
+		<div class=troy-server-logs-table-wrap id=troy-server-logs-history-table-wrap>
+			<table class="widefat striped troy-server-logs-table" id=troy-server-logs-history-table>
 				<thead>
 					<tr>
-						<th scope=col><?= \esc_html__( 'Plugin', 'troy-server' ) ?></th>
-						<th scope=col><?= \esc_html__( 'Version', 'troy-server' ) ?></th>
+						<th scope=col><?= \esc_html__( 'Plugin ID', 'troy-server' ) ?></th>
+						<th scope=col><?= \esc_html__( 'Type', 'troy-server' ) ?></th>
+						<th scope=col><?= \esc_html__( 'Tag name', 'troy-server' ) ?></th>
 						<th scope=col><?= \esc_html__( 'Mode', 'troy-server' ) ?></th>
-						<th scope=col><?= \esc_html__( 'Reason', 'troy-server' ) ?></th>
+						<th scope=col><?= \esc_html__( 'Message', 'troy-server' ) ?></th>
 						<th scope=col><?= \esc_html__( 'Attempts', 'troy-server' ) ?></th>
-						<th scope=col><?= \esc_html__( 'Last Attempt', 'troy-server' ) ?></th>
+						<th scope=col><?= \esc_html__( 'Time', 'troy-server' ) ?></th>
 					</tr>
 				</thead>
 				<tbody>
 					<?php
-					if ( empty( $integration_failures ) ) {
+					if ( empty( $integration_history ) ) {
 						?>
 						<tr>
-							<td colspan=6><?= \esc_html__( 'No failures recorded.', 'troy-server' ) ?></td>
+							<td colspan=7><?= \esc_html__( 'No history recorded.', 'troy-server' ) ?></td>
 						</tr>
 						<?php
-					} else foreach ( $integration_failures as $failure ) {
+					} else foreach ( $integration_history as $entry ) {
+						switch ( $entry['status'] ) {
+							case 'SUCCESS':
+								$type       = 'success';
+								$type_label = \__( 'Success', 'troy-server' );
+								break;
+							case 'FAILED':
+								$type       = 'warning';
+								$type_label = \__( 'Retrying', 'troy-server' );
+								break;
+							case 'BLOCKED':
+								$type       = 'error';
+								$type_label = \__( 'Blocked', 'troy-server' );
+								break;
+							default:
+								$type       = 'info';
+								$type_label = \__( 'Unknown', 'troy-server' );
+						}
 						?>
-						<tr data-failure-id="<?= \esc_attr( $failure['id'] ) ?>">
+						<tr data-history-id="<?= \esc_attr( $entry['id'] ) ?>" class="troy-server-logs-type-<?= \esc_attr( $type ) ?>">
 							<td>
-								<strong><?= \esc_html( $failure['plugin_slug'] ) ?></strong>
-								<br><code><?= \esc_html( $failure['plugin_id'] ) ?></code>
+								<?= \esc_html( $entry['plugin_id'] ) ?> <code>(<?= \esc_html( $entry['plugin_slug'] ) ?>)</code>
 							</td>
-							<td><code><?= \esc_html( $failure['package_version'] ) ?></code></td>
-							<td><?= \esc_html( $failure['mode'] ) ?></td>
 							<td>
-								<span class=troy-server-logs-reason><?= \esc_html( $failure['reason'] ) ?></span>
-								<?php
-								if ( $failure['details'] ) {
-									?>
-									<details class=troy-server-logs-details>
-										<summary><?= \esc_html__( 'Details', 'troy-server' ) ?></summary>
-										<pre><?= \esc_html( $failure['details'] ) ?></pre>
-									</details>
-									<?php
-								}
-								?>
+								<span class="troy-server-logs-type troy-server-logs-type-<?= \esc_attr( $type ) ?>">
+									<?= \esc_html( $type_label ) ?>
+								</span>
 							</td>
-							<td><?= \esc_html( $failure['attempts'] ) ?></td>
-							<td class=troy-server-logs-timestamp><?= \esc_html( $failure['updated_at'] ) ?></td>
+							<td><code><?= \esc_html( $entry['package_version'] ) ?></code></td>
+							<td><?= \esc_html( $entry['mode'] ) ?></td>
+							<td class=troy-server-logs-message><?= \esc_html( $entry['reason'] ) ?></td>
+							<td><?= \esc_html( $entry['attempts'] ) ?></td>
+							<td class=troy-server-logs-timestamp><?= \esc_html( $entry['updated_at'] ) ?></td>
 						</tr>
 						<?php
 					}

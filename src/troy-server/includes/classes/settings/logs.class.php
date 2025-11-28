@@ -98,47 +98,47 @@ final class Logs {
 	}
 
 	/**
-	 * Gets integration failures.
+	 * Gets integration history.
 	 *
 	 * @since 0.0.1184
 	 * @global \wpdb $wpdb
 	 *
 	 * @param int $limit Number of entries to return.
 	 * @return array[] {
-	 *     Array of integration failure entries.
+	 *     Array of integration history entries.
 	 *
-	 *     @type int    $id              The failure ID.
+	 *     @type int    $id              The history ID.
 	 *     @type int    $plugin_id       The plugin ID.
 	 *     @type string $plugin_slug     The plugin slug.
 	 *     @type string $package_version The package version.
 	 *     @type string $mode            The integration mode (github, wporg).
-	 *     @type string $reason          The failure reason.
-	 *     @type string $details         Detailed error information.
-	 *     @type int    $attempts        Number of retry attempts.
-	 *     @type string $created_at      When the failure was first recorded.
-	 *     @type string $updated_at      When the failure was last updated.
+	 *     @type string $status          The history status (SUCCESS, BLOCKED).
+	 *     @type string $reason          The status reason.
+	 *     @type int    $attempts        Number of processing attempts.
+	 *     @type string $created_at      When the entry was first recorded.
+	 *     @type string $updated_at      When the entry was last updated.
 	 * }
 	 */
-	public static function get_integration_failures( $limit = 100 ) {
+	public static function get_integration_history( $limit = 100 ) {
 
 		global $wpdb;
 
 		$results = $wpdb->get_results( $wpdb->prepare(
 			"SELECT
-				f.id,
-				f.plugin_id,
+				h.id,
+				h.plugin_id,
 				p.slug as plugin_slug,
-				f.package_version,
-				f.mode,
-				f.reason,
-				f.details,
-				f.attempts,
-				f.created_at,
-				f.updated_at
-			FROM {$wpdb->prefix}troy_plugin_integration_failures f
+				h.package_version,
+				h.mode,
+				h.status,
+				h.reason,
+				h.attempts,
+				h.created_at,
+				h.updated_at
+			FROM {$wpdb->prefix}troy_plugin_integration_history h
 			LEFT JOIN {$wpdb->prefix}troy_plugins p
-				ON f.plugin_id = p.id
-			ORDER BY f.updated_at DESC
+				ON h.plugin_id = p.id
+			ORDER BY h.updated_at DESC
 			LIMIT %d",
 			$limit,
 		) );
@@ -150,11 +150,11 @@ final class Logs {
 			fn( $row ) => [
 				'id'              => (int) $row->id,
 				'plugin_id'       => (int) $row->plugin_id,
-				'plugin_slug'     => $row->plugin_slug ?: "ID: {$row->plugin_id}",
+				'plugin_slug'     => $row->plugin_slug ?: '[deleted]',
 				'package_version' => $row->package_version,
 				'mode'            => $row->mode,
+				'status'          => $row->status,
 				'reason'          => $row->reason,
-				'details'         => $row->details,
 				'attempts'        => (int) $row->attempts,
 				'created_at'      => $row->created_at,
 				'updated_at'      => $row->updated_at,
@@ -208,7 +208,7 @@ final class Logs {
 			fn( $row ) => [
 				'id'          => (int) $row->id,
 				'plugin_id'   => (int) $row->plugin_id,
-				'plugin_slug' => $row->plugin_slug ?: "ID: {$row->plugin_id}",
+				'plugin_slug' => $row->plugin_slug ?: '[deleted]',
 				'type'        => $row->type,
 				'message'     => $row->message,
 				'created_at'  => $row->created_at,
@@ -218,22 +218,22 @@ final class Logs {
 	}
 
 	/**
-	 * Clears integration failures.
+	 * Clears integration history.
 	 *
 	 * @since 0.0.1184
 	 * @global \wpdb $wpdb
 	 *
 	 * @return int Number of rows deleted.
 	 */
-	public static function clear_integration_failures() {
+	public static function clear_integration_history() {
 
 		global $wpdb;
 
 		// Try TRUNCATE first (faster), fallback to DELETE if blocked by server rules.
-		$result = $wpdb->query( "TRUNCATE TABLE {$wpdb->prefix}troy_plugin_integration_failures" );
+		$result = $wpdb->query( "TRUNCATE TABLE {$wpdb->prefix}troy_plugin_integration_history" );
 
 		if ( false === $result )
-			$result = $wpdb->query( "DELETE FROM {$wpdb->prefix}troy_plugin_integration_failures" );
+			$result = $wpdb->query( "DELETE FROM {$wpdb->prefix}troy_plugin_integration_history" );
 
 		return (int) $result;
 	}

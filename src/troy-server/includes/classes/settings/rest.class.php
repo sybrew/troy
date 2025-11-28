@@ -113,10 +113,10 @@ final class REST {
 
 		foreach (
 			[
-				'failures'       => [ \WP_REST_Server::READABLE, 'get_logs_failures' ],
-				'logs'           => [ \WP_REST_Server::READABLE, 'get_logs_entries' ],
-				'clear-failures' => [ \WP_REST_Server::CREATABLE, 'clear_logs_failures' ],
-				'clear-logs'     => [ \WP_REST_Server::CREATABLE, 'clear_logs_entries' ],
+				'integrations-history'      => [ \WP_REST_Server::READABLE, 'get_integration_history' ],
+				'integrations'              => [ \WP_REST_Server::READABLE, 'get_integration_logs' ],
+				'clear/integration-history' => [ \WP_REST_Server::CREATABLE, 'clear_integration_history' ],
+				'clear/integration-logs'    => [ \WP_REST_Server::CREATABLE, 'clear_integration_logs' ],
 			]
 			as $route => [ $methods, $cb ]
 		) {
@@ -316,20 +316,20 @@ final class REST {
 	}
 
 	/**
-	 * Gets integration failures.
+	 * Gets integration history.
 	 *
-	 * @rest troy-server/v1/logs/failures GET
+	 * @rest troy-server/v1/logs/integrations-history GET
 	 * @since 0.0.1184
 	 *
 	 * @param \WP_REST_Request $request The request object.
 	 * @return \WP_REST_Response
 	 */
-	public static function get_logs_failures( $request ) {
+	public static function get_integration_history( $request ) {
 
 		$limit = min( (int) ( $request->get_param( 'limit' ) ?: 100 ), 500 );
 
 		return new \WP_REST_Response(
-			Logs::get_integration_failures( $limit ),
+			Logs::get_integration_history( $limit ),
 			200,
 		);
 	}
@@ -337,13 +337,13 @@ final class REST {
 	/**
 	 * Gets integration logs.
 	 *
-	 * @rest troy-server/v1/logs/logs GET
+	 * @rest troy-server/v1/logs/integrations GET
 	 * @since 0.0.1184
 	 *
 	 * @param \WP_REST_Request $request The request object.
 	 * @return \WP_REST_Response
 	 */
-	public static function get_logs_entries( $request ) {
+	public static function get_integration_logs( $request ) {
 
 		$limit = min( (int) ( $request->get_param( 'limit' ) ?: 100 ), 500 );
 
@@ -354,16 +354,16 @@ final class REST {
 	}
 
 	/**
-	 * Clears integration failures.
+	 * Clears integration history.
 	 *
-	 * @rest troy-server/v1/logs/clear-failures POST
+	 * @rest troy-server/v1/logs/clear/integration-history POST
 	 * @since 0.0.1184
 	 *
 	 * @return \WP_REST_Response
 	 */
-	public static function clear_logs_failures() {
+	public static function clear_integration_history() {
 
-		Logs::clear_integration_failures();
+		Logs::clear_integration_history();
 
 		return new \WP_REST_Response(
 			[ 'success' => true ],
@@ -374,12 +374,12 @@ final class REST {
 	/**
 	 * Clears integration logs.
 	 *
-	 * @rest troy-server/v1/logs/clear-logs POST
+	 * @rest troy-server/v1/logs/clear/integration-logs POST
 	 * @since 0.0.1184
 	 *
 	 * @return \WP_REST_Response
 	 */
-	public static function clear_logs_entries() {
+	public static function clear_integration_logs() {
 
 		Logs::clear_integration_logs();
 

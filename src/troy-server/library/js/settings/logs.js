@@ -52,8 +52,8 @@
 			[
 				'refresh',
 				'auto-refresh-toggle',
-				'failures-count',
-				'failures-table',
+				'history-count',
+				'history-table',
 				'entries-count',
 				'entries-table',
 			].forEach( key => elements.set( key, document.getElementById( `troy-server-logs-${ key }` ) ) );
@@ -95,30 +95,50 @@
 	};
 
 	/**
-	 * Builds a table row for a failure entry.
+	 * Builds a table row for a history entry.
 	 *
 	 * @since 0.0.1184
 	 *
-	 * @param {Object} failure The failure data.
+	 * @param {Object} entry The history data.
 	 * @return {string} HTML string for the table row.
 	 */
-	const buildFailureRow = failure => {
+	const buildHistoryRow = entry => {
 
-		const detailsHtml = failure.details
-			? `<details class="troy-server-logs-details"><summary>${ escape.string( i18n.details || 'Details' ) }</summary><pre>${ escape.string( failure.details ) }</pre></details>`
-			: '';
+		let type, typeLabel;
+
+		switch ( entry.status ) {
+			case 'SUCCESS':
+				type      = 'success';
+				typeLabel = 'Success';
+				break;
+			case 'FAILED':
+				type      = 'failed';
+				typeLabel = 'Retrying';
+				break;
+			case 'BLOCKED':
+				type      = 'blocked';
+				typeLabel = 'Blocked';
+				break;
+			default:
+				type      = 'unknown';
+				typeLabel = 'Unknown';
+		}
 
 		return `
-			<tr data-failure-id="${ sanitize.number( failure.id ) }">
-				<td><strong>${ escape.string( failure.plugin_slug ) }</strong><br><code>${ sanitize.number( failure.plugin_id ) }</code></td>
-				<td><code>${ escape.string( failure.package_version ) }</code></td>
-				<td>${ escape.string( failure.mode ) }</td>
+			<tr data-history-id="${ sanitize.number( entry.id ) }" class="troy-server-logs-type-${ escape.string( type ) }">
 				<td>
-					<span class="troy-server-logs-reason">${ escape.string( failure.reason ) }</span>
-					${ detailsHtml }
+					${ sanitize.number( entry.plugin_id ) } <code>(${ escape.string( entry.plugin_slug ) })</code>
 				</td>
-				<td>${ sanitize.number( failure.attempts ) }</td>
-				<td class="troy-server-logs-timestamp">${ escape.string( failure.updated_at ) }</td>
+				<td>
+					<span class="troy-server-logs-type troy-server-logs-type-${ escape.string( type ) }">
+						${ escape.string( typeLabel ) }
+					</span>
+				</td>
+				<td><code>${ escape.string( entry.package_version ) }</code></td>
+				<td>${ escape.string( entry.mode ) }</td>
+				<td class="troy-server-logs-message">${ escape.string( entry.reason ) }</td>
+				<td>${ sanitize.number( entry.attempts ) }</td>
+				<td class="troy-server-logs-timestamp">${ escape.string( entry.updated_at ) }</td>
 			</tr>
 		`;
 	};
@@ -147,16 +167,16 @@
 	`;
 
 	/**
-	 * Updates the failures table with new data.
+	 * Updates the history table with new data.
 	 *
 	 * @since 0.0.1184
 	 *
-	 * @param {Array} failures Array of failure data from the API.
+	 * @param {Array} history Array of history data from the API.
 	 */
-	const updateFailuresTable = failures => {
+	const updateHistoryTable = history => {
 
-		const table = getEl( 'failures-table' );
-		const count = getEl( 'failures-count' );
+		const table = getEl( 'history-table' );
+		const count = getEl( 'history-count' );
 
 		if ( ! table )
 			return;
@@ -164,15 +184,15 @@
 		const tbody = table.querySelector( 'tbody' );
 
 		if ( count )
-			count.textContent = `(${ failures.length })`;
+			count.textContent = `(${ history.length })`;
 
-		if ( ! failures.length ) {
-			tbody.innerHTML = `<tr><td colspan="6">${ i18n.noData }</td></tr>`;
+		if ( ! history.length ) {
+			tbody.innerHTML = `<tr><td colspan="7">${ i18n.noData }</td></tr>`;
 			return;
 		}
 
-		tbody.innerHTML = failures
-			.map( buildFailureRow )
+		tbody.innerHTML = history
+			.map( buildHistoryRow )
 			.join( '' );
 	};
 
@@ -219,12 +239,12 @@
 			refreshBtn.disabled = true;
 
 		try {
-			const [ failures, logs ] = await Promise.all( [
-				fetchLogs( 'failures' ),
-				fetchLogs( 'logs' ),
+			const [ history, logs ] = await Promise.all( [
+				fetchLogs( 'integrations-history' ),
+				fetchLogs( 'integrations' ),
 			] );
 
-			updateFailuresTable( failures );
+			updateHistoryTable( history );
 			updateLogsTable( logs );
 		} catch ( error ) {
 			console.error( 'Failed to refresh logs:', error );
@@ -239,7 +259,7 @@
 	 *
 	 * @since 0.0.1184
 	 *
-	 * @param {string} logType The log type to clear ('failures' or 'logs').
+	 * @param {string} logType The log type to clear ('history' or 'logs').
 	 */
 	const clearLogs = async logType => {
 
@@ -248,14 +268,15 @@
 
 		try {
 			await fetchLogs(
-				`clear-${ logType }`,
+				`clear/integration-${ logType }`,
 				{ method: 'POST' },
 			);
 
-			if ( 'failures' === logType )
-				updateFailuresTable( [] );
-			else
+			if ( 'history' === logType ) {
+				updateHistoryTable( [] );
+			} else {
 				updateLogsTable( [] );
+			}
 		} catch ( error ) {
 			console.error( 'Failed to clear logs:', error );
 			alert( i18n.clearFailed );

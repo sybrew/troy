@@ -103,6 +103,10 @@
 	color: #2271b1;
 }
 
+.troy-server-logs-type-success {
+	color: #00a32a;
+}
+
 /* Reason & Details */
 .troy-server-logs-reason {
 	font-weight: 500;

@@ -38,7 +38,6 @@ Follow these rules:
 - Add trailing commas at the end of multiline object/array properties and function args if the language supports it
 - Pad brackets/braces with spaces around arguments
 - Align consecutive variable assignments at equal signs
-- Unless there's a conditional follow-up construct, do not add braces in constructs (if/do/for etc.) followed by only a single-line statement
 - Do not write inline comments that state the obvious
 - Do not add comments about your executions
 - Write detailed docblocks for all functions, classes, and methods
@@ -46,6 +45,9 @@ Follow these rules:
 - A tab is 4 characters wide
 - Use tabs for indentation, not spaces
 - When there's an operator in an argument, split all arguments into separate lines
+- Always use braces with branching control structures
+- Don't use braces for single-line constructs without a conditional follow-up (if/for/foreach/do/while/etc.)
+- Coalesce two control structures when the first contains only the second, e.g. `} else foreach {`
 
 ## Corrupted Files
 - Do not try to fix file encoding issues, just notify about them after your changes
@@ -98,7 +100,6 @@ Follow these rules:
 ## PHP Templates
 
 - When mixing PHP and HTML, indent HTML to match the PHP block scope it's in
-- Coalesce two control structures when the first contains only the second, e.g. `} else foreach {`
 - Close PHP tags on a new line after an opening brace
 - Reopen PHP tags on their own line before the closing brace
 

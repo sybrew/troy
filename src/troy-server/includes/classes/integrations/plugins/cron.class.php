@@ -110,6 +110,15 @@ final class Cron extends \Troy\Server\Cron {
 				continue;
 			}
 
+			if ( ! ( $result['queued'] + $result['removed'] ) ) {
+				self::integration_log(
+					$plugin_id,
+					'info',
+					'Tag discovery complete: no changes found.',
+				);
+				continue;
+			}
+
 			self::integration_log(
 				$plugin_id,
 				'info',
@@ -157,17 +166,24 @@ final class Cron extends \Troy\Server\Cron {
 		if ( ! Store::update_tags( $plugin_id, $mode, $tags ) )
 			return new \WP_Error( 'update_failed', 'Failed to update tags in database.' );
 
-		// Get existing processed versions
 		global $wpdb;
 
-		$existing_versions = $wpdb->get_results(
+		// Get successfully processed or blocked package versions and their revision IDs from history
+		$processed_history = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT version FROM {$wpdb->prefix}troy_plugin_zips WHERE plugin_id = %d",
+				"SELECT package_version, revision_id
+				FROM {$wpdb->prefix}troy_plugin_integration_history
+				WHERE
+					plugin_id = %d
+					AND status IN (%s, %s)",
 				$plugin_id,
+				Store::HISTORY_STATUS_SUCCESS,
+				Store::HISTORY_STATUS_BLOCKED,
 			),
 		);
 
-		$processed_versions = array_column( $existing_versions, 'version' );
+		// Build a lookup map: package_version => revision_id
+		$processed_revisions = array_column( $processed_history, 'revision_id', 'package_version' );
 
 		$queued_tags = $wpdb->get_results(
 			$wpdb->prepare(
@@ -181,9 +197,11 @@ final class Cron extends \Troy\Server\Cron {
 
 		// Queue new tags or update existing queue entries if revision ID changed
 		foreach ( $tags as $package_version => $tag_data ) {
-			// Skip if already processed
-			if ( \in_array( $package_version, $processed_versions, true ) )
-				continue;
+			// Skip if already successfully processed with the same revision ID
+			if (
+				   isset( $processed_revisions[ $package_version ] )
+				&& ( $tag_data->revision_id ?? '' ) === $processed_revisions[ $package_version ]
+			) continue;
 
 			// Determine the tag type based on version pattern
 			$version_type = API\Utils::get_version_type( $package_version );
@@ -213,14 +231,14 @@ final class Cron extends \Troy\Server\Cron {
 				   empty( $existing_queue_tag )
 				|| $tag_data->revision_id !== $existing_queue_tag->revision_id
 			) {
-				Store::queue_tag(
-					$plugin_id,
-					$package_version,
-					$mode,
-					$tag_data->download_url,
-					$tag_data->type,
-					$tag_data->revision_id,
-				);
+				Store::queue_tag( [
+					'plugin_id'       => $plugin_id,
+					'package_version' => $package_version,
+					'mode'            => $mode,
+					'download_url'    => $tag_data->download_url,
+					'type'            => $tag_data->type,
+					'revision_id'     => $tag_data->revision_id,
+				] );
 
 				++$queued_count;
 			}
@@ -229,7 +247,10 @@ final class Cron extends \Troy\Server\Cron {
 		// Remove queued tags that no longer exist in the remote repository
 		foreach ( $queued_tags as $queue_data ) {
 			if ( ! isset( $tags->{$queue_data->package_version} ) ) {
-				Store::dequeue_tag( $plugin_id, $queue_data->package_version );
+				Store::dequeue_tag( [
+					'plugin_id'       => $plugin_id,
+					'package_version' => $queue_data->package_version,
+				] );
 				++$removed_count;
 			}
 		}
@@ -339,9 +360,20 @@ final class Cron extends \Troy\Server\Cron {
 					[ '%d', '%s' ],
 				);
 
-				// Remove from queue and clear any failures
-				Store::dequeue_tag( $plugin_id, $package_version );
-				Store::clear_failure( $plugin_id, $package_version );
+				// Record success and remove from queue
+				Store::record_history( [
+					'plugin_id'       => $plugin_id,
+					'package_version' => $package_version,
+					'mode'            => $mode,
+					'status'          => Store::HISTORY_STATUS_SUCCESS,
+					'revision_id'     => $tag->revision_id ?? '',
+					'version'         => $uploader->version_uploaded,
+					'reason'          => 'Processed successfully',
+				] );
+				Store::dequeue_tag( [
+					'plugin_id'       => $plugin_id,
+					'package_version' => $package_version,
+				] );
 
 				self::integration_log(
 					$plugin_id,
@@ -351,44 +383,70 @@ final class Cron extends \Troy\Server\Cron {
 			} catch ( \Exception $e ) {
 				$error_message = $e->getMessage();
 
-				Store::record_failure( $plugin_id, $package_version, $mode, $error_message, '' );
-
 				// Determine failure type based on exception code or attempt count
 				$is_permanent_error = $e->getCode() === Plugins\Zip_Uploader::EXCEPTION_PERMANENT;
+				$block_reason       = 'Refer to integration logs';
 
 				if ( ! $is_permanent_error ) {
 					// Get current attempt count to decide on permanent vs temporary failure
-					$attempts = $wpdb->get_var(
+					$attempts = (int) $wpdb->get_var(
 						$wpdb->prepare(
 							"SELECT attempts
-							FROM {$wpdb->prefix}troy_plugin_integration_failures
+							FROM {$wpdb->prefix}troy_plugin_integration_history
 							WHERE plugin_id = %d AND package_version = %s",
 							$plugin_id,
 							$package_version,
 						),
 					);
 
-					// Mark as permanent failure after 5 attempts
-					$is_permanent_error = $attempts >= 5;
+					// Mark as blocked after 10 attempts (this will be attempt 11+)
+					if ( $attempts >= 10 ) {
+						$is_permanent_error = true;
+						$block_reason       = 'Max retries exceeded';
+					}
 				}
 
 				if ( $is_permanent_error ) {
-					Store::mark_queue_status( $plugin_id, $package_version, Store::QUEUE_STATUS_PERMANENT_FAILURE );
+					// Record block in history and remove from queue
+					Store::record_history( [
+						'plugin_id'       => $plugin_id,
+						'package_version' => $package_version,
+						'mode'            => $mode,
+						'status'          => Store::HISTORY_STATUS_BLOCKED,
+						'revision_id'     => $tag->revision_id ?? '',
+						'reason'          => $block_reason,
+					] );
+					Store::dequeue_tag( [
+						'plugin_id'       => $plugin_id,
+						'package_version' => $package_version,
+					] );
 
 					self::integration_log(
 						$plugin_id,
 						'error',
-						"Tag {$package_version} marked as permanently failed: {$error_message}",
+						"Tag {$package_version} permanently failed and removed from queue: {$error_message}",
 					);
 				} else {
-					Store::mark_queue_status( $plugin_id, $package_version, Store::QUEUE_STATUS_TEMPORARY_FAILURE );
-				}
+					// Record temporary failure in history and defer retry
+					Store::record_history( [
+						'plugin_id'       => $plugin_id,
+						'package_version' => $package_version,
+						'mode'            => $mode,
+						'status'          => Store::HISTORY_STATUS_TEMPORARY_FAILED,
+						'revision_id'     => $tag->revision_id ?? '',
+						'reason'          => 'Processing failed, will retry',
+					] );
+					Store::defer_queue_tag( [
+						'plugin_id'       => $plugin_id,
+						'package_version' => $package_version,
+					] );
 
-				self::integration_log(
-					$plugin_id,
-					'error',
-					"Failed to process queued tag {$package_version}: {$error_message}",
-				);
+					self::integration_log(
+						$plugin_id,
+						'error',
+						"Failed to process queued tag {$package_version}, will retry in 5 minutes: {$error_message}",
+					);
+				}
 			}
 		}
 	}

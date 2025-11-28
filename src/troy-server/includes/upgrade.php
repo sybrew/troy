@@ -190,21 +190,30 @@ function upgrade_from( $version ) {
  * - `plugin_id_user_id` for the contributors table to force unique contributors per plugin.
  * - `plugin_id_locale` for the infos table to force unique info per locale per plugin.
  * - `plugin_id_version` for the snapshots table to force unique snapshots per plugin per version.
- * - `plugin_id_package_version` for the integration_queue and integration_failures tables to force unique entries per package version.
+ * - `plugin_id_package_version` for the integration_queue and integration_history tables to force unique entries per package version.
+ * - `plugin_id_status` for the integration_history table because direct access for these is common.
  * - `plugin_id_type` for the integration_logs table because direct access for these is common.
+ * - `plugin_id_version` for the zips table to force unique zips per plugin per version.
  * - `plugin_id_version_locale` for the translations table to force unique translations per locale per version.
  * - `plugin_id_user_id` for the ratings table to force unique ratings per user.
  * - `plugin_id` for the stats_totals table to force unique stats per plugin.
- * - `plugin_id_date` for the stats_totals_to_date table to force unique stats per plugin per day.
- * - `plugin_id_version_origin_url` for the stats table to force unique stats per plugin per version per origin URL.
- * - `plugin_id_version_date` for the stats_to_date table because direct access for these is common.
- * - `plugin_id_version_date_origin_url` for the stats_to_date table to force unique stats per plugin per version per day per origin URL.
- * - `plugin_id_version` for the view_stats table to force unique views per plugin per version.
- * - `plugin_id_version_origin_url` for the view_stats table to force unique stats per plugin per version per origin URL.
- * - `plugin_id_is_active` for the update_request_stats table because direct access for these is common.
- * - `plugin_id_epoch_version_is_active` for the update_request_stats table to force unique stats per plugin per epoch per version per active state.
- * - `plugin_id_epoch_version_locale` for the update_request_locales_stats table to force unique stats per plugin per epoch per version per locale.
- * - `plugin_id_epoch` for the update_request_stats_live table because direct access for these is common.
+ * - `plugin_id_date` for the stats_totals_daily table to force unique stats per plugin per day.
+ * - `plugin_id_version_origin_url` for the stats_versions table to force unique stats per plugin per version per origin URL.
+ * - `plugin_id_version_date` for the stats_versions_daily table because direct access for these is common.
+ * - `plugin_id_version_date_origin_url` for the stats_versions_daily table to force unique stats per plugin per version per day per origin URL.
+ * - `plugin_id_version` for the stats_views table because direct access for these is common.
+ * - `plugin_id_version_screen_locale_origin_url` for the stats_views table to force unique stats per plugin per version per screen per locale per origin URL.
+ * - `plugin_id_version_type_origin_url` for the stats_downloads table to force unique stats per plugin per version per type per origin URL.
+ * - `plugin_id_is_active` for the stats_requests table because direct access for these is common.
+ * - `plugin_id_epoch_version_is_active` for the stats_requests table to force unique stats per plugin per epoch per version per active state.
+ * - `plugin_id_epoch_version_locale` for the stats_locales table to force unique stats per plugin per epoch per version per locale.
+ * - `plugin_id_epoch_php_version` for the stats_php table to force unique stats per plugin per epoch per PHP version.
+ * - `plugin_id_epoch_wp_version` for the stats_wp table to force unique stats per plugin per epoch per WordPress version.
+ * - `plugin_id_epoch` for the stats_requests_live table because direct access for these is common.
+ * - `plugin_id_epoch_version_is_active_uuid` for the stats_requests_live table to force unique stats per plugin per epoch per version per active state per UUID.
+ * - `package_id` for the package_stats_totals table to force unique stats per package.
+ * - `package_id_date` for the package_stats_totals_daily table to force unique stats per package per day.
+ * - `package_id_version_type_origin_url` for the package_stats_downloads table to force unique stats per package per version per type per origin URL.
  *
  * Default values are set only for direct database queries. These may differ from the defaults we use in the plugin.
  * Still, we fully rely on the created_at and updated_at fields to be set automatically.
@@ -219,7 +228,7 @@ function upgrade_from( $version ) {
  * | troy_plugin_snapshots                       | Snapshots of plugin data by version (for future restore feature).   |
  * | troy_plugin_integrations                    | Integration settings for plugins (for automated releases).          |
  * | troy_plugin_integration_queue               | Queue for integration processing (for automated releases).          |
- * | troy_plugin_integration_failures            | Failed integration attempts (for debugging and retry).              |
+ * | troy_plugin_integration_history             | Integration processing history (success and failure tracking).      |
  * | troy_plugin_integration_logs                | Logs for integration events (for debugging and audit).              |
  * | troy_plugin_zips                            | ZIP locations for plugins (for plugin update/download).             |
  * | troy_plugin_translations                    | Translation locations for plugins (for download).                   |
@@ -364,24 +373,28 @@ function get_initial_db_schema_queries() {
 			`download_url` text NOT null,
 			`revision_id` varchar(64) NOT null DEFAULT '',
 			`type` varchar(20),
-			`status` varchar(20) NOT null DEFAULT 'pending',
+			`retry_after` datetime DEFAULT current_timestamp,
 			`created_at` datetime DEFAULT current_timestamp,
 			primary key (`id`),
 			unique index `plugin_id_package_version` (`plugin_id`, `package_version`),
-			index `status` (`status`)
+			index `retry_after` (`retry_after`)
 		) $collate",
-		"CREATE table `{$dbprefix}troy_plugin_integration_failures` (
+		"CREATE table `{$dbprefix}troy_plugin_integration_history` (
 			`id` bigint unsigned NOT null auto_increment,
 			`plugin_id` bigint unsigned NOT null,
 			`package_version` varchar(50) NOT null,
+			`version` varchar(20) NOT null DEFAULT '',
+			`revision_id` varchar(64) NOT null DEFAULT '',
 			`mode` varchar(20) NOT null,
-			`reason` varchar(50) NOT null,
+			`status` varchar(20) NOT null DEFAULT 'failed',
+			`reason` varchar(50) NOT null DEFAULT '',
 			`details` text NOT null,
 			`attempts` smallint unsigned NOT null DEFAULT 1,
 			`created_at` datetime DEFAULT current_timestamp,
 			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
 			primary key (`id`),
-			unique index `plugin_id_package_version` (`plugin_id`, `package_version`)
+			unique index `plugin_id_package_version` (`plugin_id`, `package_version`),
+			index `plugin_id_status` (`plugin_id`, `status`)
 		) $collate",
 		"CREATE table `{$dbprefix}troy_plugin_integration_logs` (
 			`id` bigint unsigned NOT null auto_increment,
