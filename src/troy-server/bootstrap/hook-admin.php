@@ -48,7 +48,11 @@ use Troy\Server\{
 // phpcs:disable Generic.WhiteSpace.ScopeIndent.IncorrectExact -- no love for goto.
 
 admin: {
+	// Register admin scripts and styles.
 	\add_action( 'admin_init', [ Admin_Scripts::class, 'register_utils' ], 1 );
+	\add_action( 'admin_enqueue_scripts', [ Admin_Scripts::class, 'register_troy_mode' ], 1 );
+
+	// Fix admin menu ordering for settings and custom post types.
 	\add_action( 'admin_menu', [ Admin_Menu::class, 'reorder_menu_items' ], 999 );
 }
 

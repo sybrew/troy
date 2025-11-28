@@ -333,8 +333,9 @@
 		bindClearButtons();
 	};
 
-	if ( 'complete' === document.readyState )
+	if ( 'complete' === document.readyState ) {
 		init();
-	else
+	} else {
 		document.addEventListener( 'DOMContentLoaded', init );
+	}
 } )();

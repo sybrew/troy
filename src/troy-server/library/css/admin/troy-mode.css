@@ -1,0 +1,124 @@
+/**
+ * Troy Server
+ *
+ * Copyright (c) 2025 Sybre Waaijer, CyberWire B.V.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+/**
+ * Troy Mode: Hide non-essential admin menu items.
+ *
+ * Visible items when active:
+ * - Dashboard (+ submenus)
+ * - Troy Server Settings
+ * - Repo Packages (CPT)
+ * - Repo Plugins (CPT)
+ * - Plugins
+ * - Tools
+ * - Settings (+ submenus)
+ * - Troy Mode toggle button
+ */
+
+/* Hide all menu items when Troy Mode is active */
+.troy-mode-active #adminmenu > li {
+	display: none;
+}
+
+.troy-mode-active #adminmenu :is(
+	#menu-dashboard,
+	[id*="troy-server"],
+	#menu-plugins,
+	#menu-tools,
+	#menu-settings,
+	#troy-mode-toggle,
+	#collapse-menu,
+) {
+	display: block;
+}
+
+.troy-mode-active #adminmenu .wp-menu-separator {
+	display: block;
+}
+
+.troy-mode-active #adminmenu .wp-menu-separator:is(.troy-mode-hidden) {
+	display: none;
+}
+
+/* Troy Mode Switch Styling */
+#troy-mode-toggle .troy-mode-switch {
+	display: inline-block;
+	position: relative;
+	width: 26px;
+	height: 14px;
+	margin-left: 8px;
+	vertical-align: text-bottom;
+	border-radius: 7px;
+	background: rgba(255, 255, 255, .25);
+	transition: background .2s ease-in-out;
+}
+
+#troy-mode-toggle .troy-mode-switch-indicator {
+	position: absolute;
+	top: 2px;
+	left: 2px;
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	background: #fff;
+	box-shadow: 0 0 0 1px rgba(0, 0, 0, .1);
+	transition: left .2s ease-in-out;
+}
+
+#troy-mode-toggle .troy-mode-switch.on {
+	background: rgba(255, 255, 255, .5);
+}
+
+#troy-mode-toggle .troy-mode-switch.on .troy-mode-switch-indicator {
+	left: 14px;
+}
+
+/* Prevent transition on initial render when already on */
+@starting-style {
+	#troy-mode-toggle .troy-mode-switch.on {
+		background: rgba(255, 255, 255, .5);
+	}
+
+	#troy-mode-toggle .troy-mode-switch.on .troy-mode-switch-indicator {
+		left: 14px;
+	}
+}
+
+/* Hover state for toggle button */
+#troy-mode-toggle:hover .troy-mode-switch,
+#troy-mode-toggle a:focus .troy-mode-switch {
+	background: rgba(255, 255, 255, .4);
+}
+
+#troy-mode-toggle:hover .troy-mode-switch.on,
+#troy-mode-toggle a:focus .troy-mode-switch.on {
+	background: #00ba37;
+}
+
+/* Admin bar icon styling */
+#troy-mode-toggle .ab-icon {
+	font-size: 20px;
+	line-height: 1;
+	top: 3px;
+}

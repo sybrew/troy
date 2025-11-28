@@ -8,11 +8,6 @@ namespace Troy\Server;
 
 \defined( 'Troy\Server\ABSPATH' ) or die;
 
-use const Troy\Server\{
-	MAIN_FILE,
-	VERSION,
-};
-
 /**
  * Troy Server
  *
@@ -106,6 +101,42 @@ final class Admin_Scripts {
 			[],
 			VERSION,
 			true,
+		);
+	}
+
+	/**
+	 * Registers Troy Mode styles and scripts inline.
+	 *
+	 * Troy Mode allows users to hide non-essential admin menu items,
+	 * showing only Dashboard, Troy Server items, Plugins, Tools, and Settings.
+	 * State is persisted in localStorage for instant client-side toggling.
+	 *
+	 * Inlined after admin-menu to prevent flash of unstyled content (FOUC).
+	 *
+	 * @hook admin_enqueue_scripts 1
+	 * @since 0.0.1184
+	 */
+	public static function register_troy_mode() {
+
+		$dir = ABSPATH . 'library';
+		$min = \SCRIPT_DEBUG ? '' : '.min';
+
+		// phpcs:ignore TSF.Performance, WordPress.WP.AlternativeFunctions -- Local trusted file.
+		\wp_add_inline_style( 'admin-menu', file_get_contents( "$dir/css/admin/troy-mode$min.css" ) );
+		// phpcs:ignore TSF.Performance, WordPress.WP.AlternativeFunctions -- Local trusted file.
+		\wp_add_inline_script( 'common', file_get_contents( "$dir/js/admin/troy-mode$min.js" ) );
+
+		// We could've done WP User settings, but let's not burden the database for something this silly.
+		// Prevent FOUC by printing script inline to set body class before anything else renders.
+		\add_action(
+			'in_admin_header',
+			function () {
+				echo '<script>',
+					<<<'JS'
+					'1' === localStorage.getItem( 'troyServerModeActive' ) && document.body.classList.add( 'troy-mode-active' )
+					JS,
+					'</script>';
+			},
 		);
 	}
 }
