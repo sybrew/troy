@@ -249,7 +249,7 @@ final class Store {
 				? $data['notice_severity']
 				: 'detailed',
 			'plugins'                  => array_filter( array_map(
-				fn( $plugin_id, $plugin_options ) => $plugin_id
+				fn( $plugin_id, $plugin_options ) => $plugin_id && ! empty( $plugin_options['selected'] )
 					? [
 						'id'             => \absint( $plugin_id ),
 						'network'        => ! empty( $plugin_options['network'] ),
@@ -262,7 +262,7 @@ final class Store {
 				(array) ( $data['plugins'] ?? [] ),
 			) ),
 			'themes'                   => array_filter( array_map(
-				fn( $theme_id, $theme_options ) => $theme_id
+				fn( $theme_id, $theme_options ) => $theme_id && ! empty( $theme_options['selected'] )
 					? [
 						'id'             => \absint( $theme_id ),
 						'activate'       => ! empty( $theme_options['activate'] ),

@@ -94,12 +94,15 @@ $plugins = $wpdb->get_results(
 			'overwrite'      => true,
 			'overwrite_troy' => false,
 		];
+
 		?>
 			<div class=troy-package-plugin-item data-plugin-id="<?= \esc_attr( $plugin->id ) ?>">
 				<label class=troy-package-plugin-main>
 					<input
 						type=checkbox
 						class=troy-package-plugin-checkbox
+						name="troy_package[plugins][<?= \esc_attr( $plugin->id ) ?>][selected]"
+						value=1
 						data-plugin-id="<?= \esc_attr( $plugin->id ) ?>"
 						<?php \checked( $is_selected ); ?>
 						>
