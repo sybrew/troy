@@ -408,7 +408,8 @@
 				useEffect(
 					() => {
 						// Don't fetch if we have a real logo or if we already have a placeholder URI.
-						if ( placeholderUri || storeData.logo_uri ) return;
+						if ( placeholderUri || storeData.logo_uri )
+							return;
 
 						// Prepare abort controller to cancel in-flight requests on dependency changes
 						const controller = new AbortController();
@@ -429,7 +430,8 @@
 								} );
 
 								// If cancelled or logo_uri was set in-flight, stop processing
-								if ( cancelled || storeData.logo_uri ) return;
+								if ( cancelled || storeData.logo_uri )
+									return;
 
 								setPlaceholderUri( `data:${response.mime_type};base64,${response.image_data}` );
 							} catch ( error ) {

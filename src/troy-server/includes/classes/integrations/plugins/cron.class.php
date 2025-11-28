@@ -201,7 +201,8 @@ final class Cron extends \Troy\Server\Cron {
 			if (
 				   isset( $processed_revisions[ $package_version ] )
 				&& ( $tag_data->revision_id ?? '' ) === $processed_revisions[ $package_version ]
-			) continue;
+			)
+				continue;
 
 			// Determine the tag type based on version pattern
 			$version_type = API\Utils::get_version_type( $package_version );

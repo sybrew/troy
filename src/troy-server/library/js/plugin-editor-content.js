@@ -114,7 +114,8 @@
 						} );
 
 						// If cancelled or builder type changed in-flight, stop processing
-						if ( cancelled || 'readme' !== storeData.builder_type ) return;
+						if ( cancelled || 'readme' !== storeData.builder_type )
+							return;
 
 						const { contents, headers } = response;
 
@@ -233,7 +234,8 @@
 		// Handle locking of content blocks when in readme mode
 		useEffect(
 			() => {
-				if ( ! hasInitialized || ! storeData.builder_type ) return;
+				if ( ! hasInitialized || ! storeData.builder_type )
+					return;
 
 				const lockTabBlocks = blocks => {
 					blocks.forEach( block => {

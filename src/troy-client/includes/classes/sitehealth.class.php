@@ -170,11 +170,14 @@ final class SiteHealth {
 				$result['description'] .= \sprintf(
 					'<p>%s</p>',
 					\wp_sprintf(
-						1 === \count( $slugs )
-							? /* translators: %l: Plugin name. */
-							\__( 'This plugin is intentionally filtered from WordPress.org and all external communications: %l.', 'troy-client' )
-							: /* translators: %l: List of plugin names. */
-							\__( 'These plugins are intentionally filtered from WordPress.org and all external communications: %l.', 'troy-client' ),
+						\_n(
+							/* translators: %l: Plugin name. */
+							'This plugin is intentionally filtered from WordPress.org and all external communications: %l.',
+							/* translators: %l: List of plugin names. */
+							'These plugins are intentionally filtered from WordPress.org and all external communications: %l.',
+							\count( $slugs ),
+							'troy-client',
+						),
 						array_map(
 							fn( $slug ) => $_plugin_names[ $slug ] ?? $slug,
 							$slugs,

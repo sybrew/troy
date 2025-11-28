@@ -48,13 +48,15 @@ upgrade();
  */
 function upgrade() {
 
-	if ( \wp_doing_ajax() ) return;
+	if ( \wp_doing_ajax() )
+		return;
 
 	$timeout = 5 * \MINUTE_IN_SECONDS; // Same as WP Core, function update_core().
 
 	$lock = set_upgrade_lock( $timeout );
 	// Lock failed to create--probably because it was already locked (or the database failed us).
-	if ( ! $lock ) return;
+	if ( ! $lock )
+		return;
 
 	register_shutdown_function( 'Troy\Server\Upgrade\release_upgrade_lock' );
 

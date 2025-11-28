@@ -57,7 +57,8 @@ function autoload_classes( $class ) {
 
 	$class = strtolower( $class );
 
-	if ( ! str_starts_with( $class, 'troy\server\\' ) ) return;
+	if ( ! str_starts_with( $class, 'troy\server\\' ) )
+		return;
 
 	$class = strtr(
 		substr( $class, 12 ), // remove the "troy\server\" part

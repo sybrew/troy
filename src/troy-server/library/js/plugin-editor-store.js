@@ -158,7 +158,8 @@ const TroyServerPluginEditorStore = new class {
 
 						case 'UPDATE_EDITOR_DATA':
 							// Ensure editorData exists before updating
-							if ( ! state.editorData ) return state;
+							if ( ! state.editorData )
+								return state;
 
 							return {
 								...state,
@@ -702,7 +703,8 @@ function troyServerGetPluginStore() {
 	);
 	const allTabsEmpty = useMemo(
 		() => {
-			if ( ! editorData.contents ) return true;
+			if ( ! editorData.contents )
+				return true;
 
 			return Object.values( editorData.contents ).every( content => ! content.length );
 		},

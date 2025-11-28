@@ -1230,7 +1230,8 @@ window.troyServerPluginEditorComponents = ( wp => {
 
 		const versionsWithRepoMismatch = useMemo(
 			() => {
-				if ( ! versions?.length ) return [];
+				if ( ! versions?.length )
+					return [];
 
 				return versions.filter(
 					version => version.repo !== currentRepoUrl,
@@ -1874,7 +1875,8 @@ window.troyServerPluginEditorComponents = ( wp => {
 		// Get author name directly from WordPress core data store (following WordPress core pattern)
 		const authorName = useSelect(
 			select => {
-				if ( ! authorId ) return '';
+				if ( ! authorId )
+					return '';
 
 				return select( 'core' ).getUser( authorId, AUTHORS_BASE_QUERY )?.name
 					|| '';
