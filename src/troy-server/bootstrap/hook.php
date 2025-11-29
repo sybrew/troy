@@ -97,6 +97,9 @@ packages: {
 	\add_action( 'delete_post_' . PACKAGES_CPT, [ Packages\CPT\Store::class, 'handle_delete_post' ] );
 	\add_filter( 'wp_insert_post_empty_content', [ Packages\CPT\Store::class, 'unset_empty_post' ], 10, 2 );
 
+	// Register the package's REST routes.
+	\add_action( 'rest_api_init', [ Packages\REST::class, 'register_rest_routes' ] );
+
 	// Package list table customizations.
 	\add_action( 'load-edit.php', [ Packages\CPT\List_View::class, 'register_list_edit_hooks' ] );
 	\add_filter( 'manage_' . PACKAGES_CPT . '_posts_columns', [ Packages\CPT\List_View::class, 'register_columns' ] );

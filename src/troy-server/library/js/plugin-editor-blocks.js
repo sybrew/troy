@@ -145,12 +145,11 @@
 							);
 
 							if ( -1 !== firstAvailableTabIndex && firstAvailableTabIndex !== activeTab ) {
-								// Small delay to ensure store data has stabilized and prevent race conditions
 								const timeoutId = setTimeout(
 									() => {
 										setAttributes( { activeTab: firstAvailableTabIndex } );
 									},
-									10,
+									10, // Magic Number: Store data should stabilize, prevents race conditions
 								);
 
 								return () => clearTimeout( timeoutId );

@@ -166,13 +166,9 @@ window.troyServerPluginEditorComponents = ( wp => {
 
 					let _slug = plugin_slug;
 
-					if ( error.post_id ) {
-						if ( error.post_id != postId ) {
-							showError( __( 'Slug is already registered for another plugin. Use another one.', 'troy-server' ) );
-						} else {
-							_slug = error.plugin_slug || '';
-						}
-					}
+					// If server returned post_id, it means this post already has a registered slug
+					if ( error.post_id && error.post_id == postId )
+						_slug = error.plugin_slug || '';
 
 					setLocalSlug( _slug );
 					storeSlug( _slug );
@@ -1816,7 +1812,7 @@ window.troyServerPluginEditorComponents = ( wp => {
 							value:               selectedAuthorId || '',
 							options:             authorOptions,
 							onChange:            handleAuthorChange,
-							onFilterValueChange: timing.debounce( setFilterValue, 300 ),
+							onFilterValueChange: timing.debounce( setFilterValue, 300 ), // Magic Number: WordPress core uses 300ms
 							help:                __( 'Type to search for authors. Choose the author who will be displayed for this plugin.', 'troy-server' ),
 							hideLabelFromVision: true,
 							isLoading,

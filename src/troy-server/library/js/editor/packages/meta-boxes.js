@@ -26,6 +26,10 @@
 
 ( () => {
 
+	const apiFetch         = wp.apiFetch;
+	const { addQueryArgs } = wp.url;
+	const timing           = troyServerTiming;
+
 	/**
 	 * Initializes package plugin item checkboxes.
 	 *
@@ -90,13 +94,73 @@
 		updateSlugFromTitle();
 	};
 
+	/**
+	 * Initializes slug conflict validation.
+	 *
+	 * Validates the slug against existing plugins and packages on input change.
+	 *
+	 * @since 0.0.1184
+	 */
+	const initSlugValidation = () => {
+
+		const slugInput = document.getElementById( 'troy_package_slug' );
+
+		if ( ! slugInput || 'undefined' === typeof troyPackageEditorData )
+			return;
+
+
+		// Create warning element
+		const warningEl       = document.createElement( 'p' );
+		warningEl.className   = 'troy-package-slug-warning';
+		warningEl.style.color = '#d63638';
+
+		slugInput.parentNode.insertBefore( warningEl, slugInput.nextSibling );
+
+		const validateSlug = () => {
+
+			const slug = slugInput.value.trim();
+
+			if ( ! slug ) {
+				warningEl.textContent = '';
+				return;
+			}
+
+			apiFetch( {
+				url: addQueryArgs(
+					troyPackageEditorData.restUrls.validateSlug,
+					{
+						slug,
+						package_id: troyPackageEditorData.packageId || 0,
+					},
+				),
+				method: 'GET',
+			} )
+				.then( data => {
+					warningEl.textContent = data.valid ? '' : data.message;
+				} )
+				.catch( () => {
+					warningEl.textContent = '';
+				} );
+		};
+
+		const debouncedValidateSlug = timing.debounce( validateSlug, 300 ); // Magic Number: 300ms
+
+		slugInput.addEventListener( 'input', debouncedValidateSlug );
+
+		// Validate on load if there's a value
+		if ( slugInput.value )
+			validateSlug();
+	};
+
 	if ( 'complete' === document.readyState ) {
 		initPluginCheckboxes();
 		initSlugAutoFill();
+		initSlugValidation();
 	} else {
 		document.addEventListener( 'DOMContentLoaded', () => {
 			initPluginCheckboxes();
 			initSlugAutoFill();
+			initSlugValidation();
 		} );
 	}
 } )();

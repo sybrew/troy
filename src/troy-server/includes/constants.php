@@ -62,6 +62,11 @@ const REST_NS = [
 		'base'       => 'plugins/integrations',
 		'access_cap' => 'edit_pages',
 	],
+	'packages_manage'      => [
+		'namespace'  => 'troy-server/v1',
+		'base'       => 'packages/manage',
+		'access_cap' => 'edit_pages',
+	],
 	'stats_dashboard'      => [
 		'namespace'  => 'troy-server/v1',
 		'base'       => 'stats',

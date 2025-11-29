@@ -364,59 +364,20 @@ final class Store {
 		try {
 			// phpcs:disable Generic.WhiteSpace.ScopeIndent.IncorrectExact -- no love for goto.
 			find_unique_slug: {
-				if ( $package_id ) {
-					// Exclude current package from duplicate check
-					$duplicated_slug_id = (int) $wpdb->get_var(
-						$wpdb->prepare(
-							"SELECT id FROM {$wpdb->prefix}troy_packages WHERE slug = %s AND id != %d",
-							$slug,
-							$package_id,
-						),
-					);
-				} else {
-					$duplicated_slug_id = (int) $wpdb->get_var(
-						$wpdb->prepare(
-							"SELECT id FROM {$wpdb->prefix}troy_packages WHERE slug = %s",
-							$slug,
-						),
-					);
-				}
+				$slug_checker  = new API\Slug( $slug, 'package', $package_id );
+				$conflict_type = $slug_checker->conflict_type;
 
-				if ( $duplicated_slug_id ) {
-					$similar_slugs = $wpdb->get_col(
-						$wpdb->prepare(
-							"SELECT slug FROM {$wpdb->prefix}troy_packages WHERE slug REGEXP %s",
-							'^' . $wpdb->esc_like( $slug ) . '(-[0-9]+)?$',
-						),
-					);
-
-					$max_suffix = 0;
-
-					if ( $similar_slugs ) {
-						natsort( $similar_slugs );
-
-						$last_slug = end( $similar_slugs );
-
-						if ( preg_match( '/-(\d+)$/', $last_slug, $matches ) )
-							$max_suffix = (int) $matches[1];
-					}
-
-					++$max_suffix;
-
+				if ( $conflict_type ) {
 					$original_slug = $slug;
-
-					$data['slug'] = $slug = substr(
-						$slug,
-						0,
-						191 - \strlen( "-$max_suffix" ), // 191 is max length for the database field
-					) . "-$max_suffix";
+					$data['slug']  = $slug = $slug_checker->unique_slug;
 
 					$notices[] = [
 						'type'    => 'warning',
 						'message' => \sprintf(
-							/* translators: 1: Original slug, 2: New slug */
-							\__( 'Slug "%1$s" was already taken. Changed to "%2$s".', 'troy-server' ),
+							/* translators: 1: Original slug, 2: Conflict type (plugin or package), 3: New slug */
+							\__( 'Slug "%1$s" was already taken by a %2$s. Package slug changed to "%3$s".', 'troy-server' ),
 							$original_slug,
+							$conflict_type,
 							$slug,
 						),
 					];

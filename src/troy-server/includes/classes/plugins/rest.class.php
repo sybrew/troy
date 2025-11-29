@@ -218,10 +218,23 @@ final class REST {
 				400,
 			);
 
+		// Check for cross-table slug conflicts (plugins and packages)
+		$slug_checker  = new API\Slug( $params['plugin_slug'], 'plugin' );
+		$conflict_type = $slug_checker->conflict_type;
+
+		if ( $conflict_type )
+			return new \WP_REST_Response(
+				[
+					'message' => 'plugin' === $conflict_type
+						? \__( 'This slug is already registered as a plugin. Try another one.', 'troy-server' )
+						: \__( 'This slug is already registered as a package. Try another one.', 'troy-server' ),
+				],
+				400,
+			);
+
 		$existing_data = $wpdb->get_row( $wpdb->prepare(
-			"SELECT id, post_id, slug FROM {$wpdb->prefix}troy_plugins WHERE post_id = %d OR slug = %s",
+			"SELECT id, post_id, slug FROM {$wpdb->prefix}troy_plugins WHERE post_id = %d",
 			$params['post_id'],
-			$params['plugin_slug'],
 		) );
 
 		if ( $existing_data ) {
@@ -229,9 +242,7 @@ final class REST {
 			// TODO Create handler to update the existing plugin.
 			return new \WP_REST_Response(
 				[
-					'message'     => $params['post_id'] === (int) $existing_data->post_id
-						? \__( 'Plugin Post ID is already registered. Cannot change slug now.', 'troy-server' )
-						: \__( 'Plugin slug is already registered. Try another one.', 'troy-server' ),
+					'message'     => \__( 'Plugin Post ID is already registered. Cannot change slug now.', 'troy-server' ),
 					'plugin_id'   => (int) $existing_data->id,
 					'plugin_slug' => $existing_data->slug,
 					'post_id'     => (int) $existing_data->post_id,

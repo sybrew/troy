@@ -12,10 +12,14 @@ use const Troy\Server\{
 	ABSPATH,
 	MAIN_FILE,
 	PACKAGES_CPT,
+	REST_NS,
 	VERSION,
 };
 
-use Troy\Server\Template;
+use Troy\Server\{
+	API,
+	Template,
+};
 
 /**
  * Troy Server
@@ -76,9 +80,21 @@ final class Meta_Boxes {
 		\wp_enqueue_script(
 			'troy-server-editor-package-meta-boxes',
 			"{$dir_url}library/js/editor/packages/meta-boxes{$min}.js",
-			[],
+			[ 'wp-api-fetch', 'wp-url', 'troy-server-timing' ],
 			VERSION,
 			true,
+		);
+
+		$post_id              = \get_the_ID();
+		$rest_packages_manage = REST_NS['packages_manage']['namespace'] . '/' . REST_NS['packages_manage']['base'];
+
+		\wp_localize_script(
+			'troy-server-editor-package-meta-boxes',
+			'troyPackageEditorData',
+			[
+				'packageId' => $post_id ? API\Package::get_package_id_by_post_id( $post_id ) : 0,
+				'restUrls'  => [ 'validateSlug' => \rest_url( "$rest_packages_manage/validateSlug" ) ],
+			],
 		);
 	}
 

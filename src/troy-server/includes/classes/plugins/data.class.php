@@ -61,7 +61,7 @@ final class Data {
 	/**
 	 * @since 0.0.1184
 	 * @var ?int $plugin_id The plugin ID.
-	 *                     It will always be an integer, even though it is nullable.
+	 *                      It will always be an integer, even though it is nullable.
 	 */
 	public readonly ?int $plugin_id;
 
