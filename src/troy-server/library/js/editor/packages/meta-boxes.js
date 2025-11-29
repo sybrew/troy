@@ -75,16 +75,13 @@
 			const postTitle = titleInput?.value ?? '';
 			// const postSlug  = postNameInput?.value ?? document.getElementById( 'editable-post-name-full' )?.innerText ?? '';
 
-			const sanitizedSlug = postTitle
+			slugInput.placeholder = postTitle
 				.toLowerCase()
 				.replace( /\s+/g, '-' )
 				.replace( /[^a-z0-9-]/g, '' )
 				.replace( /-{2,}/g, '-' )
 				.replace( /^[^a-z1-9]+/, '' )
 				.slice( 0, 191 );
-
-			if ( sanitizedSlug )
-				slugInput.placeholder = sanitizedSlug;
 		};
 
 		titleInput?.addEventListener( 'input', updateSlugFromTitle );

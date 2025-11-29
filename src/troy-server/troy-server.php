@@ -22,6 +22,7 @@
  * License: MIT
  * Text Domain: troy-server
  * Requires at least: 6.8
+ * Tested up to: 6.9
  * Requires PHP: 8.4
  */
 

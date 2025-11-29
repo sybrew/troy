@@ -1,6 +1,6 @@
 === Troy Server ===
-Homepage URL: https://deploytroy.org/
-Support URI: https://github.com/sybrew/troy/issues
+Homepage URL: https://deploytroy.org/docs/troy-server/how-it-works/
+Support URI: https://github.com/sybrew/troy/discussions
 Locale: en_US
 Short Description: Troy Server allows you to distribute WordPress plugins from your own update repository.
 
@@ -79,15 +79,16 @@ Plugins can have different visibility statuses:
 
 = Updating =
 
-Troy Server checks for updates for itself via the Troy Server at [https://repo.deploytroy.org](https://repo.deploytroy.org).
+Troy Server checks for updates via Troy Client via the Troy Server at [repo.deploytroy.org](https://repo.deploytroy.org/).
 
 == Installation ==
 
 Troy Server is not available on WordPress.org.
 
-1. Download the latest version from [repo.deploytroy.org](https://repo.deploytroy.org/package/get/zip/troy-server).
+1. Download the latest package from [repo.deploytroy.org](https://repo.deploytroy.org/package/get/zip/troy-server).
 1. Upload the ZIP file via Plugins > Add New > Upload Plugin.
-1. Activate the plugin through the Plugins menu.
+1. Activate the package through the Plugins menu.
+1. The package installs and activates Troy Client and Troy Server, then deactivates itself.
 1. Configure your repository settings under Settings > Troy Server.
 
 = Requirements =
@@ -100,7 +101,7 @@ Troy Server is not available on WordPress.org.
 
 = Recommendations =
 
-It's best to run Troy Server on a standalone WordPress instance. This can be a Multisite subdomain or subdirectory. Note that multilingual plugins are not supported and may interfere with repository URL generation. Repository URLs are limited to 191 characters.
+It's best to run Troy Server on a standalone WordPress instance. This can also be a Multisite subdomain or subdirectory. Note that multilingual plugins are not supported and may interfere with repository URL generation. Repository URLs are limited to 191 characters.
 
 == Changelog ==
 

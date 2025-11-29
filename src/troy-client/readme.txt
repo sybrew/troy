@@ -41,7 +41,7 @@ Troy Client is designed with privacy in mind:
 
 = Self-Checking =
 
-Troy Client checks for updates for itself via the Troy Server at [https://repo.deploytroy.org](https://repo.deploytroy.org).
+Troy Client checks for updates for itself via the Troy Server at [repo.deploytroy.org](https://repo.deploytroy.org/).
 
 == Installation ==
 

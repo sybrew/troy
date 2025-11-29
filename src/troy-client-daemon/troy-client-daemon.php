@@ -17,6 +17,7 @@
  * Author URI: https://deploytroy.org/
  * License: MIT
  * Requires at least: 6.7
+ * Tested up to: 6.9
  * Requires PHP: 7.4
  */
 
@@ -119,6 +120,19 @@ function install_and_activate_troy_client() {
 	$troy_plugin = \get_plugins()[ $plugin_file ] ?? '';
 
 	if ( ! $troy_plugin ) {
+		\wp_raise_memory_limit( 'troy-daemon-init-fs' );
+
+		// Let's not fully rely on globals to check if the filesystem is initialized.
+		if ( empty( $GLOBALS['wp_filesystem'] ) || ! \function_exists( 'WP_Filesystem' ) ) {
+			// Ensure WP_Filesystem() is declared
+			require_once \ABSPATH . 'wp-admin/includes/file.php';
+
+			if ( ! \WP_Filesystem() )
+				return;
+		}
+
+		require_once \ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+
 		$client_url = 'https://repo.deploytroy.org/plugin/get/zip/troy-client/';
 
 		\add_filter(

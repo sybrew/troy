@@ -99,6 +99,7 @@ final class Download extends Base_Endpoint {
 		// Get ZIP file path
 		$zip_file = Files::get_package_zip_file_path( $package_id, $slug );
 
+		// phpcs:ignore TSF.Performance -- file must be loaded from disk to stream
 		if ( ! \file_exists( $zip_file ) )
 			$this->send_error( 'Package file not found', 404 );
 
@@ -149,9 +150,8 @@ final class Download extends Base_Endpoint {
 		$file_size = \filesize( $file_path );
 
 		// Clear any existing output buffers
-		while ( \ob_get_level() ) {
+		while ( \ob_get_level() )
 			\ob_end_clean();
-		}
 
 		// Set headers
 		\header( 'Content-Type: application/zip' );
