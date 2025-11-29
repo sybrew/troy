@@ -85,7 +85,7 @@ Troy Server checks for updates via Troy Client via the Troy Server at [repo.depl
 
 Troy Server is not available on WordPress.org.
 
-1. Download the latest package from [repo.deploytroy.org](https://repo.deploytroy.org/package/get/zip/troy-server).
+1. Download the latest package from [repo.deploytroy.org](https://repo.deploytroy.org/package/get/zip/troy-server-installer).
 1. Upload the ZIP file via Plugins > Add New > Upload Plugin.
 1. Activate the package through the Plugins menu.
 1. The package installs and activates Troy Client and Troy Server, then deactivates itself.

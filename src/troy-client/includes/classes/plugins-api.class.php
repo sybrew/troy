@@ -112,18 +112,22 @@ final class Plugins_API {
 		$translations = \wp_get_installed_translations( 'plugins' );
 
 		$locales = array_unique(
-			/**
-			 * Filters the locales requested for plugin translations.
-			 *
-			 * This is taken from WordPress Core.
-			 *
-			 * @since WP 3.7.0
-			 * @since WP 4.5.0 The default value of the `$locales` parameter changed to include all locales.
-			 * @param string[] $locales Plugin locales. Default is all available locales of the site.
-			 */
-			\apply_filters(
-				'plugins_update_check_locales',
-				array_values( \get_available_languages() ),
+			array_merge(
+				// WordPress doesn't always include the site's (default) locale via get_available_languages(). This fix should be applied upstream.
+				[ \get_locale(), 'en_US' ],
+				/**
+				 * Filters the locales requested for plugin translations.
+				 *
+				 * This is taken from WordPress Core.
+				 *
+				 * @since WP 3.7.0
+				 * @since WP 4.5.0 The default value of the `$locales` parameter changed to include all locales.
+				 * @param string[] $locales Plugin locales. Default is all available locales of the site.
+				 */
+				\apply_filters(
+					'plugins_update_check_locales',
+					array_values( \get_available_languages() ),
+				),
 			),
 		);
 
