@@ -33,11 +33,11 @@ namespace Troy\Client;
  */
 
 /**
- * Class Troy\Client\SiteHealth.
+ * Class Troy\Client\Site_Health.
  *
  * @since 0.0.1184
  */
-final class SiteHealth {
+final class Site_Health {
 
 	/**
 	 * Registers the site status tests for Troy Client.

@@ -170,8 +170,8 @@ $locales          = Settings\Stats::get_locale_stats();
 						<?php
 						echo \esc_html( \sprintf(
 							/* translators: %d is the epoch number */
-							\__( 'Current Epoch (%d)', 'troy-server' ),
-							$epoch_comparison['current_epoch'],
+							\__( 'Previous Epoch (%d)', 'troy-server' ),
+							$epoch_comparison['previous_epoch'],
 						) );
 						?>
 					</th>
@@ -179,8 +179,8 @@ $locales          = Settings\Stats::get_locale_stats();
 						<?php
 						echo \esc_html( \sprintf(
 							/* translators: %d is the epoch number */
-							\__( 'Previous Epoch (%d)', 'troy-server' ),
-							$epoch_comparison['previous_epoch'],
+							\__( 'Current Epoch (%d)', 'troy-server' ),
+							$epoch_comparison['current_epoch'],
 						) );
 						?>
 					</th>

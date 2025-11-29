@@ -160,7 +160,7 @@ function install_and_activate_troy_client() {
 	}
 
 	if ( $troy_plugin )
-		\activate_plugin( $plugin_file, '', $is_multisite, true );
+		\activate_plugin( $plugin_file, '', \is_multisite(), true );
 }
 
 /**

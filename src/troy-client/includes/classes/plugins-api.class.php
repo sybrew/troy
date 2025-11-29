@@ -33,11 +33,11 @@ namespace Troy\Client;
  */
 
 /**
- * Class Troy\Client\PluginsAPI.
+ * Class Troy\Client\Plugins_API.
  *
  * @since 0.0.1184
  */
-final class PluginsAPI {
+final class Plugins_API {
 
 	/**
 	 * Cleans up the cache after an upgrade.
@@ -386,5 +386,27 @@ final class PluginsAPI {
 		}
 
 		return $args;
+	}
+
+	/**
+	 * Outputs CSS for the plugin information thickbox modal.
+	 *
+	 * @hook admin_head-plugin-install.php 10
+	 * @since 0.0.1184
+	 */
+	public static function add_plugin_info_styles() {
+
+		if ( ! \defined( 'IFRAME_REQUEST' ) )
+			return;
+
+		echo <<<'CSS'
+		<style>
+			.plugin-install-php .section > :first-child,
+			.plugin-install-php .section :where(h2,h3,h4,h5,h6) {
+				margin-top: 0;
+				clear: inline-start;
+			}
+		</style>
+		CSS;
 	}
 }

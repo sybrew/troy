@@ -40,6 +40,24 @@ namespace Troy\Client;
 final class Headers {
 
 	/**
+	 * Whether the extra_plugin_headers filter has been applied.
+	 *
+	 * @since 0.0.1184
+	 * @var bool
+	 */
+	private static $filtered = false;
+
+	/**
+	 * Returns whether the extra_plugin_headers filter has been applied.
+	 *
+	 * @since 0.0.1184
+	 * @return bool True if the filter has been applied, false otherwise.
+	 */
+	public static function is_filtered() {
+		return static::$filtered;
+	}
+
+	/**
 	 * Registers the plugin headers.
 	 *
 	 * WordPress unpacks this via `array_combine( $value, $value )` in `get_file_data()`.
@@ -52,6 +70,9 @@ final class Headers {
 	 * @return array The extra plugin headers.
 	 */
 	public static function register_plugin_headers( $headers ) {
+
+		static::$filtered = true;
+
 		// In PHP 8.1+ we can unpack string-keyed arrays.
 		return array_merge(
 			$headers,

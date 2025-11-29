@@ -7,6 +7,7 @@ Follow these rules:
 ## Repo Specific Guidelines
 
 - Use PHP 8.4+ for src/troy-server/\*, PHP 7.4+ for other folders
+- The SemVer patch is frozen at x.x.1184. Only ever increment major.minor.
 - In the root folder files, e.g. troy-server.php, increment the "Version: "-header by "-dev-{number}" when making a PR. If there's no -dev-{number} in the "Version: "-header, add it as -dev-1
 - Never use wp.data.subscribe
 - We use var_dump() in comments to indicate a blocking issue
@@ -46,7 +47,7 @@ Follow these rules:
 - Use tabs for indentation, not spaces
 - When there's an operator in an argument, split all arguments into separate lines
 - Always use braces with branching control structures
-- Don't use braces for single-line constructs without a conditional follow-up (if/for/foreach/do/while/etc.)
+- Don't use braces for single-line constructs that lack a conditional follow-up (if/for/foreach/do/while lacking pair else/elseif/do/while)
 - Coalesce two control structures when the first contains only the second, e.g. `} else foreach {`
 
 ## Corrupted Files

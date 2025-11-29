@@ -33,11 +33,11 @@ namespace Troy\Client;
  */
 
 /**
- * Class Troy\Client\ProtectClient.
+ * Class Troy\Client\Protect_Client.
  *
  * @since 0.0.1184
  */
-final class ProtectClient {
+final class Protect_Client {
 
 	/**
 	 * Filters the primitive capabilities required of the user to deactivate the plugin.

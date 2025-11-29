@@ -244,6 +244,13 @@ function get_troy_plugins() {
 	if ( ! \function_exists( 'get_plugins' ) )
 		require_once \ABSPATH . 'wp-admin/includes/plugin.php';
 
+	/**
+	 * Invalidate the plugins cache if it was populated before we registered
+	 * extra_plugin_headers, so WordPress re-reads plugin files with our headers.
+	 */
+	if ( ! Headers::is_filtered() )
+		\wp_cache_delete( 'plugins', 'plugins' );
+
 	$plugins = [];
 
 	foreach ( \get_plugins() as $file => $data ) {

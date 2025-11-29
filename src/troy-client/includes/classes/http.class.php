@@ -51,7 +51,7 @@ final class HTTP {
 	 * filtered out.
 	 *
 	 * However, we do hijack the update check to redirect Troy Dependencies. This
-	 * happens in PluginsAPI::modify_plugins_transient().
+	 * happens in Plugins_API::modify_plugins_transient().
 	 *
 	 * @hook http_request_args PHP_INT_MAX 2
 	 * @since 0.0.1184
