@@ -104,6 +104,12 @@ Follow these rules:
 - Close PHP tags on a new line after an opening brace
 - Reopen PHP tags on their own line before the closing brace
 
+## HTML
+
+- Use double quotes for attribute values
+- Do not self-close void elements
+- Do not use quote marks on literal string attribute values unless necessary
+
 ## JS
 
 - ES6+
@@ -119,6 +125,7 @@ Follow these rules:
 
 - Use lowercase hex colors
 - Remove zero before decimal points
+- Don't close last property with a semicolon
 
 ## Avoid
 

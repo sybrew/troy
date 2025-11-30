@@ -14,7 +14,7 @@
  *
  * @wordpress-plugin
  * Plugin Name: Troy Server
- * Plugin URI: https://deploytroy.org/
+ * Plugin URI: https://deploytroy.org/docs/troy-server/
  * Description: Troy Server allows you to distribute WordPress plugins from your own update repository.
  * Version: 0.0.1184
  * Author: Sybre Waaijer

@@ -119,7 +119,7 @@ const OPTIONS = [
 // @troy-package | plugin-install
 const INSTALL = [
 	'hello' => [
-		'name'           => 'Hello Matty',
+		'name'           => 'Hello',
 		'repo'           => 'https://repo.deploytroy.org/',
 		'version'        => 'latest',
 		'activate'       => true,
@@ -465,7 +465,7 @@ function install_plugins() {
 
 	if ( empty( $not_installed ) && empty( $not_activated ) ) {
 		if ( OPTIONS['delete_on_completion'] ) {
-			\deactivate_plugins( $installer, true, \is_multisite() );
+			\deactivate_plugins( $installer, true, \is_plugin_active_for_network( $installer ) );
 			\delete_plugins( [ $installer ] );
 			register_admin_message(
 				\sprintf(
@@ -475,7 +475,7 @@ function install_plugins() {
 				'info',
 			);
 		} elseif ( OPTIONS['deactivate_on_completion'] ) {
-			\deactivate_plugins( $installer, true, \is_multisite() );
+			\deactivate_plugins( $installer, true, \is_plugin_active_for_network( $installer ) );
 			register_admin_message(
 				\sprintf(
 					'Installation has completed successfully. Plugin "%s" has been deactivated automatically.',
