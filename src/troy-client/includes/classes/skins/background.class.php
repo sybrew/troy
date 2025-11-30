@@ -38,7 +38,7 @@ namespace Troy\Client\Skins;
  *
  * @since 0.0.1184
  */
-final class Background extends \stdClass {
+final class Background extends \Automatic_Upgrader_Skin {
 
 	/**
 	 * @since 0.0.1184
@@ -46,17 +46,6 @@ final class Background extends \stdClass {
 	 * @var array[string|WP_Error] The errors that occurred during installation.
 	 */
 	public $errors = [];
-
-	/**
-	 * Handles installation error messages.
-	 *
-	 * @since 0.0.1184
-	 *
-	 * @param string|WP_Error $error The error message or \WP_Error object.
-	 */
-	public function error( $error ) {
-		$this->errors[] = $error;
-	}
 
 	/**
 	 * @since 0.0.1184
@@ -76,5 +65,25 @@ final class Background extends \stdClass {
 	 */
 	public static function __callStatic( $name, $arguments ) {  // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis
 		return null;
+	}
+
+	/**
+	 * Handles installation error messages.
+	 *
+	 * @since 0.0.1184
+	 *
+	 * @param string|WP_Error $error The error message or \WP_Error object.
+	 */
+	public function error( $error ) {
+		$this->errors[] = $error;
+	}
+
+	/**
+	 * Clears the output buffer started in header().
+	 *
+	 * @since 0.0.1184
+	 */
+	public function footer() {
+		ob_end_clean();
 	}
 }

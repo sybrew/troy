@@ -195,7 +195,8 @@ final class Plugins_API {
 				continue;
 			}
 
-			$memo->translations[] = (array) ( $res->translations ?? [] );
+			if ( ! empty( $res->translations ) )
+				array_push( $memo->translations, ...$res->translations );
 
 			foreach ( [ 'no_update', 'update' ] as $key ) {
 				foreach ( $res->$key ?? [] as $slug => $plugin_data ) {

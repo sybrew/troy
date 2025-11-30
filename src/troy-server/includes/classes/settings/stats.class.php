@@ -98,7 +98,7 @@ final class Stats {
 					'notReported'        => \__( 'Not reported', 'troy-server' ),
 					'downloadsByVersion' => \__( 'Downloads by Version', 'troy-server' ),
 					'downloadsByType'    => \__( 'Downloads by Type', 'troy-server' ),
-					'topLocales'         => \__( 'Top Locales', 'troy-server' ),
+					'locales'            => \__( 'Locales', 'troy-server' ),
 					'phpVersions'        => \__( 'PHP Versions', 'troy-server' ),
 					'wpVersions'         => \__( 'WordPress Versions', 'troy-server' ),
 					'currentVersion'     => \__( 'Current Version', 'troy-server' ),

@@ -348,7 +348,7 @@
 		</div>
 		${ buildDetailSection( i18n.downloadsByVersion, data.versions, 'version', 'downloads' ) }
 		${ buildDetailSection( i18n.downloadsByType, data.download_types, 'type', 'downloads' ) }
-		${ buildDetailSection( i18n.topLocales, data.locales, 'locale', 'count' ) }
+		${ buildDetailSection( i18n.locales, data.locales, 'locale', 'count' ) }
 		${ buildDetailSection( i18n.phpVersions, data.php_versions, 'version', 'count' ) }
 		${ buildDetailSection( i18n.wpVersions, data.wp_versions, 'version', 'count' ) }
 	`;
