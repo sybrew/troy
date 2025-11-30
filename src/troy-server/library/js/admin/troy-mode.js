@@ -154,12 +154,27 @@ window.troyServerMode = ( () => {
 		toolbar.append( li );
 	}
 
+	/**
+	 * Syncs state from other tabs/windows via storage event.
+	 *
+	 * @since 0.0.1184
+	 * @access private
+	 *
+	 * @param {StorageEvent} e The storage event.
+	 */
+	function _onStorageChange( e ) {
+		if ( _storageKey === e.key )
+			setState( '1' === e.newValue );
+	}
+
 	// Load immediately: prevent FOUC.
 	if ( isActive() )
 		document.body.classList.add( _bodyClass );
 
 	_createButton();
 	_updateSeparators();
+
+	window.addEventListener( 'storage', _onStorageChange );
 
 	return {
 		isActive,
