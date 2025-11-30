@@ -636,8 +636,8 @@ final class List_View {
 		$min     = \SCRIPT_DEBUG ? '' : '.min';
 
 		\wp_enqueue_style(
-			'troy-server-package-list-view',
-			"{$dir_url}library/css/packages/list-view{$min}.css",
+			'troy-server-list-view-packages',
+			"{$dir_url}library/css/list-view/packages{$min}.css",
 			[],
 			VERSION,
 		);

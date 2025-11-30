@@ -574,22 +574,22 @@ final class Block_Editor {
 		$min     = \SCRIPT_DEBUG ? '' : '.min';
 
 		\wp_enqueue_style(
-			'troy-server-editor-components',
-			"{$dir_url}library/css/editor-components{$min}.css",
+			'troy-server-editor-components-components',
+			"{$dir_url}library/css/editor/components/components{$min}.css",
 			[],
 			VERSION,
 		);
 
 		\wp_enqueue_style(
-			'troy-server-plugin-editor-components',
-			"{$dir_url}library/css/plugin-editor-components{$min}.css",
-			[ 'troy-server-editor-components' ],
+			'troy-server-editor-plugins-components',
+			"{$dir_url}library/css/editor/plugins/components{$min}.css",
+			[ 'troy-server-editor-components-components' ],
 			VERSION,
 		);
 
 		\wp_enqueue_script(
-			'troy-server-editor-components',
-			"{$dir_url}library/js/editor-components{$min}.js",
+			'troy-server-editor-components-components',
+			"{$dir_url}library/js/editor/components/components{$min}.js",
 			[
 				'wp-element',
 				'wp-i18n',
@@ -621,8 +621,8 @@ final class Block_Editor {
 		);
 
 		\wp_enqueue_script(
-			'troy-server-plugin-editor-components',
-			"{$dir_url}library/js/plugin-editor-components{$min}.js",
+			'troy-server-editor-plugins-components',
+			"{$dir_url}library/js/editor/plugins/components{$min}.js",
 			[
 				'wp-element',
 				'wp-i18n',
@@ -634,7 +634,7 @@ final class Block_Editor {
 				'troy-server-sanitize',
 				'troy-server-timing',
 				'troy-server-format',
-				'troy-server-editor-components',
+				'troy-server-editor-components-components',
 				'troy-server-constants',
 				'troy-server-icons',
 			],
@@ -643,8 +643,8 @@ final class Block_Editor {
 		);
 
 		\wp_enqueue_script(
-			'troy-server-plugin-editor-store',
-			"{$dir_url}library/js/plugin-editor-store{$min}.js",
+			'troy-server-editor-plugins-store',
+			"{$dir_url}library/js/editor/plugins/store{$min}.js",
 			[
 				'troy-server-assign',
 				'troy-server-timing',
@@ -657,7 +657,7 @@ final class Block_Editor {
 		);
 
 		\wp_localize_script(
-			'troy-server-plugin-editor-store',
+			'troy-server-editor-plugins-store',
 			'troyPluginEditorStoreData',
 			[
 				'defaultData' => Store::get_default_plugin_data(),
@@ -665,8 +665,8 @@ final class Block_Editor {
 		);
 
 		\wp_enqueue_script(
-			'troy-server-plugin-editor-blocks',
-			"{$dir_url}library/js/plugin-editor-blocks{$min}.js",
+			'troy-server-editor-plugins-blocks',
+			"{$dir_url}library/js/editor/plugins/blocks{$min}.js",
 			[
 				'wp-blocks',
 				'wp-element',
@@ -676,7 +676,7 @@ final class Block_Editor {
 				'wp-block-editor',
 				'wp-api-fetch',
 				'wp-url',
-				'troy-server-plugin-editor-store',
+				'troy-server-editor-plugins-store',
 				'troy-server-constants',
 			],
 			VERSION,
@@ -684,8 +684,8 @@ final class Block_Editor {
 		);
 
 		\wp_enqueue_script(
-			'troy-server-plugin-editor-content',
-			"{$dir_url}library/js/plugin-editor-content{$min}.js",
+			'troy-server-editor-plugins-content',
+			"{$dir_url}library/js/editor/plugins/content{$min}.js",
 			[
 				'wp-plugins',
 				'wp-element',
@@ -694,35 +694,35 @@ final class Block_Editor {
 				'wp-block-editor',
 				'wp-api-fetch',
 				'wp-url',
-				'troy-server-plugin-editor-store',
+				'troy-server-editor-plugins-store',
 			],
 			VERSION,
 			true, // Load in footer.
 		);
 
 		\wp_enqueue_script(
-			'troy-server-plugin-editor-notices',
-			"{$dir_url}library/js/plugin-editor-notices{$min}.js",
+			'troy-server-editor-plugins-notices',
+			"{$dir_url}library/js/editor/plugins/notices{$min}.js",
 			[
 				'wp-plugins',
 				'wp-element',
 				'wp-i18n',
 				'wp-data',
-				'troy-server-plugin-editor-store',
+				'troy-server-editor-plugins-store',
 			],
 			VERSION,
 			true, // Load in footer.
 		);
 
 		\wp_enqueue_script(
-			'troy-server-plugin-editor',
-			"{$dir_url}library/js/plugin-editor{$min}.js",
+			'troy-server-editor-plugins-main',
+			"{$dir_url}library/js/editor/plugins/main{$min}.js",
 			[
-				'troy-server-editor-components',
-				'troy-server-plugin-editor-components',
-				'troy-server-plugin-editor-store',
-				'troy-server-plugin-editor-content',
-				'troy-server-plugin-editor-notices',
+				'troy-server-editor-components-components',
+				'troy-server-editor-plugins-components',
+				'troy-server-editor-plugins-store',
+				'troy-server-editor-plugins-content',
+				'troy-server-editor-plugins-notices',
 				'wp-i18n',
 				'wp-element',
 				'wp-data',
@@ -740,7 +740,7 @@ final class Block_Editor {
 		$rest_integrations   = REST_NS['plugins_integrations']['namespace'] . '/' . REST_NS['plugins_integrations']['base'];
 
 		\wp_localize_script(
-			'troy-server-plugin-editor',
+			'troy-server-editor-plugins-main',
 			'troyPluginEditorData',
 			[
 				'postType'       => PLUGINS_CPT,
@@ -896,8 +896,8 @@ final class Block_Editor {
 		$min     = \SCRIPT_DEBUG ? '' : '.min';
 
 		\wp_enqueue_style(
-			'troy-server-plugin-blocks',
-			"{$dir_url}library/css/plugin-blocks{$min}.css",
+			'troy-server-editor-plugins-blocks',
+			"{$dir_url}library/css/editor/plugins/blocks{$min}.css",
 			[],
 			VERSION,
 		);
