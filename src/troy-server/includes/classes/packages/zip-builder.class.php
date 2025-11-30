@@ -280,13 +280,13 @@ final class Zip_Builder {
 									);
 
 								$install[ $plugin_row->slug ] = [
-									'name'           => $plugin_meta->name,
-									'repo'           => $package->origin_url ?: '',
+									'name'           => \esc_html( $plugin_meta->name ),
+									'repo'           => \trailingslashit( API\Sanitize::url_qualified( $package->origin_url ) ),
 									'version'        => 'latest', // TODO Support package-specific plugin version overrides?
 									'activate'       => ! empty( $plugin_config['activate'] ),
 									'network'        => ! empty( $plugin_config['network'] ),
 									'overwrite'      => ! empty( $plugin_config['overwrite'] ),
-									'overwrite_troy' => false,
+									'overwrite_troy' => ! empty( $plugin_config['overwrite_troy'] ),
 								];
 							}
 
@@ -320,6 +320,12 @@ final class Zip_Builder {
 					$line   = '';
 
 					switch ( $key ) {
+						case 'plugin-namespace':
+							$namespace = API\Sanitize::php_namespace( $package_title )
+								?: 'Package' . bin2hex( random_bytes( 8 ) );
+
+							$line = 'namespace Troy\Installer\\' . API\Sanitize::php_namespace( $package_title ) . ';';
+							break;
 						case 'plugin-name':
 							$line = 'const PLUGIN_NAME = ' . API\Sanitize::var_export( $package_title ) . ';';
 							break;

@@ -881,11 +881,12 @@ final class Data {
 	 *     @type int    id             The request ID.
 	 *     @type int    plugin_id      The plugin ID.
 	 *     @type int    epoch          The update epoch extracted from the UUID.
-	 *     @type int    is_active      Whether the plugin is active on the client site. (1 = active, 0 = inactive)
 	 *     @type string version        The plugin version.
+	 *     @type int    is_active      Whether the plugin is active on the client site. (1 = active, 0 = inactive)
 	 *     @type string uuid           The UUID of the client.
 	 *     @type int    request_count  The request count.
 	 *     @type string locales        The locales supported by the client, JSON-encoded array.
+	 *     @type string origin_url     The origin URL.
 	 *     @type string php_version    The PHP version.
 	 *     @type string wp_version     The WordPress version.
 	 *     @type string client_version The Troy client version.

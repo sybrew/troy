@@ -139,25 +139,25 @@ final class Data {
 	 * @return ?object {
 	 *     The package meta data, or null if not found.
 	 *
-	 *     @type int    id                        The meta ID.
-	 *     @type int    package_id                The package ID.
-	 *     @type string plugin_uri                The plugin URI.
-	 *     @type string name                      The name.
-	 *     @type string description               The description.
-	 *     @type string version                   The version.
-	 *     @type string author                    The author.
-	 *     @type string author_uri                The author URI.
-	 *     @type string requires_wp               The required WordPress version.
-	 *     @type string requires_php              The required PHP version.
-	 *     @type int    network                   Whether network-wide activation.
-	 *     @type int    install_timeout           The installer timeout in seconds.
-	 *     @type int    deactivate_on_completion  Whether to deactivate installer after completion.
-	 *     @type int    delete_on_completion      Whether to delete installer after completion.
-	 *     @type string notice_severity           The notice severity level.
-	 *     @type string plugins                   The plugins JSON.
-	 *     @type string themes                    The themes JSON.
-	 *     @type string created_at                The row creation timestamp.
-	 *     @type string updated_at                The row last updated timestamp.
+	 *     @type int    id                       The meta ID.
+	 *     @type int    package_id               The package ID.
+	 *     @type string plugin_uri               The plugin URI.
+	 *     @type string name                     The name.
+	 *     @type string description              The description.
+	 *     @type string version                  The version.
+	 *     @type string author                   The author.
+	 *     @type string author_uri               The author URI.
+	 *     @type string requires_wp              The required WordPress version.
+	 *     @type string requires_php             The required PHP version.
+	 *     @type int    network                  Whether network-wide activation.
+	 *     @type int    install_timeout          The installer timeout in seconds.
+	 *     @type int    deactivate_on_completion Whether to deactivate installer after completion.
+	 *     @type int    delete_on_completion     Whether to delete installer after completion.
+	 *     @type string notice_severity          The notice severity level.
+	 *     @type string plugins                  The plugins JSON.
+	 *     @type string themes                   The themes JSON.
+	 *     @type string created_at               The row creation timestamp.
+	 *     @type string updated_at               The row last updated timestamp.
 	 * }
 	 */
 	public function get_metas_row() {

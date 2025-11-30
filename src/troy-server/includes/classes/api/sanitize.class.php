@@ -224,6 +224,46 @@ final class Sanitize {
 	}
 
 	/**
+	 * Sanitizes a PHP namespace.
+	 *
+	 * This function ensures that the provided namespace is valid by:
+	 * - Replacing invalid characters with backslashes.
+	 * - Collapsing multiple consecutive backslashes into a single backslash.
+	 * - Capitalizing the first letter of each namespace segment.
+	 * - Removing any leading digits from each segment.
+	 * - Filtering out any empty segments.
+	 * Finally, it joins the sanitized segments back together with backslashes.
+	 *
+	 * @since 0.0.1184
+	 *
+	 * @param string $ns The namespace to sanitize.
+	 * @return string The sanitized namespace.
+	 */
+	public static function php_namespace( $ns ) {
+		return implode(
+			'\\',
+			array_filter( array_map(
+				fn( $part ) => ucfirst( preg_replace( '/^\d+/', '', $part ) ),
+				explode(
+					'\\',
+					trim(
+						preg_replace(
+							'/\\\\{2,}/',
+							'\\',
+							preg_replace(
+								'/[^a-zA-Z0-9_\\\\]/',
+								'\\',
+								$ns ?? '',
+							),
+						),
+						'\\',
+					),
+				),
+			) ),
+		);
+	}
+
+	/**
 	 * Sanitizes a version requirement string in the format 'X.Y' or 'X.Y.Z'.
 	 *
 	 * Max length is 20 characters.

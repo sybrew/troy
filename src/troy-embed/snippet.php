@@ -13,6 +13,9 @@
  * to hint users about the installation process. Therefore, we recommend using
  * Troy Installer instead of this snippet.
  *
+ * The objects are namespace-escaped for portability.
+ * phpcs:disable TSF.Performance.Opcodes.UselessLeadingNamespaceEscape
+ *
  * @package Troy\Embed
  */
 
@@ -34,20 +37,14 @@ add_action(
 				2,
 			);
 
-			$result = ( new Plugin_Upgrader(
-				new class extends stdClass {
+			$result = ( new \Plugin_Upgrader(
+				new class extends \Automatic_Upgrader_Skin {
 					/**
-					 * @param string $name      The method name.
-					 * @param array  $arguments The method arguments.
-					 * @return mixed|void
+					 * Footer output suppression.
 					 */
-					public function __call( $name, $arguments ) {} // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis
-					/**
-					 * @param string $name      The method name.
-					 * @param array  $arguments The method arguments.
-					 * @return mixed|void
-					 */
-					public static function __callStatic( $name, $arguments ) {} // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis
+					public function footer() {
+						ob_end_clean();
+					}
 				}
 			) )->install( $client_url, [ 'overwrite_package' => true ] );
 

@@ -209,6 +209,9 @@ final class Plugin_Updates extends Base_Endpoint {
 	/**
 	 * Record update request statistics.
 	 *
+	 * Upserts a row per unique (plugin_id, epoch, uuid) combination. On duplicate,
+	 * updates to the latest version/is_active state and increments request_count.
+	 *
 	 * @since 0.0.1184
 	 * @global \wpdb $wpdb
 	 *
@@ -238,33 +241,41 @@ final class Plugin_Updates extends Base_Endpoint {
 
 		global $wpdb;
 
-		// Record live update request stat
-		$wpdb->insert(
-			"{$wpdb->prefix}troy_plugin_stats_requests_live",
-			[
-				'plugin_id'      => $plugin_id,
-				'epoch'          => $epoch,
-				'version'        => $version,
-				'is_active'      => $is_active,
-				'uuid'           => $client_uuid ?: 'unknown',
-				'request_count'  => 1,
-				'locales'        => API\Sanitize::json_encode_db( $locales ),
-				'php_version'    => $php_version,
-				'wp_version'     => $wp_version,
-				'client_version' => $client_version,
-			],
-			[
-				'%d',
-				'%d',
-				'%s',
-				'%d',
-				'%s',
-				'%d',
-				'%s',
-				'%s',
-				'%s',
-				'%s',
-			],
-		);
+		// Upsert live update request stat; on duplicate, update to latest state and increment request_count.
+		$wpdb->query( $wpdb->prepare(
+			"INSERT INTO {$wpdb->prefix}troy_plugin_stats_requests_live (
+				plugin_id,
+				epoch,
+				version,
+				is_active,
+				uuid,
+				request_count,
+				locales,
+				origin_url,
+				php_version,
+				wp_version,
+				client_version
+			)
+			VALUES ( %d, %d, %s, %d, %s, 1, %s, %s, %s, %s, %s )
+			ON DUPLICATE KEY UPDATE
+				version        = VALUES(version),
+				is_active      = VALUES(is_active),
+				request_count  = request_count + 1,
+				locales        = VALUES(locales),
+				origin_url     = VALUES(origin_url),
+				php_version    = VALUES(php_version),
+				wp_version     = VALUES(wp_version),
+				client_version = VALUES(client_version)",
+			$plugin_id,
+			$epoch,
+			$version,
+			$is_active,
+			$client_uuid ?: 'unknown',
+			API\Sanitize::json_encode_db( $locales ),
+			$origin_url,
+			$php_version,
+			$wp_version,
+			$client_version,
+		) );
 	}
 }

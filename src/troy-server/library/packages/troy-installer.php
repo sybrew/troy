@@ -25,7 +25,7 @@
  * @troy-package * plugin-header
  */
 
-namespace Troy\Installer;
+namespace Troy\Installer; // @troy-package plugin-namespace
 
 \defined( 'ABSPATH' ) or die;
 
@@ -146,10 +146,10 @@ register_admin_message(
 
 // phpcs:ignore WordPress.Security.NonceVerification -- no data is being handled.
 if ( isset( $_GET['activate'] ) && ( OPTIONS['deactivate_on_completion'] || OPTIONS['delete_on_completion'] ) )
-	\add_filter( 'wp_admin_notice_markup', 'Troy\Installer\suppress_activation_notice' );
+	\add_filter( 'wp_admin_notice_markup', __NAMESPACE__ . '\suppress_activation_notice' );
 
-\add_action( 'admin_notices', 'Troy\Installer\output_registered_install_notices' );
-\add_action( 'admin_init', 'Troy\Installer\install_plugins' );
+\add_action( 'admin_notices', __NAMESPACE__ . '\output_registered_install_notices' );
+\add_action( 'admin_init', __NAMESPACE__ . '\install_plugins' );
 
 /**
  * Suppresses the activation notice if this plugin is to be deactivated or deleted immediately after activation.
@@ -218,7 +218,7 @@ function output_registered_install_notices() {
 
 		$notice .= <<<HTML
 			<div style="display:flex;align-items:center;gap:1ch;padding:.5ch;">
-				<div class="dashicons dashicons-$dashicon" style="padding-inline-end:1ch;padding-block-end:1ch;color:$color"></div>
+				<div class="dashicons dashicons-$dashicon" style="padding-inline-end:.5ch;padding-block:1ch;color:$color"></div>
 				<p>$message</p>
 			</div>
 		HTML;
@@ -274,7 +274,7 @@ function install_plugins() {
 	if ( isset( $plugins['troy-client/troy-client.php'] ) )
 		goto activate_troy;
 
-	require_once \ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+	$skin = get_installer_skin();
 
 	$client_url = 'https://repo.deploytroy.org/plugin/get/zip/troy-client/';
 
@@ -285,8 +285,7 @@ function install_plugins() {
 		2,
 	);
 
-	$skin   = new Troy_Installer_Skin;
-	$result = ( new \Plugin_Upgrader( $skin ) )->install(
+	$result = ( new Plugin_Upgrader( $skin ) )->install(
 		$client_url,
 		[ 'overwrite_package' => true ],
 	);
@@ -354,7 +353,7 @@ function install_plugins() {
 		$to_install[ $slug ] = $conf;
 	}
 
-	require_once \ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+	$skin ??= get_installer_skin();
 
 	$plugin_url = ''; // Ref.
 
@@ -594,17 +593,23 @@ function register_skin_messages( $skin, $args = [] ) {
 	$errors   = $skin->errors;
 	$messages = [];
 
-	if ( 'verbose' === OPTIONS['notice_severity'] ) foreach ( $errors as $error ) {
-		if ( \is_string( $error ) ) {
-			$messages[] = $error;
-		} elseif ( \is_wp_error( $error ) && $error->has_errors() ) {
-			$error_data = $error->get_error_data() ?: '';
+	if ( 'verbose' === OPTIONS['notice_severity'] ) {
+		// Include upgrade messages from the skin (feedback captured by Automatic_Upgrader_Skin).
+		foreach ( $skin->get_upgrade_messages() as $upgrade_message )
+			$messages[] = \esc_html( $upgrade_message );
 
-			if ( \is_string( $error_data ) )
-				$error_data = ' ' . \esc_html( \wp_strip_all_tags( $error_data ) );
+		foreach ( $errors as $error ) {
+			if ( \is_string( $error ) ) {
+				$messages[] = $error;
+			} elseif ( \is_wp_error( $error ) && $error->has_errors() ) {
+				$error_data = $error->get_error_data() ?: '';
 
-			foreach ( $error->get_error_messages() as $message )
-				$messages[] = "{$message}{$error_data}<br>";
+				if ( \is_string( $error_data ) )
+					$error_data = ' ' . \esc_html( \wp_strip_all_tags( $error_data ) );
+
+				foreach ( $error->get_error_messages() as $message )
+					$messages[] = "{$message}{$error_data}<br>";
+			}
 		}
 	}
 
@@ -612,9 +617,9 @@ function register_skin_messages( $skin, $args = [] ) {
 		$args['type'] = 'error';
 		$message      = \sprintf(
 			\count( $messages ) > 1
-				? 'The following installlation errors were given:<br>%s'
+				? 'The following installlation errors were given:<br>- %s'
 				: 'The following installlation error was given: %s',
-			implode( '<br>', $messages ),
+			implode( '<br>- ', $messages ),
 		);
 	}
 
@@ -632,51 +637,63 @@ function register_skin_messages( $skin, $args = [] ) {
 
 	\strlen( $notice )
 		and register_admin_message( $notice, $args['type'] );
+
+	$skin->clear();
 }
 
 /**
- * A custom installer skin for the Troy Installer.
- * It silences all output and only logs errors.
+ * Returns a Troy Installer skin instance.
  *
  * @since 0.0.1184
+ *
+ * @return Troy_Installer_Skin The installer skin.
  */
-class Troy_Installer_Skin extends \stdClass { // phpcs:ignore -- This plugin must be single-file.
+function get_installer_skin() {
 
-	/**
-	 * @since 0.0.1184
-	 *
-	 * @var array[string|WP_Error] The errors that occurred during installation.
-	 */
-	public $errors = [];
+	require_once \ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
 
-	/**
-	 * Handles installation error messages.
-	 *
-	 * @since 0.0.1184
-	 *
-	 * @param string|WP_Error $error The error message or \WP_Error object.
-	 */
-	public function error( $error ) {
-		$this->errors[] = $error;
-	}
+	return new class extends \Automatic_Upgrader_Skin {
 
-	/**
-	 * @since 0.0.1184
-	 * @param string $name      The method name.
-	 * @param array  $arguments The method arguments.
-	 * @return mixed|void
-	 */
-	public function __call( $name, $arguments ) { // phpcs:ignore VariableAnalysis -- required properties
-		return null;
-	}
+		/**
+		 * @since 0.0.1184
+		 * @var array The errors that occurred during installation.
+		 */
+		public $errors = [];
 
-	/**
-	 * @since 0.0.1184
-	 * @param string $name      The method name.
-	 * @param array  $arguments The method arguments.
-	 * @return mixed|void
-	 */
-	public static function __callStatic( $name, $arguments ) { // phpcs:ignore VariableAnalysis -- required properties
-		return null;
-	}
+		/**
+		 * Handles installation error messages.
+		 *
+		 * @since 0.0.1184
+		 *
+		 * @param string|WP_Error $error The error message or \WP_Error object.
+		 */
+		public function error( $error ) {
+			$this->errors[] = $error;
+		}
+
+		/**
+		 * Retrieves the buffered content, deletes the buffer, and processes the output.
+		 * Overrides parent to capture output for verbose mode instead of discarding.
+		 *
+		 * @since 0.0.1184
+		 */
+		public function footer() {
+
+			$output = ob_get_clean();
+
+			if ( $output && 'verbose' === OPTIONS['notice_severity'] )
+				$this->feedback( $output );
+		}
+
+		/**
+		 * Clears the captured messages and errors.
+		 *
+		 * @since 0.0.1184
+		 */
+		public function clear() {
+
+			$this->messages = [];
+			$this->errors   = [];
+		}
+	};
 }

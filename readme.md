@@ -6,15 +6,14 @@
 </p>
 
 <p align="center">
-	<a href="http://deploytroy.org/docs/"><strong>Documentation</strong></a> ·
-	<a href="https://deploytroy.org/changelogs/"><strong>Changelog</strong></a>
+	<a href="http://deploytroy.org/docs/"><strong>Documentation</strong></a> · <a href="https://deploytroy.org/changelogs/"><strong>Changelog</strong></a>
 </p>
 
 <br>
 
 ## Troy Server
 
-Troy Server is a WordPress plugin that allows you to host your own plugin repository, which can be used to distribute plugins and their dependencies to your clients. Themes will be supported in the future.
+Troy Server is a WordPress plugin that allows you to host your own plugin repository, which can be used to distribute plugins and their dependencies to your clients. Themes will also be supported in the future.
 
 You can manage plugins via the admin interface, fully integrated with the WordPress admin UI, like list views, the Block Editor, and a modern settings page.
 
@@ -22,15 +21,17 @@ To upload a plugin, simply create a new plugin post, fill in the required fields
 
 To automate plugin uploads, you can connect your GitHub repository or WordPress.org repository. Once connected, it will automatically fetch and process the latest release ZIP files for redistribution. You can configure it to fetch tags automatically by type (based on version affixes), or process them manually.
 
-Statistics are collected about the plugins registered on the server, such as the number of downloads, active installs, and more. The data is anonymized via rotating unique identifiers to protect user privacy. <small><strong>Planned:</strong> you'll be able to view the statistics via the admin interface.</small>
+Statistics are collected about the plugins registered on the server, such as the number of downloads, active installs, and more. The data is anonymized via rotating unique identifiers to protect user privacy. You'll be able to view the statistics via the admin interface.</small>
 
-The server provides an interface to generate a Troy Package, which is a ZIP file that contains a tiny installer plugin. It installs Troy Client and your selection of plugins. This package can be distributed to your clients via a simple download link, allowing them to easily install and activate the Troy Client and its dependencies.
+The server provides an interface to generate a Troy Package, which is a ZIP file that contains a tiny installer plugin. It installs Troy Client and your selection of plugins and themes. This package can be distributed to your clients via a simple download link, allowing them to easily install and activate the Troy Client and its dependencies.
 
 It's best to run Troy Server on a standalone WordPress instance, this can even be a Multisite subdomain or subdirectory. Multilingual plugins will never be supported by Troy Server and may interfere with the repo URL generation. Keep in mind that a repo URL is limited to 191 characters.
 
-Troy Server has "up-to-date" server requirements, but nothing too special. You must use MySQL 8.0.13 or higher, PHP 8.4 or higher, and WordPress 6.8 or higher. We recommend running this on a server that can handle Pong. The update service is ridiculously optimized.
+Troy Server has "up-to-date" server requirements, but nothing too special. You must use MySQL 8.0.13 or higher, PHP 8.4 or higher, and WordPress 6.8 or higher. We recommend running this on a server that can handle Pong. The update service is ridiculously optimized. For the webserver we recommend using Apache, since it is faster at handling PHP requests than Nginx.
 
 Note that the server will exclusively serve via HTTPS. You must have `mbstring` and `ZipArchive` enabled in your PHP configuration. The server user must be owner of the WordPress instance and folder, and the user must be able to write to the `wp-content/` and system temp file directories.
+
+<small><strong>Planned:</strong> Troy Server will support themes in the future, allowing you to distribute themes alongside plugins. The theme management interface will be similar to the plugin management interface, with options to upload theme ZIP files or connect to GitHub or WordPress.org repositories for automatic updates.</small>
 
 <small><strong>Planned:</strong> Uploading translation files are also supported, allowing you to distribute your plugins in multiple languages. The server will automatically generate the translation files for your plugins and themes, and you can manage them via the admin interface. You do not need to bundle the translation files with your plugins, as they will be fetched from the server when needed, saving space and bandwidth.
 Providing translations can be done via Polyglots, or by uploading the translation files directly to the server.</small>
@@ -78,10 +79,10 @@ This repository has several code snippets that can be used to customize or embed
 
 Troy Client Hide is a constant snippet that you can put in your wp-config.php file or a custom plugin to hide the Troy Client from the WordPress admin. This is meant to be implemented by the site owner or manager only, not a plugin or theme developer.
 
-## Troy Client Channel
+### Troy Client Channel
 
 Troy Client Channel is another constant snippet that you can put in your wp-config.php file or a custom plugin to enable the beta update channel. When set to 'beta', Troy Client will request beta version in addition to stable tag versions from all registered Troy Server repositories, receiving whichever is newer.
 
-## Troy Embed
+### Troy Embed
 
 Troy Embed is an example snippet that can be added to your WordPress plugins. It installs and activates the Troy Client silently. Once the Troy Client is installed and activated, it'll look for any plugin's Troy and Troy Dependencies headers for updates.

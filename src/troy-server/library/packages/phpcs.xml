@@ -6,7 +6,7 @@
 
 	<rule ref="TSF.Performance.Opcodes">
 		<properties>
-			<property name="userNoopChecks" type="array" value="register_skin_messages,register_admin_message,list_items"/>
+			<property name="userNoopChecks" type="array" value="register_skin_messages,register_admin_message,list_items,get_installer_skin"/>
 		</properties>
 	</rule>
 

@@ -215,7 +215,7 @@ function upgrade_from( $version ) {
  * - `epoch_php_version` for the global stats_php table to force unique stats per epoch per PHP version.
  * - `epoch_wp_version` for the global stats_wp table to force unique stats per epoch per WordPress version.
  * - `plugin_id_epoch` for the stats_requests_live table because direct access for these is common.
- * - `plugin_id_epoch_version_is_active_uuid` for the stats_requests_live table to force unique stats per plugin per epoch per version per active state per UUID.
+ * - `plugin_id_epoch_uuid` for the stats_requests_live table to force unique stats per plugin per epoch per UUID.
  * - `package_id` for the package_stats_totals table to force unique stats per package.
  * - `package_id_date` for the package_stats_totals_daily_snapshots table to force unique stats per package per day.
  * - `package_id_version_type_origin_url` for the package_stats_downloads table to force unique stats per package per version per type per origin URL.
@@ -645,8 +645,9 @@ function get_initial_db_schema_queries() {
 			`version` varchar(20) NOT null,
 			`is_active` boolean NOT null DEFAULT 0,
 			`uuid` varchar(100) NOT null,
-			`request_count` int unsigned NOT null,
+			`request_count` int unsigned NOT null DEFAULT 1,
 			`locales` longtext NOT null,
+			`origin_url` varchar(191) NOT null,
 			`php_version` varchar(20) NOT null,
 			`wp_version` varchar(20) NOT null,
 			`client_version` varchar(20) NOT null,
@@ -655,7 +656,7 @@ function get_initial_db_schema_queries() {
 			primary key (`id`),
 			index `plugin_id_is_active` (`plugin_id`, `is_active`),
 			index `plugin_id_epoch` (`plugin_id`, `epoch`),
-			unique index `plugin_id_epoch_version_is_active_uuid` (`plugin_id`, `epoch`, `version`, `is_active`, `uuid`)
+			unique index `plugin_id_epoch_uuid` (`plugin_id`, `epoch`, `uuid`)
 		) $collate",
 		"CREATE table `{$dbprefix}troy_stats_locales` (
 			`id` bigint unsigned NOT null auto_increment,

@@ -67,9 +67,8 @@ final class Aggregator {
 		$current_epoch  = API\Utils::get_epoch();
 		$previous_epoch = $current_epoch - 1;
 
-		// Fetch all raw rows from live table - minimal SQL work.
 		$live_rows = $wpdb->get_results(
-			"SELECT plugin_id, epoch, version, is_active, uuid, locales, php_version, wp_version
+			"SELECT plugin_id, epoch, version, is_active, uuid, request_count, locales, php_version, wp_version
 			FROM {$wpdb->prefix}troy_plugin_stats_requests_live",
 		);
 
@@ -89,7 +88,7 @@ final class Aggregator {
 		$global_wp_uuids     = [];
 
 		foreach ( $live_rows as $row ) {
-			// Request counts.
+			// Request counts - aggregate by version/is_active, sum request_count from upserted rows.
 			$request_key = "$row->plugin_id|$row->epoch|$row->version|$row->is_active";
 
 			$request_stats[ $request_key ] ??= [
@@ -100,7 +99,7 @@ final class Aggregator {
 				'request_count' => 0,
 			];
 
-			++$request_stats[ $request_key ]['request_count'];
+			$request_stats[ $request_key ]['request_count'] += (int) $row->request_count;
 
 			// Locale stats - track unique UUIDs per locale.
 			$locales = json_decode( $row->locales, true ) ?: [];
