@@ -162,8 +162,8 @@ $plugins = $wpdb->get_results(
 								>
 						</span>
 							<span class=troy-package-plugin-option-content>
-								<span class=troy-package-plugin-option-title><?= \esc_html__( 'Overwrite Troy', 'troy-server' ) ?></span>
-								<span class=troy-package-plugin-option-desc><?= \esc_html__( 'Overwrite Troy Client if already installed.', 'troy-server' ) ?></span>
+								<span class=troy-package-plugin-option-title><?= \esc_html__( 'Overwrite Troy Plugin', 'troy-server' ) ?></span>
+								<span class=troy-package-plugin-option-desc><?= \esc_html__( 'Overwrite existing plugin with Troy header if already installed.', 'troy-server' ) ?></span>
 							</span>
 						</label>
 				</div>

@@ -463,6 +463,12 @@ final class REST {
 			$data = new Plugins\Data( $plugin_id, $uploader->version_uploaded );
 			$zip  = $data->get_zips_row();
 
+			if ( ! $zip )
+				return new \WP_REST_Response(
+					[ 'message' => \__( 'ZIP file was processed but failed to store in the database.', 'troy-server' ) ],
+					500,
+				);
+
 			$zip_existed = $uploader->zip_existed;
 
 			return new \WP_REST_Response(

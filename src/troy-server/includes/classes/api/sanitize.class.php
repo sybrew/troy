@@ -47,6 +47,9 @@ final class Sanitize {
 	 * This function extracts the SemVer version from a given string, removing any leading or trailing characters.
 	 * It uses a regular expression to match the SemVer format, which consists of major, minor, and patch versions,
 	 * optionally followed by pre-release and build metadata.
+	 *
+	 * Three-part versioning is required (major.minor.patch). Two-part versions like 1.0 are not supported.
+	 *
 	 * The SemVer format is defined as:
 	 * - Major version: 0 or a positive integer
 	 * - Minor version: 0 or a positive integer
@@ -57,14 +60,17 @@ final class Sanitize {
 	 * @since 0.0.1184
 	 *
 	 * @param string $version The version string to sanitize.
-	 * @return string The sanitized SemVer version.
+	 * @return string The sanitized SemVer version, or empty string if no valid version found.
 	 */
 	public static function semver( $version ) {
-		return preg_replace(
+
+		preg_match(
 			'/^.*((0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?).*$/',
-			'$1',
 			trim( $version ),
+			$matches,
 		);
+
+		return $matches[1] ?? '';
 	}
 
 	/**

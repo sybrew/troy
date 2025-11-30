@@ -573,7 +573,7 @@ final class Zip_Uploader {
 
 				if ( $existing_zip ) {
 					// Update existing plugin zip.
-					$wpdb->update(
+					$updated = $wpdb->update(
 						"{$wpdb->prefix}troy_plugin_zips",
 						[
 							'type'             => $zip_db_data['type'],
@@ -610,6 +610,9 @@ final class Zip_Uploader {
 							'%d',
 						],
 					);
+
+					if ( false === $updated )
+						throw new \Exception( 'Failed to update ZIP data in the database.', self::EXCEPTION_TEMPORARY );
 				} else {
 					// Insert new plugin zip.
 					$wpdb->insert(
@@ -647,9 +650,11 @@ final class Zip_Uploader {
 							'%s',
 						],
 					);
+
+					if ( ! $wpdb->insert_id )
+						throw new \Exception( 'Failed to insert ZIP data into the database.', self::EXCEPTION_TEMPORARY );
 				}
 
-				// COMMIT will tell 0 rows affected. We could check the insert ID.
 				$success = false !== $wpdb->query( 'COMMIT' );
 			} catch ( \Exception $e ) {
 				$wpdb->query( 'ROLLBACK' );
