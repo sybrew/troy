@@ -555,7 +555,7 @@ final class List_View {
 	 * Enqueues styles and scripts for the CPT list table.
 	 * Actually, we just print it. But we should enqueue it here when we have a need for it.
 	 *
-	 * @hook admin_enqueue_scripts
+	 * @hook admin_enqueue_scripts 10
 	 * @since 0.0.1184
 	 */
 	public static function enqueue_list_table_scripts() {

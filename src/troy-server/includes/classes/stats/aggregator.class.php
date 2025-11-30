@@ -837,9 +837,6 @@ final class Aggregator {
 	/**
 	 * Creates daily snapshots for historical comparison.
 	 *
-	 * Copies current stats to _to_date tables for the current date.
-	 * This enables "compare past months" functionality.
-	 *
 	 * @since 0.0.1184
 	 * @global \wpdb $wpdb
 	 */

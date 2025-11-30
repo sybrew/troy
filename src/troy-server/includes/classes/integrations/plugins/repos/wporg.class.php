@@ -167,13 +167,11 @@ final class WPOrg {
 	 */
 	public static function get_plugin_info( $slug ) {
 
-		$url = \sprintf(
-			'https://api.wordpress.org/plugins/info/1.0/%s.json',
-			API\Sanitize::slug( $slug ),
-		);
-
 		$response = \wp_remote_get(
-			$url,
+			\sprintf(
+				'https://api.wordpress.org/plugins/info/1.0/%s.json',
+				API\Sanitize::slug( $slug ),
+			),
 			[
 				'timeout'    => 3,
 				'headers'    => [

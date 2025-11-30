@@ -614,18 +614,12 @@ final class List_View {
 	}
 
 	/**
-	 * Enqueues styles and scripts for the CPT list table.
-	 *
-	 * @hook admin_enqueue_scripts
-	 * @since 0.0.1184
-	 */
-	/**
 	 * Enqueues editor assets for the package list screen.
 	 *
-	 * @hook admin_enqueue_scripts
+	 * @hook admin_enqueue_scripts 10
 	 * @since 0.0.1184
 	 */
-	public static function enqueue_editor_assets() {
+	public static function enqueue_list_table_scripts() {
 
 		$screen = \get_current_screen();
 
@@ -641,16 +635,5 @@ final class List_View {
 			[],
 			VERSION,
 		);
-	}
-
-	/**
-	 * Enqueues list table styles (deprecated, use enqueue_editor_assets).
-	 *
-	 * @hook admin_enqueue_scripts
-	 * @since 0.0.1184
-	 * @deprecated Use enqueue_editor_assets instead.
-	 */
-	public static function enqueue_list_table_scripts() {
-		self::enqueue_editor_assets();
 	}
 }

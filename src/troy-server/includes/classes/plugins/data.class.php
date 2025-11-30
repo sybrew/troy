@@ -586,7 +586,7 @@ final class Data {
 	 *     @type string updated_at                   The row last updated timestamp.
 	 * }
 	 */
-	public function get_stats_totals_to_date() {
+	public function get_stats_totals_by_date() {
 
 		global $wpdb;
 
@@ -657,7 +657,7 @@ final class Data {
 	 *     @type string updated_at                   The row last updated timestamp.
 	 * }
 	 */
-	public function get_stats_to_date() {
+	public function get_stats_by_date() {
 
 		global $wpdb;
 

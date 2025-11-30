@@ -587,19 +587,41 @@ final class Block_Editor {
 			VERSION,
 		);
 
-		\wp_enqueue_script(
-			'troy-server-editor-components-components',
-			"{$dir_url}library/js/editor/components/components{$min}.js",
-			[
+		// Enqueue editor component files with per-component dependencies.
+		$editor_component_files = [
+			'styled-help'          => [
+				'wp-element',
+			],
+			'metadata-item'        => [
+				'wp-element',
+				'wp-components',
+			],
+			'panel-row'            => [
+				'wp-element',
+				'wp-components',
+			],
+			'create-popover-props' => [],
+			'image-upload-control' => [
 				'wp-element',
 				'wp-i18n',
 				'wp-data',
 				'wp-components',
 				'wp-block-editor',
+				'troy-server-editor-components-styled-help',
+				'troy-server-editor-components-panel-row',
+				'troy-server-editor-components-create-popover-props',
 			],
-			VERSION,
-			true, // Load in footer.
-		);
+		];
+
+		foreach ( $editor_component_files as $component => $deps ) {
+			\wp_enqueue_script(
+				"troy-server-editor-components-$component",
+				"{$dir_url}library/js/editor/components/{$component}{$min}.js",
+				$deps,
+				VERSION,
+				true, // Load in footer.
+			);
+		}
 
 		\wp_enqueue_script(
 			'troy-server-constants',
@@ -620,27 +642,125 @@ final class Block_Editor {
 			true, // Load in footer.
 		);
 
-		\wp_enqueue_script(
-			'troy-server-editor-plugins-components',
-			"{$dir_url}library/js/editor/plugins/components{$min}.js",
-			[
+		// Enqueue plugin editor component files with per-component dependencies.
+		$component_files = [
+			'menu-dropdown'             => [
+				'wp-element',
+				'wp-components',
+			],
+			'plugin-slug-control'       => [
+				'wp-element',
+				'wp-i18n',
+				'wp-components',
+				'wp-block-editor',
+				'wp-api-fetch',
+				'troy-server-editor-components-panel-row',
+				'troy-server-editor-components-create-popover-props',
+				'troy-server-editor-plugins-components-menu-dropdown',
+				'troy-server-constants',
+			],
+			'plugin-status-control'     => [
+				'wp-element',
+				'wp-i18n',
+				'wp-components',
+				'wp-block-editor',
+				'troy-server-editor-components-panel-row',
+				'troy-server-editor-components-create-popover-props',
+				'troy-server-editor-plugins-components-menu-dropdown',
+				'troy-server-constants',
+			],
+			'auto-process-tags-control' => [
+				'wp-element',
+				'wp-i18n',
+				'wp-components',
+				'wp-block-editor',
+				'troy-server-editor-components-panel-row',
+				'troy-server-editor-components-create-popover-props',
+				'troy-server-editor-plugins-components-menu-dropdown',
+				'troy-server-constants',
+			],
+			'plugin-author-control'     => [
+				'wp-element',
+				'wp-i18n',
+				'wp-html-entities',
+				'wp-data',
+				'wp-components',
+				'wp-block-editor',
+				'troy-server-editor-components-panel-row',
+				'troy-server-editor-components-create-popover-props',
+				'troy-server-editor-plugins-components-menu-dropdown',
+				'troy-server-constants',
+				'troy-server-timing',
+			],
+			'short-description-control' => [
+				'wp-element',
+				'wp-i18n',
+				'wp-components',
+				'wp-block-editor',
+				'troy-server-editor-components-panel-row',
+				'troy-server-editor-components-create-popover-props',
+				'troy-server-editor-plugins-components-menu-dropdown',
+			],
+			'urls-control'              => [
 				'wp-element',
 				'wp-i18n',
 				'wp-data',
 				'wp-components',
 				'wp-block-editor',
-				'wp-api-fetch',
-				'wp-url',
-				'troy-server-sanitize',
-				'troy-server-timing',
-				'troy-server-format',
-				'troy-server-editor-components-components',
-				'troy-server-constants',
-				'troy-server-icons',
+				'troy-server-editor-components-panel-row',
+				'troy-server-editor-components-create-popover-props',
+				'troy-server-editor-plugins-components-menu-dropdown',
 			],
-			VERSION,
-			true, // Load in footer.
-		);
+			'readme-settings-control'   => [
+				'wp-element',
+				'wp-i18n',
+				'wp-components',
+				'wp-block-editor',
+				'troy-server-editor-components-panel-row',
+				'troy-server-editor-components-create-popover-props',
+				'troy-server-editor-plugins-components-menu-dropdown',
+			],
+			'plugin-versions-control'   => [
+				'wp-element',
+				'wp-i18n',
+				'wp-components',
+				'wp-block-editor',
+				'wp-api-fetch',
+				'troy-server-editor-components-styled-help',
+				'troy-server-editor-components-metadata-item',
+				'troy-server-editor-components-panel-row',
+				'troy-server-editor-components-create-popover-props',
+				'troy-server-editor-plugins-components-menu-dropdown',
+				'troy-server-constants',
+				'troy-server-format',
+			],
+			'integration-control'       => [
+				'wp-element',
+				'wp-i18n',
+				'wp-data',
+				'wp-url',
+				'wp-components',
+				'wp-block-editor',
+				'wp-api-fetch',
+				'troy-server-editor-components-metadata-item',
+				'troy-server-editor-components-panel-row',
+				'troy-server-editor-components-create-popover-props',
+				'troy-server-editor-plugins-components-menu-dropdown',
+				'troy-server-icons',
+				'troy-server-format',
+				'troy-server-constants',
+			],
+		];
+
+		foreach ( $component_files as $component => $deps ) {
+			\wp_enqueue_script(
+				"troy-server-editor-plugins-components-$component",
+				"{$dir_url}library/js/editor/plugins/components/{$component}{$min}.js",
+				$deps,
+				VERSION,
+				true, // Load in footer.
+			);
+		}
 
 		\wp_enqueue_script(
 			'troy-server-editor-plugins-store',
@@ -664,24 +784,95 @@ final class Block_Editor {
 			],
 		);
 
-		\wp_enqueue_script(
-			'troy-server-editor-plugins-blocks',
-			"{$dir_url}library/js/editor/plugins/blocks{$min}.js",
-			[
+		// Enqueue plugin editor block files with per-block dependencies.
+		$block_files = [
+			'headergroup'       => [
+				'wp-blocks',
+				'wp-element',
+				'wp-i18n',
+				'wp-block-editor',
+			],
+			'heading'           => [
+				'wp-blocks',
+				'wp-element',
+				'wp-i18n',
+				'wp-block-editor',
+			],
+			'title-author-wrap' => [
+				'wp-blocks',
+				'wp-element',
+				'wp-i18n',
+				'wp-block-editor',
+			],
+			'tabs'              => [
 				'wp-blocks',
 				'wp-element',
 				'wp-i18n',
 				'wp-data',
 				'wp-components',
 				'wp-block-editor',
+				'troy-server-editor-plugins-store',
+				'troy-server-constants',
+			],
+			'tab-content'       => [
+				'wp-blocks',
+				'wp-element',
+				'wp-data',
+				'wp-block-editor',
+				'troy-server-editor-plugins-store',
+			],
+			'banner'            => [
+				'wp-blocks',
+				'wp-element',
+				'wp-i18n',
+				'wp-block-editor',
+				'troy-server-editor-plugins-store',
+			],
+			'logo'              => [
+				'wp-blocks',
+				'wp-element',
+				'wp-i18n',
+				'wp-block-editor',
 				'wp-api-fetch',
 				'wp-url',
 				'troy-server-editor-plugins-store',
 				'troy-server-constants',
 			],
-			VERSION,
-			true, // Load in footer.
-		);
+			'title'             => [
+				'wp-blocks',
+				'wp-element',
+				'wp-i18n',
+				'wp-data',
+				'wp-block-editor',
+			],
+			'author'            => [
+				'wp-blocks',
+				'wp-element',
+				'wp-i18n',
+				'wp-data',
+				'wp-block-editor',
+				'troy-server-editor-plugins-store',
+				'troy-server-constants',
+			],
+			'download'          => [
+				'wp-blocks',
+				'wp-element',
+				'wp-i18n',
+				'wp-components',
+				'wp-block-editor',
+				'troy-server-editor-plugins-store',
+			],
+		];
+
+		foreach ( $block_files as $block => $deps ) {
+			\wp_enqueue_script(
+				"troy-server-editor-plugins-blocks-$block",
+				"{$dir_url}library/js/editor/plugins/blocks/{$block}{$min}.js",
+				$deps,
+				VERSION,
+				true, // Load in footer.
+			);
+		}
 
 		\wp_enqueue_script(
 			'troy-server-editor-plugins-content',
@@ -718,8 +909,16 @@ final class Block_Editor {
 			'troy-server-editor-plugins-main',
 			"{$dir_url}library/js/editor/plugins/main{$min}.js",
 			[
-				'troy-server-editor-components-components',
-				'troy-server-editor-plugins-components',
+				'troy-server-editor-components-image-upload-control',
+				'troy-server-editor-plugins-components-plugin-slug-control',
+				'troy-server-editor-plugins-components-plugin-status-control',
+				'troy-server-editor-plugins-components-auto-process-tags-control',
+				'troy-server-editor-plugins-components-plugin-author-control',
+				'troy-server-editor-plugins-components-short-description-control',
+				'troy-server-editor-plugins-components-urls-control',
+				'troy-server-editor-plugins-components-readme-settings-control',
+				'troy-server-editor-plugins-components-plugin-versions-control',
+				'troy-server-editor-plugins-components-integration-control',
 				'troy-server-editor-plugins-store',
 				'troy-server-editor-plugins-content',
 				'troy-server-editor-plugins-notices',

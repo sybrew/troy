@@ -34,7 +34,7 @@ namespace Troy\Server;
 /**
  * Handles admin menu positioning.
  *
- * @since 1.0.0
+ * @since 0.0.1184
  */
 final class Admin_Menu {
 
@@ -45,7 +45,7 @@ final class Admin_Menu {
 	 * they are placed at their correct positions in the admin menu.
 	 *
 	 * @hook admin_menu 999
-	 * @since 1.0.0
+	 * @since 0.0.1184
 	 */
 	public static function reorder_menu_items() {
 

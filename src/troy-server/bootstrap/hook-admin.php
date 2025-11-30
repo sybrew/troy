@@ -92,7 +92,6 @@ plugins: {
 packages: {
 	// Register package editor assets.
 	\add_action( 'admin_enqueue_scripts', [ Packages\Meta_Boxes::class, 'enqueue_editor_assets' ] );
-	\add_action( 'admin_enqueue_scripts', [ Packages\CPT\List_View::class, 'enqueue_editor_assets' ] );
 
 	// Register package save nonce.
 	\add_action( 'edit_form_top', [ Packages\CPT\Store::class, 'output_save_nonce' ] );

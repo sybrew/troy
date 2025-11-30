@@ -40,7 +40,7 @@ window.troyServerIcons = ( wp => {
 	 * Ported via https://developer.wordpress.org/block-editor/reference-guides/packages/packages-icons/,
 	 * because wordpress/icons can only be imported via npm packages, not via wp.icons in the browser.
 	 *
-	 * This is a bug, not a feature.
+	 * This workaround is a bug, not a feature.
 	 *
 	 * @since 0.0.1184
 	 * @type {JSX.Element}
@@ -65,7 +65,7 @@ window.troyServerIcons = ( wp => {
 	 * Ported via https://developer.wordpress.org/block-editor/reference-guides/packages/packages-icons/,
 	 * because wordpress/icons can only be imported via npm packages, not via wp.icons in the browser.
 	 *
-	 * This is a bug, not a feature.
+	 * This workaround is a bug, not a feature.
 	 *
 	 * @since 0.0.1184
 	 * @type {JSX.Element}

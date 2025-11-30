@@ -26,19 +26,19 @@
 
 /**
  * @module troyServerEditorComponents
- * @description Reusable components for the Troy Server plugin and theme editor.
- * @since 0.0.1184
+ * @description ImageUploadPopover and ImageUploadControl components for the Troy Server editor.
+ * @since 0.6.1184
+ * @param {Object} wp The WordPress global wp object.
  */
-window.troyServerEditorComponents = ( wp => {
+( wp => {
+
 	const {
 		createElement: JSX,
 		useState,
 		useMemo,
 		Fragment,
 	} = wp.element;
-	const {
-		__,
-	} = wp.i18n;
+	const { __ } = wp.i18n;
 	const {
 		useSelect,
 		useDispatch,
@@ -49,8 +49,8 @@ window.troyServerEditorComponents = ( wp => {
 	} = wp.components;
 
 	// Experimental components
-	const VStack  = wp.components?.VStack || wp.components?.__experimentalVStack;
-	const HStack  = wp.components?.HStack || wp.components?.__experimentalHStack;
+	const VStack = wp.components?.VStack || wp.components?.__experimentalVStack;
+	const HStack = wp.components?.HStack || wp.components?.__experimentalHStack;
 
 	const {
 		store: blockEditorStore,
@@ -60,147 +60,11 @@ window.troyServerEditorComponents = ( wp => {
 
 	const InspectorPopoverHeader = wp.blockEditor?.InspectorPopoverHeader || wp.blockEditor?.__experimentalInspectorPopoverHeader;
 
-	/**
-	 * StyledHelp component mimicking the WordPress components StyledHelp styling.
-	 *
-	 * @since 0.0.1184
-	 *
-	 * @param {Object} props {
-	 *     Component properties.
-	 *
-	 *     @param {string}           props.className Additional CSS classes.
-	 *     @param {string}           props.id        Element ID.
-	 *     @param {React.ReactNode}  props.children  Help text content.
-	 * }
-	 * @returns {JSX.Element} The styled help element.
-	 */
-	function StyledHelp( { className = '', id, children, ...props } ) {
-		return JSX(
-			'p',
-			{
-				className: `components-base-control__help ${className}`,
-				id,
-				style: {
-					marginTop:    '8px',
-					marginBottom: '0',
-					fontSize:     '12px',
-					fontStyle:    'normal',
-					color:        '#757575',
-				},
-				...props,
-			},
-			children,
-		);
-	}
-
-	/**
-	 * Metadata Item component for displaying key-value pairs.
-	 *
-	 * @since 0.0.1184
-	 *
-	 * @param {Object} props {
-	 *     Component properties.
-	 *
-	 *     @param {string}  props.label The label text to display.
-	 *     @param {string}  props.value The value text to display.
-	 *     @param {?string} props.state The state for styling ('warning', 'error').
-	 * }
-	 * @returns {JSX.Element} The rendered component.
-	 */
-	function MetadataItem( { label, value, state } ) {
-
-		let stateClass = '';
-
-		switch ( state ) {
-			case 'warning':
-				stateClass = 'troy-server-metadata-item--warning';
-				break;
-			case 'error':
-				stateClass = 'troy-server-metadata-item--error';
-		}
-
-		return JSX(
-			HStack,
-			{
-				spacing:   2,
-				alignment: 'left',
-				className: `troy-server-metadata-item ${stateClass}`,
-			},
-			JSX(
-				'span',
-				{
-					className: 'troy-server-metadata-item__label',
-				},
-				label,
-			),
-			JSX(
-				'span',
-				{ className: 'troy-server-metadata-item__value' },
-				value,
-			),
-		);
-	}
-
-	/**
-	 * Panel Row component for sidebar display.
-	 *
-	 * @since 0.0.1184
-	 *
-	 * @param {Object} props {
-	 *     Component properties.
-	 *
-	 *     @param {string}    props.label       The label for the panel row.
-	 *     @param {ReactNode} props.children    The child components to render.
-	 *     @param {string}    props.className   Additional CSS classes.
-	 *     @param {Function}  props.onRefChange Callback for ref changes.
-	 * }
-	 * @returns {JSX.Element} The rendered component.
-	 */
-	function PanelRow( { label, children, className, onRefChange, ...props } ) {
-		return JSX(
-			HStack,
-			{
-				ref:        onRefChange,
-				className: `troy-server-panel-row ${className || ''}`,
-				...props,
-			},
-			label && JSX(
-				'div',
-				{
-					className: children
-						? 'troy-server-panel__row-label'
-						: 'troy-server-panel__row-label--no-control',
-				},
-				label,
-			),
-			children && JSX(
-				'div',
-				{ className: 'troy-server-panel__row-control' },
-				children,
-			),
-		);
-	}
-
-	/**
-	 * Creates popover props with consistent settings.
-	 *
-	 * @since 0.0.1184
-	 *
-	 * @param {Object} anchor The anchor element for the popover.
-	 * @param {string} title  The title for the popover.
-	 * @returns {Object} The popover props object.
-	 */
-	function createPopoverProps( anchor, title ) {
-		return {
-			anchor,
-			'aria-label': title,
-			headerTitle:  title,
-			placement:    'left-start',
-			offset:       36,
-			shift:        true,
-			className:    'troy-server-popover',
-		};
-	}
+	const {
+		StyledHelp,
+		PanelRow,
+		createPopoverProps,
+	} = troyServerEditorComponents;
 
 	/**
 	 * Image Upload Popover Control component.
@@ -221,6 +85,7 @@ window.troyServerEditorComponents = ( wp => {
 	 * @returns {JSX.Element} The rendered component.
 	 */
 	function ImageUploadPopover( { onClose, label, value, aspectRatio, help, storeImageUri, copyToBlock } ) {
+
 		const { updateBlockAttributes } = useDispatch( 'core/block-editor' );
 		const targetBlockClientIds = useSelect(
 			select => select( blockEditorStore )
@@ -272,7 +137,7 @@ window.troyServerEditorComponents = ( wp => {
 								updateImageBlockAttributes( { url: media.url } );
 							},
 							allowedTypes: [ 'image' ],
-							value: value
+							value:        value
 								? { url: value }
 								: undefined,
 							render: ( { open } ) => JSX(
@@ -336,10 +201,11 @@ window.troyServerEditorComponents = ( wp => {
 		copyToBlock,
 		storeImageUri,
 	} ) {
+
 		const [ popoverAnchor, setPopoverAnchor ] = useState( null );
 		const popoverProps = useMemo(
 			() => createPopoverProps( popoverAnchor, label ),
-			[ popoverAnchor, label ]
+			[ popoverAnchor, label ],
 		);
 
 		return JSX(
@@ -370,7 +236,9 @@ window.troyServerEditorComponents = ( wp => {
 							JSX(
 								'span',
 								null,
-								value ? __( 'Image set', 'troy-server' ) : __( 'No image', 'troy-server' ),
+								value
+									? __( 'Image set', 'troy-server' )
+									: __( 'No image', 'troy-server' ),
 							),
 							value && JSX(
 								'div',
@@ -404,12 +272,12 @@ window.troyServerEditorComponents = ( wp => {
 		);
 	}
 
-	return {
-		StyledHelp,
-		MetadataItem,
-		PanelRow,
-		createPopoverProps,
-		ImageUploadPopover,
-		ImageUploadControl,
-	};
+	// Export to shared namespace.
+	Object.assign(
+		window.troyServerEditorComponents,
+		{
+			ImageUploadPopover,
+			ImageUploadControl,
+		},
+	);
 } )( window.wp );

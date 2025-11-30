@@ -57,7 +57,7 @@ final class Meta_Boxes {
 	/**
 	 * Enqueues editor assets for the packages CPT.
 	 *
-	 * @hook admin_enqueue_scripts
+	 * @hook admin_enqueue_scripts 10
 	 * @since 0.0.1184
 	 */
 	public static function enqueue_editor_assets() {
