@@ -42,15 +42,23 @@ namespace Troy\Server;
 final class Admin_Scripts {
 
 	/**
-	 * Registers global admin utility scripts.
+	 * Registers global admin main scripts and styles.
 	 *
 	 * These scripts are registered early and unconditionally in admin so they
 	 * can be enqueued as dependencies by other scripts.
 	 *
+	 * Also registers CSS custom properties at :root{} for consistent admin theming:
+	 * - --troy-server-theme-bg
+	 * - --troy-server-theme-bg-accent
+	 * - --troy-server-theme-color
+	 * - --troy-server-theme-color-accent
+	 * - --troy-server-green
+	 * - --troy-server-red
+	 *
 	 * @hook admin_init 1
 	 * @since 0.0.1184
 	 */
-	public static function register_utils() {
+	public static function register_main_scripts() {
 
 		$dir_url = \plugin_dir_url( MAIN_FILE );
 		$min     = \SCRIPT_DEBUG ? '' : '.min';
@@ -101,6 +109,26 @@ final class Admin_Scripts {
 			[],
 			VERSION,
 			true,
+		);
+
+		$scheme = \get_user_option( 'admin_color' ) ?: 'fresh';
+		$colors = $GLOBALS['_wp_admin_css_colors'][ $scheme ]->colors ?? null;
+
+		if ( ! \is_array( $colors ) || \count( $colors ) < 4 )
+			$colors = [ '#222', '#333', '#0073aa', '#00a0d2' ];
+
+		\wp_add_inline_style(
+			'common',
+			<<<CSS
+			:root{
+				--troy-server-theme-bg:{$colors[0]};
+				--troy-server-theme-bg-accent:{$colors[1]};
+				--troy-server-theme-color:{$colors[2]};
+				--troy-server-theme-color-accent:{$colors[3]};
+				--troy-server-green:#00a32a;
+				--troy-server-red:#d63638
+			}
+			CSS,
 		);
 	}
 

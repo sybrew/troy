@@ -49,7 +49,7 @@ use Troy\Server\{
 
 admin: {
 	// Register admin scripts and styles.
-	\add_action( 'admin_init', [ Admin_Scripts::class, 'register_utils' ], 1 );
+	\add_action( 'admin_init', [ Admin_Scripts::class, 'register_main_scripts' ], 1 );
 	\add_action( 'admin_enqueue_scripts', [ Admin_Scripts::class, 'register_troy_mode' ], 1 );
 
 	// Fix admin menu ordering for settings and custom post types.

@@ -100,7 +100,7 @@
 }
 
 .troy-server-logs-type-info {
-	color: #2271b1;
+	color: var(--troy-server-theme-color);
 }
 
 .troy-server-logs-type-success {
@@ -118,7 +118,7 @@
 
 .troy-server-logs-details summary {
 	cursor: pointer;
-	color: #2271b1;
+	color: var(--troy-server-theme-color);
 }
 
 .troy-server-logs-details summary:hover {
@@ -157,7 +157,7 @@
 	width: 20px;
 	height: 20px;
 	border: 2px solid #c3c4c7;
-	border-top-color: #2271b1;
+	border-top-color: var(--troy-server-theme-color);
 	border-radius: 50%;
 	animation: troy-logs-spin .8s linear infinite;
 	margin-right: .5em;

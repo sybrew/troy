@@ -1,5 +1,5 @@
 === Troy Server ===
-Homepage URL: https://deploytroy.org/docs/troy-server/how-it-works/
+Homepage URL: https://deploytroy.org/docs/troy-server/
 Support URI: https://github.com/sybrew/troy/discussions
 Locale: en_US
 Short Description: Troy Server allows you to distribute WordPress plugins from your own update repository.
@@ -79,7 +79,7 @@ Plugins can have different visibility statuses:
 
 = Updating =
 
-Troy Server checks for updates via Troy Client via the Troy Server at [repo.deploytroy.org](https://repo.deploytroy.org/).
+Troy Server checks for updates via Troy Client via the Troy Server at repo.deploytroy.org.
 
 == Installation ==
 

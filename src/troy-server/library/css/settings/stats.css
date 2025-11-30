@@ -42,7 +42,7 @@
 }
 
 .troy-server-stats-card:hover {
-	border-color: #2271b1;
+	border-color: var(--troy-server-theme-color);
 	box-shadow: 0 1px 3px rgba(0, 0, 0, .1);
 }
 
@@ -79,10 +79,6 @@
 	vertical-align: middle;
 }
 
-.troy-server-stats-table code {
-	color: #646970;
-}
-
 .troy-server-stats-table .button-small {
 	min-height: 28px;
 	line-height: 26px;
@@ -98,10 +94,6 @@
 .troy-server-stats-negative {
 	color: #d63638;
 	font-weight: 600;
-}
-
-.troy-server-stats-neutral {
-	color: #646970;
 }
 
 /* Modal Styles */
@@ -233,7 +225,7 @@
 	width: 20px;
 	height: 20px;
 	border: 2px solid #c3c4c7;
-	border-top-color: #2271b1;
+	border-top-color: var(--troy-server-theme-color);
 	border-radius: 50%;
 	animation: troy-stats-spin .8s linear infinite;
 	margin-right: .5em;

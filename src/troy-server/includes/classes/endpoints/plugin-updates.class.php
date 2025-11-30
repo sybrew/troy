@@ -59,6 +59,7 @@ final class Plugin_Updates extends Base_Endpoint {
 		if ( 'POST' !== $_SERVER['REQUEST_METHOD'] )
 			$this->send_error( 'Method not allowed', 405 );
 
+		// phpcs:ignore TSF.Performance -- This read a stream, not a file.
 		$input = json_decode( file_get_contents( 'php://input' ), true );
 
 		if ( ! \is_array( $input ) )

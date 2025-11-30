@@ -1,5 +1,5 @@
 === Troy Client ===
-Homepage URL: https://deploytroy.org/docs/troy-client/how-it-works/
+Homepage URL: https://deploytroy.org/docs/troy-client/
 Support URI: https://github.com/sybrew/troy/discussions
 Locale: en_US
 Short Description: Troy Client enables sideloading plugin updates and dependencies from any Troy Server.
@@ -41,7 +41,7 @@ Troy Client is designed with privacy in mind:
 
 = Self-Checking =
 
-Troy Client checks for updates for itself via the Troy Server at [repo.deploytroy.org](https://repo.deploytroy.org/).
+Troy Client checks for updates for itself via the Troy Server at repo.deploytroy.org.
 
 == Installation ==
 
