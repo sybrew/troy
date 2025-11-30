@@ -592,7 +592,7 @@ final class Data {
 
 		return $wpdb->get_results( $wpdb->prepare(
 			"SELECT *
-			FROM {$wpdb->prefix}troy_plugin_stats_totals_daily
+			FROM {$wpdb->prefix}troy_plugin_stats_totals_daily_snapshots
 			WHERE plugin_id = %d
 				AND `date` = %s",
 			$this->plugin_id,
@@ -663,7 +663,7 @@ final class Data {
 
 		return $wpdb->get_results( $wpdb->prepare(
 			"SELECT *
-			FROM {$wpdb->prefix}troy_plugin_stats_versions_daily
+			FROM {$wpdb->prefix}troy_plugin_stats_versions_daily_snapshots
 			WHERE plugin_id = %d
 				AND `version` = %s
 				AND `date` = %s",

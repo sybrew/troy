@@ -83,6 +83,11 @@ final class Aggregator {
 		$wp_uuids           = [];
 		$installation_uuids = [];
 
+		// Global stats - track unique UUIDs across all plugins.
+		$global_locale_uuids = [];
+		$global_php_uuids    = [];
+		$global_wp_uuids     = [];
+
 		foreach ( $live_rows as $row ) {
 			// Request counts.
 			$request_key = "$row->plugin_id|$row->epoch|$row->version|$row->is_active";
@@ -104,26 +109,47 @@ final class Aggregator {
 				if ( ! \is_string( $locale ) or '' === $locale )
 					continue;
 
-				$locale_key = "$row->plugin_id|$row->epoch|$row->version|$locale";
+				// Per-plugin locale stats.
+				$locale_key = "$row->plugin_id|$row->epoch|$locale";
 
 				$locale_uuids[ $locale_key ]             ??= [];
 				$locale_uuids[ $locale_key ][ $row->uuid ] = true;
+
+				// Global locale stats.
+				$global_locale_key = "$row->epoch|$locale";
+
+				$global_locale_uuids[ $global_locale_key ]             ??= [];
+				$global_locale_uuids[ $global_locale_key ][ $row->uuid ] = true;
 			}
 
 			// PHP version stats - track unique UUIDs per PHP version.
 			if ( '' !== $row->php_version ) {
+				// Per-plugin PHP stats.
 				$php_key = "$row->plugin_id|$row->epoch|$row->php_version";
 
 				$php_uuids[ $php_key ]             ??= [];
 				$php_uuids[ $php_key ][ $row->uuid ] = true;
+
+				// Global PHP stats.
+				$global_php_key = "$row->epoch|$row->php_version";
+
+				$global_php_uuids[ $global_php_key ]             ??= [];
+				$global_php_uuids[ $global_php_key ][ $row->uuid ] = true;
 			}
 
 			// WordPress version stats - track unique UUIDs per WP version.
 			if ( '' !== $row->wp_version ) {
+				// Per-plugin WP stats.
 				$wp_key = "$row->plugin_id|$row->epoch|$row->wp_version";
 
 				$wp_uuids[ $wp_key ]             ??= [];
 				$wp_uuids[ $wp_key ][ $row->uuid ] = true;
+
+				// Global WP stats.
+				$global_wp_key = "$row->epoch|$row->wp_version";
+
+				$global_wp_uuids[ $global_wp_key ]             ??= [];
+				$global_wp_uuids[ $global_wp_key ][ $row->uuid ] = true;
 			}
 
 			// Track unique UUIDs for installation counts (only active installs in relevant epochs).
@@ -157,18 +183,17 @@ final class Aggregator {
 
 		// Write locale stats - count unique UUIDs.
 		foreach ( $locale_uuids as $key => $uuids ) {
-			[ $plugin_id, $epoch, $version, $locale ] = explode( '|', $key );
+			[ $plugin_id, $epoch, $locale ] = explode( '|', $key );
 
 			$wpdb->replace(
 				"{$wpdb->prefix}troy_plugin_stats_locales",
 				[
 					'plugin_id'     => $plugin_id,
 					'epoch'         => $epoch,
-					'version'       => $version,
 					'locale'        => $locale,
 					'install_count' => \count( $uuids ),
 				],
-				[ '%d', '%d', '%s', '%s', '%d' ],
+				[ '%d', '%d', '%s', '%d' ],
 			);
 		}
 
@@ -201,6 +226,51 @@ final class Aggregator {
 					'install_count' => \count( $uuids ),
 				],
 				[ '%d', '%d', '%s', '%d' ],
+			);
+		}
+
+		// Write global locale stats - count unique UUIDs across all plugins.
+		foreach ( $global_locale_uuids as $key => $uuids ) {
+			[ $epoch, $locale ] = explode( '|', $key );
+
+			$wpdb->replace(
+				"{$wpdb->prefix}troy_stats_locales",
+				[
+					'epoch'         => $epoch,
+					'locale'        => $locale,
+					'install_count' => \count( $uuids ),
+				],
+				[ '%d', '%s', '%d' ],
+			);
+		}
+
+		// Write global PHP version stats - count unique UUIDs across all plugins.
+		foreach ( $global_php_uuids as $key => $uuids ) {
+			[ $epoch, $php_version ] = explode( '|', $key );
+
+			$wpdb->replace(
+				"{$wpdb->prefix}troy_stats_php",
+				[
+					'epoch'         => $epoch,
+					'php_version'   => $php_version,
+					'install_count' => \count( $uuids ),
+				],
+				[ '%d', '%s', '%d' ],
+			);
+		}
+
+		// Write global WP version stats - count unique UUIDs across all plugins.
+		foreach ( $global_wp_uuids as $key => $uuids ) {
+			[ $epoch, $wp_version ] = explode( '|', $key );
+
+			$wpdb->replace(
+				"{$wpdb->prefix}troy_stats_wp",
+				[
+					'epoch'         => $epoch,
+					'wp_version'    => $wp_version,
+					'install_count' => \count( $uuids ),
+				],
+				[ '%d', '%s', '%d' ],
 			);
 		}
 
@@ -797,7 +867,7 @@ final class Aggregator {
 			$existing = $wpdb->get_var(
 				$wpdb->prepare(
 					"SELECT id
-					FROM {$wpdb->prefix}troy_plugin_stats_versions_daily
+					FROM {$wpdb->prefix}troy_plugin_stats_versions_daily_snapshots
 					WHERE plugin_id = %d AND version = %s AND date = %s AND origin_url = %s",
 					$row->plugin_id,
 					$row->version,
@@ -808,7 +878,7 @@ final class Aggregator {
 
 			if ( $existing ) {
 				$wpdb->update(
-					"{$wpdb->prefix}troy_plugin_stats_versions_daily",
+					"{$wpdb->prefix}troy_plugin_stats_versions_daily_snapshots",
 					[
 						'downloads'                    => $row->downloads,
 						'views'                        => $row->views,
@@ -821,7 +891,7 @@ final class Aggregator {
 				);
 			} else {
 				$wpdb->insert(
-					"{$wpdb->prefix}troy_plugin_stats_versions_daily",
+					"{$wpdb->prefix}troy_plugin_stats_versions_daily_snapshots",
 					[
 						'plugin_id'                    => $row->plugin_id,
 						'version'                      => $row->version,
@@ -852,7 +922,7 @@ final class Aggregator {
 			$existing = $wpdb->get_var(
 				$wpdb->prepare(
 					"SELECT id
-					FROM {$wpdb->prefix}troy_plugin_stats_totals_daily
+					FROM {$wpdb->prefix}troy_plugin_stats_totals_daily_snapshots
 					WHERE plugin_id = %d AND date = %s",
 					$row->plugin_id,
 					$today,
@@ -861,7 +931,7 @@ final class Aggregator {
 
 			if ( $existing ) {
 				$wpdb->update(
-					"{$wpdb->prefix}troy_plugin_stats_totals_daily",
+					"{$wpdb->prefix}troy_plugin_stats_totals_daily_snapshots",
 					[
 						'downloads'                    => $row->downloads,
 						'views'                        => $row->views,
@@ -874,7 +944,7 @@ final class Aggregator {
 				);
 			} else {
 				$wpdb->insert(
-					"{$wpdb->prefix}troy_plugin_stats_totals_daily",
+					"{$wpdb->prefix}troy_plugin_stats_totals_daily_snapshots",
 					[
 						'plugin_id'                    => $row->plugin_id,
 						'date'                         => $today,

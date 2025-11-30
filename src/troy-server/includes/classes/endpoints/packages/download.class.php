@@ -104,7 +104,11 @@ final class Download extends Base_Endpoint {
 			$this->send_error( 'Package file not found', 404 );
 
 		// Record download stats
-		$this->record_download_stats( $package_id, $package->origin_url );
+		$this->record_download_stats(
+			$package_id,
+			new Data( $package_id )->get_metas_row()->version ?? '0.0.0',
+			$package->origin_url,
+		);
 
 		// Stream the file
 		$this->stream_file( $zip_file, "{$slug}.zip" );
@@ -117,9 +121,10 @@ final class Download extends Base_Endpoint {
 	 * @global \wpdb $wpdb
 	 *
 	 * @param int    $package_id The package ID.
+	 * @param string $version    The package version.
 	 * @param string $origin_url The origin URL.
 	 */
-	private function record_download_stats( $package_id, $origin_url ) {
+	private function record_download_stats( $package_id, $version, $origin_url ) {
 
 		global $wpdb;
 
@@ -128,7 +133,7 @@ final class Download extends Base_Endpoint {
 			"{$wpdb->prefix}troy_package_stats_downloads_live",
 			[
 				'package_id' => $package_id,
-				'version'    => '1.0.0', // Packages don't have versions like plugins
+				'version'    => $version,
 				'type'       => 'download',
 				'origin_url' => $origin_url,
 			],

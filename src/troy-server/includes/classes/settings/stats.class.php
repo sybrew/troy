@@ -140,7 +140,7 @@ final class Stats {
 				"SELECT
 					COALESCE(SUM(downloads), 0) as total_downloads,
 					COALESCE(SUM(views), 0) as total_views
-				FROM {$wpdb->prefix}troy_plugin_stats_versions_daily
+				FROM {$wpdb->prefix}troy_plugin_stats_versions_daily_snapshots
 				WHERE date BETWEEN %s AND %s",
 				$start_date,
 				$end_date,
@@ -607,7 +607,7 @@ final class Stats {
 			"SELECT
 				php_version as version,
 				SUM(install_count) as count
-			FROM {$wpdb->prefix}troy_plugin_stats_php
+			FROM {$wpdb->prefix}troy_stats_php
 			GROUP BY php_version
 			ORDER BY count DESC
 			LIMIT %d",
@@ -648,7 +648,7 @@ final class Stats {
 			"SELECT
 				wp_version as version,
 				SUM(install_count) as count
-			FROM {$wpdb->prefix}troy_plugin_stats_wp
+			FROM {$wpdb->prefix}troy_stats_wp
 			GROUP BY wp_version
 			ORDER BY count DESC
 			LIMIT %d",
@@ -689,7 +689,7 @@ final class Stats {
 			"SELECT
 				locale,
 				SUM(install_count) as count
-			FROM {$wpdb->prefix}troy_plugin_stats_locales
+			FROM {$wpdb->prefix}troy_stats_locales
 			GROUP BY locale
 			ORDER BY count DESC
 			LIMIT %d",

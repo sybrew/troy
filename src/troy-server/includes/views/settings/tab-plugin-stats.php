@@ -46,7 +46,8 @@ $locales          = Settings\Stats::get_locale_stats();
 ?>
 <h2><?= \esc_html__( 'Troy Server Stats', 'troy-server' ) ?></h2>
 
-<p><?= \esc_html__( 'Troy Server collects anonymized data from your plugin users. Here, you can inspect the aggregation.', 'troy-server' ) ?></p>
+<p><?= \esc_html__( 'Troy Server collects anonymized data from your plugin users. Here, you can inspect the details.', 'troy-server' ) ?></p>
+<p><?= \esc_html__( 'The data is aggregated automatically every 30 minutes.', 'troy-server' ) ?></p>
 
 <div class=troy-server-stats-date-range>
 	<label for=troy-server-stats-range><?= \esc_html__( 'Date Range:', 'troy-server' ) ?></label>

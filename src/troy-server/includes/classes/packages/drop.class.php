@@ -95,7 +95,7 @@ final class Drop {
 			$tables = [
 				'troy_package_metas',
 				'troy_package_stats_totals',
-				'troy_package_stats_totals_daily',
+				'troy_package_stats_totals_daily_snapshots',
 				'troy_package_stats_downloads',
 				'troy_package_stats_downloads_live',
 			];
