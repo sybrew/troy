@@ -338,6 +338,7 @@
 						pluginId:      storeData.plugin_id,
 						versions:      sortedVersions,
 						latestVersion,
+						canDownload:   [ 'public', 'unlisted' ].includes( storeData.status ),
 						addVersion,
 						updateVersion,
 						removeVersion: version => apiFetch( {

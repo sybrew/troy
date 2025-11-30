@@ -322,6 +322,7 @@
 	 *     @param {number}   props.index                     The version index in the array.
 	 *     @param {Boolean}  props.isLatestVersion           Whether this is the latest version.
 	 *     @param {Boolean}  props.hasRepoMismatch           Whether this version has a repository mismatch.
+	 *     @param {Boolean}  props.canDownload               Whether the download button should be enabled.
 	 *     @param {Function} props.handleTypeChange          Function to handle version type changes.
 	 *     @param {Function} props.handleUpgradeNoticeChange Function to handle upgrade notice changes.
 	 *     @param {Function} props.handleRemoveToggle        Function to set version removal state.
@@ -334,6 +335,7 @@
 		index,
 		isLatestVersion,
 		hasRepoMismatch,
+		canDownload,
 		handleTypeChange,
 		handleUpgradeNoticeChange,
 		handleRemoveToggle,
@@ -494,12 +496,13 @@
 						JSX(
 							Button,
 							{
-								variant: 'secondary',
-								href:    version.download_uri,
-								target:  '_blank',
-								rel:     'noopener noreferrer',
-								icon:    'download',
-								size:    'default',
+								variant:  'secondary',
+								disabled: ! canDownload,
+								href:     version.download_uri,
+								target:   '_blank',
+								rel:      'noopener noreferrer',
+								icon:     'download',
+								size:     'default',
 							},
 							__( 'Download', 'troy-server' ),
 						),
@@ -535,6 +538,7 @@
 	 *     @param {number}   props.index                     The version index in the array.
 	 *     @param {Boolean}  props.isLatestVersion           Whether this is the latest version.
 	 *     @param {Boolean}  props.hasRepoMismatch           Whether this version has a repository mismatch.
+	 *     @param {Boolean}  props.canDownload               Whether the download button should be enabled.
 	 *     @param {Function} props.handleTypeChange          Function to handle version type changes.
 	 *     @param {Function} props.handleUpgradeNoticeChange Function to handle upgrade notice changes.
 	 *     @param {Function} props.handleRemoveToggle        Function to set version removal state.
@@ -546,6 +550,7 @@
 		index,
 		isLatestVersion,
 		hasRepoMismatch,
+		canDownload,
 		handleTypeChange,
 		handleUpgradeNoticeChange,
 		handleRemoveToggle,
@@ -633,6 +638,7 @@
 								index,
 								isLatestVersion,
 								hasRepoMismatch,
+								canDownload,
 								handleTypeChange,
 								handleUpgradeNoticeChange,
 								handleRemoveToggle,
@@ -657,13 +663,14 @@
 	 *     @param {string}   props.pluginId      The ID of the plugin.
 	 *     @param {Array}    props.versions      The list of plugin versions.
 	 *     @param {Object}   props.latestVersion The latest version object.
+	 *     @param {Boolean}  props.canDownload   Whether the download button should be enabled.
 	 *     @param {Function} props.addVersion    Function to add a new version.
 	 *     @param {Function} props.updateVersion Function to update an existing version.
 	 *     @param {Function} props.removeVersion Function to remove a version.
 	 * }
 	 * @returns {JSX.Element} The rendered component.
 	 */
-	function PluginVersionsControl( { pluginId, versions, latestVersion, addVersion, updateVersion, removeVersion } ) {
+	function PluginVersionsControl( { pluginId, versions, latestVersion, canDownload, addVersion, updateVersion, removeVersion } ) {
 
 		const handleTypeChange = ( index, newType ) => {
 			if ( versions?.[ index ] )
@@ -816,6 +823,7 @@
 								index,
 								isLatestVersion: version?.version === latestVersion,
 								hasRepoMismatch,
+								canDownload,
 								handleTypeChange,
 								handleUpgradeNoticeChange,
 								handleRemoveToggle,

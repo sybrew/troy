@@ -51,10 +51,13 @@
 					latestVersion,
 				} = troyServerGetPluginStore();
 
+				const canDownload = latestVersion
+					&& [ 'public', 'unlisted' ].includes( storeData.status );
+
 				return JSX(
 					'div',
 					blockProps,
-					latestVersion
+					canDownload
 						? JSX(
 							Button,
 							{

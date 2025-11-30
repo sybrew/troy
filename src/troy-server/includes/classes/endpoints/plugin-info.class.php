@@ -96,7 +96,10 @@ final class Plugin_Info extends Base_Endpoint {
 				case 'unlisted':
 					// Allowed statuses. Break to continue processing.
 					break;
-				case 'protected':
+				// TODO: Implement conditional listing.
+				// case 'protected':
+				// 	$this->send_error( 'Plugin is protected', 401 );
+				// 	break;
 				case 'pending':
 				case 'disabled':
 				default:
