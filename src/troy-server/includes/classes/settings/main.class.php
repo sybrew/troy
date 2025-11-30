@@ -105,6 +105,7 @@ final class Main {
 		);
 
 		\add_action( "load-$page", [ __CLASS__, 'init_admin_page' ] );
+		\add_action( 'troy_server_settings_notices', [ __CLASS__, 'output_saved_notice' ] );
 	}
 
 	/**
@@ -208,6 +209,39 @@ final class Main {
 				Template::output_view( "settings/tab-$current_tab" );
 			},
 		);
+	}
+
+	/**
+	 * Outputs the saved response notice.
+	 *
+	 * @hook troy_server_settings_notices 10
+	 * @since 0.0.1184
+	 */
+	public static function output_saved_notice() {
+
+		// phpcs:ignore WordPress.Security.NonceVerification -- Affects output view only.
+		[ $notice_type, $message ] = match ( (int) ( $_GET[ self::SAVED_RESPONSE ] ?? -1 ) ) {
+			0 => [
+				'error',
+				\__( 'Settings failed to save.', 'troy-server' ),
+			],
+			1 => [
+				'success',
+				\__( 'Settings saved.', 'troy-server' ),
+			],
+			2 => [
+				'info',
+				\__( 'No settings were changed.', 'troy-server' ),
+			],
+			default => [ '', '' ],
+		};
+
+		if ( $notice_type )
+			printf(
+				'<div id=message class="notice notice-%s is-dismissible inline"><p>%s</p></div>',
+				\esc_attr( $notice_type ),
+				\esc_html( $message ),
+			);
 	}
 
 	/**

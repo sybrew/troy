@@ -106,31 +106,6 @@ $current_tab = isset( $_GET['tab'], $tabs[ $_GET['tab'] ] ) ? $_GET['tab'] : 'pl
 	 * @param string $current_tab The current settings tab.
 	 */
 	\do_action( 'troy_server_settings_notices', $current_tab );
-
-	// var_dump() move me to callback troy_server_settings_notices.
-	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Affects output view only.
-	switch ( (int) ( $_GET[ Settings\Main::SAVED_RESPONSE ] ?? -1 ) ) {
-		case 0:
-			?>
-			<div id=message class="notice notice-error is-dismissible inline"><p>
-				<?= \esc_html__( 'Settings failed to save.', 'troy-server' ) ?>
-			</p></div>
-			<?php
-			break;
-		case 1:
-			?>
-			<div id=message class="notice notice-success is-dismissible inline"><p>
-				<?= \esc_html__( 'Settings saved.', 'troy-server' ) ?>
-			</p></div>
-			<?php
-			break;
-		case 2:
-			?>
-			<div id=message class="notice notice-info is-dismissible inline"><p>
-				<?= \esc_html__( 'No settings were changed.', 'troy-server' ) ?>
-			</p></div>
-			<?php
-	}
 	?>
 
 	<div class=hide-if-no-js>
