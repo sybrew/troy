@@ -27,7 +27,7 @@ The server provides an interface to generate a Troy Package, which is a ZIP file
 
 It's best to run Troy Server on a standalone WordPress instance, this can even be a Multisite subdomain or subdirectory. Multilingual plugins will never be supported by Troy Server and may interfere with the repo URL generation. Keep in mind that a repo URL is limited to 191 characters.
 
-Troy Server has "up-to-date" server requirements, but nothing too special. You must use MySQL 8.0.13 or higher, PHP 8.4 or higher, and WordPress 6.8 or higher. We recommend running this on a server that can handle Pong. The update service is ridiculously optimized. For the webserver we recommend using Apache, since it is faster at handling PHP requests than Nginx.
+Troy Server has "up-to-date" server requirements, but nothing too special. You must use MySQL 8.0.19 or higher, PHP 8.4 or higher, and WordPress 6.8 or higher. We recommend running this on a server that can handle Pong. The update service is ridiculously optimized. For the webserver we recommend using Apache, since it is faster at handling PHP requests than Nginx.
 
 Note that the server will exclusively serve via HTTPS. You must have `mbstring` and `ZipArchive` enabled in your PHP configuration. The server user must be owner of the WordPress instance and folder, and the user must be able to write to the `wp-content/` and system temp file directories.
 

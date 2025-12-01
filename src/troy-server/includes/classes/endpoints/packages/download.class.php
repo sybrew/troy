@@ -77,7 +77,7 @@ final class Download extends Base_Endpoint {
 			$this->send_error( 'Missing required parameter: slug', 400 );
 
 		// Sanitize slug parameter
-		$slug = \sanitize_title( $slug );
+		$slug = API\Sanitize::slug( $slug );
 
 		if ( ! $slug )
 			$this->send_error( 'Invalid slug', 400 );

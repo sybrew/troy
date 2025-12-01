@@ -2,7 +2,7 @@
 Homepage URL: https://deploytroy.org/docs/troy-server/
 Support URI: https://github.com/sybrew/troy/discussions
 Locale: en_US
-Short Description: Troy Server allows you to distribute WordPress plugins from your own update repository.
+Short Description: Troy Server allows you to distribute WordPress plugins from your independent update repository.
 
 == Description ==
 
@@ -95,7 +95,7 @@ Troy Server is not available on WordPress.org.
 
 * WordPress 6.8 or higher
 * PHP 8.4 or higher
-* MySQL 8.0.13 or higher
+* MySQL 8.0.19 or higher
 * PHP extensions: `mbstring`, `ZipArchive`
 * HTTPS required
 

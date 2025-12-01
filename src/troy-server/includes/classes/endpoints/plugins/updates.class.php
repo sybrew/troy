@@ -1,15 +1,16 @@
 <?php
 /**
- * @package Troy\Server\Endpoints
+ * @package Troy\Server\Endpoints\Plugins
  * @access  public
  */
 
-namespace Troy\Server\Endpoints;
+namespace Troy\Server\Endpoints\Plugins;
 
 \defined( 'Troy\Server\ABSPATH' ) or die;
 
 use Troy\Server\{
 	API,
+	Endpoints\Base_Endpoint,
 	Plugins\Data,
 	Plugins\Files,
 };
@@ -46,7 +47,7 @@ use Troy\Server\{
  *
  * @since 0.0.1184
  */
-final class Plugin_Updates extends Base_Endpoint {
+final class Updates extends Base_Endpoint {
 
 	/**
 	 * Handle the plugin updates request.
@@ -242,8 +243,9 @@ final class Plugin_Updates extends Base_Endpoint {
 		global $wpdb;
 
 		// Upsert live update request stat; on duplicate, update to latest state and increment request_count.
+		// The alias is required to unambiguously reference the inserted values in the ON DUPLICATE KEY UPDATE clause.
 		$wpdb->query( $wpdb->prepare(
-			"INSERT INTO {$wpdb->prefix}troy_plugin_stats_requests_live (
+			"INSERT INTO {$wpdb->prefix}troy_plugin_stats_requests_live AS t (
 				plugin_id,
 				epoch,
 				version,
@@ -257,15 +259,16 @@ final class Plugin_Updates extends Base_Endpoint {
 				client_version
 			)
 			VALUES ( %d, %d, %s, %d, %s, 1, %s, %s, %s, %s, %s )
+			AS new
 			ON DUPLICATE KEY UPDATE
-				version        = VALUES(version),
-				is_active      = VALUES(is_active),
-				request_count  = request_count + 1,
-				locales        = VALUES(locales),
-				origin_url     = VALUES(origin_url),
-				php_version    = VALUES(php_version),
-				wp_version     = VALUES(wp_version),
-				client_version = VALUES(client_version)",
+				version        = new.version,
+				is_active      = new.is_active,
+				request_count  = t.request_count + 1,
+				locales        = new.locales,
+				origin_url     = new.origin_url,
+				php_version    = new.php_version,
+				wp_version     = new.wp_version,
+				client_version = new.client_version",
 			$plugin_id,
 			$epoch,
 			$version,

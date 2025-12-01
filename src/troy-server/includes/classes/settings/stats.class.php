@@ -135,7 +135,6 @@ final class Stats {
 		$current_epoch = API\Utils::get_epoch();
 
 		if ( $start_date && $end_date ) {
-			// Use date-range query from stats_to_date
 			$totals = $wpdb->get_row( $wpdb->prepare(
 				"SELECT
 					COALESCE(SUM(downloads), 0) as total_downloads,
@@ -146,7 +145,6 @@ final class Stats {
 				$end_date,
 			) );
 		} else {
-			// Use totals table for all-time stats
 			$totals = $wpdb->get_row(
 				"SELECT
 					COALESCE(SUM(downloads), 0) as total_downloads,
@@ -155,7 +153,6 @@ final class Stats {
 			);
 		}
 
-		// Get install counts from stats_totals.
 		// Total installs = max of current or previous epoch (since current epoch may be incomplete).
 		// Active installs = current epoch count.
 		$installs = $wpdb->get_row(

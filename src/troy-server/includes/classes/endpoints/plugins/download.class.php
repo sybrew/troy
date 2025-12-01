@@ -1,15 +1,16 @@
 <?php
 /**
- * @package Troy\Server\Endpoints
+ * @package Troy\Server\Endpoints\Plugins
  * @access  public
  */
 
-namespace Troy\Server\Endpoints;
+namespace Troy\Server\Endpoints\Plugins;
 
 \defined( 'Troy\Server\ABSPATH' ) or die;
 
 use Troy\Server\{
 	API,
+	Endpoints\Base_Endpoint,
 	Plugins\Data,
 	Plugins\Files,
 };

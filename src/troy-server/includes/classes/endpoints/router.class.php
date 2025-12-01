@@ -75,11 +75,11 @@ final class Router {
 				break;
 
 			case 'plugin/get/updates' === $request_path:
-				new Plugin_Updates()->handle_request();
+				new Plugin\Updates()->handle_request();
 				break;
 
 			case 'plugin/get/info' === $request_path:
-				new Plugin_Info()->handle_request();
+				new Plugin\Info()->handle_request();
 				break;
 
 			case str_starts_with( $request_path, 'plugin/get/zip/' ):
@@ -87,9 +87,9 @@ final class Router {
 				$path_parts = array_values( array_filter( explode( '/', $request_path ) ) );
 
 				if ( \count( $path_parts ) >= 4 ) {
-					new Plugin_Download(
+					new Plugin\Download(
 						$path_parts[3], // slug
-						$path_parts[4] ?: 'latest', // version
+						( $path_parts[4] ?? null ) ?: 'latest', // version
 					)->handle_request();
 				}
 				break;

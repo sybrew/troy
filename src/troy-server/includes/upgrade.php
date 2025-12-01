@@ -102,12 +102,9 @@ function set_upgrade_lock( $release_timeout ) {
 	) );
 
 	if ( ! $lock ) {
-		$lock = \get_option( 'troy_server_upgrade.lock' );
+		$lock_time = \get_option( 'troy_server_upgrade.lock' );
 
-		if ( ! $lock )
-			return false;
-
-		if ( $lock > ( time() - $release_timeout ) )
+		if ( ! $lock_time || ( $lock_time > ( time() - $release_timeout ) ) )
 			return false;
 
 		release_upgrade_lock();
@@ -153,7 +150,7 @@ function downgrade_from( $version ) {
 function upgrade_from( $version ) {
 
 	switch ( true ) {
-		case $version < 1184:
+		case $version < 1_1184:
 			global $wpdb;
 
 			// dbDelta is unreliable; it works sporadically using case-sensitive regex.
@@ -165,7 +162,7 @@ function upgrade_from( $version ) {
 			// Register the initial settings.
 			\add_option( 'troy_server_settings', [], '', true );
 
-			\update_option( 'troy_server_db_version', 1184, true );
+			\update_option( 'troy_server_db_version', 1_1184, true );
 			// Fall through.
 	}
 }

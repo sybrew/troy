@@ -110,7 +110,7 @@ if ( ! $meta ) {
 				<option value=silent <?php \selected( $meta->notice_severity, 'silent' ); ?>><?= \esc_html__( 'Silent', 'troy-server' ) ?></option>
 			</select>
 			<p class=description>
-				<?= \esc_html__( 'Detailed shows user-friendly progress updates, verbose shows detailed error data (if any), and silent show no notices.', 'troy-server' ) ?>
+				<?= \esc_html__( 'Detailed shows user-friendly progress updates, verbose shows detailed error data (if any), and silent shows no notices.', 'troy-server' ) ?>
 			</p>
 		</td>
 	</tr>

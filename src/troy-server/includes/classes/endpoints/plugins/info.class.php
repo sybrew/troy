@@ -1,15 +1,16 @@
 <?php
 /**
- * @package Troy\Server
+ * @package Troy\Server\Endpoints\Plugins
  * @access  public
  */
 
-namespace Troy\Server\Endpoints;
+namespace Troy\Server\Endpoints\Plugins;
 
 \defined( 'Troy\Server\ABSPATH' ) or die;
 
 use Troy\Server\{
 	API,
+	Endpoints\Base_Endpoint,
 	Plugins\Data,
 	Plugins\Files,
 };
@@ -39,13 +40,13 @@ use Troy\Server\{
  */
 
 /**
- * Class Troy\Server\Endpoints\Plugin_Info.
+ * Plugin info endpoint for Troy Server.
  *
  * Handles requests for plugin information used in the WordPress plugin thickbox.
  *
  * @since 0.0.1184
  */
-final class Plugin_Info extends Base_Endpoint {
+final class Info extends Base_Endpoint {
 
 	/**
 	 * Handle the plugin information request.
