@@ -56,12 +56,12 @@ $packages_summary = Settings\Stats::get_packages_summary();
 	<div id=troy-server-package-stats-overview class=troy-server-settings-accordion-panel>
 		<div class=troy-server-stats-cards id=troy-server-package-stats-overview-cards>
 			<div class=troy-server-stats-card>
-				<span class=troy-server-stats-card-label><?= \esc_html__( 'Packages', 'troy-server' ) ?></span>
-				<span class=troy-server-stats-card-value><?= \esc_html( \number_format_i18n( $package_overview['total_packages'] ) ) ?></span>
-			</div>
-			<div class=troy-server-stats-card>
 				<span class=troy-server-stats-card-label><?= \esc_html__( 'Downloads', 'troy-server' ) ?></span>
 				<span class=troy-server-stats-card-value><?= \esc_html( \number_format_i18n( $package_overview['total_downloads'] ) ) ?></span>
+			</div>
+			<div class=troy-server-stats-card>
+				<span class=troy-server-stats-card-label><?= \esc_html__( 'Packages', 'troy-server' ) ?></span>
+				<span class=troy-server-stats-card-value><?= \esc_html( \number_format_i18n( $package_overview['total_packages'] ) ) ?></span>
 			</div>
 			<div class=troy-server-stats-card>
 				<span class=troy-server-stats-card-label><?= \esc_html__( 'Last Snapshot', 'troy-server' ) ?></span>
@@ -83,7 +83,6 @@ $packages_summary = Settings\Stats::get_packages_summary();
 			<thead>
 				<tr>
 					<th scope=col><?= \esc_html__( 'Package', 'troy-server' ) ?></th>
-					<th scope=col><?= \esc_html__( 'Version', 'troy-server' ) ?></th>
 					<th scope=col><?= \esc_html__( 'Downloads', 'troy-server' ) ?></th>
 					<th scope=col><?= \esc_html__( 'Actions', 'troy-server' ) ?></th>
 				</tr>
@@ -93,7 +92,7 @@ $packages_summary = Settings\Stats::get_packages_summary();
 				if ( empty( $packages_summary ) ) {
 					?>
 					<tr>
-						<td colspan=4><?= \esc_html__( 'No package data available.', 'troy-server' ) ?></td>
+						<td colspan=3><?= \esc_html__( 'No package data available.', 'troy-server' ) ?></td>
 					</tr>
 					<?php
 				} else foreach ( $packages_summary as $package ) {
@@ -102,7 +101,6 @@ $packages_summary = Settings\Stats::get_packages_summary();
 						<td>
 							<strong><?= \esc_html( $package['name'] ) ?></strong> <code>(<?= \esc_html( $package['slug'] ) ?>)</code>
 						</td>
-						<td><?= \esc_html( $package['version'] ) ?></td>
 						<td><?= \esc_html( \number_format_i18n( $package['downloads'] ) ) ?></td>
 						<td>
 							<button type=button class="button button-small troy-server-stats-package-details-btn" data-package-id="<?= \esc_attr( $package['package_id'] ) ?>">

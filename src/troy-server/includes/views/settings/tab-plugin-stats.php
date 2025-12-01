@@ -48,6 +48,7 @@ $locales          = Settings\Stats::get_locale_stats();
 
 <p><?= \esc_html__( 'Troy Server collects anonymized data from your plugin users. Here, you can inspect the details.', 'troy-server' ) ?></p>
 <p><?= \esc_html__( 'The data is aggregated automatically every 30 minutes.', 'troy-server' ) ?></p>
+<p><?= \esc_html__( 'Unless otherwise specified, the data shown below is combined from all plugins hosted on this Troy Server instance.', 'troy-server' ) ?></p>
 
 <div class=troy-server-stats-date-range>
 	<label for=troy-server-stats-range><?= \esc_html__( 'Date Range:', 'troy-server' ) ?></label>
@@ -70,21 +71,12 @@ $locales          = Settings\Stats::get_locale_stats();
 	</h3>
 	<div id=troy-server-stats-overview class=troy-server-settings-accordion-panel>
 		<p class=description>
-			<?= \esc_html__( 'The "Installations" count shown publicly uses the highest value between current and previous epoch, since a new epoch may still be catching up.', 'troy-server' ) ?>
+			<?= \esc_html__( 'The "Installations" count uses the highest value between current and previous epoch, since a new epoch may still be catching up.', 'troy-server' ) ?>
+		</p>
+		<p class=description>
+			<?= \esc_html__( 'The "Last Snapshot" indicates when the stats were last aggregated. It will not change if there is no new data.', 'troy-server' ) ?>
 		</p>
 		<div class=troy-server-stats-cards id=troy-server-stats-overview-cards>
-			<div class=troy-server-stats-card>
-				<span class=troy-server-stats-card-label><?= \esc_html__( 'Epoch', 'troy-server' ) ?></span>
-				<span class=troy-server-stats-card-value data-stat=current_epoch><?= \esc_html( $overview['current_epoch'] ) ?></span>
-			</div>
-			<div class=troy-server-stats-card>
-				<span class=troy-server-stats-card-label><?= \esc_html__( 'Last Snapshot', 'troy-server' ) ?></span>
-				<span class=troy-server-stats-card-value data-stat=last_snapshot><?= \esc_html( $overview['last_snapshot'] ?? '-' ) ?></span>
-			</div>
-			<div class=troy-server-stats-card>
-				<span class=troy-server-stats-card-label><?= \esc_html__( 'Plugins', 'troy-server' ) ?></span>
-				<span class=troy-server-stats-card-value data-stat=total_plugins><?= \esc_html( \number_format_i18n( $overview['total_plugins'] ) ) ?></span>
-			</div>
 			<div class=troy-server-stats-card>
 				<span class=troy-server-stats-card-label><?= \esc_html__( 'Downloads', 'troy-server' ) ?></span>
 				<span class=troy-server-stats-card-value data-stat=total_downloads><?= \esc_html( \number_format_i18n( $overview['total_downloads'] ) ) ?></span>
@@ -94,7 +86,7 @@ $locales          = Settings\Stats::get_locale_stats();
 				<span class=troy-server-stats-card-value data-stat=total_views><?= \esc_html( \number_format_i18n( $overview['total_views'] ) ) ?></span>
 			</div>
 			<div class=troy-server-stats-card>
-				<span class=troy-server-stats-card-label><?= \esc_html__( 'Total Installations', 'troy-server' ) ?></span>
+				<span class=troy-server-stats-card-label><?= \esc_html__( 'Installations', 'troy-server' ) ?></span>
 				<span class=troy-server-stats-card-value data-stat=total_installs><?= \esc_html( \number_format_i18n( $overview['total_installs'] ) ) ?></span>
 			</div>
 			<div class=troy-server-stats-card>
@@ -104,6 +96,14 @@ $locales          = Settings\Stats::get_locale_stats();
 			<div class=troy-server-stats-card>
 				<span class=troy-server-stats-card-label><?= \esc_html__( 'Inactive Installations', 'troy-server' ) ?></span>
 				<span class=troy-server-stats-card-value data-stat=inactive_installs><?= \esc_html( \number_format_i18n( $overview['inactive_installs'] ) ) ?></span>
+			</div>
+			<div class=troy-server-stats-card>
+				<span class=troy-server-stats-card-label><?= \esc_html__( 'Epoch', 'troy-server' ) ?></span>
+				<span class=troy-server-stats-card-value data-stat=current_epoch><?= \esc_html( $overview['current_epoch'] ) ?></span>
+			</div>
+			<div class=troy-server-stats-card>
+				<span class=troy-server-stats-card-label><?= \esc_html__( 'Last Snapshot', 'troy-server' ) ?></span>
+				<span class=troy-server-stats-card-value data-stat=last_snapshot><?= \esc_html( $overview['last_snapshot'] ?? '-' ) ?></span>
 			</div>
 		</div>
 	</div>
@@ -117,15 +117,18 @@ $locales          = Settings\Stats::get_locale_stats();
 		</button>
 	</h3>
 	<div id=troy-server-stats-top-plugins class=troy-server-settings-accordion-panel>
+		<p class=description>
+			<?= \esc_html__( 'The "Installations" count uses the highest value between current and previous epoch, since a new epoch may still be catching up.', 'troy-server' ) ?>
+		</p>
 		<table class="widefat striped troy-server-stats-table" id=troy-server-stats-plugins-table>
 			<thead>
 				<tr>
 					<th scope=col><?= \esc_html__( 'Plugin', 'troy-server' ) ?></th>
 					<th scope=col><?= \esc_html__( 'Downloads', 'troy-server' ) ?></th>
+					<th scope=col><?= \esc_html__( 'Views', 'troy-server' ) ?></th>
 					<th scope=col><?= \esc_html__( 'Installations', 'troy-server' ) ?></th>
 					<th scope=col><?= \esc_html__( 'Active Installations', 'troy-server' ) ?></th>
 					<th scope=col><?= \esc_html__( 'Inactive Installations', 'troy-server' ) ?></th>
-					<th scope=col><?= \esc_html__( 'Views', 'troy-server' ) ?></th>
 					<th scope=col><?= \esc_html__( 'Actions', 'troy-server' ) ?></th>
 				</tr>
 			</thead>
@@ -144,10 +147,10 @@ $locales          = Settings\Stats::get_locale_stats();
 							<strong><?= \esc_html( $plugin['name'] ) ?></strong> <code>(<?= \esc_html( $plugin['slug'] ) ?>)</code>
 						</td>
 						<td><?= \esc_html( \number_format_i18n( $plugin['downloads'] ) ) ?></td>
+						<td><?= \esc_html( \number_format_i18n( $plugin['views'] ) ) ?></td>
 						<td><?= \esc_html( \number_format_i18n( $plugin['total_installs'] ) ) ?></td>
 						<td><?= \esc_html( \number_format_i18n( $plugin['active_installs'] ) ) ?></td>
 						<td><?= \esc_html( \number_format_i18n( $plugin['inactive_installs'] ) ) ?></td>
-						<td><?= \esc_html( \number_format_i18n( $plugin['views'] ) ) ?></td>
 						<td>
 							<button type=button class="button button-small troy-server-stats-details-btn" data-plugin-id="<?= \esc_attr( $plugin['plugin_id'] ) ?>">
 								<?= \esc_html__( 'Details', 'troy-server' ) ?>

@@ -150,7 +150,7 @@
 			const el = overviewCards.querySelector( `[data-stat="${ key }"]` );
 
 			if ( el )
-				el.textContent = value;
+				el.textContent = escape.string( value ); // textContent already escapes, but just in case
 		} );
 	};
 
@@ -178,17 +178,17 @@
 		tbody.innerHTML = plugins
 			.map(
 				plugin => `
-					<tr data-plugin-id="${ plugin.plugin_id }">
+					<tr data-plugin-id="${ +plugin.plugin_id }">
 						<td>
 							<strong>${ escape.string( plugin.name ) }</strong> <code>(${ escape.string( plugin.slug ) })</code>
 						</td>
 						<td>${ sanitize.number( plugin.downloads ) }</td>
+						<td>${ sanitize.number( plugin.views ) }</td>
 						<td>${ sanitize.number( plugin.total_installs ) }</td>
 						<td>${ sanitize.number( plugin.active_installs ) }</td>
 						<td>${ sanitize.number( plugin.inactive_installs ) }</td>
-						<td>${ sanitize.number( plugin.views ) }</td>
 						<td>
-							<button type="button" class="button button-small troy-server-stats-details-btn" data-plugin-id="${ plugin.plugin_id }">
+							<button type="button" class="button button-small troy-server-stats-details-btn" data-plugin-id="${ +plugin.plugin_id }">
 								${ i18n.details }
 							</button>
 						</td>
@@ -254,7 +254,7 @@
 		try {
 			const data = await fetchStats( `plugin/${ pluginId }`, getDateParams() );
 
-			getEl( 'modal-title' ).textContent = data.name;
+			getEl( 'modal-title' ).textContent = escape.string( data.name ); // textContent already escapes, but just in case
 			getEl( 'modal-body' ).innerHTML    = buildPluginDetailsHtml( data );
 		} catch ( error ) {
 			getEl( 'modal-body' ).innerHTML = `<div class="troy-server-stats-error">${ i18n.error }</div>`;
@@ -313,7 +313,7 @@
 
 		return `
 			<div class="troy-server-stats-detail-section">
-				<h4>${ title }</h4>
+				<h4>${ escape.string( title ) }</h4>
 				<ul class="troy-server-stats-detail-list">${ listItems }</ul>
 			</div>
 		`;
@@ -331,12 +331,240 @@
 	 */
 	const buildCard = ( label, value, formatAs = 'number' ) => `
 		<div class="troy-server-stats-card">
-			<span class="troy-server-stats-card-label">${ label }</span>
+			<span class="troy-server-stats-card-label">${ escape.string( label ) }</span>
 			<span class="troy-server-stats-card-value">${
 				'string' === formatAs ? escape.string( value ) : sanitize.number( value )
 			}</span>
 		</div>
 	`;
+
+	/**
+	 * Calculates installations for an epoch from the epoch_installs data.
+	 *
+	 * @since 0.0.1184
+	 *
+	 * @param {Object} epochInstalls The epoch_installs object from the API.
+	 * @param {number} epoch         The epoch number to calculate for.
+	 * @return {number} Total installations for the epoch.
+	 */
+	const getEpochInstalls = ( epochInstalls, epoch ) => {
+
+		const epochData = epochInstalls?.[ epoch ];
+
+		if ( ! epochData )
+			return 0;
+
+		return ( epochData.active || 0 ) + ( epochData.inactive || 0 );
+	};
+
+	/**
+	 * Formats a change value with a sign prefix.
+	 *
+	 * @since 0.0.1184
+	 *
+	 * @param {number} change The change value.
+	 * @return {string} Formatted change string with sign.
+	 */
+	const formatChange = change => {
+
+		if ( 0 === change )
+			return '0';
+
+		return change > 0 ? `+${ sanitize.number( change ) }` : sanitize.number( change );
+	};
+
+	/**
+	 * Calculates percentage change between two values.
+	 *
+	 * @since 0.0.1184
+	 *
+	 * @param {number} current  The current value.
+	 * @param {number} previous The previous value.
+	 * @return {number|null} Percentage change, Infinity for new values, or null if no data.
+	 */
+	const calcChangePercent = ( current, previous ) => {
+
+		if ( ! previous )
+			return current ? Infinity : null;
+
+		return Math.round( ( ( current - previous ) / previous ) * 1000 ) / 10;
+	};
+
+	/**
+	 * Formats a change value with percentage.
+	 *
+	 * @since 0.0.1184
+	 *
+	 * @param {number}      change  The absolute change value.
+	 * @param {number|null} percent The percentage change.
+	 * @return {string} HTML string with formatted change and percentage in bold.
+	 */
+	const formatChangeWithPercent = ( change, percent ) => {
+
+		const changeStr = formatChange( change );
+
+		if ( null === percent )
+			return changeStr;
+
+		if ( Infinity === percent )
+			return `${ changeStr } <b>(+∞%)</b>`;
+
+		const sign       = percent >= 0 ? '+' : '';
+		const percentStr = `${ sign }${ percent }%`;
+
+		return `${ changeStr } <b>(${ percentStr })</b>`;
+	};
+
+	/**
+	 * Gets CSS class for change value.
+	 *
+	 * @since 0.0.1184
+	 *
+	 * @param {number} change The change value.
+	 * @return {string} CSS class name.
+	 */
+	const getChangeClass = change => {
+
+		if ( change > 0 )
+			return 'troy-server-stats-positive';
+
+		if ( change < 0 )
+			return 'troy-server-stats-negative';
+
+		return '';
+	};
+
+	/**
+	 * Builds the epoch comparison table HTML.
+	 *
+	 * @since 0.0.1184
+	 *
+	 * @param {Object} data Plugin details data from the API.
+	 * @return {string} HTML string for the epoch comparison table.
+	 */
+	const buildEpochComparisonTable = data => {
+
+		const currentEpochInstalls  = getEpochInstalls( data.epoch_installs, data.current_epoch );
+		const previousEpochInstalls = getEpochInstalls( data.epoch_installs, data.previous_epoch );
+		const change                = currentEpochInstalls - previousEpochInstalls;
+		const changePercent         = calcChangePercent( currentEpochInstalls, previousEpochInstalls );
+
+		return `
+		<div class="troy-server-stats-detail-section">
+			<h4>${ escape.string( i18n.epochComparison ) }</h4>
+			<table class="widefat striped">
+				<thead>
+					<tr>
+						<th scope="col">${ escape.string( i18n.metric ) }</th>
+						<th scope="col">${ escape.string( i18n.previousEpochHeader.replace( '%d', data.previous_epoch ) ) }</th>
+						<th scope="col">${ escape.string( i18n.currentEpochHeader.replace( '%d', data.current_epoch ) ) }</th>
+						<th scope="col">${ escape.string( i18n.change ) }</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>${ escape.string( i18n.totalInstallations ) }</td>
+						<td>${ sanitize.number( previousEpochInstalls ) }</td>
+						<td>${ sanitize.number( currentEpochInstalls ) }</td>
+						<td class="${ getChangeClass( change ) }">${ formatChangeWithPercent( change, changePercent ) }</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	`;
+	};
+
+	/**
+	 * Builds the version installs table HTML.
+	 *
+	 * @since 0.0.1184
+	 *
+	 * @param {Object} data Plugin details data from the API.
+	 * @return {string} HTML string for the version installs table.
+	 */
+	const buildVersionInstallsTable = data => {
+
+		if ( ! data.version_installs?.length )
+			return '';
+
+		const rows = data.version_installs
+			.map( item => {
+
+				const current       = parseInt( item.current_epoch, 10 ) || 0;
+				const previous      = parseInt( item.previous_epoch, 10 ) || 0;
+				const change        = current - previous;
+				const changePercent = calcChangePercent( current, previous );
+
+				return `
+					<tr>
+						<td>${ escape.string( item.version ) }</td>
+						<td>${ sanitize.number( previous ) }</td>
+						<td>${ sanitize.number( current ) }</td>
+						<td class="${ getChangeClass( change ) }">${ formatChangeWithPercent( change, changePercent ) }</td>
+					</tr>
+				`;
+			} )
+			.join( '' );
+
+		return `
+		<div class="troy-server-stats-detail-section">
+			<h4>${ escape.string( i18n.installsByVersion ) }</h4>
+			<table class="widefat striped">
+				<thead>
+					<tr>
+						<th scope="col">${ escape.string( i18n.version ) }</th>
+						<th scope="col">${ escape.string( i18n.previousEpochHeader.replace( '%d', data.previous_epoch ) ) }</th>
+						<th scope="col">${ escape.string( i18n.currentEpochHeader.replace( '%d', data.current_epoch ) ) }</th>
+						<th scope="col">${ escape.string( i18n.change ) }</th>
+					</tr>
+				</thead>
+				<tbody>
+					${ rows }
+				</tbody>
+			</table>
+		</div>
+	`;
+	};
+
+	/**
+	 * Builds the version downloads table HTML.
+	 *
+	 * @since 0.0.1184
+	 *
+	 * @param {Object} data Plugin details data from the API.
+	 * @return {string} HTML string for the version downloads table.
+	 */
+	const buildVersionDownloadsTable = data => {
+
+		if ( ! data.version_installs?.length )
+			return '';
+
+		const rows = data.version_installs
+			.map( item => `
+				<tr>
+					<td>${ escape.string( item.version ) }</td>
+					<td>${ sanitize.number( parseInt( item.downloads, 10 ) || 0 ) }</td>
+				</tr>
+			` )
+			.join( '' );
+
+		return `
+		<div class="troy-server-stats-detail-section">
+			<h4>${ escape.string( i18n.downloadsByVersion ) }</h4>
+			<table class="widefat striped">
+				<thead>
+					<tr>
+						<th scope="col">${ escape.string( i18n.version ) }</th>
+						<th scope="col">${ escape.string( i18n.totalDownloads ) }</th>
+					</tr>
+				</thead>
+				<tbody>
+					${ rows }
+				</tbody>
+			</table>
+		</div>
+	`;
+	};
 
 	/**
 	 * Builds HTML for plugin details modal content.
@@ -348,12 +576,15 @@
 	 */
 	const buildPluginDetailsHtml = data => `
 		<div class="troy-server-stats-cards">
-			${ buildCard( i18n.lastSnapshot, data.last_snapshot || '-', 'string' ) }
+			${ buildCard( i18n.totalDownloads, data.total_downloads ) }
 			${ buildCard( i18n.installations, data.total_installs ) }
 			${ buildCard( i18n.activeInstalls, data.active_installs ) }
 			${ buildCard( i18n.inactiveInstalls, data.inactive_installs ) }
+			${ buildCard( i18n.lastSnapshot, data.last_snapshot || '-', 'string' ) }
 		</div>
-		${ buildDetailSection( i18n.downloadsByVersion, data.versions, 'version', 'downloads' ) }
+		${ buildEpochComparisonTable( data ) }
+		${ buildVersionInstallsTable( data ) }
+		${ buildVersionDownloadsTable( data ) }
 		${ buildDetailSection( i18n.downloadsByType, data.download_types, 'type', 'downloads' ) }
 		${ buildDetailSection( i18n.locales, data.locales, 'locale', 'count' ) }
 		${ buildDetailSection( i18n.phpVersions, data.php_versions, 'version', 'count' ) }
@@ -370,8 +601,8 @@
 	 */
 	const buildPackageDetailsHtml = data => `
 		<div class="troy-server-stats-cards">
-			${ buildCard( i18n.currentVersion, data.current_version, 'string' ) }
 			${ buildCard( i18n.totalDownloads, data.total_downloads ) }
+			${ buildCard( i18n.lastSnapshot, data.last_snapshot || '-', 'string' ) }
 		</div>
 		${ buildDetailSection( i18n.downloadsByVersion, data.versions, 'version', 'downloads' ) }
 	`;

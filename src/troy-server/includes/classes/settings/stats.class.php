@@ -87,25 +87,35 @@ final class Stats {
 				'nonce'        => \wp_create_nonce( 'wp_rest' ),
 				'currentEpoch' => API\Utils::get_epoch(),
 				'i18n'         => [
-					'loading'            => \__( 'Loading...', 'troy-server' ),
-					'error'              => \__( 'Failed to load stats.', 'troy-server' ),
-					'noData'             => \__( 'No data available.', 'troy-server' ),
-					'increase'           => \__( 'increase', 'troy-server' ),
-					'decrease'           => \__( 'decrease', 'troy-server' ),
-					'details'            => \__( 'Details', 'troy-server' ),
-					'installations'      => \__( 'Installations', 'troy-server' ),
-					'activeInstalls'     => \__( 'Active Installations', 'troy-server' ),
-					'inactiveInstalls'   => \__( 'Inactive Installations', 'troy-server' ),
-					'notReported'        => \__( 'Not reported', 'troy-server' ),
-					'downloadsByVersion' => \__( 'Downloads by Version', 'troy-server' ),
-					'downloadsByType'    => \__( 'Downloads by Type', 'troy-server' ),
-					'locales'            => \__( 'Locales', 'troy-server' ),
-					'phpVersions'        => \__( 'PHP Versions', 'troy-server' ),
-					'wpVersions'         => \__( 'WordPress Versions', 'troy-server' ),
-					'currentVersion'     => \__( 'Current Version', 'troy-server' ),
-					'totalDownloads'     => \__( 'Total Downloads', 'troy-server' ),
-					'epochHint'          => \__( 'Publicly shown value uses the highest count between current and previous epoch.', 'troy-server' ),
-					'lastSnapshot'       => \__( 'Last Snapshot', 'troy-server' ),
+					'loading'             => \__( 'Loading...', 'troy-server' ),
+					'error'               => \__( 'Failed to load stats.', 'troy-server' ),
+					'noData'              => \__( 'No data available.', 'troy-server' ),
+					'increase'            => \__( 'increase', 'troy-server' ),
+					'decrease'            => \__( 'decrease', 'troy-server' ),
+					'details'             => \__( 'Details', 'troy-server' ),
+					'installations'       => \__( 'Installations', 'troy-server' ),
+					'activeInstalls'      => \__( 'Active Installations', 'troy-server' ),
+					'inactiveInstalls'    => \__( 'Inactive Installations', 'troy-server' ),
+					'notReported'         => \__( 'Not reported', 'troy-server' ),
+					'downloadsByVersion'  => \__( 'Downloads by Version', 'troy-server' ),
+					'downloadsByType'     => \__( 'Downloads by Type', 'troy-server' ),
+					'locales'             => \__( 'Locales', 'troy-server' ),
+					'phpVersions'         => \__( 'PHP Versions', 'troy-server' ),
+					'wpVersions'          => \__( 'WordPress Versions', 'troy-server' ),
+					'currentVersion'      => \__( 'Current Version', 'troy-server' ),
+					'totalDownloads'      => \__( 'Total Downloads', 'troy-server' ),
+					'epochHint'           => \__( 'Publicly shown value uses the highest count between current and previous epoch.', 'troy-server' ),
+					'epochComparison'     => \__( 'Epoch Comparison', 'troy-server' ),
+					'installsByVersion'   => \__( 'Installations by Version', 'troy-server' ),
+					'metric'              => \__( 'Metric', 'troy-server' ),
+					'version'             => \__( 'Version', 'troy-server' ),
+					// translators: %d is the epoch number
+					'previousEpochHeader' => \__( 'Previous Epoch (%d)', 'troy-server' ),
+					// translators: %d is the epoch number
+					'currentEpochHeader'  => \__( 'Current Epoch (%d)', 'troy-server' ),
+					'totalInstallations'  => \__( 'Total Installations', 'troy-server' ),
+					'change'              => \__( 'Change', 'troy-server' ),
+					'lastSnapshot'        => \__( 'Last Snapshot', 'troy-server' ),
 				],
 			],
 		);
@@ -700,6 +710,13 @@ final class Stats {
 			\ARRAY_A,
 		);
 
+		$total_downloads = (int) $wpdb->get_var( $wpdb->prepare(
+			"SELECT COALESCE(SUM(downloads), 0)
+			FROM {$wpdb->prefix}troy_plugin_stats_totals
+			WHERE plugin_id = %d",
+			$plugin_id,
+		) );
+
 		$last_snapshot = $wpdb->get_var( $wpdb->prepare(
 			"SELECT MAX(updated_at)
 			FROM {$wpdb->prefix}troy_plugin_stats_totals_daily_snapshots
@@ -707,11 +724,29 @@ final class Stats {
 			$plugin_id,
 		) );
 
+		$version_installs = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT
+					version,
+					SUM(downloads) as downloads,
+					SUM(installations_current_epoch) as current_epoch,
+					SUM(installations_previous_epoch) as previous_epoch
+				FROM {$wpdb->prefix}troy_plugin_stats_versions
+				WHERE plugin_id = %d
+				GROUP BY version
+				ORDER BY current_epoch DESC
+				LIMIT 7", // Magic number: lucky!
+				$plugin_id,
+			),
+			\ARRAY_A,
+		);
+
 		return [
 			'plugin_id'         => $plugin_id,
 			'slug'              => $plugin->slug,
 			'name'              => $plugin->name ?: $plugin->slug,
 			'status'            => $plugin->status,
+			'total_downloads'   => $total_downloads,
 			'total_installs'    => $total_installs,
 			'active_installs'   => $current_active,
 			'inactive_installs' => $current_inactive,
@@ -734,6 +769,7 @@ final class Stats {
 			'locales'           => $locales,
 			'php_versions'      => $php_versions,
 			'wp_versions'       => $wp_versions,
+			'version_installs'  => $version_installs,
 			'last_snapshot'     => $last_snapshot,
 		];
 	}
@@ -788,13 +824,20 @@ final class Stats {
 			$package_id,
 		) );
 
+		$last_snapshot = $wpdb->get_var( $wpdb->prepare(
+			"SELECT MAX(updated_at)
+			FROM {$wpdb->prefix}troy_package_stats_downloads
+			WHERE package_id = %d",
+			$package_id,
+		) );
+
 		return [
 			'package_id'      => $package_id,
 			'slug'            => $package->slug,
 			'name'            => $package->name ?: $package->slug,
 			'status'          => $package->status,
-			'current_version' => $package->version,
 			'total_downloads' => $total_downloads,
+			'last_snapshot'   => $last_snapshot,
 			'versions'        => $versions,
 		];
 	}
