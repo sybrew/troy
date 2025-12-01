@@ -197,6 +197,7 @@
 	margin: 0;
 	padding: 1em 1.5em;
 	background: #fff;
+	overflow-x: auto;
 }
 
 .troy-server-settings-accordion-panel[hidden] {

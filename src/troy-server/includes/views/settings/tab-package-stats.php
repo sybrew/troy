@@ -35,7 +35,8 @@ use Troy\Server\Settings;
 
 // phpcs:disable WordPress.WP.GlobalVariablesOverride -- We're not in the global space.
 
-// Get initial data for SSR.
+// Get initial data for Server Side Rendering.
+$package_overview = Settings\Stats::get_package_overview();
 $packages_summary = Settings\Stats::get_packages_summary();
 
 ?>
@@ -45,7 +46,31 @@ $packages_summary = Settings\Stats::get_packages_summary();
 
 <hr class=hr-separator>
 
-<?php // Package Downloads Section ?>
+<div class=troy-server-settings-accordion>
+	<h3 class=troy-server-settings-accordion-heading>
+		<button aria-expanded=true class=troy-server-settings-accordion-trigger aria-controls=troy-server-package-stats-overview type=button>
+			<span class=title><?= \esc_html__( 'Overview', 'troy-server' ) ?></span>
+			<span class=icon></span>
+		</button>
+	</h3>
+	<div id=troy-server-package-stats-overview class=troy-server-settings-accordion-panel>
+		<div class=troy-server-stats-cards id=troy-server-package-stats-overview-cards>
+			<div class=troy-server-stats-card>
+				<span class=troy-server-stats-card-label><?= \esc_html__( 'Packages', 'troy-server' ) ?></span>
+				<span class=troy-server-stats-card-value><?= \esc_html( \number_format_i18n( $package_overview['total_packages'] ) ) ?></span>
+			</div>
+			<div class=troy-server-stats-card>
+				<span class=troy-server-stats-card-label><?= \esc_html__( 'Downloads', 'troy-server' ) ?></span>
+				<span class=troy-server-stats-card-value><?= \esc_html( \number_format_i18n( $package_overview['total_downloads'] ) ) ?></span>
+			</div>
+			<div class=troy-server-stats-card>
+				<span class=troy-server-stats-card-label><?= \esc_html__( 'Last Snapshot', 'troy-server' ) ?></span>
+				<span class=troy-server-stats-card-value><?= \esc_html( $package_overview['last_snapshot'] ?? '-' ) ?></span>
+			</div>
+		</div>
+	</div>
+</div>
+
 <div class=troy-server-settings-accordion>
 	<h3 class=troy-server-settings-accordion-heading>
 		<button aria-expanded=true class=troy-server-settings-accordion-trigger aria-controls=troy-server-stats-packages type=button>
@@ -93,7 +118,6 @@ $packages_summary = Settings\Stats::get_packages_summary();
 	</div>
 </div>
 
-<?php // Details Modal ?>
 <div id=troy-server-stats-modal class=troy-server-stats-modal hidden>
 	<div class=troy-server-stats-modal-content>
 		<div class=troy-server-stats-modal-header>

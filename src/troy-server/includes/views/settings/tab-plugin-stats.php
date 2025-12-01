@@ -35,7 +35,7 @@ use Troy\Server\Settings;
 
 // phpcs:disable WordPress.WP.GlobalVariablesOverride -- We're not in the global space.
 
-// Get initial data for SSR.
+// Get initial data for Server Side Rendering.
 $overview         = Settings\Stats::get_overview();
 $top_plugins      = Settings\Stats::get_top_plugins();
 $epoch_comparison = Settings\Stats::get_epoch_comparison();
@@ -61,7 +61,6 @@ $locales          = Settings\Stats::get_locale_stats();
 
 <hr class=hr-separator>
 
-<?php // Overview Section ?>
 <div class=troy-server-settings-accordion>
 	<h3 class=troy-server-settings-accordion-heading>
 		<button aria-expanded=true class=troy-server-settings-accordion-trigger aria-controls=troy-server-stats-overview type=button>
@@ -70,10 +69,17 @@ $locales          = Settings\Stats::get_locale_stats();
 		</button>
 	</h3>
 	<div id=troy-server-stats-overview class=troy-server-settings-accordion-panel>
+		<p class=description>
+			<?= \esc_html__( 'The "Installations" count shown publicly uses the highest value between current and previous epoch, since a new epoch may still be catching up.', 'troy-server' ) ?>
+		</p>
 		<div class=troy-server-stats-cards id=troy-server-stats-overview-cards>
 			<div class=troy-server-stats-card>
 				<span class=troy-server-stats-card-label><?= \esc_html__( 'Epoch', 'troy-server' ) ?></span>
 				<span class=troy-server-stats-card-value data-stat=current_epoch><?= \esc_html( $overview['current_epoch'] ) ?></span>
+			</div>
+			<div class=troy-server-stats-card>
+				<span class=troy-server-stats-card-label><?= \esc_html__( 'Last Snapshot', 'troy-server' ) ?></span>
+				<span class=troy-server-stats-card-value data-stat=last_snapshot><?= \esc_html( $overview['last_snapshot'] ?? '-' ) ?></span>
 			</div>
 			<div class=troy-server-stats-card>
 				<span class=troy-server-stats-card-label><?= \esc_html__( 'Plugins', 'troy-server' ) ?></span>
@@ -84,22 +90,25 @@ $locales          = Settings\Stats::get_locale_stats();
 				<span class=troy-server-stats-card-value data-stat=total_downloads><?= \esc_html( \number_format_i18n( $overview['total_downloads'] ) ) ?></span>
 			</div>
 			<div class=troy-server-stats-card>
-				<span class=troy-server-stats-card-label><?= \esc_html__( 'Active Installs', 'troy-server' ) ?></span>
+				<span class=troy-server-stats-card-label><?= \esc_html__( 'Views', 'troy-server' ) ?></span>
+				<span class=troy-server-stats-card-value data-stat=total_views><?= \esc_html( \number_format_i18n( $overview['total_views'] ) ) ?></span>
+			</div>
+			<div class=troy-server-stats-card>
+				<span class=troy-server-stats-card-label><?= \esc_html__( 'Total Installations', 'troy-server' ) ?></span>
+				<span class=troy-server-stats-card-value data-stat=total_installs><?= \esc_html( \number_format_i18n( $overview['total_installs'] ) ) ?></span>
+			</div>
+			<div class=troy-server-stats-card>
+				<span class=troy-server-stats-card-label><?= \esc_html__( 'Active Installations', 'troy-server' ) ?></span>
 				<span class=troy-server-stats-card-value data-stat=active_installs><?= \esc_html( \number_format_i18n( $overview['active_installs'] ) ) ?></span>
 			</div>
 			<div class=troy-server-stats-card>
-				<span class=troy-server-stats-card-label><?= \esc_html__( 'Inactive Installs', 'troy-server' ) ?></span>
+				<span class=troy-server-stats-card-label><?= \esc_html__( 'Inactive Installations', 'troy-server' ) ?></span>
 				<span class=troy-server-stats-card-value data-stat=inactive_installs><?= \esc_html( \number_format_i18n( $overview['inactive_installs'] ) ) ?></span>
-			</div>
-			<div class=troy-server-stats-card>
-				<span class=troy-server-stats-card-label><?= \esc_html__( 'Views', 'troy-server' ) ?></span>
-				<span class=troy-server-stats-card-value data-stat=total_views><?= \esc_html( \number_format_i18n( $overview['total_views'] ) ) ?></span>
 			</div>
 		</div>
 	</div>
 </div>
 
-<?php // Top Plugins Section ?>
 <div class=troy-server-settings-accordion>
 	<h3 class=troy-server-settings-accordion-heading>
 		<button aria-expanded=true class=troy-server-settings-accordion-trigger aria-controls=troy-server-stats-top-plugins type=button>
@@ -113,8 +122,9 @@ $locales          = Settings\Stats::get_locale_stats();
 				<tr>
 					<th scope=col><?= \esc_html__( 'Plugin', 'troy-server' ) ?></th>
 					<th scope=col><?= \esc_html__( 'Downloads', 'troy-server' ) ?></th>
-					<th scope=col><?= \esc_html__( 'Active Installs', 'troy-server' ) ?></th>
-					<th scope=col><?= \esc_html__( 'Inactive Installs', 'troy-server' ) ?></th>
+					<th scope=col><?= \esc_html__( 'Installations', 'troy-server' ) ?></th>
+					<th scope=col><?= \esc_html__( 'Active Installations', 'troy-server' ) ?></th>
+					<th scope=col><?= \esc_html__( 'Inactive Installations', 'troy-server' ) ?></th>
 					<th scope=col><?= \esc_html__( 'Views', 'troy-server' ) ?></th>
 					<th scope=col><?= \esc_html__( 'Actions', 'troy-server' ) ?></th>
 				</tr>
@@ -124,7 +134,7 @@ $locales          = Settings\Stats::get_locale_stats();
 				if ( empty( $top_plugins ) ) {
 					?>
 					<tr>
-						<td colspan=6><?= \esc_html__( 'No plugin data available.', 'troy-server' ) ?></td>
+						<td colspan=7><?= \esc_html__( 'No plugin data available.', 'troy-server' ) ?></td>
 					</tr>
 					<?php
 				} else foreach ( $top_plugins as $plugin ) {
@@ -134,6 +144,7 @@ $locales          = Settings\Stats::get_locale_stats();
 							<strong><?= \esc_html( $plugin['name'] ) ?></strong> <code>(<?= \esc_html( $plugin['slug'] ) ?>)</code>
 						</td>
 						<td><?= \esc_html( \number_format_i18n( $plugin['downloads'] ) ) ?></td>
+						<td><?= \esc_html( \number_format_i18n( $plugin['total_installs'] ) ) ?></td>
 						<td><?= \esc_html( \number_format_i18n( $plugin['active_installs'] ) ) ?></td>
 						<td><?= \esc_html( \number_format_i18n( $plugin['inactive_installs'] ) ) ?></td>
 						<td><?= \esc_html( \number_format_i18n( $plugin['views'] ) ) ?></td>
@@ -151,7 +162,6 @@ $locales          = Settings\Stats::get_locale_stats();
 	</div>
 </div>
 
-<?php // Epoch Comparison Section ?>
 <div class=troy-server-settings-accordion>
 	<h3 class=troy-server-settings-accordion-heading>
 		<button aria-expanded=false class=troy-server-settings-accordion-trigger aria-controls=troy-server-stats-epochs type=button>
@@ -161,7 +171,7 @@ $locales          = Settings\Stats::get_locale_stats();
 	</h3>
 	<div id=troy-server-stats-epochs class=troy-server-settings-accordion-panel hidden>
 		<p class=description>
-			<?= \esc_html__( 'An epoch spans one week. Active installations are counted from unique update requests within the current and previous epochs.', 'troy-server' ) ?>
+			<?= \esc_html__( 'An epoch spans one week. Installation counts are based on unique update requests per epoch.', 'troy-server' ) ?>
 		</p>
 		<table class="widefat striped troy-server-stats-table" id=troy-server-stats-epochs-table>
 			<thead>
@@ -191,11 +201,11 @@ $locales          = Settings\Stats::get_locale_stats();
 			<tbody>
 				<tr>
 					<td><?= \esc_html__( 'Update Requests', 'troy-server' ) ?></td>
-					<td><?= \esc_html( \number_format_i18n( $epoch_comparison['current_requests'] ) ) ?></td>
 					<td><?= \esc_html( \number_format_i18n( $epoch_comparison['previous_requests'] ) ) ?></td>
+					<td><?= \esc_html( \number_format_i18n( $epoch_comparison['current_requests'] ) ) ?></td>
 					<td class="<?= $epoch_comparison['requests_change_percent'] >= 0 ? 'troy-server-stats-positive' : 'troy-server-stats-negative' ?>">
 						<?php
-						if ( is_infinite( $epoch_comparison['requests_change_percent'] ) ) {
+						if ( \is_infinite( $epoch_comparison['requests_change_percent'] ) ) {
 							echo '+∞%';
 						} else {
 							echo \esc_html( ( $epoch_comparison['requests_change_percent'] >= 0 ? '+' : '' ) . $epoch_comparison['requests_change_percent'] . '%' );
@@ -205,14 +215,28 @@ $locales          = Settings\Stats::get_locale_stats();
 				</tr>
 				<tr>
 					<td><?= \esc_html__( 'Active Installations', 'troy-server' ) ?></td>
-					<td><?= \esc_html( \number_format_i18n( $epoch_comparison['current_installs'] ) ) ?></td>
-					<td><?= \esc_html( \number_format_i18n( $epoch_comparison['previous_installs'] ) ) ?></td>
-					<td class="<?= $epoch_comparison['installs_change_percent'] >= 0 ? 'troy-server-stats-positive' : 'troy-server-stats-negative' ?>">
+					<td><?= \esc_html( \number_format_i18n( $epoch_comparison['previous_active_installs'] ) ) ?></td>
+					<td><?= \esc_html( \number_format_i18n( $epoch_comparison['current_active_installs'] ) ) ?></td>
+					<td class="<?= $epoch_comparison['active_change_percent'] >= 0 ? 'troy-server-stats-positive' : 'troy-server-stats-negative' ?>">
 						<?php
-						if ( is_infinite( $epoch_comparison['installs_change_percent'] ) ) {
+						if ( \is_infinite( $epoch_comparison['active_change_percent'] ) ) {
 							echo '+∞%';
 						} else {
-							echo \esc_html( ( $epoch_comparison['installs_change_percent'] >= 0 ? '+' : '' ) . $epoch_comparison['installs_change_percent'] . '%' );
+							echo \esc_html( ( $epoch_comparison['active_change_percent'] >= 0 ? '+' : '' ) . $epoch_comparison['active_change_percent'] . '%' );
+						}
+						?>
+					</td>
+				</tr>
+				<tr>
+					<td><?= \esc_html__( 'Inactive Installations', 'troy-server' ) ?></td>
+					<td><?= \esc_html( \number_format_i18n( $epoch_comparison['previous_inactive_installs'] ) ) ?></td>
+					<td><?= \esc_html( \number_format_i18n( $epoch_comparison['current_inactive_installs'] ) ) ?></td>
+					<td class="<?= $epoch_comparison['inactive_change_percent'] >= 0 ? 'troy-server-stats-positive' : 'troy-server-stats-negative' ?>">
+						<?php
+						if ( \is_infinite( $epoch_comparison['inactive_change_percent'] ) ) {
+							echo '+∞%';
+						} else {
+							echo \esc_html( ( $epoch_comparison['inactive_change_percent'] >= 0 ? '+' : '' ) . $epoch_comparison['inactive_change_percent'] . '%' );
 						}
 						?>
 					</td>
@@ -222,7 +246,6 @@ $locales          = Settings\Stats::get_locale_stats();
 	</div>
 </div>
 
-<?php // PHP Version Usage Section ?>
 <div class=troy-server-settings-accordion>
 	<h3 class=troy-server-settings-accordion-heading>
 		<button aria-expanded=false class=troy-server-settings-accordion-trigger aria-controls=troy-server-stats-php-versions type=button>
@@ -263,7 +286,6 @@ $locales          = Settings\Stats::get_locale_stats();
 	</div>
 </div>
 
-<?php // WordPress Version Usage Section ?>
 <div class=troy-server-settings-accordion>
 	<h3 class=troy-server-settings-accordion-heading>
 		<button aria-expanded=false class=troy-server-settings-accordion-trigger aria-controls=troy-server-stats-wp-versions type=button>
@@ -304,7 +326,6 @@ $locales          = Settings\Stats::get_locale_stats();
 	</div>
 </div>
 
-<?php // Locale Usage Section ?>
 <div class=troy-server-settings-accordion>
 	<h3 class=troy-server-settings-accordion-heading>
 		<button aria-expanded=false class=troy-server-settings-accordion-trigger aria-controls=troy-server-stats-locales type=button>
@@ -345,7 +366,6 @@ $locales          = Settings\Stats::get_locale_stats();
 	</div>
 </div>
 
-<?php // Details Modal ?>
 <div id=troy-server-stats-modal class=troy-server-stats-modal hidden>
 	<div class=troy-server-stats-modal-content>
 		<div class=troy-server-stats-modal-header>

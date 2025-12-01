@@ -546,11 +546,6 @@ final class Aggregator {
 	/**
 	 * Snapshots download stats from live table to aggregated tables.
 	 *
-	 * Note: All aggregation happens in PHP memory via associative arrays keyed by origin_url.
-	 * For horizontal scaling with multiple workers, you would need database-level aggregation
-	 * (e.g., INSERT ... ON DUPLICATE KEY UPDATE) or a distributed aggregation mechanism.
-	 * Currently, origin_url data accumulates without collision because we run on a single server.
-	 *
 	 * @since 0.0.1184
 	 * @global \wpdb $wpdb
 	 */
@@ -837,6 +832,18 @@ final class Aggregator {
 	/**
 	 * Creates daily snapshots for historical comparison.
 	 *
+	 * Table stats_totals_daily_snapshots: Cumulative (frozen copy of stats_totals).
+	 * Table stats_versions_daily_snapshots: Daily delta from live tables (that day's activity).
+	 *
+	 * NOTE: When a plugin has no activity on a given day, there will be no entry for it
+	 * in stats_versions_daily_snapshots for that day. This is expected behavior.
+	 * That means that daily snapshots may not have entries for all plugins every day.
+	 *
+	 * If a plugin has zero activity for a long time, a recent snapshot won't be available,
+	 * and you can safely assume it has 0 active installations and 0 downloads/views.
+	 *
+	 * TODO: Use these snapshots to create growth graphs in the dashboard.
+	 *
 	 * @since 0.0.1184
 	 * @global \wpdb $wpdb
 	 */
@@ -846,64 +853,7 @@ final class Aggregator {
 
 		$today = \current_time( 'Y-m-d' );
 
-		// Get all current stats.
-		$stats = $wpdb->get_results(
-			"SELECT
-				plugin_id,
-				version,
-				origin_url,
-				downloads,
-				views,
-				installations_current_epoch,
-				installations_previous_epoch
-			FROM {$wpdb->prefix}troy_plugin_stats_versions",
-		);
-
-		foreach ( $stats as $row ) {
-			$existing = $wpdb->get_var(
-				$wpdb->prepare(
-					"SELECT id
-					FROM {$wpdb->prefix}troy_plugin_stats_versions_daily_snapshots
-					WHERE plugin_id = %d AND version = %s AND date = %s AND origin_url = %s",
-					$row->plugin_id,
-					$row->version,
-					$today,
-					$row->origin_url,
-				),
-			);
-
-			if ( $existing ) {
-				$wpdb->update(
-					"{$wpdb->prefix}troy_plugin_stats_versions_daily_snapshots",
-					[
-						'downloads'                    => $row->downloads,
-						'views'                        => $row->views,
-						'installations_current_epoch'  => $row->installations_current_epoch,
-						'installations_previous_epoch' => $row->installations_previous_epoch,
-					],
-					[ 'id' => $existing ],
-					[ '%d', '%d', '%d', '%d' ],
-					[ '%d' ],
-				);
-			} else {
-				$wpdb->insert(
-					"{$wpdb->prefix}troy_plugin_stats_versions_daily_snapshots",
-					[
-						'plugin_id'                    => $row->plugin_id,
-						'version'                      => $row->version,
-						'date'                         => $today,
-						'origin_url'                   => $row->origin_url,
-						'downloads'                    => $row->downloads,
-						'views'                        => $row->views,
-						'installations_current_epoch'  => $row->installations_current_epoch,
-						'installations_previous_epoch' => $row->installations_previous_epoch,
-					],
-					[ '%d', '%s', '%s', '%s', '%d', '%d', '%d', '%d' ],
-				);
-			}
-		}
-
-		// Get all current stats_totals.
+		// stats_totals_daily_snapshots: Store cumulative (frozen copy of stats_totals).
 		$stats_totals = $wpdb->get_results(
 			"SELECT
 				plugin_id,
@@ -915,11 +865,13 @@ final class Aggregator {
 		);
 
 		foreach ( $stats_totals as $row ) {
+
 			$existing = $wpdb->get_var(
 				$wpdb->prepare(
 					"SELECT id
 					FROM {$wpdb->prefix}troy_plugin_stats_totals_daily_snapshots
-					WHERE plugin_id = %d AND date = %s",
+					WHERE plugin_id = %d
+						AND date = %s",
 					$row->plugin_id,
 					$today,
 				),
@@ -950,6 +902,118 @@ final class Aggregator {
 						'installations_previous_epoch' => $row->installations_previous_epoch,
 					],
 					[ '%d', '%s', '%d', '%d', '%d', '%d' ],
+				);
+			}
+		}
+
+		unset( $stats_totals );
+
+		// stats_versions_daily_snapshots: Aggregate directly from live tables for today's activity.
+		// Aggregate downloads from live table by plugin_id, version, origin_url.
+		$download_counts = [];
+
+		$download_rows = $wpdb->get_results( $wpdb->prepare(
+			"SELECT plugin_id, version, origin_url, COUNT(*) as downloads
+			FROM {$wpdb->prefix}troy_plugin_stats_downloads_live
+			WHERE DATE(created_at) = %s
+			GROUP BY plugin_id, version, origin_url",
+			$today,
+		) );
+
+		foreach ( $download_rows as $row ) {
+			$key = "{$row->plugin_id}|{$row->version}|{$row->origin_url}";
+			$download_counts[ $key ] = (int) $row->downloads;
+		}
+
+		unset( $download_rows );
+
+		// Aggregate views from live table by plugin_id, version, origin_url.
+		$view_counts = [];
+
+		$view_rows = $wpdb->get_results( $wpdb->prepare(
+			"SELECT plugin_id, version, origin_url, COUNT(*) as views
+			FROM {$wpdb->prefix}troy_plugin_stats_views_live
+			WHERE DATE(created_at) = %s
+			GROUP BY plugin_id, version, origin_url",
+			$today,
+		) );
+
+		foreach ( $view_rows as $row ) {
+			$key = "{$row->plugin_id}|{$row->version}|{$row->origin_url}";
+			$view_counts[ $key ] = (int) $row->views;
+		}
+
+		unset( $view_rows );
+
+		// Merge keys from both sources.
+		$all_keys = array_unique( array_merge( array_keys( $download_counts ), array_keys( $view_counts ) ) );
+
+		// Get current epoch values from stats_versions for installation counts.
+		$epoch_values = [];
+
+		$epoch_rows = $wpdb->get_results(
+			"SELECT plugin_id, version, origin_url, installations_current_epoch, installations_previous_epoch
+			FROM {$wpdb->prefix}troy_plugin_stats_versions",
+		);
+
+		foreach ( $epoch_rows as $row ) {
+			$key = "{$row->plugin_id}|{$row->version}|{$row->origin_url}";
+			$epoch_values[ $key ] = $row;
+		}
+
+		unset( $epoch_rows );
+
+		// Write daily snapshots.
+		foreach ( $all_keys as $key ) {
+
+			[ $plugin_id, $version, $origin_url ] = explode( '|', $key, 3 );
+
+			$downloads = $download_counts[ $key ] ?? 0;
+			$views     = $view_counts[ $key ] ?? 0;
+			$epochs    = $epoch_values[ $key ] ?? null;
+
+			$existing = $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT id
+					FROM {$wpdb->prefix}troy_plugin_stats_versions_daily_snapshots
+					WHERE plugin_id = %d
+						AND version = %s
+						AND date = %s
+						AND origin_url = %s",
+					$plugin_id,
+					$version,
+					$today,
+					$origin_url,
+				),
+			);
+
+			if ( $existing ) {
+				$wpdb->update(
+					"{$wpdb->prefix}troy_plugin_stats_versions_daily_snapshots",
+					[
+						'downloads'                    => $downloads,
+						'views'                        => $views,
+						'installations_current_epoch'  => $epochs->installations_current_epoch ?? 0,
+						'installations_previous_epoch' => $epochs->installations_previous_epoch ?? 0,
+					],
+					[ 'id' => $existing ],
+					[ '%d', '%d', '%d', '%d' ],
+					[ '%d' ],
+				);
+			} else {
+				$wpdb->insert(
+					"{$wpdb->prefix}troy_plugin_stats_versions_daily_snapshots",
+					[
+						'plugin_id'                    => $plugin_id,
+						'version'                      => $version,
+						'date'                         => $today,
+						'origin_url'                   => $origin_url,
+						'downloads'                    => $downloads,
+						'views'                        => $views,
+						'installations_current_epoch'  => $epochs->installations_current_epoch ?? 0,
+						'installations_previous_epoch' => $epochs->installations_previous_epoch ?? 0,
+					],
+					[ '%d', '%s', '%s', '%s', '%d', '%d', '%d', '%d' ],
 				);
 			}
 		}

@@ -136,19 +136,21 @@
 			return;
 
 		const statMap = {
-			total_downloads:   data.total_downloads,
-			active_installs:   data.active_installs,
-			inactive_installs: data.inactive_installs,
-			total_views:       data.total_views,
-			current_epoch:     data.current_epoch,
-			total_plugins:     data.total_plugins,
+			total_downloads:   sanitize.number( data.total_downloads ),
+			total_installs:    sanitize.number( data.total_installs ),
+			active_installs:   sanitize.number( data.active_installs ),
+			inactive_installs: sanitize.number( data.inactive_installs ),
+			total_views:       sanitize.number( data.total_views ),
+			current_epoch:     data.current_epoch || '-',
+			total_plugins:     sanitize.number( data.total_plugins ),
+			last_snapshot:     data.last_snapshot || '-',
 		};
 
 		Object.entries( statMap ).forEach( ( [ key, value ] ) => {
 			const el = overviewCards.querySelector( `[data-stat="${ key }"]` );
 
 			if ( el )
-				el.textContent = 'current_epoch' === key ? value : sanitize.number( value );
+				el.textContent = value;
 		} );
 	};
 
@@ -169,7 +171,7 @@
 		const tbody = pluginsTable.querySelector( 'tbody' );
 
 		if ( ! plugins.length ) {
-			tbody.innerHTML = `<tr><td colspan="6">${ i18n.noData }</td></tr>`;
+			tbody.innerHTML = `<tr><td colspan="7">${ i18n.noData }</td></tr>`;
 			return;
 		}
 
@@ -181,6 +183,7 @@
 							<strong>${ escape.string( plugin.name ) }</strong> <code>(${ escape.string( plugin.slug ) })</code>
 						</td>
 						<td>${ sanitize.number( plugin.downloads ) }</td>
+						<td>${ sanitize.number( plugin.total_installs ) }</td>
 						<td>${ sanitize.number( plugin.active_installs ) }</td>
 						<td>${ sanitize.number( plugin.inactive_installs ) }</td>
 						<td>${ sanitize.number( plugin.views ) }</td>
@@ -284,15 +287,15 @@
 	 *
 	 * @since 0.0.1184
 	 *
-	 * @param {string}   title      The section heading.
-	 * @param {Array}    items      Array of data items.
-	 * @param {string}   labelKey   Property name for the label.
-	 * @param {string}   valueKey   Property name for the value.
-	 * @param {string}   fallback   Fallback text when label is empty.
-	 * @param {Boolean}  escapeVal  Whether to escape the value (false = format as number).
+	 * @param {string} title    The section heading.
+	 * @param {Array}  items    Array of data items.
+	 * @param {string} labelKey Property name for the label.
+	 * @param {string} valueKey Property name for the value.
+	 * @param {string} fallback Fallback text when label is empty.
+	 * @param {string} formatAs Value format type: 'string' or 'number'.
 	 * @return {string} HTML string for the detail section.
 	 */
-	const buildDetailSection = ( title, items, labelKey, valueKey, fallback = null, escapeVal = false ) => {
+	const buildDetailSection = ( title, items, labelKey, valueKey, fallback = null, formatAs = 'number' ) => {
 
 		if ( ! items?.length )
 			return '';
@@ -300,7 +303,7 @@
 		const listItems = items
 			.map( item => {
 				const label = escape.string( item[ labelKey ] || fallback || i18n.notReported );
-				const value = escapeVal
+				const value = 'string' === formatAs
 					? escape.string( item[ valueKey ] )
 					: sanitize.number( item[ valueKey ] );
 
@@ -321,15 +324,17 @@
 	 *
 	 * @since 0.0.1184
 	 *
-	 * @param {string}  label     The card label.
-	 * @param {*}       value     The card value.
-	 * @param {Boolean} escapeVal Whether to escape the value (false = format as number).
+	 * @param {string} label    The card label.
+	 * @param {*}      value    The card value.
+	 * @param {string} formatAs Value format type: 'string' or 'number'.
 	 * @return {string} HTML string for the card.
 	 */
-	const buildCard = ( label, value, escapeVal = false ) => `
+	const buildCard = ( label, value, formatAs = 'number' ) => `
 		<div class="troy-server-stats-card">
 			<span class="troy-server-stats-card-label">${ label }</span>
-			<span class="troy-server-stats-card-value">${ escapeVal ? escape.string( value ) : sanitize.number( value ) }</span>
+			<span class="troy-server-stats-card-value">${
+				'string' === formatAs ? escape.string( value ) : sanitize.number( value )
+			}</span>
 		</div>
 	`;
 
@@ -343,6 +348,8 @@
 	 */
 	const buildPluginDetailsHtml = data => `
 		<div class="troy-server-stats-cards">
+			${ buildCard( i18n.lastSnapshot, data.last_snapshot || '-', 'string' ) }
+			${ buildCard( i18n.installations, data.total_installs ) }
 			${ buildCard( i18n.activeInstalls, data.active_installs ) }
 			${ buildCard( i18n.inactiveInstalls, data.inactive_installs ) }
 		</div>
@@ -363,7 +370,7 @@
 	 */
 	const buildPackageDetailsHtml = data => `
 		<div class="troy-server-stats-cards">
-			${ buildCard( i18n.currentVersion, data.current_version, true ) }
+			${ buildCard( i18n.currentVersion, data.current_version, 'string' ) }
 			${ buildCard( i18n.totalDownloads, data.total_downloads ) }
 		</div>
 		${ buildDetailSection( i18n.downloadsByVersion, data.versions, 'version', 'downloads' ) }

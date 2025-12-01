@@ -164,6 +164,17 @@ function upgrade_from( $version ) {
 
 			\update_option( 'troy_server_db_version', 1_1184, true );
 			// Fall through.
+		case $version < 2_1184:
+			global $wpdb;
+
+			$dbprefix = $wpdb->prefix;
+
+			// Add epoch_is_active index to stats_requests for global epoch queries.
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Schema query.
+			$wpdb->query( "ALTER table `{$dbprefix}troy_plugin_stats_requests` ADD index `epoch_is_active` (`epoch`, `is_active`)" );
+
+			\update_option( 'troy_server_db_version', 2_1184, true );
+			// Fall through.
 	}
 }
 
@@ -237,10 +248,12 @@ function upgrade_from( $version ) {
  * | troy_plugin_data_caches                     | Cached data for plugins (for search/archives/ranking).              |
  * | troy_plugin_ratings                         | Ratings for plugins (for plugin page, review page).                 |
  * | troy_plugin_stats_totals                    | Total stats for plugins (accumulated over all time).                |
- * | troy_plugin_stats_totals_daily_snapshots    | Daily snapshots of total stats for plugins (historical).            |
+ * | troy_plugin_stats_totals_daily_snapshots    | Daily snapshots of total stats for plugins (cumulative).            |
+ * |                                             | Stores frozen copy of stats_totals at end of day (for graphs).      |
  * |                                             | This table can get partitioned (e.g., by year).                     |
  * | troy_plugin_stats_versions                  | Stats by version for plugins (accumulated over all time).           |
- * | troy_plugin_stats_versions_daily_snapshots  | Daily snapshots of stats by version for plugins (historical).       |
+ * | troy_plugin_stats_versions_daily_snapshots  | Daily snapshots of stats by version for plugins (daily delta).      |
+ * |                                             | Stores frozen copy of that day's live activity (for graphs).        |
  * |                                             | This table can get partitioned (e.g., by year).                     |
  * | troy_plugin_stats_views                     | View stats for plugins (for accumulation in stats).                 |
  * | troy_plugin_stats_views_live                | Live view stats for plugins (for accumulation in view_stats).       |
@@ -262,7 +275,8 @@ function upgrade_from( $version ) {
  * | troy_packages                               | The main packages table.                                            |
  * | troy_package_metas                          | Meta data for packages (for installer generation).                  |
  * | troy_package_stats_totals                   | Total stats for packages (accumulated over all time).               |
- * | troy_package_stats_totals_daily_snapshots   | Daily snapshots of total stats for packages (historical).           |
+ * | troy_package_stats_totals_daily_snapshots   | Daily snapshots of total stats for packages (cumulative).           |
+ * |                                             | Stores frozen copy of package_stats_totals at end of day (graphs).  |
  * |                                             | This table can get partitioned (e.g., by year).                     |
  * | troy_package_stats_downloads                | Download stats for packages.                                        |
  * | troy_package_stats_downloads_live           | Live download stats for packages.                                   |
@@ -597,6 +611,7 @@ function get_initial_db_schema_queries() {
 			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
 			primary key (`id`),
 			index `plugin_id_is_active` (`plugin_id`, `is_active`),
+			index `epoch_is_active` (`epoch`, `is_active`),
 			unique index `plugin_id_epoch_version_is_active` (`plugin_id`, `epoch`, `version`, `is_active`)
 		) $collate",
 		"CREATE table `{$dbprefix}troy_plugin_stats_locales` (

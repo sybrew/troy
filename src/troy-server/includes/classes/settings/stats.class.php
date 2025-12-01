@@ -93,8 +93,9 @@ final class Stats {
 					'increase'           => \__( 'increase', 'troy-server' ),
 					'decrease'           => \__( 'decrease', 'troy-server' ),
 					'details'            => \__( 'Details', 'troy-server' ),
-					'activeInstalls'     => \__( 'Active Installs', 'troy-server' ),
-					'inactiveInstalls'   => \__( 'Inactive Installs', 'troy-server' ),
+					'installations'      => \__( 'Installations', 'troy-server' ),
+					'activeInstalls'     => \__( 'Active Installations', 'troy-server' ),
+					'inactiveInstalls'   => \__( 'Inactive Installations', 'troy-server' ),
 					'notReported'        => \__( 'Not reported', 'troy-server' ),
 					'downloadsByVersion' => \__( 'Downloads by Version', 'troy-server' ),
 					'downloadsByType'    => \__( 'Downloads by Type', 'troy-server' ),
@@ -103,6 +104,8 @@ final class Stats {
 					'wpVersions'         => \__( 'WordPress Versions', 'troy-server' ),
 					'currentVersion'     => \__( 'Current Version', 'troy-server' ),
 					'totalDownloads'     => \__( 'Total Downloads', 'troy-server' ),
+					'epochHint'          => \__( 'Publicly shown value uses the highest count between current and previous epoch.', 'troy-server' ),
+					'lastSnapshot'       => \__( 'Last Snapshot', 'troy-server' ),
 				],
 			],
 		);
@@ -119,13 +122,16 @@ final class Stats {
 	 * @return array {
 	 *     Overview statistics.
 	 *
-	 *     @type int $total_downloads   Total plugin downloads.
-	 *     @type int $total_views       Total plugin views.
-	 *     @type int $active_installs   Total active installations.
-	 *     @type int $inactive_installs Total inactive installations.
-	 *     @type int $current_epoch     Current epoch number.
-	 *     @type int $total_plugins     Total number of plugins.
-	 *     @type int $total_packages    Total number of packages.
+	 *     @type int   $total_downloads   Total plugin downloads.
+	 *     @type int   $total_views       Total plugin views.
+	 *     @type int   $total_installs    Total installations (highest of current/previous epoch).
+	 *     @type int   $active_installs   Active installations (current epoch).
+	 *     @type int   $inactive_installs Inactive installations (current epoch).
+	 *     @type int   $current_epoch     Current epoch number.
+	 *     @type int   $previous_epoch    Previous epoch number.
+	 *     @type int   $total_plugins     Total number of plugins.
+	 *     @type int   $total_packages    Total number of packages.
+	 *     @type array $epoch_installs    Per-epoch active/inactive breakdown.
 	 * }
 	 */
 	public static function get_overview( $start_date = null, $end_date = null ) {
@@ -135,6 +141,7 @@ final class Stats {
 		$current_epoch = API\Utils::get_epoch();
 
 		if ( $start_date && $end_date ) {
+			// stats_versions_daily_snapshots stores daily deltas; SUM gives period total.
 			$totals = $wpdb->get_row( $wpdb->prepare(
 				"SELECT
 					COALESCE(SUM(downloads), 0) as total_downloads,
@@ -153,21 +160,51 @@ final class Stats {
 			);
 		}
 
-		// Total installs = max of current or previous epoch (since current epoch may be incomplete).
-		// Active installs = current epoch count.
-		$installs = $wpdb->get_row(
-			"SELECT
-				COALESCE(SUM(installations_current_epoch), 0) as active,
-				COALESCE(
-					SUM(GREATEST(installations_current_epoch, installations_previous_epoch)),
-					0
-				) as total
+		$previous_epoch = $current_epoch - 1;
+
+		// Total installs = highest of current or previous epoch (since current epoch may be incomplete).
+		// This is the number shown publicly via plugin info APIs.
+		$total_installs = (int) $wpdb->get_var(
+			"SELECT COALESCE(
+				SUM(GREATEST(installations_current_epoch, installations_previous_epoch)),
+				0
+			)
 			FROM {$wpdb->prefix}troy_plugin_stats_totals",
 		);
 
-		$active_installs   = (int) ( $installs->active ?? 0 );
-		$total_installs    = (int) ( $installs->total ?? 0 );
-		$inactive_installs = max( 0, $total_installs - $active_installs );
+		// Active/inactive breakdown from stats_requests using is_active per epoch.
+		// Count rows (unique plugin/version/active combinations) rather than request_count.
+		$current_active = (int) $wpdb->get_var( $wpdb->prepare(
+			"SELECT COUNT(*)
+			FROM {$wpdb->prefix}troy_plugin_stats_requests
+			WHERE epoch = %d
+				AND is_active = 1",
+			$current_epoch,
+		) );
+
+		$current_inactive = (int) $wpdb->get_var( $wpdb->prepare(
+			"SELECT COUNT(*)
+			FROM {$wpdb->prefix}troy_plugin_stats_requests
+			WHERE epoch = %d
+				AND is_active = 0",
+			$current_epoch,
+		) );
+
+		$previous_active = (int) $wpdb->get_var( $wpdb->prepare(
+			"SELECT COUNT(*)
+			FROM {$wpdb->prefix}troy_plugin_stats_requests
+			WHERE epoch = %d
+				AND is_active = 1",
+			$previous_epoch,
+		) );
+
+		$previous_inactive = (int) $wpdb->get_var( $wpdb->prepare(
+			"SELECT COUNT(*)
+			FROM {$wpdb->prefix}troy_plugin_stats_requests
+			WHERE epoch = %d
+				AND is_active = 0",
+			$previous_epoch,
+		) );
 
 		$total_plugins = (int) $wpdb->get_var(
 			"SELECT COUNT(*) FROM {$wpdb->prefix}troy_plugins WHERE status IN ('public', 'unlisted', 'protected')",
@@ -177,14 +214,32 @@ final class Stats {
 			"SELECT COUNT(*) FROM {$wpdb->prefix}troy_packages WHERE status = 'active'",
 		);
 
+		$last_snapshot = $wpdb->get_var(
+			"SELECT MAX(updated_at)
+			FROM {$wpdb->prefix}troy_plugin_stats_totals_daily_snapshots",
+		);
+
 		return [
 			'total_downloads'   => (int) ( $totals->total_downloads ?? 0 ),
 			'total_views'       => (int) ( $totals->total_views ?? 0 ),
-			'active_installs'   => $active_installs,
-			'inactive_installs' => $inactive_installs,
+			'total_installs'    => $total_installs,
+			'active_installs'   => $current_active,
+			'inactive_installs' => $current_inactive,
 			'current_epoch'     => $current_epoch,
+			'previous_epoch'    => $previous_epoch,
 			'total_plugins'     => $total_plugins,
 			'total_packages'    => $total_packages,
+			'last_snapshot'     => $last_snapshot,
+			'epoch_installs'    => [
+				$current_epoch  => [
+					'active'   => $current_active,
+					'inactive' => $current_inactive,
+				],
+				$previous_epoch => [
+					'active'   => $previous_active,
+					'inactive' => $previous_inactive,
+				],
+			],
 		];
 	}
 
@@ -203,14 +258,18 @@ final class Stats {
 	 *     @type string $name              The plugin name.
 	 *     @type int    $downloads         Total downloads.
 	 *     @type int    $views             Total views.
-	 *     @type int    $active_installs   Active installations.
-	 *     @type int    $inactive_installs Inactive installations.
+	 *     @type int    $total_installs    Total installations (highest of current/previous epoch).
+	 *     @type int    $active_installs   Active installations (current epoch).
+	 *     @type int    $inactive_installs Inactive installations (current epoch).
 	 * }
 	 */
 	public static function get_top_plugins( $limit = 10 ) {
 
 		global $wpdb;
 
+		$current_epoch = API\Utils::get_epoch();
+
+		// Get basic plugin data with totals.
 		$results = $wpdb->get_results( $wpdb->prepare(
 			"SELECT
 				p.id as plugin_id,
@@ -218,7 +277,6 @@ final class Stats {
 				pm.name,
 				COALESCE(SUM(s.downloads), 0) as downloads,
 				COALESCE(SUM(s.views), 0) as views,
-				COALESCE(SUM(s.installations_current_epoch), 0) as active_installs,
 				COALESCE(
 					SUM(GREATEST(s.installations_current_epoch, s.installations_previous_epoch)),
 					0
@@ -238,6 +296,40 @@ final class Stats {
 		if ( ! $results )
 			return [];
 
+		$plugin_ids = array_column( $results, 'plugin_id' );
+
+		$active_counts   = [];
+		$inactive_counts = [];
+
+		if ( ! empty( $plugin_ids ) ) {
+			// Get active/inactive counts from stats_requests for current epoch.
+			$placeholders = implode( ', ', array_fill( 0, \count( $plugin_ids ), '%d' ) );
+
+			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- placeholders are prepared
+			$rows = $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT
+						plugin_id,
+						is_active,
+						COUNT(*) as count
+					FROM {$wpdb->prefix}troy_plugin_stats_requests
+					WHERE plugin_id IN ($placeholders)
+						AND epoch = %d
+					GROUP BY plugin_id, is_active",
+					...array_merge( $plugin_ids, [ $current_epoch ] ),
+				),
+			);
+			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+
+			foreach ( $rows as $row ) {
+				if ( $row->is_active ) {
+					$active_counts[ $row->plugin_id ] = (int) $row->count;
+				} else {
+					$inactive_counts[ $row->plugin_id ] = (int) $row->count;
+				}
+			}
+		}
+
 		return array_map(
 			fn( $row ) => [
 				'plugin_id'         => (int) $row->plugin_id,
@@ -245,11 +337,49 @@ final class Stats {
 				'name'              => $row->name ?: $row->slug,
 				'downloads'         => (int) $row->downloads,
 				'views'             => (int) $row->views,
-				'active_installs'   => (int) $row->active_installs,
-				'inactive_installs' => max( 0, (int) $row->total_installs - (int) $row->active_installs ),
+				'total_installs'    => (int) $row->total_installs,
+				'active_installs'   => $active_counts[ $row->plugin_id ] ?? 0,
+				'inactive_installs' => $inactive_counts[ $row->plugin_id ] ?? 0,
 			],
 			$results,
 		);
+	}
+
+	/**
+	 * Gets the package stats overview.
+	 *
+	 * @since 0.0.1184
+	 * @global \wpdb $wpdb
+	 *
+	 * @return array {
+	 *     Overview statistics.
+	 *
+	 *     @type int    $total_packages  Total number of active packages.
+	 *     @type int    $total_downloads Total package downloads.
+	 *     @type string $last_snapshot   Last snapshot timestamp.
+	 * }
+	 */
+	public static function get_package_overview() {
+
+		global $wpdb;
+
+		$total_packages = (int) $wpdb->get_var(
+			"SELECT COUNT(*) FROM {$wpdb->prefix}troy_packages WHERE status = 'active'",
+		);
+
+		$total_downloads = (int) $wpdb->get_var(
+			"SELECT COALESCE(SUM(downloads), 0) FROM {$wpdb->prefix}troy_package_stats_downloads",
+		);
+
+		$last_snapshot = $wpdb->get_var(
+			"SELECT MAX(updated_at) FROM {$wpdb->prefix}troy_package_stats_downloads",
+		);
+
+		return [
+			'total_packages'  => $total_packages,
+			'total_downloads' => $total_downloads,
+			'last_snapshot'   => $last_snapshot,
+		];
 	}
 
 	/**
@@ -318,14 +448,17 @@ final class Stats {
 	 * @return array {
 	 *     Epoch comparison data.
 	 *
-	 *     @type int   $current_epoch           Current epoch number.
-	 *     @type int   $previous_epoch          Previous epoch number.
-	 *     @type int   $current_requests        Request count in current epoch.
-	 *     @type int   $previous_requests       Request count in previous epoch.
-	 *     @type float $requests_change_percent Percentage change in requests.
-	 *     @type int   $current_installs        Active installs from current epoch.
-	 *     @type int   $previous_installs       Active installs from previous epoch.
-	 *     @type float $installs_change_percent Percentage change in installs.
+	 *     @type int   $current_epoch             Current epoch number.
+	 *     @type int   $previous_epoch            Previous epoch number.
+	 *     @type int   $current_requests          Request count in current epoch.
+	 *     @type int   $previous_requests         Request count in previous epoch.
+	 *     @type float $requests_change_percent   Percentage change in requests.
+	 *     @type int   $current_active_installs   Active installs in current epoch.
+	 *     @type int   $current_inactive_installs Inactive installs in current epoch.
+	 *     @type int   $previous_active_installs  Active installs in previous epoch.
+	 *     @type int   $previous_inactive_installs Inactive installs in previous epoch.
+	 *     @type float $active_change_percent     Percentage change in active installs.
+	 *     @type float $inactive_change_percent   Percentage change in inactive installs.
 	 * }
 	 */
 	public static function get_epoch_comparison() {
@@ -335,7 +468,7 @@ final class Stats {
 		$current_epoch  = API\Utils::get_epoch();
 		$previous_epoch = $current_epoch - 1;
 
-		// Request counts by epoch
+		// Request counts by epoch (independent of is_active).
 		$current_requests = (int) $wpdb->get_var( $wpdb->prepare(
 			"SELECT COALESCE(SUM(request_count), 0)
 			FROM {$wpdb->prefix}troy_plugin_stats_requests
@@ -350,30 +483,57 @@ final class Stats {
 			$previous_epoch,
 		) );
 
-		// Installation counts by epoch
-		$current_installs = (int) $wpdb->get_var(
-			"SELECT COALESCE(SUM(installations_current_epoch), 0)
-			FROM {$wpdb->prefix}troy_plugin_stats_totals",
-		);
+		// Active/inactive breakdown from stats_requests per epoch (count rows, not request_count).
+		$current_active = (int) $wpdb->get_var( $wpdb->prepare(
+			"SELECT COUNT(*)
+			FROM {$wpdb->prefix}troy_plugin_stats_requests
+			WHERE epoch = %d
+				AND is_active = 1",
+			$current_epoch,
+		) );
 
-		$previous_installs = (int) $wpdb->get_var(
-			"SELECT COALESCE(SUM(installations_previous_epoch), 0)
-			FROM {$wpdb->prefix}troy_plugin_stats_totals",
-		);
+		$current_inactive = (int) $wpdb->get_var( $wpdb->prepare(
+			"SELECT COUNT(*)
+			FROM {$wpdb->prefix}troy_plugin_stats_requests
+			WHERE epoch = %d
+				AND is_active = 0",
+			$current_epoch,
+		) );
+
+		$previous_active = (int) $wpdb->get_var( $wpdb->prepare(
+			"SELECT COUNT(*)
+			FROM {$wpdb->prefix}troy_plugin_stats_requests
+			WHERE epoch = %d
+				AND is_active = 1",
+			$previous_epoch,
+		) );
+
+		$previous_inactive = (int) $wpdb->get_var( $wpdb->prepare(
+			"SELECT COUNT(*)
+			FROM {$wpdb->prefix}troy_plugin_stats_requests
+			WHERE epoch = %d
+				AND is_active = 0",
+			$previous_epoch,
+		) );
 
 		return [
-			'current_epoch'           => $current_epoch,
-			'previous_epoch'          => $previous_epoch,
-			'current_requests'        => $current_requests,
-			'previous_requests'       => $previous_requests,
-			'requests_change_percent' => $previous_requests
+			'current_epoch'              => $current_epoch,
+			'previous_epoch'             => $previous_epoch,
+			'current_requests'           => $current_requests,
+			'previous_requests'          => $previous_requests,
+			'requests_change_percent'    => $previous_requests
 				? round( ( ( $current_requests - $previous_requests ) / $previous_requests ) * 100, 1 )
 				: ( $current_requests ? \INF : 0.0 ),
-			'current_installs'        => $current_installs,
-			'previous_installs'       => $previous_installs,
-			'installs_change_percent' => $previous_installs
-				? round( ( ( $current_installs - $previous_installs ) / $previous_installs ) * 100, 1 )
-				: ( $current_installs ? \INF : 0.0 ),
+			'current_active_installs'    => $current_active,
+			'current_inactive_installs'  => $current_inactive,
+			'previous_active_installs'   => $previous_active,
+			'previous_inactive_installs' => $previous_inactive,
+			'active_change_percent'      => $previous_active
+				? round( ( ( $current_active - $previous_active ) / $previous_active ) * 100, 1 )
+				: ( $current_active ? \INF : 0.0 ),
+			'inactive_change_percent'    => $previous_inactive
+				? round( ( ( $current_inactive - $previous_inactive ) / $previous_inactive ) * 100, 1 )
+				: ( $current_inactive ? \INF : 0.0 ),
 		];
 	}
 
@@ -453,24 +613,60 @@ final class Stats {
 
 		$cache = $data->get_data_caches_row();
 
-		// Get install counts from stats_totals.
-		// Total installs = max of current or previous epoch (since current epoch may be incomplete).
-		// Active installs = current epoch count.
-		$installs = $wpdb->get_row( $wpdb->prepare(
-			"SELECT
-				COALESCE(SUM(installations_current_epoch), 0) as active,
-				COALESCE(
-					SUM(GREATEST(installations_current_epoch, installations_previous_epoch)),
-					0
-				) as total
+		$current_epoch  = API\Utils::get_epoch();
+		$previous_epoch = $current_epoch - 1;
+
+		// Total installs = highest of current or previous epoch (shown publicly).
+		$total_installs = (int) $wpdb->get_var( $wpdb->prepare(
+			"SELECT COALESCE(
+				SUM(GREATEST(installations_current_epoch, installations_previous_epoch)),
+				0
+			)
 			FROM {$wpdb->prefix}troy_plugin_stats_totals
 			WHERE plugin_id = %d",
 			$plugin_id,
 		) );
 
-		$active_installs   = (int) ( $installs->active ?? 0 );
-		$total_installs    = (int) ( $installs->total ?? 0 );
-		$inactive_installs = max( 0, $total_installs - $active_installs );
+		// Active/inactive breakdown from stats_requests per epoch (count rows).
+		$current_active = (int) $wpdb->get_var( $wpdb->prepare(
+			"SELECT COUNT(*)
+			FROM {$wpdb->prefix}troy_plugin_stats_requests
+			WHERE plugin_id = %d
+				AND epoch = %d
+				AND is_active = 1",
+			$plugin_id,
+			$current_epoch,
+		) );
+
+		$current_inactive = (int) $wpdb->get_var( $wpdb->prepare(
+			"SELECT COUNT(*)
+			FROM {$wpdb->prefix}troy_plugin_stats_requests
+			WHERE plugin_id = %d
+				AND epoch = %d
+				AND is_active = 0",
+			$plugin_id,
+			$current_epoch,
+		) );
+
+		$previous_active = (int) $wpdb->get_var( $wpdb->prepare(
+			"SELECT COUNT(*)
+			FROM {$wpdb->prefix}troy_plugin_stats_requests
+			WHERE plugin_id = %d
+				AND epoch = %d
+				AND is_active = 1",
+			$plugin_id,
+			$previous_epoch,
+		) );
+
+		$previous_inactive = (int) $wpdb->get_var( $wpdb->prepare(
+			"SELECT COUNT(*)
+			FROM {$wpdb->prefix}troy_plugin_stats_requests
+			WHERE plugin_id = %d
+				AND epoch = %d
+				AND is_active = 0",
+			$plugin_id,
+			$previous_epoch,
+		) );
 
 		// PHP version breakdown from update requests
 		$php_versions = $wpdb->get_results(
@@ -504,13 +700,33 @@ final class Stats {
 			\ARRAY_A,
 		);
 
+		$last_snapshot = $wpdb->get_var( $wpdb->prepare(
+			"SELECT MAX(updated_at)
+			FROM {$wpdb->prefix}troy_plugin_stats_totals_daily_snapshots
+			WHERE plugin_id = %d",
+			$plugin_id,
+		) );
+
 		return [
 			'plugin_id'         => $plugin_id,
 			'slug'              => $plugin->slug,
 			'name'              => $plugin->name ?: $plugin->slug,
 			'status'            => $plugin->status,
-			'active_installs'   => $active_installs,
-			'inactive_installs' => $inactive_installs,
+			'total_installs'    => $total_installs,
+			'active_installs'   => $current_active,
+			'inactive_installs' => $current_inactive,
+			'current_epoch'     => $current_epoch,
+			'previous_epoch'    => $previous_epoch,
+			'epoch_installs'    => [
+				$current_epoch  => [
+					'active'   => $current_active,
+					'inactive' => $current_inactive,
+				],
+				$previous_epoch => [
+					'active'   => $previous_active,
+					'inactive' => $previous_inactive,
+				],
+			],
 			// 'average_rating'  => (float) ( $cache->average_rating ?? 0 ),
 			// 'rating_count'    => (int) ( $cache->rating_count ?? 0 ),
 			'versions'          => $versions,
@@ -518,6 +734,7 @@ final class Stats {
 			'locales'           => $locales,
 			'php_versions'      => $php_versions,
 			'wp_versions'       => $wp_versions,
+			'last_snapshot'     => $last_snapshot,
 		];
 	}
 

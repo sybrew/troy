@@ -83,7 +83,7 @@ final class Cron extends \Troy\Server\Cron {
 		Aggregator::snapshot_views();
 		Aggregator::snapshot_downloads();
 		Aggregator::update_active_install_counts();
-		Aggregator::snapshot_to_date();
+		Aggregator::snapshot_to_date(); // Must run last
 
 		self::release_lock( 'troy_server_stats_snapshot.lock' );
 	}

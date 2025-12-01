@@ -35,7 +35,7 @@ use Troy\Server\Settings;
 
 // phpcs:disable WordPress.WP.GlobalVariablesOverride -- We're not in the global space.
 
-// Get initial data for SSR.
+// Get initial data for Server Side Rendering.
 $integration_history = Settings\Logs::get_integration_history();
 $integration_logs    = Settings\Logs::get_integration_logs();
 
