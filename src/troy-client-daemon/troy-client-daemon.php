@@ -81,7 +81,7 @@ function check_troy_client() {
 
 	$is_troy_active = $is_multisite
 		? isset( \get_site_option( 'active_sitewide_plugins' )[ $plugin_file ] )
-		: \in_array( $plugin_file, \get_option( 'active_plugins' ), true );
+		: \in_array( $plugin_file, (array) \get_option( 'active_plugins' ), true );
 
 	if ( ! $is_troy_active ) {
 		\add_filter( 'pre_http_request', 'Troy\Client\Daemon\block_wordpress_api', 10, 3 );
