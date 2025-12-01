@@ -177,18 +177,14 @@ final class List_View {
 				'postfind' => 'post_id',
 				'orderby'  => true,
 				'search'   => true,
-				'after'    => [ 'title', 'troy_server_logo' ],
+				'after'    => [ 'title', 'troy_server_plugin_id' ], // needs to anchor via the title, and then put it after the id.
 			],
-			'troy_server_short_description' => [
-				'label'    => \__( 'Short description', 'troy-server' ),
-				'where'    => [ 'troy_plugin_metas', 'short_description' ],
-				'postfind' => [
-					'local_key'        => 'plugin_id',
-					'foreign'          => [ 'troy_plugins', 'id' ],
-					'foreign_postfind' => 'post_id',
-				],
-				'orderby'  => false,
-				'search'   => true,
+			'troy_server_plugin_status'    => [
+				'label'    => \__( 'Plugin status', 'troy-server' ),
+				'where'    => [ 'troy_plugins', 'status' ],
+				'postfind' => 'post_id',
+				'orderby'  => true,
+				'search'   => false,
 				'after'    => [ 'troy_server_slug' ],
 			],
 			'troy_server_integration'       => [
@@ -201,7 +197,7 @@ final class List_View {
 				],
 				'orderby'  => true,
 				'search'   => true,
-				'after'    => [ 'troy_server_short_description' ],
+				'after'    => [ 'troy_server_plugin_status' ],
 			],
 			'troy_server_downloads'         => [
 				'label'    => \__( 'Downloads', 'troy-server' ),
