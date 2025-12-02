@@ -65,7 +65,7 @@ $locales          = Settings\Stats::get_locale_stats();
 <div class=troy-server-settings-accordion>
 	<h3 class=troy-server-settings-accordion-heading>
 		<button aria-expanded=true class=troy-server-settings-accordion-trigger aria-controls=troy-server-stats-overview type=button>
-			<span class=title><?= \esc_html__( 'Overview', 'troy-server' ) ?></span>
+			<span class=title><?= \esc_html__( 'Overview and Totals', 'troy-server' ) ?></span>
 			<span class=icon></span>
 		</button>
 	</h3>

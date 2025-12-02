@@ -62,7 +62,7 @@
 				useEffect(
 					() => {
 						// Don't fetch if we have a real logo or if we already have a placeholder URI.
-						if ( placeholderUri || storeData.logo_uri )
+						if ( storeData.logo_uri || placeholderUri )
 							return;
 
 						// Prepare abort controller to cancel in-flight requests on dependency changes
@@ -107,12 +107,12 @@
 				return JSX(
 					'div',
 					{
-						className: 'troy-server-block-plugin-logo-wrap',
+						...blockProps,
+						className: `${blockProps.className} troy-server-block-plugin-logo-wrap`,
 					},
 					displayUri && JSX(
 						'img',
 						{
-							...blockProps,
 							src:       displayUri,
 							className: 'troy-server-block-plugin-logo',
 							alt:       __( 'Plugin Logo', 'troy-server' ),

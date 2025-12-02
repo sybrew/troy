@@ -55,20 +55,18 @@
 				return JSX(
 					'div',
 					{
-						className: 'troy-server-block-plugin-banner-wrap',
+						...blockProps,
+						className: `${blockProps.className} troy-server-block-plugin-banner-wrap`,
 					},
 					storeData.banner_uri && JSX(
 						'img',
 						{
-							...blockProps,
 							src:       storeData.banner_uri,
 							className: 'troy-server-block-plugin-banner',
 							alt:       __( 'Plugin Banner', 'troy-server' ),
 							width:     772,
 							height:    250,
-							style:     {
-								aspectRatio: '772/250',
-							},
+							style:     { aspectRatio: '772/250' },
 						}
 					),
 				);

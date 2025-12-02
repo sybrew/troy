@@ -49,7 +49,7 @@ $packages_summary = Settings\Stats::get_packages_summary();
 <div class=troy-server-settings-accordion>
 	<h3 class=troy-server-settings-accordion-heading>
 		<button aria-expanded=true class=troy-server-settings-accordion-trigger aria-controls=troy-server-package-stats-overview type=button>
-			<span class=title><?= \esc_html__( 'Overview', 'troy-server' ) ?></span>
+			<span class=title><?= \esc_html__( 'Overview and Totals', 'troy-server' ) ?></span>
 			<span class=icon></span>
 		</button>
 	</h3>

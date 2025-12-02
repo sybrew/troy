@@ -34,8 +34,24 @@
 	display: none
 }
 
+/* Normalize a forced width and font */
+.troy-server-block-plugin-headergroup,
+.troy-server-block-plugin-banner,
+.troy-server-block-plugin-heading,
+.troy-server-block-plugin-tabs-container,
+.troy-server-block-plugin-tabs-nav,
+.troy-server-block-plugin-tabs-container {
+	max-width: 772px !important;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif !important;
+}
+
+/* Align font with plugin card */
+.troy-server-block-plugin-title-wrap {
+	font-family: "Helvetica Neue",sans-serif !important;
+}
+
 .troy-server-block-plugin-headergroup {
-	margin-block-start: 4rem !important; /* Some root styles in Gutenberg supersede this */
+	margin-block-start: 4rem !important /* Some root styles in Gutenberg supersede this */
 }
 
 .troy-server-block-plugin-banner {
@@ -48,7 +64,17 @@
 	grid-template-columns: 96px 1fr auto;
 	gap: 1rem;
 	margin: 0;
-	align-items: center;
+	align-items: center
+}
+
+.troy-server-block-plugin-heading :where(.wp-block) {
+	margin-block: 0;
+	justify-self: stretch;
+	text-align: left;
+}
+
+.troy-server-block-plugin-heading >.wp-block {
+	margin-inline: 0;
 }
 
 .troy-server-block-plugin-logo-wrap {
@@ -64,7 +90,6 @@
 	display: flex;
 	flex-direction: column;
 	gap: 0;
-	align-self: start;
 }
 
 .troy-server-block-plugin-title-wrap {
@@ -109,8 +134,9 @@
 	margin-bottom: 1rem;
 }
 
-.troy-server-block-plugin-title {
-	resize: none;
+.troy-server-block-plugin-title,
+.troy-server-block-plugin-title textarea {
+	resize: none
 }
 
 .troy-server-block-plugin-author {

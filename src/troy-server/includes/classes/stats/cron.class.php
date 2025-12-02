@@ -110,6 +110,7 @@ final class Cron extends \Troy\Server\Cron {
 	 */
 	public static function run_finalize_epoch() {
 
+		// Magic number: 5. Huge numbers of requests may cause long finalization times.
 		if ( ! self::acquire_lock( 'troy_server_stats_finalize.lock', 5 * \MINUTE_IN_SECONDS ) )
 			return;
 

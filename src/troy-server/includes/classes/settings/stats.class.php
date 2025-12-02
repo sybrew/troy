@@ -103,7 +103,7 @@ final class Stats {
 					'phpVersions'        => \__( 'PHP Versions', 'troy-server' ),
 					'wpVersions'         => \__( 'WordPress Versions', 'troy-server' ),
 					'currentVersion'     => \__( 'Current Version', 'troy-server' ),
-					'totalDownloads'     => \__( 'Total Downloads', 'troy-server' ),
+					'totalDownloads'     => \__( 'Downloads', 'troy-server' ),
 					'epochHint'          => \__( 'Publicly shown value uses the highest count between this and last epoch.', 'troy-server' ),
 					'epochComparison'    => \__( 'Epoch Comparison', 'troy-server' ),
 					'installsByVersion'  => \__( 'Installations by Version', 'troy-server' ),

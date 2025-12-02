@@ -430,7 +430,7 @@ function make_troy_api_request_cached( $key, $repo, $body = '', $method = 'POST'
 		) {
 			$memo = [
 				'_timeout' => time() + max(
-					15, // Hardcoded 15 seconds minimum
+					30, // Hardcoded 30 seconds minimum
 					\defined( 'Troy\Client\API_TIMEOUT' )
 						? API_TIMEOUT
 						: 600, // 10 minutes default.
