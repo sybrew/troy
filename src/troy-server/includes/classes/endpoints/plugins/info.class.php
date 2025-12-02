@@ -112,10 +112,12 @@ final class Info extends Base_Endpoint {
 			$data_cache   = $data->get_data_caches_row();
 			$contributors = $data->get_contributors();
 
+			$version = $latest_zip->version ?? '';
+
 			$response = [
 				'name'          => $meta_row->name,
 				'slug'          => $plugin_row->slug,
-				'version'       => $latest_zip->version ?? '',
+				'version'       => $version,
 				'author'        => $this->get_author_string( $meta_row->author_id ),
 				'contributors'  => $this->get_contributors_array( $contributors ),
 				'requires'      => $latest_zip->requires_wp ?? '',
@@ -137,7 +139,7 @@ final class Info extends Base_Endpoint {
 				$response = $this->filter_response_by_fields( $response, $fields );
 
 			// Record plugin info request stats
-			$this->record_info_request_stats( $plugin_id, $locale, $screen );
+			$this->record_info_request_stats( $plugin_id, $version, $locale, $screen );
 
 			$this->send_json_response( $response );
 
@@ -475,10 +477,11 @@ final class Info extends Base_Endpoint {
 	 * @global \wpdb $wpdb
 	 *
 	 * @param int    $plugin_id The plugin ID.
+	 * @param string $version   The plugin version.
 	 * @param string $locale    The requested locale.
 	 * @param string $screen    The screen name.
 	 */
-	private function record_info_request_stats( $plugin_id, $locale, $screen ) {
+	private function record_info_request_stats( $plugin_id, $version, $locale, $screen ) {
 
 		global $wpdb;
 
@@ -488,7 +491,7 @@ final class Info extends Base_Endpoint {
 			[
 				'plugin_id'  => $plugin_id,
 				'epoch'      => API\Utils::get_epoch(),
-				'version'    => '',
+				'version'    => $version,
 				'screen'     => $screen,
 				'locale'     => $locale,
 				'origin_url' => API\Server::get_repo_url(),
