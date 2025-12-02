@@ -42,7 +42,7 @@ use Troy\Server\{
 if ( false !== \get_option( 'troy_server_settings' ) )
 	\wp_set_options_autoload( [ 'troy_server_settings' ], false );
 
-// Remove cron jobs.
+// Remove cron jobs; not doing so will cause PHP errors on cron.
 Cron::remove_cron_jobs();
 Integrations\Cron::remove_cron_jobs();
 Stats\Cron::remove_cron_jobs();

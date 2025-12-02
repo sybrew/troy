@@ -77,7 +77,8 @@ final class Cron extends \Troy\Server\Cron {
 	 */
 	public static function run_snapshot() {
 
-		if ( ! self::acquire_lock( 'troy_server_stats_snapshot.lock', 8 * \MINUTE_IN_SECONDS ) )
+		// Magic number: 2. Because we should optimize if we cannot even aggregate within 2 minutes.
+		if ( ! self::acquire_lock( 'troy_server_stats_snapshot.lock', 2 * \MINUTE_IN_SECONDS ) )
 			return;
 
 		// Process a batch of plugins.
@@ -91,6 +92,8 @@ final class Cron extends \Troy\Server\Cron {
 		Aggregator::snapshot_packages();
 
 		// Update daily snapshots (reads from already-aggregated tables).
+		// FIXME: Data from ~23:50-23:59 won't be in yesterday's snapshot. Fix by also
+		// updating yesterday's snapshot if we're within the first ~15 minutes of a new day.
 		Aggregator::snapshot_to_date();
 
 		self::release_lock( 'troy_server_stats_snapshot.lock' );

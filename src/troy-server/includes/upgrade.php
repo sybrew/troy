@@ -241,8 +241,8 @@ function upgrade_from( $version ) {
  * |                                             | Stores frozen copy of stats_totals at end of day (for graphs).      |
  * |                                             | This table can get partitioned (e.g., by year).                     |
  * | troy_plugin_stats_versions                  | Stats by version for plugins (accumulated over all time).           |
- * | troy_plugin_stats_versions_daily_snapshots  | Daily snapshots of stats by version for plugins (daily delta).      |
- * |                                             | Stores frozen copy of that day's live activity (for graphs).        |
+ * | troy_plugin_stats_versions_daily_snapshots  | Daily snapshots of stats by version for plugins (cumulative).       |
+ * |                                             | Stores frozen copy of stats_versions at end of day (for graphs).    |
  * |                                             | This table can get partitioned (e.g., by year).                     |
  * | troy_plugin_stats_views                     | View stats for plugins (for accumulation in stats).                 |
  * | troy_plugin_stats_views_live                | Live view stats for plugins (for accumulation in view_stats).       |

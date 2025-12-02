@@ -714,10 +714,7 @@ final class Aggregator {
 	 * Creates daily snapshots for historical comparison.
 	 *
 	 * Table stats_totals_daily_snapshots: Cumulative (frozen copy of stats_totals).
-	 * Table stats_versions_daily_snapshots: Daily delta from live tables (that day's activity).
-	 *
-	 * NOTE: When a plugin has no activity on a given day, there will be no entry for it
-	 * in stats_versions_daily_snapshots for that day. This is expected behavior.
+	 * Table stats_versions_daily_snapshots: Cumulative (frozen copy of stats_versions).
 	 *
 	 * @since 0.0.1184
 	 * @global \wpdb $wpdb
@@ -760,90 +757,26 @@ final class Aggregator {
 
 		snapshot_versions: {
 
-			$download_counts = [];
-
-			$download_rows = $wpdb->get_results( $wpdb->prepare(
-				"SELECT plugin_id, version, origin_url, COUNT(*) as downloads
-				FROM {$wpdb->prefix}troy_plugin_stats_downloads_live
-				WHERE DATE(created_at) = %s
-				GROUP BY plugin_id, version, origin_url",
+			$wpdb->query( $wpdb->prepare(
+				"INSERT INTO {$wpdb->prefix}troy_plugin_stats_versions_daily_snapshots
+					(plugin_id, version, date, origin_url, downloads, views, total_installs, active_installs)
+				SELECT
+					plugin_id,
+					version,
+					%s,
+					origin_url,
+					downloads,
+					views,
+					total_installs,
+					active_installs
+				FROM {$wpdb->prefix}troy_plugin_stats_versions
+				ON DUPLICATE KEY UPDATE
+					downloads       = VALUES(downloads),
+					views           = VALUES(views),
+					total_installs  = VALUES(total_installs),
+					active_installs = VALUES(active_installs)",
 				$today,
 			) );
-
-			foreach ( $download_rows as $row ) {
-				$key                     = "{$row->plugin_id}|{$row->version}|{$row->origin_url}";
-				$download_counts[ $key ] = (int) $row->downloads;
-			}
-
-			$view_counts = [];
-
-			$view_rows = $wpdb->get_results( $wpdb->prepare(
-				"SELECT plugin_id, version, origin_url, COUNT(*) as views
-				FROM {$wpdb->prefix}troy_plugin_stats_views_live
-				WHERE DATE(created_at) = %s
-				GROUP BY plugin_id, version, origin_url",
-				$today,
-			) );
-
-			foreach ( $view_rows as $row ) {
-				$key                 = "{$row->plugin_id}|{$row->version}|{$row->origin_url}";
-				$view_counts[ $key ] = (int) $row->views;
-			}
-
-			// Get install counts from pre-aggregated stats_versions table.
-			$install_counts = [];
-
-			$install_rows = $wpdb->get_results(
-				"SELECT plugin_id, version, origin_url, total_installs, active_installs
-				FROM {$wpdb->prefix}troy_plugin_stats_versions",
-			);
-
-			foreach ( $install_rows as $row ) {
-				$key                    = "{$row->plugin_id}|{$row->version}|{$row->origin_url}";
-				$install_counts[ $key ] = [
-					'total'  => (int) $row->total_installs,
-					'active' => (int) $row->active_installs,
-				];
-			}
-
-			$all_keys = array_unique( array_merge(
-				array_keys( $download_counts ),
-				array_keys( $view_counts ),
-				array_keys( $install_counts ),
-			) );
-
-			foreach ( $all_keys as $key ) {
-
-				[ $plugin_id, $version, $origin_url ] = explode( '|', $key, 3 );
-
-				$downloads       = $download_counts[ $key ] ?? 0;
-				$views           = $view_counts[ $key ] ?? 0;
-				$installs        = $install_counts[ $key ] ?? [
-					'total'  => 0,
-					'active' => 0,
-				];
-				$total_installs  = $installs['total'];
-				$active_installs = $installs['active'];
-
-				$wpdb->query( $wpdb->prepare(
-					"INSERT INTO {$wpdb->prefix}troy_plugin_stats_versions_daily_snapshots
-						(plugin_id, version, date, origin_url, downloads, views, total_installs, active_installs)
-					VALUES (%d, %s, %s, %s, %d, %d, %d, %d)
-					ON DUPLICATE KEY UPDATE
-						downloads       = VALUES(downloads),
-						views           = VALUES(views),
-						total_installs  = VALUES(total_installs),
-						active_installs = VALUES(active_installs)",
-					$plugin_id,
-					$version,
-					$today,
-					$origin_url,
-					$downloads,
-					$views,
-					$total_installs,
-					$active_installs,
-				) );
-			}
 		}
 
 		// phpcs:enable Generic.WhiteSpace.ScopeIndent.IncorrectExact

@@ -204,8 +204,8 @@ $locales          = Settings\Stats::get_locale_stats();
 			<tbody>
 				<tr>
 					<td><?= \esc_html__( 'Update Requests', 'troy-server' ) ?></td>
-					<td><?= \esc_html( \number_format_i18n( $epoch_comparison['previous_requests'] ) ) ?></td>
-					<td><?= \esc_html( \number_format_i18n( $epoch_comparison['current_requests'] ) ) ?></td>
+					<td><?= \esc_html( \number_format_i18n( $epoch_comparison['last_requests'] ) ) ?></td>
+					<td><?= \esc_html( \number_format_i18n( $epoch_comparison['this_requests'] ) ) ?></td>
 					<td class="<?= $epoch_comparison['requests_change_percent'] >= 0 ? 'troy-server-stats-positive' : 'troy-server-stats-negative' ?>">
 						<?php
 						if ( \is_infinite( $epoch_comparison['requests_change_percent'] ) ) {
@@ -218,8 +218,8 @@ $locales          = Settings\Stats::get_locale_stats();
 				</tr>
 				<tr>
 					<td><?= \esc_html__( 'Active Installations', 'troy-server' ) ?></td>
-					<td><?= \esc_html( \number_format_i18n( $epoch_comparison['previous_active_installs'] ) ) ?></td>
-					<td><?= \esc_html( \number_format_i18n( $epoch_comparison['current_active_installs'] ) ) ?></td>
+					<td><?= \esc_html( \number_format_i18n( $epoch_comparison['last_active_installs'] ) ) ?></td>
+					<td><?= \esc_html( \number_format_i18n( $epoch_comparison['this_active_installs'] ) ) ?></td>
 					<td class="<?= $epoch_comparison['active_change_percent'] >= 0 ? 'troy-server-stats-positive' : 'troy-server-stats-negative' ?>">
 						<?php
 						if ( \is_infinite( $epoch_comparison['active_change_percent'] ) ) {
@@ -232,8 +232,8 @@ $locales          = Settings\Stats::get_locale_stats();
 				</tr>
 				<tr>
 					<td><?= \esc_html__( 'Inactive Installations', 'troy-server' ) ?></td>
-					<td><?= \esc_html( \number_format_i18n( $epoch_comparison['previous_inactive_installs'] ) ) ?></td>
-					<td><?= \esc_html( \number_format_i18n( $epoch_comparison['current_inactive_installs'] ) ) ?></td>
+					<td><?= \esc_html( \number_format_i18n( $epoch_comparison['last_inactive_installs'] ) ) ?></td>
+					<td><?= \esc_html( \number_format_i18n( $epoch_comparison['this_inactive_installs'] ) ) ?></td>
 					<td class="<?= $epoch_comparison['inactive_change_percent'] >= 0 ? 'troy-server-stats-positive' : 'troy-server-stats-negative' ?>">
 						<?php
 						if ( \is_infinite( $epoch_comparison['inactive_change_percent'] ) ) {

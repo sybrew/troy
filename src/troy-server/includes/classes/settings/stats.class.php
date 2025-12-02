@@ -155,15 +155,36 @@ final class Stats {
 		$this_epoch = API\Utils::get_epoch();
 
 		if ( $start_date && $end_date ) {
-			// stats_versions_daily_snapshots stores daily deltas; SUM gives period total.
+			// stats_totals_daily_snapshots stores cumulative totals; delta gives period total.
 			$totals = $wpdb->get_row( $wpdb->prepare(
 				"SELECT
-					COALESCE(SUM(downloads), 0) as total_downloads,
-					COALESCE(SUM(views), 0) as total_views
-				FROM {$wpdb->prefix}troy_plugin_stats_versions_daily_snapshots
-				WHERE date BETWEEN %s AND %s",
-				$start_date,
+					COALESCE(end_totals.downloads - COALESCE(start_totals.downloads, 0), 0) as total_downloads,
+					COALESCE(end_totals.views - COALESCE(start_totals.views, 0), 0) as total_views
+				FROM (
+					SELECT
+						SUM(downloads) as downloads,
+						SUM(views) as views
+					FROM {$wpdb->prefix}troy_plugin_stats_totals_daily_snapshots
+					WHERE date = (
+						SELECT MAX(date)
+						FROM {$wpdb->prefix}troy_plugin_stats_totals_daily_snapshots
+						WHERE date <= %s
+					)
+				) end_totals
+				LEFT JOIN (
+					SELECT
+						SUM(downloads) as downloads,
+						SUM(views) as views
+					FROM {$wpdb->prefix}troy_plugin_stats_totals_daily_snapshots
+					WHERE date = (
+						SELECT MAX(date)
+						FROM {$wpdb->prefix}troy_plugin_stats_totals_daily_snapshots
+						WHERE date < %s
+					)
+				) start_totals
+					ON 1 = 1",
 				$end_date,
+				$start_date,
 			) );
 		} else {
 			$totals = $wpdb->get_row(
