@@ -544,15 +544,17 @@ final class Data {
 	 * @return ?object[] {
 	 *     An array of plugin stats, or null if none are found.
 	 *
-	 *     @type int    id                           The stats ID.
-	 *     @type int    plugin_id                    The plugin ID.
-	 *     @type string origin_url                   The origin URL that collected this information.
-	 *     @type int    downloads                    The number of downloads.
-	 *     @type int    views                        The number of views.
-	 *     @type int    installations_current_epoch  The current epoch installations.
-	 *     @type int    installations_previous_epoch The previous epoch installations.
-	 *     @type string created_at                   The row creation timestamp.
-	 *     @type string updated_at                   The row last updated timestamp.
+	 *     @type int    id                         The stats ID.
+	 *     @type int    plugin_id                  The plugin ID.
+	 *     @type string origin_url                 The origin URL that collected this information.
+	 *     @type int    downloads                  The number of downloads.
+	 *     @type int    views                      The number of views.
+	 *     @type int    total_installs_this_epoch  Total installations of this epoch.
+	 *     @type int    total_installs_last_epoch  Total installations of the last epoch.
+	 *     @type int    active_installs_this_epoch Active installations of this epoch.
+	 *     @type int    active_installs_last_epoch Active installations of the last epoch.
+	 *     @type string created_at                 The row creation timestamp.
+	 *     @type string updated_at                 The row last updated timestamp.
 	 * }
 	 */
 	public function get_stats_totals() {
@@ -574,16 +576,18 @@ final class Data {
 	 * @return ?object[] {
 	 *     An array of plugin stats to date, or null if none are found.
 	 *
-	 *     @type int    id                           The stats ID.
-	 *     @type int    plugin_id                    The plugin ID.
-	 *     @type string date                         The date of the stats.
-	 *     @type string origin_url                   The origin URL that collected this information.
-	 *     @type int    downloads                    The number of downloads.
-	 *     @type int    views                        The number of views.
-	 *     @type int    installations_current_epoch  The current epoch installations.
-	 *     @type int    installations_previous_epoch The previous epoch installations.
-	 *     @type string created_at                   The row creation timestamp.
-	 *     @type string updated_at                   The row last updated timestamp.
+	 *     @type int    id                         The stats ID.
+	 *     @type int    plugin_id                  The plugin ID.
+	 *     @type string date                       The date of the stats.
+	 *     @type string origin_url                 The origin URL that collected this information.
+	 *     @type int    downloads                  The number of downloads.
+	 *     @type int    views                      The number of views.
+	 *     @type int    total_installs_this_epoch  Total installations of this epoch.
+	 *     @type int    total_installs_last_epoch  Total installations of the last epoch.
+	 *     @type int    active_installs_this_epoch Active installations of this epoch.
+	 *     @type int    active_installs_last_epoch Active installations of the last epoch.
+	 *     @type string created_at                 The row creation timestamp.
+	 *     @type string updated_at                 The row last updated timestamp.
 	 * }
 	 */
 	public function get_stats_totals_by_date() {
@@ -609,16 +613,14 @@ final class Data {
 	 * @return ?object[] {
 	 *     An array of plugin stats by version, or null if none are found.
 	 *
-	 *     @type int    id                           The stats ID.
-	 *     @type int    plugin_id                    The plugin ID.
-	 *     @type string version                      The plugin version.
-	 *     @type string origin_url                   The origin URL that collected this information.
-	 *     @type int    downloads                    The number of downloads.
-	 *     @type int    views                        The number of views.
-	 *     @type int    installations_current_epoch  The current epoch installations.
-	 *     @type int    installations_previous_epoch The previous epoch installations.
-	 *     @type string created_at                   The row creation timestamp.
-	 *     @type string updated_at                   The row last updated timestamp.
+	 *     @type int    id         The stats ID.
+	 *     @type int    plugin_id  The plugin ID.
+	 *     @type string version    The plugin version.
+	 *     @type string origin_url The origin URL that collected this information.
+	 *     @type int    downloads  The number of downloads.
+	 *     @type int    views      The number of views.
+	 *     @type string created_at The row creation timestamp.
+	 *     @type string updated_at The row last updated timestamp.
 	 * }
 	 */
 	public function get_stats() {
@@ -644,17 +646,15 @@ final class Data {
 	 * @return ?object[] {
 	 *     An array of plugin stats by version to date, or null if none are found.
 	 *
-	 *     @type int    id                           The stats ID.
-	 *     @type int    plugin_id                    The plugin ID.
-	 *     @type string version                      The plugin version.
-	 *     @type string date                         The date of the stats.
-	 *     @type string origin_url                   The origin URL that collected this information.
-	 *     @type int    downloads                    The number of downloads.
-	 *     @type int    views                        The number of views.
-	 *     @type int    installations_current_epoch  The current epoch installations.
-	 *     @type int    installations_previous_epoch The previous epoch installations.
-	 *     @type string created_at                   The row creation timestamp.
-	 *     @type string updated_at                   The row last updated timestamp.
+	 *     @type int    id         The stats ID.
+	 *     @type int    plugin_id  The plugin ID.
+	 *     @type string version    The plugin version.
+	 *     @type string date       The date of the stats.
+	 *     @type string origin_url The origin URL that collected this information.
+	 *     @type int    downloads  The number of downloads.
+	 *     @type int    views      The number of views.
+	 *     @type string created_at The row creation timestamp.
+	 *     @type string updated_at The row last updated timestamp.
 	 * }
 	 */
 	public function get_stats_by_date() {

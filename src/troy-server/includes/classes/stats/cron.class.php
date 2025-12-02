@@ -56,8 +56,8 @@ final class Cron extends \Troy\Server\Cron {
 	protected const CRON_JOBS = [
 		'troy_server_cron_stats_take_snapshot'  => [
 			'callback' => [ self::class, 'run_snapshot' ],
-			'schedule' => 'halfhourly',
-			'interval' => \HOUR_IN_SECONDS / 2,
+			'schedule' => 'tenminutes',
+			'interval' => 10 * \MINUTE_IN_SECONDS,
 		],
 		'troy_server_cron_stats_finalize_epoch' => [
 			'callback' => [ self::class, 'run_finalize_epoch' ],
@@ -68,22 +68,30 @@ final class Cron extends \Troy\Server\Cron {
 	/**
 	 * Run a stats snapshot.
 	 *
-	 * Aggregates live data from all _live tables into aggregated tables.
-	 * This runs every 30 minutes to keep stats near-realtime.
+	 * Aggregates live data from all _live tables into aggregated tables in batches.
+	 * Processes 100 IDs per batch, tracking progress via options.
+	 * This runs every 10 minutes to keep stats near-realtime.
 	 *
 	 * @hook troy_server_cron_stats_take_snapshot 10
 	 * @since 0.0.1184
 	 */
 	public static function run_snapshot() {
 
-		if ( ! self::acquire_lock( 'troy_server_stats_snapshot.lock', 10 * \MINUTE_IN_SECONDS ) )
+		if ( ! self::acquire_lock( 'troy_server_stats_snapshot.lock', 8 * \MINUTE_IN_SECONDS ) )
 			return;
 
-		Aggregator::snapshot_update_requests();
-		Aggregator::snapshot_views();
-		Aggregator::snapshot_downloads();
-		Aggregator::update_active_install_counts();
-		Aggregator::snapshot_to_date(); // Must run last
+		// Process a batch of plugins.
+		$plugins_has_more = Aggregator::snapshot_plugins();
+
+		// When plugin cycle completes, update global stats.
+		if ( ! $plugins_has_more )
+			Aggregator::snapshot_global_stats();
+
+		// Process a batch of packages.
+		Aggregator::snapshot_packages();
+
+		// Update daily snapshots (reads from already-aggregated tables).
+		Aggregator::snapshot_to_date();
 
 		self::release_lock( 'troy_server_stats_snapshot.lock' );
 	}

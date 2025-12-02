@@ -67,14 +67,14 @@ namespace Troy\Server;
  *
  * @since 0.0.1184
  */
-const VERSION = '0.1.1184';
+const VERSION = '0.0.1184';
 
 /**
  * The plugin database version.
  *
  * @since 0.0.1184
  */
-const DB_VERSION = 2_1184;
+const DB_VERSION = 1_1184;
 
 /**
  * The plugin base file.

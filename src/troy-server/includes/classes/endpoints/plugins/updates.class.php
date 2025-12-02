@@ -213,6 +213,8 @@ final class Updates extends Base_Endpoint {
 	 * Upserts a row per unique (plugin_id, epoch, uuid) combination. On duplicate,
 	 * updates to the latest version/is_active state and increments request_count.
 	 *
+	 * Uses MySQL 8.0.19+ syntax for upsert with multiple updates.
+	 *
 	 * @since 0.0.1184
 	 * @global \wpdb $wpdb
 	 *
@@ -242,39 +244,47 @@ final class Updates extends Base_Endpoint {
 
 		global $wpdb;
 
+		$locales = API\Sanitize::json_encode_db( $locales );
+
 		// Upsert live update request stat; on duplicate, update to latest state and increment request_count.
-		// The alias is required to unambiguously reference the inserted values in the ON DUPLICATE KEY UPDATE clause.
 		$wpdb->query( $wpdb->prepare(
-			"INSERT INTO {$wpdb->prefix}troy_plugin_stats_requests_live AS t (
-				plugin_id,
-				epoch,
-				version,
-				is_active,
-				uuid,
-				request_count,
-				locales,
-				origin_url,
-				php_version,
-				wp_version,
-				client_version
-			)
-			VALUES ( %d, %d, %s, %d, %s, 1, %s, %s, %s, %s, %s )
-			AS new
+			"INSERT INTO {$wpdb->prefix}troy_plugin_stats_requests_live
+			SET
+				plugin_id      = %d,
+				epoch          = %d,
+				version        = %s,
+				is_active      = %d,
+				uuid           = %s,
+				request_count  = 1,
+				locales        = %s,
+				origin_url     = %s,
+				php_version    = %s,
+				wp_version     = %s,
+				client_version = %s
 			ON DUPLICATE KEY UPDATE
-				version        = new.version,
-				is_active      = new.is_active,
-				request_count  = t.request_count + 1,
-				locales        = new.locales,
-				origin_url     = new.origin_url,
-				php_version    = new.php_version,
-				wp_version     = new.wp_version,
-				client_version = new.client_version",
+				version        = %s,
+				is_active      = %d,
+				request_count  = {$wpdb->prefix}troy_plugin_stats_requests_live.request_count + 1,
+				locales        = %s,
+				origin_url     = %s,
+				php_version    = %s,
+				wp_version     = %s,
+				client_version = %s",
+			// INSERT
 			$plugin_id,
 			$epoch,
 			$version,
 			$is_active,
 			$client_uuid ?: 'unknown',
-			API\Sanitize::json_encode_db( $locales ),
+			$locales,
+			$origin_url,
+			$php_version,
+			$wp_version,
+			$client_version,
+			// UPDATE
+			$version,
+			$is_active,
+			$locales,
 			$origin_url,
 			$php_version,
 			$wp_version,

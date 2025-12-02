@@ -133,11 +133,12 @@ final class Download extends Base_Endpoint {
 			"{$wpdb->prefix}troy_package_stats_downloads_live",
 			[
 				'package_id' => $package_id,
+				'epoch'      => API\Utils::get_epoch(),
 				'version'    => $version,
 				'type'       => 'download',
 				'origin_url' => $origin_url,
 			],
-			[ '%d', '%s', '%s', '%s' ],
+			[ '%d', '%d', '%s', '%s', '%s' ],
 		);
 	}
 

@@ -38,6 +38,7 @@ use Troy\Server\API;
  * Class Troy\Server\Stats\Aggregator.
  *
  * Handles aggregation of live stats data into summary tables.
+ * Processes plugins and packages in batches of 100 IDs per cron run.
  *
  * @since 0.0.1184
  */
@@ -52,781 +53,625 @@ final class Aggregator {
 	private const EPOCH_FINALIZE_DELAY = 48 * \HOUR_IN_SECONDS;
 
 	/**
-	 * Snapshots update request stats from live table to aggregated tables.
-	 *
-	 * Aggregates request counts by plugin_id, epoch, version, is_active.
-	 * Also aggregates locale, PHP version, and WordPress version stats.
+	 * The number of IDs to process per batch.
 	 *
 	 * @since 0.0.1184
-	 * @global \wpdb $wpdb
 	 */
-	public static function snapshot_update_requests() {
-
-		global $wpdb;
-
-		$current_epoch  = API\Utils::get_epoch();
-		$previous_epoch = $current_epoch - 1;
-
-		$live_rows = $wpdb->get_results(
-			"SELECT plugin_id, epoch, version, is_active, uuid, request_count, locales, php_version, wp_version
-			FROM {$wpdb->prefix}troy_plugin_stats_requests_live",
-		);
-
-		if ( ! $live_rows )
-			return;
-
-		// Aggregate in PHP.
-		$request_stats      = [];
-		$locale_uuids       = [];
-		$php_uuids          = [];
-		$wp_uuids           = [];
-		$installation_uuids = [];
-
-		// Global stats - track unique UUIDs across all plugins.
-		$global_locale_uuids = [];
-		$global_php_uuids    = [];
-		$global_wp_uuids     = [];
-
-		foreach ( $live_rows as $row ) {
-			// Request counts - aggregate by version/is_active, sum request_count from upserted rows.
-			$request_key = "$row->plugin_id|$row->epoch|$row->version|$row->is_active";
-
-			$request_stats[ $request_key ] ??= [
-				'plugin_id'     => $row->plugin_id,
-				'epoch'         => $row->epoch,
-				'version'       => $row->version,
-				'is_active'     => $row->is_active,
-				'request_count' => 0,
-			];
-
-			$request_stats[ $request_key ]['request_count'] += (int) $row->request_count;
-
-			// Locale stats - track unique UUIDs per locale.
-			$locales = json_decode( $row->locales, true ) ?: [];
-
-			foreach ( $locales as $locale ) {
-				if ( ! \is_string( $locale ) or '' === $locale )
-					continue;
-
-				// Per-plugin locale stats.
-				$locale_key = "$row->plugin_id|$row->epoch|$locale";
-
-				$locale_uuids[ $locale_key ]             ??= [];
-				$locale_uuids[ $locale_key ][ $row->uuid ] = true;
-
-				// Global locale stats.
-				$global_locale_key = "$row->epoch|$locale";
-
-				$global_locale_uuids[ $global_locale_key ]             ??= [];
-				$global_locale_uuids[ $global_locale_key ][ $row->uuid ] = true;
-			}
-
-			// PHP version stats - track unique UUIDs per PHP version.
-			if ( '' !== $row->php_version ) {
-				// Per-plugin PHP stats.
-				$php_key = "$row->plugin_id|$row->epoch|$row->php_version";
-
-				$php_uuids[ $php_key ]             ??= [];
-				$php_uuids[ $php_key ][ $row->uuid ] = true;
-
-				// Global PHP stats.
-				$global_php_key = "$row->epoch|$row->php_version";
-
-				$global_php_uuids[ $global_php_key ]             ??= [];
-				$global_php_uuids[ $global_php_key ][ $row->uuid ] = true;
-			}
-
-			// WordPress version stats - track unique UUIDs per WP version.
-			if ( '' !== $row->wp_version ) {
-				// Per-plugin WP stats.
-				$wp_key = "$row->plugin_id|$row->epoch|$row->wp_version";
-
-				$wp_uuids[ $wp_key ]             ??= [];
-				$wp_uuids[ $wp_key ][ $row->uuid ] = true;
-
-				// Global WP stats.
-				$global_wp_key = "$row->epoch|$row->wp_version";
-
-				$global_wp_uuids[ $global_wp_key ]             ??= [];
-				$global_wp_uuids[ $global_wp_key ][ $row->uuid ] = true;
-			}
-
-			// Track unique UUIDs for installation counts (only active installs in relevant epochs).
-			if (
-				   $row->is_active
-				&& (
-					(int) $row->epoch === $current_epoch || (int) $row->epoch === $previous_epoch
-				)
-			) {
-				$uuid_key = "$row->plugin_id|$row->version|$row->epoch";
-
-				$installation_uuids[ $uuid_key ]             ??= [];
-				$installation_uuids[ $uuid_key ][ $row->uuid ] = true;
-			}
-		}
-
-		// Write request stats.
-		foreach ( $request_stats as $row ) {
-			$wpdb->replace(
-				"{$wpdb->prefix}troy_plugin_stats_requests",
-				[
-					'plugin_id'     => $row['plugin_id'],
-					'epoch'         => $row['epoch'],
-					'version'       => $row['version'],
-					'is_active'     => $row['is_active'],
-					'request_count' => $row['request_count'],
-				],
-				[ '%d', '%d', '%s', '%d', '%d' ],
-			);
-		}
-
-		// Write locale stats - count unique UUIDs.
-		foreach ( $locale_uuids as $key => $uuids ) {
-			[ $plugin_id, $epoch, $locale ] = explode( '|', $key );
-
-			$wpdb->replace(
-				"{$wpdb->prefix}troy_plugin_stats_locales",
-				[
-					'plugin_id'     => $plugin_id,
-					'epoch'         => $epoch,
-					'locale'        => $locale,
-					'install_count' => \count( $uuids ),
-				],
-				[ '%d', '%d', '%s', '%d' ],
-			);
-		}
-
-		// Write PHP version stats - count unique UUIDs.
-		foreach ( $php_uuids as $key => $uuids ) {
-			[ $plugin_id, $epoch, $php_version ] = explode( '|', $key );
-
-			$wpdb->replace(
-				"{$wpdb->prefix}troy_plugin_stats_php",
-				[
-					'plugin_id'     => $plugin_id,
-					'epoch'         => $epoch,
-					'php_version'   => $php_version,
-					'install_count' => \count( $uuids ),
-				],
-				[ '%d', '%d', '%s', '%d' ],
-			);
-		}
-
-		// Write WP version stats - count unique UUIDs.
-		foreach ( $wp_uuids as $key => $uuids ) {
-			[ $plugin_id, $epoch, $wp_version ] = explode( '|', $key );
-
-			$wpdb->replace(
-				"{$wpdb->prefix}troy_plugin_stats_wp",
-				[
-					'plugin_id'     => $plugin_id,
-					'epoch'         => $epoch,
-					'wp_version'    => $wp_version,
-					'install_count' => \count( $uuids ),
-				],
-				[ '%d', '%d', '%s', '%d' ],
-			);
-		}
-
-		// Write global locale stats - count unique UUIDs across all plugins.
-		foreach ( $global_locale_uuids as $key => $uuids ) {
-			[ $epoch, $locale ] = explode( '|', $key );
-
-			$wpdb->replace(
-				"{$wpdb->prefix}troy_stats_locales",
-				[
-					'epoch'         => $epoch,
-					'locale'        => $locale,
-					'install_count' => \count( $uuids ),
-				],
-				[ '%d', '%s', '%d' ],
-			);
-		}
-
-		// Write global PHP version stats - count unique UUIDs across all plugins.
-		foreach ( $global_php_uuids as $key => $uuids ) {
-			[ $epoch, $php_version ] = explode( '|', $key );
-
-			$wpdb->replace(
-				"{$wpdb->prefix}troy_stats_php",
-				[
-					'epoch'         => $epoch,
-					'php_version'   => $php_version,
-					'install_count' => \count( $uuids ),
-				],
-				[ '%d', '%s', '%d' ],
-			);
-		}
-
-		// Write global WP version stats - count unique UUIDs across all plugins.
-		foreach ( $global_wp_uuids as $key => $uuids ) {
-			[ $epoch, $wp_version ] = explode( '|', $key );
-
-			$wpdb->replace(
-				"{$wpdb->prefix}troy_stats_wp",
-				[
-					'epoch'         => $epoch,
-					'wp_version'    => $wp_version,
-					'install_count' => \count( $uuids ),
-				],
-				[ '%d', '%s', '%d' ],
-			);
-		}
-
-		// Calculate installation counts from unique UUIDs.
-		$installation_stats = [];
-
-		foreach ( $installation_uuids as $key => $uuids ) {
-			[ $plugin_id, $version, $epoch ] = explode( '|', $key );
-
-			$stats_key = "$plugin_id|$version";
-
-			$installation_stats[ $stats_key ] ??= [
-				'plugin_id'                    => $plugin_id,
-				'version'                      => $version,
-				'installations_current_epoch'  => 0,
-				'installations_previous_epoch' => 0,
-			];
-
-			$count = \count( $uuids );
-
-			if ( (int) $epoch === $current_epoch ) {
-				$installation_stats[ $stats_key ]['installations_current_epoch'] = $count;
-			} else {
-				$installation_stats[ $stats_key ]['installations_previous_epoch'] = $count;
-			}
-		}
-
-		// Collect totals per plugin while updating per-version stats.
-		$plugin_totals = [];
-
-		foreach ( $installation_stats as $row ) {
-			// Update per-version stats.
-			$existing = $wpdb->get_row(
-				$wpdb->prepare(
-					"SELECT id, downloads, views
-					FROM {$wpdb->prefix}troy_plugin_stats_versions
-					WHERE plugin_id = %d AND version = %s",
-					$row['plugin_id'],
-					$row['version'],
-				),
-			);
-
-			if ( $existing ) {
-				$wpdb->update(
-					"{$wpdb->prefix}troy_plugin_stats_versions",
-					[
-						'installations_current_epoch'  => $row['installations_current_epoch'],
-						'installations_previous_epoch' => $row['installations_previous_epoch'],
-					],
-					[ 'id' => $existing->id ],
-					[ '%d', '%d' ],
-					[ '%d' ],
-				);
-			} else {
-				$wpdb->insert(
-					"{$wpdb->prefix}troy_plugin_stats_versions",
-					[
-						'plugin_id'                    => $row['plugin_id'],
-						'version'                      => $row['version'],
-						'origin_url'                   => '',
-						'downloads'                    => 0,
-						'views'                        => 0,
-						'installations_current_epoch'  => $row['installations_current_epoch'],
-						'installations_previous_epoch' => $row['installations_previous_epoch'],
-					],
-					[ '%d', '%s', '%s', '%d', '%d', '%d', '%d' ],
-				);
-			}
-
-			// Accumulate for totals.
-			$plugin_totals[ $row['plugin_id'] ] ??= [
-				'installations_current_epoch'  => 0,
-				'installations_previous_epoch' => 0,
-			];
-
-			$plugin_totals[ $row['plugin_id'] ]['installations_current_epoch']  += $row['installations_current_epoch'];
-			$plugin_totals[ $row['plugin_id'] ]['installations_previous_epoch'] += $row['installations_previous_epoch'];
-		}
-
-		// Update totals.
-		foreach ( $plugin_totals as $plugin_id => $totals ) {
-			$existing = $wpdb->get_row(
-				$wpdb->prepare(
-					"SELECT id, downloads, views
-					FROM {$wpdb->prefix}troy_plugin_stats_totals
-					WHERE plugin_id = %d",
-					$plugin_id,
-				),
-			);
-
-			if ( $existing ) {
-				$wpdb->update(
-					"{$wpdb->prefix}troy_plugin_stats_totals",
-					[
-						'installations_current_epoch'  => $totals['installations_current_epoch'],
-						'installations_previous_epoch' => $totals['installations_previous_epoch'],
-					],
-					[ 'id' => $existing->id ],
-					[ '%d', '%d' ],
-					[ '%d' ],
-				);
-			} else {
-				$wpdb->insert(
-					"{$wpdb->prefix}troy_plugin_stats_totals",
-					[
-						'plugin_id'                    => $plugin_id,
-						'downloads'                    => 0,
-						'views'                        => 0,
-						'installations_current_epoch'  => $totals['installations_current_epoch'],
-						'installations_previous_epoch' => $totals['installations_previous_epoch'],
-					],
-					[ '%d', '%d', '%d', '%d', '%d' ],
-				);
-			}
-		}
-	}
+	private const BATCH_SIZE = 100;
 
 	/**
-	 * Snapshots view stats from live table to aggregated tables.
+	 * Snapshots plugin stats for a batch of plugin IDs.
 	 *
-	 * Note: All aggregation happens in PHP memory via associative arrays keyed by origin_url.
-	 * For horizontal scaling with multiple workers, you would need database-level aggregation
-	 * (e.g., INSERT ... ON DUPLICATE KEY UPDATE) or a distributed aggregation mechanism.
-	 * Currently, origin_url data accumulates without collision because we run on a single server.
+	 * Processes plugins in batches of 100 IDs, tracking progress via options.
+	 * Uses SQL GROUP BY for all aggregation to minimize memory usage.
 	 *
 	 * @since 0.0.1184
 	 * @global \wpdb $wpdb
+	 *
+	 * @return bool True if there are more plugins to process, false if cycle complete.
 	 */
-	public static function snapshot_views() {
+	public static function snapshot_plugins() {
 
 		global $wpdb;
 
-		// Fetch all raw rows - no SQL aggregation.
-		$live_rows = $wpdb->get_results(
-			"SELECT plugin_id, version, screen, locale, origin_url
-			FROM {$wpdb->prefix}troy_plugin_stats_views_live",
-		);
+		$last_id = (int) \get_option( 'troy_server_cron_batch_last_id_plugins', 0 );
 
-		if ( ! $live_rows )
-			return;
+		// Get batch of plugin IDs.
+		$plugin_ids = $wpdb->get_col( $wpdb->prepare(
+			"SELECT id
+			FROM {$wpdb->prefix}troy_plugins
+			WHERE id > %d
+			ORDER BY id
+			LIMIT %d",
+			$last_id,
+			self::BATCH_SIZE,
+		) );
 
-		// Aggregate in PHP.
-		$view_stats = [];
-		$stats_agg  = [];
-		$totals_agg = [];
-
-		foreach ( $live_rows as $row ) {
-			// View stats (full granularity).
-			$view_key = "$row->plugin_id|$row->version|$row->screen|$row->locale|$row->origin_url";
-
-			$view_stats[ $view_key ] ??= [
-				'plugin_id'  => $row->plugin_id,
-				'version'    => $row->version,
-				'screen'     => $row->screen,
-				'locale'     => $row->locale,
-				'origin_url' => $row->origin_url,
-				'views'      => 0,
-			];
-
-			++$view_stats[ $view_key ]['views'];
-
-			// Stats aggregate.
-			$stats_key = "$row->plugin_id|$row->version|$row->origin_url";
-
-			$stats_agg[ $stats_key ] ??= [
-				'plugin_id'  => $row->plugin_id,
-				'version'    => $row->version,
-				'origin_url' => $row->origin_url,
-				'views'      => 0,
-			];
-
-			++$stats_agg[ $stats_key ]['views'];
-
-			// Totals aggregate.
-			$totals_key = "$row->plugin_id";
-
-			$totals_agg[ $totals_key ] ??= [
-				'plugin_id' => $row->plugin_id,
-				'views'     => 0,
-			];
-
-			++$totals_agg[ $totals_key ]['views'];
+		if ( empty( $plugin_ids ) ) {
+			// Cycle complete, reset for next cycle.
+			\update_option( 'troy_server_cron_batch_last_id_plugins', 0, false );
+			return false;
 		}
 
-		// Write view_stats.
-		foreach ( $view_stats as $row ) {
-			$wpdb->replace(
-				"{$wpdb->prefix}troy_plugin_stats_views",
-				[
-					'plugin_id'  => $row['plugin_id'],
-					'version'    => $row['version'],
-					'screen'     => $row['screen'],
-					'locale'     => $row['locale'],
-					'origin_url' => $row['origin_url'],
-					'views'      => $row['views'],
-				],
-				[ '%d', '%s', '%s', '%s', '%s', '%d' ],
+		$plugin_ids_str = implode( ',', array_map( 'intval', $plugin_ids ) );
+		$this_epoch     = API\Utils::get_epoch();
+		$last_epoch     = $this_epoch - 1;
+
+		// phpcs:disable Generic.WhiteSpace.ScopeIndent.IncorrectExact -- No love for goto.
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $plugin_ids_str is sanitized
+
+		aggregate_request_counts: {
+
+			$rows = $wpdb->get_results(
+				"SELECT
+					plugin_id,
+					epoch,
+					version,
+					is_active,
+					SUM(request_count) as request_count
+				FROM {$wpdb->prefix}troy_plugin_stats_requests_live
+				WHERE plugin_id IN ($plugin_ids_str)
+				GROUP BY plugin_id, epoch, version, is_active",
 			);
+
+			foreach ( $rows as $row ) {
+				$wpdb->replace(
+					"{$wpdb->prefix}troy_plugin_stats_requests",
+					[
+						'plugin_id'     => $row->plugin_id,
+						'epoch'         => $row->epoch,
+						'version'       => $row->version,
+						'is_active'     => $row->is_active,
+						'request_count' => $row->request_count,
+					],
+					[ '%d', '%d', '%s', '%d', '%d' ],
+				);
+			}
 		}
 
-		// Update stats table.
-		foreach ( $stats_agg as $row ) {
-			$existing = $wpdb->get_var(
-				$wpdb->prepare(
-					"SELECT id
-					FROM {$wpdb->prefix}troy_plugin_stats_versions
-					WHERE plugin_id = %d AND version = %s AND origin_url = %s",
+		aggregate_locale_stats: {
+
+			$rows = $wpdb->get_results(
+				"SELECT
+					r.plugin_id,
+					r.epoch,
+					jt.locale,
+					COUNT(DISTINCT r.uuid) as install_count
+				FROM {$wpdb->prefix}troy_plugin_stats_requests_live r,
+					JSON_TABLE(
+						r.locales,
+						'$[*]' COLUMNS(locale VARCHAR(15) PATH '$')
+					) jt
+				WHERE r.plugin_id IN ($plugin_ids_str)
+					AND jt.locale IS NOT null
+					AND jt.locale != ''
+				GROUP BY r.plugin_id, r.epoch, jt.locale",
+			);
+
+			foreach ( $rows as $row ) {
+				$wpdb->replace(
+					"{$wpdb->prefix}troy_plugin_stats_locales",
+					[
+						'plugin_id'     => $row->plugin_id,
+						'epoch'         => $row->epoch,
+						'locale'        => $row->locale,
+						'install_count' => $row->install_count,
+					],
+					[ '%d', '%d', '%s', '%d' ],
+				);
+			}
+		}
+
+		aggregate_php_stats: {
+
+			$rows = $wpdb->get_results(
+				"SELECT
+					plugin_id,
+					epoch,
+					php_version,
+					COUNT(DISTINCT uuid) as install_count
+				FROM {$wpdb->prefix}troy_plugin_stats_requests_live
+				WHERE plugin_id IN ($plugin_ids_str)
+					AND php_version != ''
+				GROUP BY plugin_id, epoch, php_version",
+			);
+
+			foreach ( $rows as $row ) {
+				$wpdb->replace(
+					"{$wpdb->prefix}troy_plugin_stats_php",
+					[
+						'plugin_id'     => $row->plugin_id,
+						'epoch'         => $row->epoch,
+						'php_version'   => $row->php_version,
+						'install_count' => $row->install_count,
+					],
+					[ '%d', '%d', '%s', '%d' ],
+				);
+			}
+		}
+
+		aggregate_wp_stats: {
+
+			$rows = $wpdb->get_results(
+				"SELECT
+					plugin_id,
+					epoch,
+					wp_version,
+					COUNT(DISTINCT uuid) as install_count
+				FROM {$wpdb->prefix}troy_plugin_stats_requests_live
+				WHERE plugin_id IN ($plugin_ids_str)
+					AND wp_version != ''
+				GROUP BY plugin_id, epoch, wp_version",
+			);
+
+			foreach ( $rows as $row ) {
+				$wpdb->replace(
+					"{$wpdb->prefix}troy_plugin_stats_wp",
+					[
+						'plugin_id'     => $row->plugin_id,
+						'epoch'         => $row->epoch,
+						'wp_version'    => $row->wp_version,
+						'install_count' => $row->install_count,
+					],
+					[ '%d', '%d', '%s', '%d' ],
+				);
+			}
+		}
+
+		aggregate_install_counts: {
+
+			$rows = $wpdb->get_results( $wpdb->prepare(
+				"SELECT
+					plugin_id,
+					epoch,
+					is_active,
+					COUNT(DISTINCT uuid) as install_count
+				FROM {$wpdb->prefix}troy_plugin_stats_requests_live
+				WHERE plugin_id IN ($plugin_ids_str)
+					AND epoch IN (%d, %d)
+				GROUP BY plugin_id, epoch, is_active",
+				$this_epoch,
+				$last_epoch,
+			) );
+
+			$plugin_totals = [];
+
+			foreach ( $rows as $row ) {
+				$plugin_totals[ $row->plugin_id ] ??= [
+					'total_installs_this_epoch'  => 0,
+					'total_installs_last_epoch'  => 0,
+					'active_installs_this_epoch' => 0,
+					'active_installs_last_epoch' => 0,
+				];
+
+				$epoch_suffix = (int) $row->epoch === $this_epoch ? 'this_epoch' : 'last_epoch';
+
+				$plugin_totals[ $row->plugin_id ][ "total_installs_{$epoch_suffix}" ] += (int) $row->install_count;
+
+				if ( $row->is_active )
+					$plugin_totals[ $row->plugin_id ][ "active_installs_{$epoch_suffix}" ] += (int) $row->install_count;
+			}
+
+			foreach ( $plugin_totals as $plugin_id => $totals ) {
+				$wpdb->query( $wpdb->prepare(
+					"INSERT INTO {$wpdb->prefix}troy_plugin_stats_totals
+						(plugin_id, downloads, views, total_installs_this_epoch, total_installs_last_epoch, active_installs_this_epoch, active_installs_last_epoch)
+					VALUES (%d, 0, 0, %d, %d, %d, %d)
+					ON DUPLICATE KEY UPDATE
+						total_installs_this_epoch  = VALUES(total_installs_this_epoch),
+						total_installs_last_epoch  = VALUES(total_installs_last_epoch),
+						active_installs_this_epoch = VALUES(active_installs_this_epoch),
+						active_installs_last_epoch = VALUES(active_installs_last_epoch)",
+					$plugin_id,
+					$totals['total_installs_this_epoch'],
+					$totals['total_installs_last_epoch'],
+					$totals['active_installs_this_epoch'],
+					$totals['active_installs_last_epoch'],
+				) );
+
+				$active_install_count = max(
+					$totals['active_installs_this_epoch'],
+					$totals['active_installs_last_epoch'],
+				);
+
+				$wpdb->query( $wpdb->prepare(
+					"INSERT INTO {$wpdb->prefix}troy_plugin_data_caches
+						(plugin_id, active_install_count)
+					VALUES (%d, %d)
+					ON DUPLICATE KEY UPDATE
+						active_install_count = VALUES(active_install_count)",
+					$plugin_id,
+					$active_install_count,
+				) );
+			}
+		}
+
+		aggregate_views: {
+
+			$wpdb->query( 'START TRANSACTION' );
+
+			$view_rows = $wpdb->get_results(
+				"SELECT
+					plugin_id,
+					version,
+					screen,
+					locale,
+					origin_url,
+					COUNT(*) as views
+				FROM {$wpdb->prefix}troy_plugin_stats_views_live
+				WHERE plugin_id IN ($plugin_ids_str)
+				GROUP BY plugin_id, version, screen, locale, origin_url",
+			);
+
+			$versions_agg = [];
+			$totals_agg   = [];
+
+			foreach ( $view_rows as $row ) {
+				$wpdb->query( $wpdb->prepare(
+					"INSERT INTO {$wpdb->prefix}troy_plugin_stats_views
+						(plugin_id, version, screen, locale, origin_url, views)
+					VALUES (%d, %s, %s, %s, %s, %d)
+					ON DUPLICATE KEY UPDATE
+						views = views + VALUES(views)",
+					$row->plugin_id,
+					$row->version,
+					$row->screen,
+					$row->locale,
+					$row->origin_url,
+					$row->views,
+				) );
+
+				$version_key = "{$row->plugin_id}|{$row->version}|{$row->origin_url}";
+
+				$versions_agg[ $version_key ] ??= [
+					'plugin_id'  => $row->plugin_id,
+					'version'    => $row->version,
+					'origin_url' => $row->origin_url,
+					'views'      => 0,
+				];
+
+				$versions_agg[ $version_key ]['views'] += (int) $row->views;
+
+				$totals_agg[ $row->plugin_id ] ??= 0;
+				$totals_agg[ $row->plugin_id ]  += (int) $row->views;
+			}
+
+			foreach ( $versions_agg as $row ) {
+				$wpdb->query( $wpdb->prepare(
+					"INSERT INTO {$wpdb->prefix}troy_plugin_stats_versions
+						(plugin_id, version, origin_url, downloads, views)
+					VALUES (%d, %s, %s, 0, %d)
+					ON DUPLICATE KEY UPDATE
+						views = views + VALUES(views)",
 					$row['plugin_id'],
 					$row['version'],
 					$row['origin_url'],
-				),
+					$row['views'],
+				) );
+			}
+
+			foreach ( $totals_agg as $plugin_id => $views ) {
+				$wpdb->query( $wpdb->prepare(
+					"INSERT INTO {$wpdb->prefix}troy_plugin_stats_totals
+						(plugin_id, downloads, views, total_installs_this_epoch, total_installs_last_epoch, active_installs_this_epoch, active_installs_last_epoch)
+					VALUES (%d, 0, %d, 0, 0, 0, 0)
+					ON DUPLICATE KEY UPDATE
+						views = views + VALUES(views)",
+					$plugin_id,
+					$views,
+				) );
+			}
+
+			// Delete aggregated rows from live table.
+			$delete_result = $wpdb->query(
+				"DELETE FROM {$wpdb->prefix}troy_plugin_stats_views_live
+				WHERE plugin_id IN ($plugin_ids_str)",
 			);
 
-			if ( $existing ) {
-				$wpdb->update(
-					"{$wpdb->prefix}troy_plugin_stats_versions",
-					[ 'views' => $row['views'] ],
-					[ 'id' => $existing ],
-					[ '%d' ],
-					[ '%d' ],
-				);
+			if ( false === $delete_result ) {
+				$wpdb->query( 'ROLLBACK' );
 			} else {
-				$wpdb->insert(
-					"{$wpdb->prefix}troy_plugin_stats_versions",
-					[
-						'plugin_id'                    => $row['plugin_id'],
-						'version'                      => $row['version'],
-						'origin_url'                   => $row['origin_url'],
-						'downloads'                    => 0,
-						'views'                        => $row['views'],
-						'installations_current_epoch'  => 0,
-						'installations_previous_epoch' => 0,
-					],
-					[ '%d', '%s', '%s', '%d', '%d', '%d', '%d' ],
-				);
+				$wpdb->query( 'COMMIT' );
 			}
 		}
 
-		// Update stats_totals table.
-		foreach ( $totals_agg as $row ) {
-			$existing = $wpdb->get_var(
-				$wpdb->prepare(
-					"SELECT id
-					FROM {$wpdb->prefix}troy_plugin_stats_totals
-					WHERE plugin_id = %d",
-					$row['plugin_id'],
-				),
+		aggregate_downloads: {
+
+			$wpdb->query( 'START TRANSACTION' );
+
+			$download_rows = $wpdb->get_results(
+				"SELECT
+					plugin_id,
+					version,
+					type,
+					origin_url,
+					COUNT(*) as downloads
+				FROM {$wpdb->prefix}troy_plugin_stats_downloads_live
+				WHERE plugin_id IN ($plugin_ids_str)
+				GROUP BY plugin_id, version, type, origin_url",
 			);
 
-			if ( $existing ) {
-				$wpdb->update(
-					"{$wpdb->prefix}troy_plugin_stats_totals",
-					[ 'views' => $row['views'] ],
-					[ 'id' => $existing ],
-					[ '%d' ],
-					[ '%d' ],
-				);
-			} else {
-				$wpdb->insert(
-					"{$wpdb->prefix}troy_plugin_stats_totals",
-					[
-						'plugin_id'                    => $row['plugin_id'],
-						'downloads'                    => 0,
-						'views'                        => $row['views'],
-						'installations_current_epoch'  => 0,
-						'installations_previous_epoch' => 0,
-					],
-					[ '%d', '%d', '%d', '%d', '%d' ],
-				);
-			}
-		}
-	}
+			$versions_agg = [];
+			$totals_agg   = [];
 
-	/**
-	 * Snapshots download stats from live table to aggregated tables.
-	 *
-	 * @since 0.0.1184
-	 * @global \wpdb $wpdb
-	 */
-	public static function snapshot_downloads() {
-
-		global $wpdb;
-
-		// Fetch all raw plugin download rows - no SQL aggregation.
-		$live_rows = $wpdb->get_results(
-			"SELECT plugin_id, version, type, origin_url
-			FROM {$wpdb->prefix}troy_plugin_stats_downloads_live",
-		);
-
-		if ( $live_rows ) {
-			// Aggregate in PHP.
-			$download_stats = [];
-			$stats_agg      = [];
-			$totals_agg     = [];
-
-			foreach ( $live_rows as $row ) {
-				// Download stats (full granularity).
-				$dl_key = "$row->plugin_id|$row->version|$row->type|$row->origin_url";
-
-				$download_stats[ $dl_key ] ??= [
-					'plugin_id'  => $row->plugin_id,
-					'version'    => $row->version,
-					'type'       => $row->type,
-					'origin_url' => $row->origin_url,
-					'downloads'  => 0,
-				];
-
-				++$download_stats[ $dl_key ]['downloads'];
-
-				// Stats aggregate.
-				$stats_key = "$row->plugin_id|$row->version|$row->origin_url";
-
-				$stats_agg[ $stats_key ] ??= [
-					'plugin_id'  => $row->plugin_id,
-					'version'    => $row->version,
-					'origin_url' => $row->origin_url,
-					'downloads'  => 0,
-				];
-
-				++$stats_agg[ $stats_key ]['downloads'];
-
-				// Totals aggregate.
-				$totals_key = "$row->plugin_id";
-
-				$totals_agg[ $totals_key ] ??= [
-					'plugin_id' => $row->plugin_id,
-					'downloads' => 0,
-				];
-
-				++$totals_agg[ $totals_key ]['downloads'];
-			}
-
-			// Write download_stats.
-			foreach ( $download_stats as $row ) {
-				$wpdb->replace(
-					"{$wpdb->prefix}troy_plugin_stats_downloads",
-					[
-						'plugin_id'  => $row['plugin_id'],
-						'version'    => $row['version'],
-						'type'       => $row['type'],
-						'origin_url' => $row['origin_url'],
-						'downloads'  => $row['downloads'],
-					],
-					[ '%d', '%s', '%s', '%s', '%d' ],
-				);
-			}
-
-			// Update stats table.
-			foreach ( $stats_agg as $row ) {
-				$existing = $wpdb->get_var(
-					$wpdb->prepare(
-						"SELECT id
-						FROM {$wpdb->prefix}troy_plugin_stats_versions
-						WHERE plugin_id = %d AND version = %s AND origin_url = %s",
-						$row['plugin_id'],
-						$row['version'],
-						$row['origin_url'],
-					),
-				);
-
-				if ( $existing ) {
-					$wpdb->update(
-						"{$wpdb->prefix}troy_plugin_stats_versions",
-						[ 'downloads' => $row['downloads'] ],
-						[ 'id' => $existing ],
-						[ '%d' ],
-						[ '%d' ],
-					);
-				} else {
-					$wpdb->insert(
-						"{$wpdb->prefix}troy_plugin_stats_versions",
-						[
-							'plugin_id'                    => $row['plugin_id'],
-							'version'                      => $row['version'],
-							'origin_url'                   => $row['origin_url'],
-							'downloads'                    => $row['downloads'],
-							'views'                        => 0,
-							'installations_current_epoch'  => 0,
-							'installations_previous_epoch' => 0,
-						],
-						[ '%d', '%s', '%s', '%d', '%d', '%d', '%d' ],
-					);
-				}
-			}
-
-			// Update stats_totals table.
-			foreach ( $totals_agg as $row ) {
-				$existing = $wpdb->get_var(
-					$wpdb->prepare(
-						"SELECT id
-						FROM {$wpdb->prefix}troy_plugin_stats_totals
-						WHERE plugin_id = %d",
-						$row['plugin_id'],
-					),
-				);
-
-				if ( $existing ) {
-					$wpdb->update(
-						"{$wpdb->prefix}troy_plugin_stats_totals",
-						[ 'downloads' => $row['downloads'] ],
-						[ 'id' => $existing ],
-						[ '%d' ],
-						[ '%d' ],
-					);
-				} else {
-					$wpdb->insert(
-						"{$wpdb->prefix}troy_plugin_stats_totals",
-						[
-							'plugin_id'                    => $row['plugin_id'],
-							'downloads'                    => $row['downloads'],
-							'views'                        => 0,
-							'installations_current_epoch'  => 0,
-							'installations_previous_epoch' => 0,
-						],
-						[ '%d', '%d', '%d', '%d', '%d' ],
-					);
-				}
-			}
-		}
-
-		// Aggregate package downloads separately.
-		$package_live_rows = $wpdb->get_results(
-			"SELECT package_id, version, type, origin_url
-			FROM {$wpdb->prefix}troy_package_stats_downloads_live",
-		);
-
-		if ( $package_live_rows ) {
-			$package_stats = [];
-
-			foreach ( $package_live_rows as $row ) {
-				$key = "$row->package_id|$row->version|$row->type|$row->origin_url";
-
-				$package_stats[ $key ] ??= [
-					'package_id' => $row->package_id,
-					'version'    => $row->version,
-					'type'       => $row->type,
-					'origin_url' => $row->origin_url,
-					'downloads'  => 0,
-				];
-
-				++$package_stats[ $key ]['downloads'];
-			}
-
-			foreach ( $package_stats as $row ) {
-				$wpdb->replace(
-					"{$wpdb->prefix}troy_package_stats_downloads",
-					[
-						'package_id' => $row['package_id'],
-						'version'    => $row['version'],
-						'type'       => $row['type'],
-						'origin_url' => $row['origin_url'],
-						'downloads'  => $row['downloads'],
-					],
-					[ '%d', '%s', '%s', '%s', '%d' ],
-				);
-			}
-
-			// Aggregate package totals by package_id.
-			$package_totals = [];
-
-			foreach ( $package_stats as $row ) {
-				$key = "{$row['package_id']}";
-
-				$package_totals[ $key ] ??= [
-					'package_id' => $row['package_id'],
-					'downloads'  => 0,
-				];
-
-				$package_totals[ $key ]['downloads'] += $row['downloads'];
-			}
-
-			// Update package stats_totals table.
-			foreach ( $package_totals as $row ) {
-				$existing = $wpdb->get_var(
-					$wpdb->prepare(
-						"SELECT id
-						FROM {$wpdb->prefix}troy_package_stats_totals
-						WHERE package_id = %d",
-						$row['package_id'],
-					),
-				);
-
-				if ( $existing ) {
-					$wpdb->update(
-						"{$wpdb->prefix}troy_package_stats_totals",
-						[ 'downloads' => $row['downloads'] ],
-						[ 'id' => $existing ],
-						[ '%d' ],
-						[ '%d' ],
-					);
-				} else {
-					$wpdb->insert(
-						"{$wpdb->prefix}troy_package_stats_totals",
-						[
-							'package_id' => $row['package_id'],
-							'downloads'  => $row['downloads'],
-						],
-						[ '%d', '%d' ],
-					);
-				}
-			}
-		}
-	}
-
-	/**
-	 * Updates the active_install_count in data_caches table.
-	 *
-	 * Active installs = max(current_epoch, previous_epoch) per version, summed.
-	 * We use max because UUIDs rotate each epoch, so we can't track sites across
-	 * epoch boundaries. The higher of the two epochs gives the best estimate.
-	 *
-	 * @since 0.0.1184
-	 * @global \wpdb $wpdb
-	 */
-	public static function update_active_install_counts() {
-
-		global $wpdb;
-
-		$install_counts = $wpdb->get_results(
-			"SELECT
-				plugin_id,
-				SUM(
-					GREATEST(installations_current_epoch, installations_previous_epoch)
-				) as active_install_count
-			FROM {$wpdb->prefix}troy_plugin_stats_totals
-			GROUP BY plugin_id",
-		);
-
-		foreach ( $install_counts as $row ) {
-			$existing = $wpdb->get_var(
-				$wpdb->prepare(
-					"SELECT id
-					FROM {$wpdb->prefix}troy_plugin_data_caches
-					WHERE plugin_id = %d",
+			foreach ( $download_rows as $row ) {
+				$wpdb->query( $wpdb->prepare(
+					"INSERT INTO {$wpdb->prefix}troy_plugin_stats_downloads
+						(plugin_id, version, type, origin_url, downloads)
+					VALUES (%d, %s, %s, %s, %d)
+					ON DUPLICATE KEY UPDATE
+						downloads = downloads + VALUES(downloads)",
 					$row->plugin_id,
-				),
+					$row->version,
+					$row->type,
+					$row->origin_url,
+					$row->downloads,
+				) );
+
+				$version_key = "{$row->plugin_id}|{$row->version}|{$row->origin_url}";
+
+				$versions_agg[ $version_key ] ??= [
+					'plugin_id'  => $row->plugin_id,
+					'version'    => $row->version,
+					'origin_url' => $row->origin_url,
+					'downloads'  => 0,
+				];
+
+				$versions_agg[ $version_key ]['downloads'] += (int) $row->downloads;
+
+				$totals_agg[ $row->plugin_id ] ??= 0;
+				$totals_agg[ $row->plugin_id ]  += (int) $row->downloads;
+			}
+
+			foreach ( $versions_agg as $row ) {
+				$wpdb->query( $wpdb->prepare(
+					"INSERT INTO {$wpdb->prefix}troy_plugin_stats_versions
+						(plugin_id, version, origin_url, downloads, views)
+					VALUES (%d, %s, %s, %d, 0)
+					ON DUPLICATE KEY UPDATE
+						downloads = downloads + VALUES(downloads)",
+					$row['plugin_id'],
+					$row['version'],
+					$row['origin_url'],
+					$row['downloads'],
+				) );
+			}
+
+			foreach ( $totals_agg as $plugin_id => $downloads ) {
+				$wpdb->query( $wpdb->prepare(
+					"INSERT INTO {$wpdb->prefix}troy_plugin_stats_totals
+						(plugin_id, downloads, views, total_installs_this_epoch, total_installs_last_epoch, active_installs_this_epoch, active_installs_last_epoch)
+					VALUES (%d, %d, 0, 0, 0, 0, 0)
+					ON DUPLICATE KEY UPDATE
+						downloads = downloads + VALUES(downloads)",
+					$plugin_id,
+					$downloads,
+				) );
+			}
+
+			// Delete aggregated rows from live table.
+			$delete_result = $wpdb->query(
+				"DELETE FROM {$wpdb->prefix}troy_plugin_stats_downloads_live
+				WHERE plugin_id IN ($plugin_ids_str)",
 			);
 
-			if ( $existing ) {
-				$wpdb->update(
-					"{$wpdb->prefix}troy_plugin_data_caches",
-					[ 'active_install_count' => $row->active_install_count ],
-					[ 'id' => $existing ],
-					[ '%d' ],
-					[ '%d' ],
-				);
+			if ( false === $delete_result ) {
+				$wpdb->query( 'ROLLBACK' );
 			} else {
-				$wpdb->insert(
-					"{$wpdb->prefix}troy_plugin_data_caches",
+				$wpdb->query( 'COMMIT' );
+			}
+		}
+
+		// phpcs:enable Generic.WhiteSpace.ScopeIndent.IncorrectExact
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+
+		$max_id = max( $plugin_ids );
+		\update_option( 'troy_server_cron_batch_last_id_plugins', $max_id, false );
+
+		return true;
+	}
+
+	/**
+	 * Snapshots package stats for a batch of package IDs.
+	 *
+	 * Processes packages in batches of 100 IDs, tracking progress via options.
+	 *
+	 * @since 0.0.1184
+	 * @global \wpdb $wpdb
+	 *
+	 * @return bool True if there are more packages to process, false if cycle complete.
+	 */
+	public static function snapshot_packages() {
+
+		global $wpdb;
+
+		$last_id = (int) \get_option( 'troy_server_cron_batch_last_id_packages', 0 );
+
+		$package_ids = $wpdb->get_col( $wpdb->prepare(
+			"SELECT id
+			FROM {$wpdb->prefix}troy_packages
+			WHERE id > %d
+			ORDER BY id
+			LIMIT %d",
+			$last_id,
+			self::BATCH_SIZE,
+		) );
+
+		if ( empty( $package_ids ) ) {
+			\update_option( 'troy_server_cron_batch_last_id_packages', 0, false );
+			return false;
+		}
+
+		$package_ids_str = implode( ',', array_map( 'intval', $package_ids ) );
+
+		// phpcs:disable Generic.WhiteSpace.ScopeIndent.IncorrectExact -- No love for goto.
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $package_ids_str is sanitized
+
+		aggregate_downloads: {
+
+			$wpdb->query( 'START TRANSACTION' );
+
+			$download_rows = $wpdb->get_results(
+				"SELECT
+					package_id,
+					version,
+					type,
+					origin_url,
+					COUNT(*) as downloads
+				FROM {$wpdb->prefix}troy_package_stats_downloads_live
+				WHERE package_id IN ($package_ids_str)
+				GROUP BY package_id, version, type, origin_url",
+			);
+
+			$totals_agg = [];
+
+			foreach ( $download_rows as $row ) {
+				$wpdb->query( $wpdb->prepare(
+					"INSERT INTO {$wpdb->prefix}troy_package_stats_downloads
+						(package_id, version, type, origin_url, downloads)
+					VALUES (%d, %s, %s, %s, %d)
+					ON DUPLICATE KEY UPDATE
+						downloads = downloads + VALUES(downloads)",
+					$row->package_id,
+					$row->version,
+					$row->type,
+					$row->origin_url,
+					$row->downloads,
+				) );
+
+				$totals_agg[ $row->package_id ] ??= 0;
+				$totals_agg[ $row->package_id ]  += (int) $row->downloads;
+			}
+
+			foreach ( $totals_agg as $package_id => $downloads ) {
+				$wpdb->query( $wpdb->prepare(
+					"INSERT INTO {$wpdb->prefix}troy_package_stats_totals
+						(package_id, downloads)
+					VALUES (%d, %d)
+					ON DUPLICATE KEY UPDATE
+						downloads = downloads + VALUES(downloads)",
+					$package_id,
+					$downloads,
+				) );
+			}
+
+			// Delete aggregated rows from live table.
+			$delete_result = $wpdb->query(
+				"DELETE FROM {$wpdb->prefix}troy_package_stats_downloads_live
+				WHERE package_id IN ($package_ids_str)",
+			);
+
+			if ( false === $delete_result ) {
+				$wpdb->query( 'ROLLBACK' );
+			} else {
+				$wpdb->query( 'COMMIT' );
+			}
+		}
+
+		// phpcs:enable Generic.WhiteSpace.ScopeIndent.IncorrectExact
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+
+		$max_id = max( $package_ids );
+		\update_option( 'troy_server_cron_batch_last_id_packages', $max_id, false );
+
+		return true;
+	}
+
+	/**
+	 * Snapshots global stats (locales, PHP, WP versions across all plugins).
+	 *
+	 * Should be called after all plugin batches complete (full cycle).
+	 *
+	 * @since 0.0.1184
+	 * @global \wpdb $wpdb
+	 */
+	public static function snapshot_global_stats() {
+
+		global $wpdb;
+
+		// phpcs:disable Generic.WhiteSpace.ScopeIndent.IncorrectExact -- No love for goto.
+
+		aggregate_locales: {
+
+			$locale_rows = $wpdb->get_results(
+				"SELECT
+					r.epoch,
+					jt.locale,
+					COUNT(DISTINCT r.uuid) as install_count
+				FROM {$wpdb->prefix}troy_plugin_stats_requests_live r,
+					JSON_TABLE(
+						r.locales,
+						'$[*]' COLUMNS(locale VARCHAR(15) PATH '$')
+					) jt
+				WHERE jt.locale IS NOT null
+					AND jt.locale != ''
+				GROUP BY r.epoch, jt.locale",
+			);
+
+			foreach ( $locale_rows as $row ) {
+				$wpdb->replace(
+					"{$wpdb->prefix}troy_stats_locales",
 					[
-						'plugin_id'            => $row->plugin_id,
-						'active_install_count' => $row->active_install_count,
+						'epoch'         => $row->epoch,
+						'locale'        => $row->locale,
+						'install_count' => $row->install_count,
 					],
-					[ '%d', '%d' ],
+					[ '%d', '%s', '%d' ],
 				);
 			}
 		}
+
+		aggregate_php: {
+
+			$php_rows = $wpdb->get_results(
+				"SELECT
+					epoch,
+					php_version,
+					COUNT(DISTINCT uuid) as install_count
+				FROM {$wpdb->prefix}troy_plugin_stats_requests_live
+				WHERE php_version != ''
+				GROUP BY epoch, php_version",
+			);
+
+			foreach ( $php_rows as $row ) {
+				$wpdb->replace(
+					"{$wpdb->prefix}troy_stats_php",
+					[
+						'epoch'         => $row->epoch,
+						'php_version'   => $row->php_version,
+						'install_count' => $row->install_count,
+					],
+					[ '%d', '%s', '%d' ],
+				);
+			}
+		}
+
+		aggregate_wp: {
+
+			$wp_rows = $wpdb->get_results(
+				"SELECT
+					epoch,
+					wp_version,
+					COUNT(DISTINCT uuid) as install_count
+				FROM {$wpdb->prefix}troy_plugin_stats_requests_live
+				WHERE wp_version != ''
+				GROUP BY epoch, wp_version",
+			);
+
+			foreach ( $wp_rows as $row ) {
+				$wpdb->replace(
+					"{$wpdb->prefix}troy_stats_wp",
+					[
+						'epoch'         => $row->epoch,
+						'wp_version'    => $row->wp_version,
+						'install_count' => $row->install_count,
+					],
+					[ '%d', '%s', '%d' ],
+				);
+			}
+		}
+
+		// phpcs:enable Generic.WhiteSpace.ScopeIndent.IncorrectExact
 	}
 
 	/**
@@ -837,12 +682,6 @@ final class Aggregator {
 	 *
 	 * NOTE: When a plugin has no activity on a given day, there will be no entry for it
 	 * in stats_versions_daily_snapshots for that day. This is expected behavior.
-	 * That means that daily snapshots may not have entries for all plugins every day.
-	 *
-	 * If a plugin has zero activity for a long time, a recent snapshot won't be available,
-	 * and you can safely assume it has 0 active installations and 0 downloads/views.
-	 *
-	 * TODO: Use these snapshots to create growth graphs in the dashboard.
 	 *
 	 * @since 0.0.1184
 	 * @global \wpdb $wpdb
@@ -851,179 +690,158 @@ final class Aggregator {
 
 		global $wpdb;
 
-		$today = \current_time( 'Y-m-d' );
+		$today      = \current_time( 'Y-m-d' );
+		$this_epoch = API\Utils::get_epoch();
+		$last_epoch = $this_epoch - 1;
 
-		// stats_totals_daily_snapshots: Store cumulative (frozen copy of stats_totals).
-		$stats_totals = $wpdb->get_results(
-			"SELECT
-				plugin_id,
-				downloads,
-				views,
-				installations_current_epoch,
-				installations_previous_epoch
-			FROM {$wpdb->prefix}troy_plugin_stats_totals",
-		);
+		// phpcs:disable Generic.WhiteSpace.ScopeIndent.IncorrectExact -- No love for goto.
 
-		foreach ( $stats_totals as $row ) {
+		snapshot_totals: {
 
-			$existing = $wpdb->get_var(
-				$wpdb->prepare(
-					"SELECT id
-					FROM {$wpdb->prefix}troy_plugin_stats_totals_daily_snapshots
-					WHERE plugin_id = %d
-						AND date = %s",
-					$row->plugin_id,
-					$today,
-				),
-			);
+			$wpdb->query( $wpdb->prepare(
+				"INSERT INTO {$wpdb->prefix}troy_plugin_stats_totals_daily_snapshots
+					(plugin_id, date, downloads, views, total_installs_this_epoch, total_installs_last_epoch, active_installs_this_epoch, active_installs_last_epoch)
+				SELECT
+					plugin_id,
+					%s,
+					downloads,
+					views,
+					total_installs_this_epoch,
+					total_installs_last_epoch,
+					active_installs_this_epoch,
+					active_installs_last_epoch
+				FROM {$wpdb->prefix}troy_plugin_stats_totals
+				ON DUPLICATE KEY UPDATE
+					downloads                  = VALUES(downloads),
+					views                      = VALUES(views),
+					total_installs_this_epoch  = VALUES(total_installs_this_epoch),
+					total_installs_last_epoch  = VALUES(total_installs_last_epoch),
+					active_installs_this_epoch = VALUES(active_installs_this_epoch),
+					active_installs_last_epoch = VALUES(active_installs_last_epoch)",
+				$today,
+			) );
+		}
 
-			if ( $existing ) {
-				$wpdb->update(
-					"{$wpdb->prefix}troy_plugin_stats_totals_daily_snapshots",
-					[
-						'downloads'                    => $row->downloads,
-						'views'                        => $row->views,
-						'installations_current_epoch'  => $row->installations_current_epoch,
-						'installations_previous_epoch' => $row->installations_previous_epoch,
-					],
-					[ 'id' => $existing ],
-					[ '%d', '%d', '%d', '%d' ],
-					[ '%d' ],
-				);
-			} else {
-				$wpdb->insert(
-					"{$wpdb->prefix}troy_plugin_stats_totals_daily_snapshots",
-					[
-						'plugin_id'                    => $row->plugin_id,
-						'date'                         => $today,
-						'downloads'                    => $row->downloads,
-						'views'                        => $row->views,
-						'installations_current_epoch'  => $row->installations_current_epoch,
-						'installations_previous_epoch' => $row->installations_previous_epoch,
-					],
-					[ '%d', '%s', '%d', '%d', '%d', '%d' ],
-				);
+		snapshot_versions: {
+
+			$download_counts = [];
+
+			$download_rows = $wpdb->get_results( $wpdb->prepare(
+				"SELECT plugin_id, version, origin_url, COUNT(*) as downloads
+				FROM {$wpdb->prefix}troy_plugin_stats_downloads_live
+				WHERE DATE(created_at) = %s
+				GROUP BY plugin_id, version, origin_url",
+				$today,
+			) );
+
+			foreach ( $download_rows as $row ) {
+				$key                     = "{$row->plugin_id}|{$row->version}|{$row->origin_url}";
+				$download_counts[ $key ] = (int) $row->downloads;
 			}
-		}
 
-		unset( $stats_totals );
+			$view_counts = [];
 
-		// stats_versions_daily_snapshots: Aggregate directly from live tables for today's activity.
-		// Aggregate downloads from live table by plugin_id, version, origin_url.
-		$download_counts = [];
+			$view_rows = $wpdb->get_results( $wpdb->prepare(
+				"SELECT plugin_id, version, origin_url, COUNT(*) as views
+				FROM {$wpdb->prefix}troy_plugin_stats_views_live
+				WHERE DATE(created_at) = %s
+				GROUP BY plugin_id, version, origin_url",
+				$today,
+			) );
 
-		$download_rows = $wpdb->get_results( $wpdb->prepare(
-			"SELECT plugin_id, version, origin_url, COUNT(*) as downloads
-			FROM {$wpdb->prefix}troy_plugin_stats_downloads_live
-			WHERE DATE(created_at) = %s
-			GROUP BY plugin_id, version, origin_url",
-			$today,
-		) );
+			foreach ( $view_rows as $row ) {
+				$key                 = "{$row->plugin_id}|{$row->version}|{$row->origin_url}";
+				$view_counts[ $key ] = (int) $row->views;
+			}
 
-		foreach ( $download_rows as $row ) {
-			$key = "{$row->plugin_id}|{$row->version}|{$row->origin_url}";
-			$download_counts[ $key ] = (int) $row->downloads;
-		}
+			$total_install_counts  = [];
+			$active_install_counts = [];
 
-		unset( $download_rows );
+			$install_rows = $wpdb->get_results( $wpdb->prepare(
+				"SELECT plugin_id, version, origin_url, epoch, is_active, COUNT(DISTINCT uuid) as count
+				FROM {$wpdb->prefix}troy_plugin_stats_requests_live
+				WHERE epoch IN (%d, %d)
+				GROUP BY plugin_id, version, origin_url, epoch, is_active",
+				$this_epoch,
+				$last_epoch,
+			) );
 
-		// Aggregate views from live table by plugin_id, version, origin_url.
-		$view_counts = [];
+			foreach ( $install_rows as $row ) {
 
-		$view_rows = $wpdb->get_results( $wpdb->prepare(
-			"SELECT plugin_id, version, origin_url, COUNT(*) as views
-			FROM {$wpdb->prefix}troy_plugin_stats_views_live
-			WHERE DATE(created_at) = %s
-			GROUP BY plugin_id, version, origin_url",
-			$today,
-		) );
+				$key       = "{$row->plugin_id}|{$row->version}|{$row->origin_url}";
+				$epoch_key = (int) $row->epoch === $this_epoch ? 'this_epoch' : 'last_epoch';
 
-		foreach ( $view_rows as $row ) {
-			$key = "{$row->plugin_id}|{$row->version}|{$row->origin_url}";
-			$view_counts[ $key ] = (int) $row->views;
-		}
+				$total_install_counts[ $key ] ??= [
+					'this_epoch' => 0,
+					'last_epoch' => 0,
+				];
 
-		unset( $view_rows );
+				$total_install_counts[ $key ][ $epoch_key ] += (int) $row->count;
 
-		// Merge keys from both sources.
-		$all_keys = array_unique( array_merge( array_keys( $download_counts ), array_keys( $view_counts ) ) );
+				if ( $row->is_active ) {
+					$active_install_counts[ $key ] ??= [
+						'this_epoch' => 0,
+						'last_epoch' => 0,
+					];
 
-		// Get current epoch values from stats_versions for installation counts.
-		$epoch_values = [];
+					$active_install_counts[ $key ][ $epoch_key ] += (int) $row->count;
+				}
+			}
 
-		$epoch_rows = $wpdb->get_results(
-			"SELECT plugin_id, version, origin_url, installations_current_epoch, installations_previous_epoch
-			FROM {$wpdb->prefix}troy_plugin_stats_versions",
-		);
+			$all_keys = array_unique( array_merge(
+				array_keys( $download_counts ),
+				array_keys( $view_counts ),
+				array_keys( $total_install_counts ),
+			) );
 
-		foreach ( $epoch_rows as $row ) {
-			$key = "{$row->plugin_id}|{$row->version}|{$row->origin_url}";
-			$epoch_values[ $key ] = $row;
-		}
+			foreach ( $all_keys as $key ) {
 
-		unset( $epoch_rows );
+				[ $plugin_id, $version, $origin_url ] = explode( '|', $key, 3 );
 
-		// Write daily snapshots.
-		foreach ( $all_keys as $key ) {
+				$downloads     = $download_counts[ $key ] ?? 0;
+				$views         = $view_counts[ $key ] ?? 0;
+				$total_epochs  = $total_install_counts[ $key ] ?? [
+					'this_epoch' => 0,
+					'last_epoch' => 0,
+				];
+				$active_epochs = $active_install_counts[ $key ] ?? [
+					'this_epoch' => 0,
+					'last_epoch' => 0,
+				];
 
-			[ $plugin_id, $version, $origin_url ] = explode( '|', $key, 3 );
+				$total_installs  = max( $total_epochs['this_epoch'], $total_epochs['last_epoch'] );
+				$active_installs = max( $active_epochs['this_epoch'], $active_epochs['last_epoch'] );
 
-			$downloads = $download_counts[ $key ] ?? 0;
-			$views     = $view_counts[ $key ] ?? 0;
-			$epochs    = $epoch_values[ $key ] ?? null;
-
-			$existing = $wpdb->get_var(
-				$wpdb->prepare(
-					"SELECT id
-					FROM {$wpdb->prefix}troy_plugin_stats_versions_daily_snapshots
-					WHERE plugin_id = %d
-						AND version = %s
-						AND date = %s
-						AND origin_url = %s",
+				$wpdb->query( $wpdb->prepare(
+					"INSERT INTO {$wpdb->prefix}troy_plugin_stats_versions_daily_snapshots
+						(plugin_id, version, date, origin_url, downloads, views, total_installs, active_installs)
+					VALUES (%d, %s, %s, %s, %d, %d, %d, %d)
+					ON DUPLICATE KEY UPDATE
+						downloads       = VALUES(downloads),
+						views           = VALUES(views),
+						total_installs  = VALUES(total_installs),
+						active_installs = VALUES(active_installs)",
 					$plugin_id,
 					$version,
 					$today,
 					$origin_url,
-				),
-			);
-
-			if ( $existing ) {
-				$wpdb->update(
-					"{$wpdb->prefix}troy_plugin_stats_versions_daily_snapshots",
-					[
-						'downloads'                    => $downloads,
-						'views'                        => $views,
-						'installations_current_epoch'  => $epochs->installations_current_epoch ?? 0,
-						'installations_previous_epoch' => $epochs->installations_previous_epoch ?? 0,
-					],
-					[ 'id' => $existing ],
-					[ '%d', '%d', '%d', '%d' ],
-					[ '%d' ],
-				);
-			} else {
-				$wpdb->insert(
-					"{$wpdb->prefix}troy_plugin_stats_versions_daily_snapshots",
-					[
-						'plugin_id'                    => $plugin_id,
-						'version'                      => $version,
-						'date'                         => $today,
-						'origin_url'                   => $origin_url,
-						'downloads'                    => $downloads,
-						'views'                        => $views,
-						'installations_current_epoch'  => $epochs->installations_current_epoch ?? 0,
-						'installations_previous_epoch' => $epochs->installations_previous_epoch ?? 0,
-					],
-					[ '%d', '%s', '%s', '%s', '%d', '%d', '%d', '%d' ],
-				);
+					$downloads,
+					$views,
+					$total_installs,
+					$active_installs,
+				) );
 			}
 		}
+
+		// phpcs:enable Generic.WhiteSpace.ScopeIndent.IncorrectExact
 	}
 
 	/**
 	 * Finalizes old epochs by deleting live data.
 	 *
-	 * Deletes data from epochs older than the current one, but only after
-	 * EPOCH_FINALIZE_DELAY (48 hours) has passed since the current epoch started.
+	 * Deletes data from epochs older than this one, but only after
+	 * EPOCH_FINALIZE_DELAY (48 hours) has passed since this epoch started.
+	 * Cleans all live tables: requests, views, downloads (plugin and package).
 	 *
 	 * @since 0.0.1184
 	 * @global \wpdb $wpdb
@@ -1032,20 +850,46 @@ final class Aggregator {
 
 		global $wpdb;
 
-		$current_epoch       = API\Utils::get_epoch();
-		$current_epoch_start = $current_epoch * 604_800;
+		$this_epoch       = API\Utils::get_epoch();
+		$this_epoch_start = $this_epoch * 604_800;
 
-		// Only finalize if we're at least 48 hours into the current epoch.
-		if ( time() < $current_epoch_start + self::EPOCH_FINALIZE_DELAY )
+		if ( time() < $this_epoch_start + self::EPOCH_FINALIZE_DELAY )
 			return;
 
-		// Delete all live data from previous epochs.
-		$wpdb->query(
-			$wpdb->prepare(
+		delete_plugin_requests: {
+
+			$wpdb->query( $wpdb->prepare(
 				"DELETE FROM {$wpdb->prefix}troy_plugin_stats_requests_live
 				WHERE epoch < %d",
-				$current_epoch,
-			),
-		);
+				$this_epoch,
+			) );
+		}
+
+		delete_plugin_views: {
+
+			$wpdb->query( $wpdb->prepare(
+				"DELETE FROM {$wpdb->prefix}troy_plugin_stats_views_live
+				WHERE epoch < %d",
+				$this_epoch,
+			) );
+		}
+
+		delete_plugin_downloads: {
+
+			$wpdb->query( $wpdb->prepare(
+				"DELETE FROM {$wpdb->prefix}troy_plugin_stats_downloads_live
+				WHERE epoch < %d",
+				$this_epoch,
+			) );
+		}
+
+		delete_package_downloads: {
+
+			$wpdb->query( $wpdb->prepare(
+				"DELETE FROM {$wpdb->prefix}troy_package_stats_downloads_live
+				WHERE epoch < %d",
+				$this_epoch,
+			) );
+		}
 	}
 }

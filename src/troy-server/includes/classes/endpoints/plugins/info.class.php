@@ -487,12 +487,14 @@ final class Info extends Base_Endpoint {
 			"{$wpdb->prefix}troy_plugin_stats_views_live",
 			[
 				'plugin_id'  => $plugin_id,
+				'epoch'      => API\Utils::get_epoch(),
 				'version'    => '',
 				'screen'     => $screen,
 				'locale'     => $locale,
 				'origin_url' => API\Server::get_repo_url(),
 			],
 			[
+				'%d',
 				'%d',
 				'%s',
 				'%s',

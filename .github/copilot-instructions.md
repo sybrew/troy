@@ -82,8 +82,8 @@ Follow these rules:
 - Do not pad array access strings with spaces
 - Avoid output buffering
 - You may use functions str_starts_with, str_ends_with, and str_contains; WordPress provides these
-- You may use logical operators like and, or, and xor
 - Refrain from colon syntax for conditionals and loops
+- You may use logical operators like and, or, and xor, but they are forbidden in conditional expressions
 
 ## SQL Queries
 - Do not create aliases unless necessary

@@ -141,7 +141,7 @@
 			active_installs:   sanitize.number( data.active_installs ),
 			inactive_installs: sanitize.number( data.inactive_installs ),
 			total_views:       sanitize.number( data.total_views ),
-			current_epoch:     data.current_epoch || '-',
+			this_epoch:        String( data.this_epoch ?? '-' ),
 			total_plugins:     sanitize.number( data.total_plugins ),
 			last_snapshot:     data.last_snapshot || '-',
 		};
@@ -378,16 +378,16 @@
 	 *
 	 * @since 0.0.1184
 	 *
-	 * @param {number} current  The current value.
-	 * @param {number} previous The previous value.
+	 * @param {number} thisEpoch This epoch value.
+	 * @param {number} lastEpoch Last epoch value.
 	 * @return {number|null} Percentage change, Infinity for new values, or null if no data.
 	 */
-	const calcChangePercent = ( current, previous ) => {
+	const calcChangePercent = ( thisEpoch, lastEpoch ) => {
 
-		if ( ! previous )
-			return current ? Infinity : null;
+		if ( ! lastEpoch )
+			return thisEpoch ? Infinity : null;
 
-		return Math.round( ( ( current - previous ) / previous ) * 1000 ) / 10;
+		return Math.round( ( ( thisEpoch - lastEpoch ) / lastEpoch ) * 1000 ) / 10;
 	};
 
 	/**
@@ -444,10 +444,10 @@
 	 */
 	const buildEpochComparisonTable = data => {
 
-		const currentEpochInstalls  = getEpochInstalls( data.epoch_installs, data.current_epoch );
-		const previousEpochInstalls = getEpochInstalls( data.epoch_installs, data.previous_epoch );
-		const change                = currentEpochInstalls - previousEpochInstalls;
-		const changePercent         = calcChangePercent( currentEpochInstalls, previousEpochInstalls );
+		const thisEpochInstalls = getEpochInstalls( data.epoch_installs, data.this_epoch );
+		const lastEpochInstalls = getEpochInstalls( data.epoch_installs, data.last_epoch );
+		const change            = thisEpochInstalls - lastEpochInstalls;
+		const changePercent     = calcChangePercent( thisEpochInstalls, lastEpochInstalls );
 
 		return `
 		<div class="troy-server-stats-detail-section">
@@ -456,16 +456,16 @@
 				<thead>
 					<tr>
 						<th scope="col">${ escape.string( i18n.metric ) }</th>
-						<th scope="col">${ escape.string( i18n.previousEpochHeader.replace( '%d', data.previous_epoch ) ) }</th>
-						<th scope="col">${ escape.string( i18n.currentEpochHeader.replace( '%d', data.current_epoch ) ) }</th>
+						<th scope="col">${ escape.string( i18n.lastEpochHeader.replace( '%d', data.last_epoch ) ) }</th>
+						<th scope="col">${ escape.string( i18n.thisEpochHeader.replace( '%d', data.this_epoch ) ) }</th>
 						<th scope="col">${ escape.string( i18n.change ) }</th>
 					</tr>
 				</thead>
 				<tbody>
 					<tr>
 						<td>${ escape.string( i18n.totalInstallations ) }</td>
-						<td>${ sanitize.number( previousEpochInstalls ) }</td>
-						<td>${ sanitize.number( currentEpochInstalls ) }</td>
+						<td>${ sanitize.number( lastEpochInstalls ) }</td>
+						<td>${ sanitize.number( thisEpochInstalls ) }</td>
 						<td class="${ getChangeClass( change ) }">${ formatChangeWithPercent( change, changePercent ) }</td>
 					</tr>
 				</tbody>
@@ -490,16 +490,16 @@
 		const rows = data.version_installs
 			.map( item => {
 
-				const current       = parseInt( item.current_epoch, 10 ) || 0;
-				const previous      = parseInt( item.previous_epoch, 10 ) || 0;
-				const change        = current - previous;
-				const changePercent = calcChangePercent( current, previous );
+				const thisEpoch     = parseInt( item.this_epoch, 10 ) || 0;
+				const lastEpoch     = parseInt( item.last_epoch, 10 ) || 0;
+				const change        = thisEpoch - lastEpoch;
+				const changePercent = calcChangePercent( thisEpoch, lastEpoch );
 
 				return `
 					<tr>
 						<td>${ escape.string( item.version ) }</td>
-						<td>${ sanitize.number( previous ) }</td>
-						<td>${ sanitize.number( current ) }</td>
+						<td>${ sanitize.number( lastEpoch ) }</td>
+						<td>${ sanitize.number( thisEpoch ) }</td>
 						<td class="${ getChangeClass( change ) }">${ formatChangeWithPercent( change, changePercent ) }</td>
 					</tr>
 				`;
@@ -513,8 +513,8 @@
 				<thead>
 					<tr>
 						<th scope="col">${ escape.string( i18n.version ) }</th>
-						<th scope="col">${ escape.string( i18n.previousEpochHeader.replace( '%d', data.previous_epoch ) ) }</th>
-						<th scope="col">${ escape.string( i18n.currentEpochHeader.replace( '%d', data.current_epoch ) ) }</th>
+						<th scope="col">${ escape.string( i18n.lastEpochHeader.replace( '%d', data.last_epoch ) ) }</th>
+						<th scope="col">${ escape.string( i18n.thisEpochHeader.replace( '%d', data.this_epoch ) ) }</th>
 						<th scope="col">${ escape.string( i18n.change ) }</th>
 					</tr>
 				</thead>

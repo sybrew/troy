@@ -141,7 +141,7 @@ final class List_View {
 		// phpcs:disable VariableAnalysis.CodeAnalysis.VariableAnalysis -- Still no support for return null coalescing assignment.
 		static $columns;
 		return $columns ??= [
-			'troy_server_logo'              => [
+			'troy_server_logo'            => [
 				'label'    => \__( 'Logo', 'troy-server' ),
 				'where'    => [ 'troy_plugin_metas', 'logo_uri' ], // We'll call these "table" and "key" to avoid confusion.
 				'postfind' => [ // Complex lookup via through, we want to find the plugin_id from the post_id.
@@ -163,7 +163,7 @@ final class List_View {
 					);
 				},
 			],
-			'troy_server_plugin_id'         => [
+			'troy_server_plugin_id'       => [
 				'label'    => \__( 'Plugin ID', 'troy-server' ),
 				'where'    => [ 'troy_plugins', 'id' ],
 				'postfind' => 'post_id',
@@ -171,7 +171,7 @@ final class List_View {
 				'search'   => true,
 				'after'    => [ 'title' ],
 			],
-			'troy_server_slug'              => [
+			'troy_server_slug'            => [
 				'label'    => \__( 'Plugin slug', 'troy-server' ),
 				'where'    => [ 'troy_plugins', 'slug' ],
 				'postfind' => 'post_id',
@@ -179,7 +179,7 @@ final class List_View {
 				'search'   => true,
 				'after'    => [ 'title', 'troy_server_plugin_id' ], // needs to anchor via the title, and then put it after the id.
 			],
-			'troy_server_plugin_status'    => [
+			'troy_server_plugin_status'   => [
 				'label'    => \__( 'Plugin status', 'troy-server' ),
 				'where'    => [ 'troy_plugins', 'status' ],
 				'postfind' => 'post_id',
@@ -187,7 +187,7 @@ final class List_View {
 				'search'   => false,
 				'after'    => [ 'troy_server_slug' ],
 			],
-			'troy_server_integration'       => [
+			'troy_server_integration'     => [
 				'label'    => \__( 'Integration', 'troy-server' ),
 				'where'    => [ 'troy_plugin_integrations', 'mode' ],
 				'postfind' => [
@@ -199,7 +199,7 @@ final class List_View {
 				'search'   => true,
 				'after'    => [ 'troy_server_plugin_status' ],
 			],
-			'troy_server_downloads'         => [
+			'troy_server_downloads'       => [
 				'label'    => \__( 'Downloads', 'troy-server' ),
 				'where'    => [ 'troy_plugin_stats_totals', 'downloads' ],
 				'postfind' => [
@@ -214,7 +214,7 @@ final class List_View {
 				},
 				'after'    => [ 'troy_server_integration' ],
 			],
-			'troy_server_active_installs'   => [
+			'troy_server_active_installs' => [
 				'label'    => \__( 'Active Installs', 'troy-server' ),
 				'where'    => [ 'troy_plugin_data_caches', 'active_install_count' ],
 				'postfind' => [

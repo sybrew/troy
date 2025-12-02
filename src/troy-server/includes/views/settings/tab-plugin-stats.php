@@ -47,7 +47,7 @@ $locales          = Settings\Stats::get_locale_stats();
 <h2><?= \esc_html__( 'Troy Server Stats', 'troy-server' ) ?></h2>
 
 <p><?= \esc_html__( 'Troy Server collects anonymized data from your plugin users. Here, you can inspect the details.', 'troy-server' ) ?></p>
-<p><?= \esc_html__( 'The data is aggregated automatically every 30 minutes.', 'troy-server' ) ?></p>
+<p><?= \esc_html__( 'The data is aggregated automatically every 10 minutes.', 'troy-server' ) ?></p>
 <p><?= \esc_html__( 'Unless otherwise specified, the data shown below is combined from all plugins hosted on this Troy Server instance.', 'troy-server' ) ?></p>
 
 <div class=troy-server-stats-date-range>
@@ -71,7 +71,7 @@ $locales          = Settings\Stats::get_locale_stats();
 	</h3>
 	<div id=troy-server-stats-overview class=troy-server-settings-accordion-panel>
 		<p class=description>
-			<?= \esc_html__( 'The "Installations" count uses the highest value between current and previous epoch, since a new epoch may still be catching up.', 'troy-server' ) ?>
+			<?= \esc_html__( 'The "Installations" count uses the highest value between this and last epoch, since a new epoch may still be catching up.', 'troy-server' ) ?>
 		</p>
 		<p class=description>
 			<?= \esc_html__( 'The "Last Snapshot" indicates when the stats were last aggregated. It will not change if there is no new data.', 'troy-server' ) ?>
@@ -99,7 +99,7 @@ $locales          = Settings\Stats::get_locale_stats();
 			</div>
 			<div class=troy-server-stats-card>
 				<span class=troy-server-stats-card-label><?= \esc_html__( 'Epoch', 'troy-server' ) ?></span>
-				<span class=troy-server-stats-card-value data-stat=current_epoch><?= \esc_html( $overview['current_epoch'] ) ?></span>
+				<span class=troy-server-stats-card-value data-stat=this_epoch><?= \esc_html( $overview['this_epoch'] ) ?></span>
 			</div>
 			<div class=troy-server-stats-card>
 				<span class=troy-server-stats-card-label><?= \esc_html__( 'Last Snapshot', 'troy-server' ) ?></span>
@@ -118,7 +118,7 @@ $locales          = Settings\Stats::get_locale_stats();
 	</h3>
 	<div id=troy-server-stats-top-plugins class=troy-server-settings-accordion-panel>
 		<p class=description>
-			<?= \esc_html__( 'The "Installations" count uses the highest value between current and previous epoch, since a new epoch may still be catching up.', 'troy-server' ) ?>
+			<?= \esc_html__( 'The "Installations" count uses the highest value between this and last epoch, since a new epoch may still be catching up.', 'troy-server' ) ?>
 		</p>
 		<table class="widefat striped troy-server-stats-table" id=troy-server-stats-plugins-table>
 			<thead>
@@ -184,8 +184,8 @@ $locales          = Settings\Stats::get_locale_stats();
 						<?php
 						echo \esc_html( \sprintf(
 							/* translators: %d is the epoch number */
-							\__( 'Previous Epoch (%d)', 'troy-server' ),
-							$epoch_comparison['previous_epoch'],
+							\__( 'Last Epoch (%d)', 'troy-server' ),
+							$epoch_comparison['last_epoch'],
 						) );
 						?>
 					</th>
@@ -193,8 +193,8 @@ $locales          = Settings\Stats::get_locale_stats();
 						<?php
 						echo \esc_html( \sprintf(
 							/* translators: %d is the epoch number */
-							\__( 'Current Epoch (%d)', 'troy-server' ),
-							$epoch_comparison['current_epoch'],
+							\__( 'This Epoch (%d)', 'troy-server' ),
+							$epoch_comparison['this_epoch'],
 						) );
 						?>
 					</th>

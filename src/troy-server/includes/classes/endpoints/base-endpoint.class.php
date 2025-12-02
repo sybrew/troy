@@ -105,7 +105,7 @@ abstract class Base_Endpoint {
 	 * @return array {
 	 *     Client UUID data.
 	 *
-	 *     @type int    $epoch The epoch extracted from the UUID, or current epoch as fallback.
+	 *     @type int    $epoch The epoch extracted from the UUID, or this epoch as fallback.
 	 *     @type string $uuid  The full UUID string, or empty if invalid.
 	 * }
 	 */

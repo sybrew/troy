@@ -164,17 +164,6 @@ function upgrade_from( $version ) {
 
 			\update_option( 'troy_server_db_version', 1_1184, true );
 			// Fall through.
-		case $version < 2_1184:
-			global $wpdb;
-
-			$dbprefix = $wpdb->prefix;
-
-			// Add epoch_is_active index to stats_requests for global epoch queries.
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Schema query.
-			$wpdb->query( "ALTER table `{$dbprefix}troy_plugin_stats_requests` ADD index `epoch_is_active` (`epoch`, `is_active`)" );
-
-			\update_option( 'troy_server_db_version', 2_1184, true );
-			// Fall through.
 	}
 }
 
@@ -187,7 +176,7 @@ function upgrade_from( $version ) {
  * We make plugin versions 20 characters long because we haven't found plugins with a longer version.
  *
  * An epoch is 1 week long. Its identifier is calculated by flooring ( current UNIX timestamp / 604_800 seconds ).
- * You can get the current epoch via `Troy\Server\API\Utils::get_epoch()`, and previous epoch via `Troy\Server\API\Utils::get_epoch( 'last' )`.
+ * You can get this epoch via `Troy\Server\API\Utils::get_epoch()`, and last epoch via `Troy\Server\API\Utils::get_epoch( 'last' )`.
  *
  * We partition the update request stats by epoch because we expect a lot of data.
  * Partitioning allows accessing data by epoch, which is useful for calculating the active install count quickly.
@@ -223,7 +212,7 @@ function upgrade_from( $version ) {
  * - `epoch_php_version` for the global stats_php table to force unique stats per epoch per PHP version.
  * - `epoch_wp_version` for the global stats_wp table to force unique stats per epoch per WordPress version.
  * - `plugin_id_epoch` for the stats_requests_live table because direct access for these is common.
- * - `plugin_id_epoch_uuid` for the stats_requests_live table to force unique stats per plugin per epoch per UUID.
+ * - `plugin_id_epoch_uuid_origin_url` for the stats_requests_live table to force unique stats per plugin per epoch per UUID per origin URL.
  * - `package_id` for the package_stats_totals table to force unique stats per package.
  * - `package_id_date` for the package_stats_totals_daily_snapshots table to force unique stats per package per day.
  * - `package_id_version_type_origin_url` for the package_stats_downloads table to force unique stats per package per version per type per origin URL.
@@ -257,16 +246,13 @@ function upgrade_from( $version ) {
  * |                                             | This table can get partitioned (e.g., by year).                     |
  * | troy_plugin_stats_views                     | View stats for plugins (for accumulation in stats).                 |
  * | troy_plugin_stats_views_live                | Live view stats for plugins (for accumulation in view_stats).       |
- * |                                             | This table can get partitioned (e.g., by week).                     |
  * | troy_plugin_stats_downloads                 | Download stats for plugins.                                         |
  * | troy_plugin_stats_downloads_live            | Live download stats for plugins.                                    |
- * |                                             | This table can get partitioned (e.g., by week).                     |
  * | troy_plugin_stats_requests                  | Update request stats for plugins.                                   |
  * | troy_plugin_stats_locales                   | Update request stats by locales for plugins.                        |
  * | troy_plugin_stats_php                       | Update request stats by PHP version for plugins.                    |
  * | troy_plugin_stats_wp                        | Update request stats by WordPress version for plugins.              |
  * | troy_plugin_stats_requests_live             | Live update request stats for plugins.                              |
- * |                                             | This table can get partitioned (e.g., by day).                      |
  * |---------------------------------------------|---------------------------------------------------------------------|
  * | troy_stats_locales                          | Global update request stats by locale (unique sites).               |
  * | troy_stats_php                              | Global update request stats by PHP version (unique sites).          |
@@ -280,8 +266,7 @@ function upgrade_from( $version ) {
  * |                                             | This table can get partitioned (e.g., by year).                     |
  * | troy_package_stats_downloads                | Download stats for packages.                                        |
  * | troy_package_stats_downloads_live           | Live download stats for packages.                                   |
- * |                                             | This table can get partitioned (e.g., by week).                     |
- * |---------------------------------------------|---------------------------------------------------------------------
+ * |---------------------------------------------|---------------------------------------------------------------------|
  *
  * @since 0.0.1184
  * @global \wpdb $wpdb
@@ -497,8 +482,10 @@ function get_initial_db_schema_queries() {
 			`plugin_id` bigint unsigned NOT null,
 			`downloads` bigint unsigned NOT null,
 			`views` bigint unsigned NOT null,
-			`installations_current_epoch` bigint unsigned NOT null,
-			`installations_previous_epoch` bigint unsigned NOT null,
+			`total_installs_this_epoch` bigint unsigned NOT null,
+			`total_installs_last_epoch` bigint unsigned NOT null,
+			`active_installs_this_epoch` bigint unsigned NOT null,
+			`active_installs_last_epoch` bigint unsigned NOT null,
 			`created_at` datetime DEFAULT current_timestamp,
 			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
 			primary key (`id`),
@@ -510,8 +497,10 @@ function get_initial_db_schema_queries() {
 			`date` date NOT null DEFAULT (current_date),
 			`downloads` bigint unsigned NOT null,
 			`views` bigint unsigned NOT null,
-			`installations_current_epoch` bigint unsigned NOT null,
-			`installations_previous_epoch` bigint unsigned NOT null,
+			`total_installs_this_epoch` bigint unsigned NOT null,
+			`total_installs_last_epoch` bigint unsigned NOT null,
+			`active_installs_this_epoch` bigint unsigned NOT null,
+			`active_installs_last_epoch` bigint unsigned NOT null,
 			`created_at` datetime DEFAULT current_timestamp,
 			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
 			primary key (`id`),
@@ -524,8 +513,6 @@ function get_initial_db_schema_queries() {
 			`origin_url` varchar(191) NOT null,
 			`downloads` bigint unsigned NOT null,
 			`views` bigint unsigned NOT null,
-			`installations_current_epoch` bigint unsigned NOT null,
-			`installations_previous_epoch` bigint unsigned NOT null,
 			`created_at` datetime DEFAULT current_timestamp,
 			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
 			primary key (`id`),
@@ -541,8 +528,8 @@ function get_initial_db_schema_queries() {
 			`origin_url` varchar(191) NOT null,
 			`downloads` bigint unsigned NOT null,
 			`views` bigint unsigned NOT null,
-			`installations_current_epoch` bigint unsigned NOT null,
-			`installations_previous_epoch` bigint unsigned NOT null,
+			`total_installs` bigint unsigned NOT null,
+			`active_installs` bigint unsigned NOT null,
 			`created_at` datetime DEFAULT current_timestamp,
 			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
 			primary key (`id`),
@@ -568,6 +555,7 @@ function get_initial_db_schema_queries() {
 		"CREATE table `{$dbprefix}troy_plugin_stats_views_live` (
 			`id` bigint unsigned NOT null auto_increment,
 			`plugin_id` bigint unsigned NOT null,
+			`epoch` smallint unsigned NOT null,
 			`version` varchar(20) NOT null,
 			`screen` varchar(20) NOT null,
 			`locale` varchar(15) NOT null,
@@ -575,7 +563,8 @@ function get_initial_db_schema_queries() {
 			`created_at` datetime DEFAULT current_timestamp,
 			primary key (`id`),
 			index `plugin_id` (`plugin_id`),
-			index `plugin_id_version` (`plugin_id`, `version`)
+			index `plugin_id_epoch` (`plugin_id`, `epoch`),
+			index `epoch` (`epoch`)
 		) $collate",
 		"CREATE table `{$dbprefix}troy_plugin_stats_downloads` (
 			`id` bigint unsigned NOT null auto_increment,
@@ -593,12 +582,15 @@ function get_initial_db_schema_queries() {
 		"CREATE table `{$dbprefix}troy_plugin_stats_downloads_live` (
 			`id` bigint unsigned NOT null auto_increment,
 			`plugin_id` bigint unsigned NOT null,
+			`epoch` smallint unsigned NOT null,
 			`version` varchar(20) NOT null,
 			`type` varchar(20) NOT null,
 			`origin_url` varchar(191) NOT null,
 			`created_at` datetime DEFAULT current_timestamp,
 			primary key (`id`),
-			index `plugin_id` (`plugin_id`)
+			index `plugin_id` (`plugin_id`),
+			index `plugin_id_epoch` (`plugin_id`, `epoch`),
+			index `epoch` (`epoch`)
 		) $collate",
 		"CREATE table `{$dbprefix}troy_plugin_stats_requests` (
 			`id` bigint unsigned NOT null auto_increment,
@@ -668,7 +660,7 @@ function get_initial_db_schema_queries() {
 			primary key (`id`),
 			index `plugin_id_is_active` (`plugin_id`, `is_active`),
 			index `plugin_id_epoch` (`plugin_id`, `epoch`),
-			unique index `plugin_id_epoch_uuid` (`plugin_id`, `epoch`, `uuid`)
+			unique index `plugin_id_epoch_uuid_origin_url` (`plugin_id`, `epoch`, `uuid`, `origin_url`)
 		) $collate",
 		"CREATE table `{$dbprefix}troy_stats_locales` (
 			`id` bigint unsigned NOT null auto_increment,
@@ -771,12 +763,15 @@ function get_initial_db_schema_queries() {
 		"CREATE table `{$dbprefix}troy_package_stats_downloads_live` (
 			`id` bigint unsigned NOT null auto_increment,
 			`package_id` bigint unsigned NOT null,
+			`epoch` smallint unsigned NOT null,
 			`version` varchar(20) NOT null,
 			`type` varchar(20) NOT null,
 			`origin_url` varchar(191) NOT null,
 			`created_at` datetime DEFAULT current_timestamp,
 			primary key (`id`),
-			index `package_id` (`package_id`)
+			index `package_id` (`package_id`),
+			index `package_id_epoch` (`package_id`, `epoch`),
+			index `epoch` (`epoch`)
 		) $collate",
 	];
 }
