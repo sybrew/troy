@@ -51,7 +51,7 @@ final class Utils {
 	 */
 	public static function get_epoch( $offset = 'this' ) {
 		// This is the timeout for the UUID: 1 week. int-casting floors.
-		return (int) ( time() / 604_800 ) + ( 'this' === $offset ? 0 : -1 );
+		return (int) ( time() / \WEEK_IN_SECONDS ) + ( 'this' === $offset ? 0 : -1 );
 	}
 
 	/**

@@ -65,6 +65,19 @@ window.troyServerMode = ( () => {
 
 		localStorage.setItem( _storageKey, active ? '1' : '0' );
 
+		_applyState( active );
+	}
+
+	/**
+	 * Applies Troy Mode state to the UI without updating storage.
+	 *
+	 * @since 0.0.1184
+	 * @access private
+	 *
+	 * @param {Boolean} active Whether Troy Mode is active.
+	 */
+	function _applyState( active ) {
+
 		document.body.classList.toggle( _bodyClass, active );
 
 		document.getElementById( _buttonId )
@@ -164,7 +177,7 @@ window.troyServerMode = ( () => {
 	 */
 	function _onStorageChange( e ) {
 		if ( _storageKey === e.key )
-			setState( '1' === e.newValue );
+			_applyState( '1' === e.newValue );
 	}
 
 	// Load immediately: prevent FOUC.

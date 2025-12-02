@@ -175,7 +175,7 @@ function upgrade_from( $version ) {
  *
  * We make plugin versions 20 characters long because we haven't found plugins with a longer version.
  *
- * An epoch is 1 week long. Its identifier is calculated by flooring ( current UNIX timestamp / 604_800 seconds ).
+ * An epoch is 1 week long. Its identifier is calculated by flooring ( current UNIX timestamp / \WEEK_IN_SECONDS seconds ).
  * You can get this epoch via `Troy\Server\API\Utils::get_epoch()`, and last epoch via `Troy\Server\API\Utils::get_epoch( 'last' )`.
  *
  * We partition the update request stats by epoch because we expect a lot of data.
@@ -513,6 +513,8 @@ function get_initial_db_schema_queries() {
 			`origin_url` varchar(191) NOT null,
 			`downloads` bigint unsigned NOT null,
 			`views` bigint unsigned NOT null,
+			`total_installs` bigint unsigned NOT null DEFAULT 0,
+			`active_installs` bigint unsigned NOT null DEFAULT 0,
 			`created_at` datetime DEFAULT current_timestamp,
 			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
 			primary key (`id`),

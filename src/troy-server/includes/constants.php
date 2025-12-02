@@ -78,3 +78,21 @@ const REST_NS = [
 		'access_cap' => 'manage_options',
 	],
 ];
+
+/**
+ * The number of seconds after an epoch ends before we finalize it.
+ * 48 hours = 172800 seconds.
+ *
+ * @since 0.0.1184
+ */
+const STATS_AGGREGATOR_EPOCH_FINALIZE_DELAY = 48 * \HOUR_IN_SECONDS;
+
+/**
+ * The number of IDs to process per batch.
+ *
+ * With STATS_AGGREGATOR_EPOCH_FINALIZE_DELAY at 48 hours and cron running every 10 minutes,
+ * we can process up to 28_800 plugins/packages before risking data loss (6 runs/hour × 48 hours × 100).
+ *
+ * @since 0.0.1184
+ */
+const STATS_AGGREGATOR_BATCH_SIZE = 100;

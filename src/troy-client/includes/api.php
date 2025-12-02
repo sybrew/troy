@@ -66,7 +66,7 @@ function get_site_unique_id() {
 	$uuid = \get_option( 'troy_client_site_unique_id', '' );
 
 	// This is the timeout for the UUID: 1 week. int-casting floors.
-	$epoch = (int) ( time() / 604_800 );
+	$epoch = (int) ( time() / \WEEK_IN_SECONDS );
 
 	if ( ! $uuid || (int) strtok( $uuid, '-' ) < $epoch ) {
 		// We don't use an rfc9562 UUID because we need to be able to extract a custom epoch.

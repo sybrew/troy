@@ -387,6 +387,7 @@
 		if ( ! lastEpoch )
 			return thisEpoch ? Infinity : null;
 
+		// Multiply by 1000 and divide by 10 to get one decimal place.
 		return Math.round( ( ( thisEpoch - lastEpoch ) / lastEpoch ) * 1000 ) / 10;
 	};
 
@@ -435,7 +436,7 @@
 	};
 
 	/**
-	 * Builds the epoch comparison table HTML.
+	 * Builds the epoch comparison table HTML with per-version breakdown.
 	 *
 	 * @since 0.0.1184
 	 *
@@ -446,8 +447,23 @@
 
 		const thisEpochInstalls = getEpochInstalls( data.epoch_installs, data.this_epoch );
 		const lastEpochInstalls = getEpochInstalls( data.epoch_installs, data.last_epoch );
-		const change            = thisEpochInstalls - lastEpochInstalls;
-		const changePercent     = calcChangePercent( thisEpochInstalls, lastEpochInstalls );
+		const installsChange    = thisEpochInstalls - lastEpochInstalls;
+		const installsPercent   = calcChangePercent( thisEpochInstalls, lastEpochInstalls );
+
+		const thisRequests    = data.epoch_installs?.[ data.this_epoch ]?.requests || 0;
+		const lastRequests    = data.epoch_installs?.[ data.last_epoch ]?.requests || 0;
+		const requestsChange  = thisRequests - lastRequests;
+		const requestsPercent = calcChangePercent( thisRequests, lastRequests );
+
+		const thisActive    = data.epoch_installs?.[ data.this_epoch ]?.active || 0;
+		const lastActive    = data.epoch_installs?.[ data.last_epoch ]?.active || 0;
+		const activeChange  = thisActive - lastActive;
+		const activePercent = calcChangePercent( thisActive, lastActive );
+
+		const thisInactive    = data.epoch_installs?.[ data.this_epoch ]?.inactive || 0;
+		const lastInactive    = data.epoch_installs?.[ data.last_epoch ]?.inactive || 0;
+		const inactiveChange  = thisInactive - lastInactive;
+		const inactivePercent = calcChangePercent( thisInactive, lastInactive );
 
 		return `
 		<div class="troy-server-stats-detail-section">
@@ -463,10 +479,28 @@
 				</thead>
 				<tbody>
 					<tr>
+						<td>${ escape.string( i18n.updateRequests ) }</td>
+						<td>${ sanitize.number( lastRequests ) }</td>
+						<td>${ sanitize.number( thisRequests ) }</td>
+						<td class="${ getChangeClass( requestsChange ) }">${ formatChangeWithPercent( requestsChange, requestsPercent ) }</td>
+					</tr>
+					<tr>
 						<td>${ escape.string( i18n.totalInstallations ) }</td>
 						<td>${ sanitize.number( lastEpochInstalls ) }</td>
 						<td>${ sanitize.number( thisEpochInstalls ) }</td>
-						<td class="${ getChangeClass( change ) }">${ formatChangeWithPercent( change, changePercent ) }</td>
+						<td class="${ getChangeClass( installsChange ) }">${ formatChangeWithPercent( installsChange, installsPercent ) }</td>
+					</tr>
+					<tr>
+						<td>${ escape.string( i18n.activeInstalls ) }</td>
+						<td>${ sanitize.number( lastActive ) }</td>
+						<td>${ sanitize.number( thisActive ) }</td>
+						<td class="${ getChangeClass( activeChange ) }">${ formatChangeWithPercent( activeChange, activePercent ) }</td>
+					</tr>
+					<tr>
+						<td>${ escape.string( i18n.inactiveInstalls ) }</td>
+						<td>${ sanitize.number( lastInactive ) }</td>
+						<td>${ sanitize.number( thisInactive ) }</td>
+						<td class="${ getChangeClass( inactiveChange ) }">${ formatChangeWithPercent( inactiveChange, inactivePercent ) }</td>
 					</tr>
 				</tbody>
 			</table>
@@ -475,32 +509,33 @@
 	};
 
 	/**
-	 * Builds the version installs table HTML.
+	 * Builds the version details table HTML.
 	 *
 	 * @since 0.0.1184
 	 *
 	 * @param {Object} data Plugin details data from the API.
-	 * @return {string} HTML string for the version installs table.
+	 * @return {string} HTML string for the version details table.
 	 */
-	const buildVersionInstallsTable = data => {
+	const buildVersionDetailsTable = data => {
 
-		if ( ! data.version_installs?.length )
+		if ( ! data.version_details?.length )
 			return '';
 
-		const rows = data.version_installs
+		const rows = data.version_details
 			.map( item => {
 
-				const thisEpoch     = parseInt( item.this_epoch, 10 ) || 0;
-				const lastEpoch     = parseInt( item.last_epoch, 10 ) || 0;
-				const change        = thisEpoch - lastEpoch;
-				const changePercent = calcChangePercent( thisEpoch, lastEpoch );
+				const downloads     = parseInt( item.downloads, 10 ) || 0;
+				const totalInstalls = parseInt( item.total_installs, 10 ) || 0;
+				const active        = parseInt( item.active_installs, 10 ) || 0;
+				const inactive      = totalInstalls - active;
 
 				return `
 					<tr>
 						<td>${ escape.string( item.version ) }</td>
-						<td>${ sanitize.number( lastEpoch ) }</td>
-						<td>${ sanitize.number( thisEpoch ) }</td>
-						<td class="${ getChangeClass( change ) }">${ formatChangeWithPercent( change, changePercent ) }</td>
+						<td>${ sanitize.number( downloads ) }</td>
+						<td>${ sanitize.number( totalInstalls ) }</td>
+						<td>${ sanitize.number( active ) }</td>
+						<td>${ sanitize.number( inactive ) }</td>
 					</tr>
 				`;
 			} )
@@ -508,54 +543,15 @@
 
 		return `
 		<div class="troy-server-stats-detail-section">
-			<h4>${ escape.string( i18n.installsByVersion ) }</h4>
-			<table class="widefat striped">
-				<thead>
-					<tr>
-						<th scope="col">${ escape.string( i18n.version ) }</th>
-						<th scope="col">${ escape.string( i18n.lastEpochHeader.replace( '%d', data.last_epoch ) ) }</th>
-						<th scope="col">${ escape.string( i18n.thisEpochHeader.replace( '%d', data.this_epoch ) ) }</th>
-						<th scope="col">${ escape.string( i18n.change ) }</th>
-					</tr>
-				</thead>
-				<tbody>
-					${ rows }
-				</tbody>
-			</table>
-		</div>
-	`;
-	};
-
-	/**
-	 * Builds the version downloads table HTML.
-	 *
-	 * @since 0.0.1184
-	 *
-	 * @param {Object} data Plugin details data from the API.
-	 * @return {string} HTML string for the version downloads table.
-	 */
-	const buildVersionDownloadsTable = data => {
-
-		if ( ! data.version_installs?.length )
-			return '';
-
-		const rows = data.version_installs
-			.map( item => `
-				<tr>
-					<td>${ escape.string( item.version ) }</td>
-					<td>${ sanitize.number( parseInt( item.downloads, 10 ) || 0 ) }</td>
-				</tr>
-			` )
-			.join( '' );
-
-		return `
-		<div class="troy-server-stats-detail-section">
-			<h4>${ escape.string( i18n.downloadsByVersion ) }</h4>
+			<h4>${ escape.string( i18n.detailsPerVersion ) }</h4>
 			<table class="widefat striped">
 				<thead>
 					<tr>
 						<th scope="col">${ escape.string( i18n.version ) }</th>
 						<th scope="col">${ escape.string( i18n.totalDownloads ) }</th>
+						<th scope="col">${ escape.string( i18n.installations ) }</th>
+						<th scope="col">${ escape.string( i18n.activeInstalls ) }</th>
+						<th scope="col">${ escape.string( i18n.inactiveInstalls ) }</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -583,8 +579,7 @@
 			${ buildCard( i18n.lastSnapshot, data.last_snapshot || '-', 'string' ) }
 		</div>
 		${ buildEpochComparisonTable( data ) }
-		${ buildVersionInstallsTable( data ) }
-		${ buildVersionDownloadsTable( data ) }
+		${ buildVersionDetailsTable( data ) }
 		${ buildDetailSection( i18n.downloadsByType, data.download_types, 'type', 'downloads' ) }
 		${ buildDetailSection( i18n.locales, data.locales, 'locale', 'count' ) }
 		${ buildDetailSection( i18n.phpVersions, data.php_versions, 'version', 'count' ) }

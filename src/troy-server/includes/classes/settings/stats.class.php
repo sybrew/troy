@@ -107,6 +107,8 @@ final class Stats {
 					'epochHint'          => \__( 'Publicly shown value uses the highest count between this and last epoch.', 'troy-server' ),
 					'epochComparison'    => \__( 'Epoch Comparison', 'troy-server' ),
 					'installsByVersion'  => \__( 'Installations by Version', 'troy-server' ),
+					'detailsPerVersion'  => \__( 'Details per Version', 'troy-server' ),
+					'total'              => \__( 'Total', 'troy-server' ),
 					'metric'             => \__( 'Metric', 'troy-server' ),
 					'version'            => \__( 'Version', 'troy-server' ),
 					// translators: %d is the epoch number
@@ -114,6 +116,7 @@ final class Stats {
 					// translators: %d is the epoch number
 					'thisEpochHeader'    => \__( 'This Epoch (%d)', 'troy-server' ),
 					'totalInstallations' => \__( 'Total Installations', 'troy-server' ),
+					'updateRequests'     => \__( 'Update Requests', 'troy-server' ),
 					'change'             => \__( 'Change', 'troy-server' ),
 					'lastSnapshot'       => \__( 'Last Snapshot', 'troy-server' ),
 				],
@@ -511,21 +514,6 @@ final class Stats {
 
 		$data = new \Troy\Server\Plugins\Data( $plugin_id );
 
-		// Version breakdown
-		$versions = $wpdb->get_results(
-			$wpdb->prepare(
-				"SELECT
-					version,
-					SUM(downloads) as downloads
-				FROM {$wpdb->prefix}troy_plugin_stats_downloads
-				WHERE plugin_id = %d
-				GROUP BY version
-				ORDER BY downloads DESC",
-				$plugin_id,
-			),
-			\ARRAY_A,
-		);
-
 		// Download types breakdown
 		$download_types = $wpdb->get_results(
 			$wpdb->prepare(
@@ -556,10 +544,26 @@ final class Stats {
 			\ARRAY_A,
 		);
 
-		$cache = $data->get_data_caches_row();
-
 		$this_epoch = API\Utils::get_epoch();
 		$last_epoch = $this_epoch - 1;
+
+		// Request counts by epoch for this plugin.
+		$request_stats = $wpdb->get_row( $wpdb->prepare(
+			"SELECT
+				COALESCE(SUM(CASE WHEN epoch = %d THEN request_count ELSE 0 END), 0) as this_requests,
+				COALESCE(SUM(CASE WHEN epoch = %d THEN request_count ELSE 0 END), 0) as last_requests
+			FROM {$wpdb->prefix}troy_plugin_stats_requests
+			WHERE plugin_id = %d
+				AND epoch IN (%d, %d)",
+			$this_epoch,
+			$last_epoch,
+			$plugin_id,
+			$this_epoch,
+			$last_epoch,
+		) );
+
+		$this_requests = (int) ( $request_stats->this_requests ?? 0 );
+		$last_requests = (int) ( $request_stats->last_requests ?? 0 );
 
 		// Get installation stats from stats_totals.
 		$install_stats = $wpdb->get_row( $wpdb->prepare(
@@ -626,22 +630,20 @@ final class Stats {
 			$plugin_id,
 		) );
 
-		$version_installs = $wpdb->get_results(
+		// Version details from all-time stats
+		$version_details = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT
 					version,
-					SUM(request_count) as total,
-					SUM(CASE WHEN is_active = 1 THEN request_count ELSE 0 END) as active,
-					SUM(CASE WHEN is_active = 0 THEN request_count ELSE 0 END) as inactive
-				FROM {$wpdb->prefix}troy_plugin_stats_requests
+					SUM(downloads) as downloads,
+					SUM(total_installs) as total_installs,
+					SUM(active_installs) as active_installs
+				FROM {$wpdb->prefix}troy_plugin_stats_versions
 				WHERE plugin_id = %d
-					AND epoch IN (%d, %d)
 				GROUP BY version
-				ORDER BY total DESC
-				LIMIT 7", // Magic number: lucky!
+				ORDER BY downloads DESC
+				LIMIT 7",
 				$plugin_id,
-				$this_epoch,
-				$last_epoch,
 			),
 			\ARRAY_A,
 		);
@@ -659,22 +661,21 @@ final class Stats {
 			'last_epoch'        => $last_epoch,
 			'epoch_installs'    => [
 				$this_epoch => [
+					'requests' => $this_requests,
 					'active'   => $this_active,
 					'inactive' => $this_inactive,
 				],
 				$last_epoch => [
+					'requests' => $last_requests,
 					'active'   => $last_active,
 					'inactive' => $last_inactive,
 				],
 			],
-			// 'average_rating'  => (float) ( $cache->average_rating ?? 0 ),
-			// 'rating_count'    => (int) ( $cache->rating_count ?? 0 ),
-			'versions'          => $versions,
 			'download_types'    => $download_types,
 			'locales'           => $locales,
 			'php_versions'      => $php_versions,
 			'wp_versions'       => $wp_versions,
-			'version_installs'  => $version_installs,
+			'version_details'   => $version_details,
 			'last_snapshot'     => $last_snapshot,
 		];
 	}
