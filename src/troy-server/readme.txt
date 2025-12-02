@@ -83,7 +83,7 @@ Troy Server checks for updates via Troy Client via the Troy Server at repo.deplo
 
 == Installation ==
 
-Troy Server is not available on WordPress.org.
+Troy Server is not yet available on WordPress.org.
 
 1. Download the latest package from [repo.deploytroy.org](https://repo.deploytroy.org/package/get/zip/troy-server-installer).
 1. Upload the ZIP file via Plugins > Add New > Upload Plugin.
