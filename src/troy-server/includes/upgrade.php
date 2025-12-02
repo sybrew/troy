@@ -102,9 +102,9 @@ function set_upgrade_lock( $release_timeout ) {
 	) );
 
 	if ( ! $lock ) {
-		$lock_time = \get_option( 'troy_server_upgrade.lock' );
+		$lock_time = (int) \get_option( 'troy_server_upgrade.lock' );
 
-		if ( ! $lock_time || ( $lock_time > ( time() - $release_timeout ) ) )
+		if ( $lock_time > ( time() - $release_timeout ) )
 			return false;
 
 		release_upgrade_lock();

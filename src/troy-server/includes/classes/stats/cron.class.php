@@ -139,9 +139,9 @@ final class Cron extends \Troy\Server\Cron {
 		) );
 
 		if ( ! $lock ) {
-			$lock_time = \get_option( $lock_name );
+			$lock_time = (int) \get_option( $lock_name );
 
-			if ( ! $lock_time || ( $lock_time > ( time() - $release_timeout ) ) )
+			if ( $lock_time > ( time() - $release_timeout ) )
 				return false;
 
 			self::release_lock( $lock_name );
