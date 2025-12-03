@@ -4,8 +4,6 @@ on:
   push:
     tags:
       - '*'
-  release:
-    types: [published]
 
 jobs:
   build:
@@ -60,6 +58,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          draft: true
           files: |
             troy-server-${{ steps.versions.outputs.server }}.zip
             troy-client-${{ steps.versions.outputs.client }}.zip
