@@ -8,6 +8,8 @@ namespace Troy\Server\Endpoints;
 
 \defined( 'Troy\Server\ABSPATH' ) or die;
 
+use Troy\Server\API;
+
 /**
  * Troy Server
  *
