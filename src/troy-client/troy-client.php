@@ -36,7 +36,7 @@ namespace Troy\Client;
 	_by_:      'Sybre Waaijer';
 	_for_:     'The community';
 	_license_: 'MIT. No GPLv2';
-	RetakeWordPressWith::class;
+	ExtendWordPressWith::class;
 } } } } } } } } } } } } } } } } } }
 
 /**
