@@ -18,10 +18,10 @@ jobs:
       - name: Extract versions from plugin files
         id: versions
         run: |
-          SEMVER_REGEX='Version:\s*(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-(0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*))*)?(\+[0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*)?'
-          SERVER_VERSION=$(head -30 src/troy-server/troy-server.php | grep -oP 'Version:\s*\K(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-(0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*))*)?(\+[0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*)?')
-          CLIENT_VERSION=$(head -30 src/troy-client/troy-client.php | grep -oP 'Version:\s*\K(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-(0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*))*)?(\+[0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*)?')
-          DAEMON_VERSION=$(head -30 src/troy-client-daemon/troy-client-daemon.php | grep -oP 'Version:\s*\K(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-(0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*))*)?(\+[0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*)?')
+          SEMVER_REGEX='(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-(0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*))*)?(\+[0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*)?'
+          SERVER_VERSION=$(head -30 src/troy-server/troy-server.php | grep -oP "Version:\s*\K$SEMVER_REGEX")
+          CLIENT_VERSION=$(head -30 src/troy-client/troy-client.php | grep -oP "Version:\s*\K$SEMVER_REGEX")
+          DAEMON_VERSION=$(head -30 src/troy-client-daemon/troy-client-daemon.php | grep -oP "Version:\s*\K$SEMVER_REGEX")
           echo "server=$SERVER_VERSION" >> $GITHUB_OUTPUT
           echo "client=$CLIENT_VERSION" >> $GITHUB_OUTPUT
           echo "daemon=$DAEMON_VERSION" >> $GITHUB_OUTPUT
@@ -31,27 +31,22 @@ jobs:
 
       - name: Create troy-server.zip
         run: |
-          cd src/troy-server
-          zip -r ../../troy-server-${{ steps.versions.outputs.server }}.zip . -x "*.git*"
+          git archive --format=zip --prefix=troy-server/ -o troy-server-${{ steps.versions.outputs.server }}.zip HEAD:src/troy-server
 
       - name: Create troy-client.zip
         run: |
-          cd src/troy-client
-          zip -r ../../troy-client-${{ steps.versions.outputs.client }}.zip . -x "*.git*"
+          git archive --format=zip --prefix=troy-client/ -o troy-client-${{ steps.versions.outputs.client }}.zip HEAD:src/troy-client
 
       - name: Create troy-client-daemon.zip
         run: |
-          cd src/troy-client-daemon
-          zip -r ../../troy-client-daemon-${{ steps.versions.outputs.daemon }}.zip . -x "*.git*"
+          git archive --format=zip --prefix=troy-client-daemon/ -o troy-client-daemon-${{ steps.versions.outputs.daemon }}.zip HEAD:src/troy-client-daemon
 
       - name: Create snippets.zip
         run: |
-          mkdir -p snippets-temp/troy-client-channel
-          mkdir -p snippets-temp/troy-client-hide
-          mkdir -p snippets-temp/troy-embed
-          cp -r src/troy-client-channel/* snippets-temp/troy-client-channel/
-          cp -r src/troy-client-hide/* snippets-temp/troy-client-hide/
-          cp -r src/troy-embed/* snippets-temp/troy-embed/
+          mkdir -p snippets-temp
+          git archive --format=tar HEAD:src/troy-client-channel | tar -xf - -C snippets-temp --transform='s,^,troy-client-channel/,'
+          git archive --format=tar HEAD:src/troy-client-hide | tar -xf - -C snippets-temp --transform='s,^,troy-client-hide/,'
+          git archive --format=tar HEAD:src/troy-embed | tar -xf - -C snippets-temp --transform='s,^,troy-embed/,'
           cd snippets-temp
           zip -r ../snippets.zip .
 
