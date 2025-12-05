@@ -91,15 +91,18 @@
 	text-transform: uppercase;
 }
 
-.troy-server-logs-type-error {
+.troy-server-logs-type-error,
+.troy-server-logs-type-blocked {
 	color: #d63638;
 }
 
-.troy-server-logs-type-warning {
+.troy-server-logs-type-warning,
+.troy-server-logs-type-failed {
 	color: #ffae00;
 }
 
-.troy-server-logs-type-info {
+.troy-server-logs-type-info,
+.troy-server-logs-type-unknown {
 	color: var(--troy-server-theme-color);
 }
 

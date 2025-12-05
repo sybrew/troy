@@ -187,7 +187,7 @@
 			count.textContent = `(${ history.length })`;
 
 		if ( ! history.length ) {
-			tbody.innerHTML = `<tr><td colspan="7">${ i18n.noData }</td></tr>`;
+			tbody.innerHTML = `<tr><td colspan="7">${ i18n.noHistory }</td></tr>`;
 			return;
 		}
 
@@ -217,7 +217,7 @@
 			count.textContent = `(${ logs.length })`;
 
 		if ( ! logs.length ) {
-			tbody.innerHTML = `<tr><td colspan="4">${ i18n.noData }</td></tr>`;
+			tbody.innerHTML = `<tr><td colspan="4">${ i18n.noLogs }</td></tr>`;
 			return;
 		}
 
@@ -308,12 +308,14 @@
 	 */
 	const bindClearButtons = () => {
 
-		document.querySelectorAll( '.troy-server-logs-clear-btn' ).forEach( btn => {
-			btn.addEventListener(
-				'click',
-				() => clearLogs( btn.dataset.logType ),
-			);
-		} );
+		document.querySelectorAll( '.troy-server-logs-clear-btn' ).forEach(
+			btn => {
+				btn.addEventListener(
+					'click',
+					() => clearLogs( btn.dataset.logType ),
+				);
+			},
+		);
 	};
 
 	/**

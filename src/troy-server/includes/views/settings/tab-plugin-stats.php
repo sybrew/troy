@@ -118,7 +118,7 @@ $locales          = Settings\Stats::get_locale_stats();
 	</h3>
 	<div id=troy-server-stats-top-plugins class=troy-server-settings-accordion-panel>
 		<p class=description>
-			<?= \esc_html__( 'The "Installations" count uses the highest value between this and last epoch, since a new epoch may still be catching up.', 'troy-server' ) ?>
+			<?= \esc_html__( 'The "Installations" count uses the highest value between this and last epoch, since a new epoch may still be catching up. This count is used publicly to display the number of active installations.', 'troy-server' ) ?>
 		</p>
 		<table class="widefat striped troy-server-stats-table" id=troy-server-stats-plugins-table>
 			<thead>

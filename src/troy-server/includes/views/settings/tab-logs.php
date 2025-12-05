@@ -105,15 +105,15 @@ $integration_logs    = Settings\Logs::get_integration_logs();
 								$type_label = \__( 'Success', 'troy-server' );
 								break;
 							case 'FAILED':
-								$type       = 'warning';
+								$type       = 'failed';
 								$type_label = \__( 'Retrying', 'troy-server' );
 								break;
 							case 'BLOCKED':
-								$type       = 'error';
+								$type       = 'blocked';
 								$type_label = \__( 'Blocked', 'troy-server' );
 								break;
 							default:
-								$type       = 'info';
+								$type       = 'unknown';
 								$type_label = \__( 'Unknown', 'troy-server' );
 						}
 						?>

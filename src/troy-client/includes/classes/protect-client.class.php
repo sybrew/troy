@@ -181,7 +181,7 @@ final class Protect_Client {
 			return;
 		}
 
-		if ( ! \defined( 'Troy\Client\Daemon\ACTIVE' ) ) {
+		if ( \defined( 'Troy\Client\Daemon\ACTIVE' ) ) {
 			printf(
 				'<p><span class="dashicons dashicons-lock"></span> <strong>%s</strong></p>',
 				\esc_html( \__( 'Troy Client can not be deactivated.', 'troy-client' ) ),

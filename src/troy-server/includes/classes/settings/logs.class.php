@@ -86,8 +86,10 @@ final class Logs {
 				'i18n'     => [
 					'loading'        => \__( 'Loading...', 'troy-server' ),
 					'error'          => \__( 'Failed to load logs.', 'troy-server' ),
-					'noData'         => \__( 'No log entries found.', 'troy-server' ),
+					'noHistory'      => \__( 'No history recorded.', 'troy-server' ),
+					'noLogs'         => \__( 'No log entries found.', 'troy-server' ),
 					'cleared'        => \__( 'Logs cleared.', 'troy-server' ),
+					'historyCleared' => \__( 'History cleared.', 'troy-server' ),
 					'clearFailed'    => \__( 'Failed to clear logs.', 'troy-server' ),
 					'confirmClear'   => \__( 'Are you sure you want to clear these logs?', 'troy-server' ),
 					'autoRefreshOn'  => \__( 'Auto-refresh enabled (20s)', 'troy-server' ),

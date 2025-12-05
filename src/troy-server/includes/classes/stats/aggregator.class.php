@@ -405,6 +405,8 @@ final class Aggregator {
 			);
 
 			if ( false === $delete_result ) {
+				// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- acceptable in this context
+				error_log( 'Rolling back plugin views aggregation due to delete failure.' );
 				$wpdb->query( 'ROLLBACK' );
 			} else {
 				$wpdb->query( 'COMMIT' );
@@ -492,6 +494,8 @@ final class Aggregator {
 			);
 
 			if ( false === $delete_result ) {
+				// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- acceptable in this context
+				error_log( 'Rolling back plugin downloads aggregation due to delete failure.' );
 				$wpdb->query( 'ROLLBACK' );
 			} else {
 				$wpdb->query( 'COMMIT' );
@@ -598,6 +602,8 @@ final class Aggregator {
 			);
 
 			if ( false === $delete_result ) {
+				// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- acceptable in this context
+				error_log( 'Rolling back package downloads aggregation due to delete failure.' );
 				$wpdb->query( 'ROLLBACK' );
 			} else {
 				$wpdb->query( 'COMMIT' );
