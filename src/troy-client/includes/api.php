@@ -70,10 +70,10 @@ function get_site_unique_id() {
 
 	if ( ! $uuid || (int) strtok( $uuid, '-' ) < $epoch ) {
 		// We don't use an rfc9562 UUID because we need to be able to extract a custom epoch.
-		$uuid = bin2hex( random_bytes( 32 ) );
+		$uuid = "$epoch-" . bin2hex( random_bytes( 32 ) );
 
 		// Not autoloaded -- we only use if when we make a request.
-		\update_option( 'troy_client_site_unique_id', "$epoch-$uuid", false );
+		\update_option( 'troy_client_site_unique_id', $uuid, false );
 	}
 
 	return $uuid;

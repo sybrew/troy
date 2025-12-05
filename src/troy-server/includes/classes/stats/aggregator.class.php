@@ -316,14 +316,6 @@ final class Aggregator {
 					$active_installs,
 				) );
 			}
-
-			// Delete aggregated rows from live table.
-			// No transaction needed: all aggregations above use replace/overwrite operations,
-			// making them idempotent. A failed delete just means re-processing identical data.
-			$wpdb->query(
-				"DELETE FROM {$wpdb->prefix}troy_plugin_stats_requests_live
-				WHERE plugin_id IN ($plugin_ids_str)",
-			);
 		}
 
 		aggregate_views: {
