@@ -50,17 +50,16 @@ use Troy\Server\API;
 final class Aggregator {
 
 	/**
-	 * Snapshots plugin stats for a batch of plugin IDs.
+	 * Aggregates plugin stats for a batch of plugin IDs.
 	 *
-	 * Processes plugins in batches of 100 IDs, tracking progress via options.
+	 * By default, processes plugins in batches of 100 IDs, tracking progress via options.
 	 * Uses SQL GROUP BY for all aggregation to minimize memory usage.
+	 * When a cycle completes (no more plugins to process), also snapshots global stats.
 	 *
 	 * @since 0.0.1184
 	 * @global \wpdb $wpdb
-	 *
-	 * @return bool True if there are more plugins to process, false if cycle complete.
 	 */
-	public static function snapshot_plugins() {
+	public static function aggregate_plugin_stats() {
 
 		global $wpdb;
 
@@ -77,11 +76,8 @@ final class Aggregator {
 			STATS_AGGREGATOR_BATCH_SIZE,
 		) );
 
-		if ( empty( $plugin_ids ) ) {
-			// Cycle complete, reset for next cycle.
-			\update_option( 'troy_server_cron_batch_last_id_plugins', 0, false );
-			return false;
-		}
+		if ( empty( $plugin_ids ) )
+			return;
 
 		$plugin_ids_str = implode( ',', array_map( 'intval', $plugin_ids ) );
 		$this_epoch     = API\Utils::get_epoch();
@@ -320,6 +316,14 @@ final class Aggregator {
 					$active_installs,
 				) );
 			}
+
+			// Delete aggregated rows from live table.
+			// No transaction needed: all aggregations above use replace/overwrite operations,
+			// making them idempotent. A failed delete just means re-processing identical data.
+			$wpdb->query(
+				"DELETE FROM {$wpdb->prefix}troy_plugin_stats_requests_live
+				WHERE plugin_id IN ($plugin_ids_str)",
+			);
 		}
 
 		aggregate_views: {
@@ -502,13 +506,117 @@ final class Aggregator {
 			}
 		}
 
+		$max_id = max( $plugin_ids );
+
+		// Check if more plugins exist after this batch.
+		$has_more = (bool) $wpdb->get_var( $wpdb->prepare(
+			"SELECT 1
+			FROM {$wpdb->prefix}troy_plugins
+			WHERE id > %d
+			LIMIT 1",
+			$max_id,
+		) );
+
+		if ( $has_more ) {
+			\update_option( 'troy_server_cron_batch_last_id_plugins', $max_id, false );
+			return;
+		}
+
+		// Cycle complete. Reset for next cycle and snapshot global stats.
+		\update_option( 'troy_server_cron_batch_last_id_plugins', 0, false );
+
 		// phpcs:enable Generic.WhiteSpace.ScopeIndent.IncorrectExact
 		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+	}
 
-		$max_id = max( $plugin_ids );
-		\update_option( 'troy_server_cron_batch_last_id_plugins', $max_id, false );
+	/**
+	 * Snapshots global stats across all plugins (and future: themes)
+	 *
+	 * Aggregates from per-plugin stats tables rather than live tables,
+	 * since aggregate_plugin_stats() has already processed the raw data.
+	 *
+	 * @todo add theme stats aggregation
+	 * @since 0.0.1184
+	 */
+	public static function snapshot_global_stats() {
 
-		return true;
+		global $wpdb;
+
+		// phpcs:disable Generic.WhiteSpace.ScopeIndent.IncorrectExact -- No love for goto.
+
+		snapshot_global_locales: {
+
+			$locale_rows = $wpdb->get_results(
+				"SELECT
+					epoch,
+					locale,
+					SUM(install_count) as install_count
+				FROM {$wpdb->prefix}troy_plugin_stats_locales
+				GROUP BY epoch, locale",
+			);
+
+			foreach ( $locale_rows as $row ) {
+				$wpdb->replace(
+					"{$wpdb->prefix}troy_stats_locales",
+					[
+						'epoch'         => $row->epoch,
+						'locale'        => $row->locale,
+						'install_count' => $row->install_count,
+					],
+					[ '%d', '%s', '%d' ],
+				);
+			}
+		}
+
+		snapshot_global_php: {
+
+			$php_rows = $wpdb->get_results(
+				"SELECT
+					epoch,
+					php_version,
+					SUM(install_count) as install_count
+				FROM {$wpdb->prefix}troy_plugin_stats_php
+				GROUP BY epoch, php_version",
+			);
+
+			foreach ( $php_rows as $row ) {
+				$wpdb->replace(
+					"{$wpdb->prefix}troy_stats_php",
+					[
+						'epoch'         => $row->epoch,
+						'php_version'   => $row->php_version,
+						'install_count' => $row->install_count,
+					],
+					[ '%d', '%s', '%d' ],
+				);
+			}
+		}
+
+		snapshot_global_wp: {
+
+			$wp_rows = $wpdb->get_results(
+				"SELECT
+					epoch,
+					wp_version,
+					SUM(install_count) as install_count
+				FROM {$wpdb->prefix}troy_plugin_stats_wp
+				GROUP BY epoch, wp_version",
+			);
+
+			foreach ( $wp_rows as $row ) {
+				$wpdb->replace(
+					"{$wpdb->prefix}troy_stats_wp",
+					[
+						'epoch'         => $row->epoch,
+						'wp_version'    => $row->wp_version,
+						'install_count' => $row->install_count,
+					],
+					[ '%d', '%s', '%d' ],
+				);
+			}
+		}
+
+		// phpcs:enable Generic.WhiteSpace.ScopeIndent.IncorrectExact
 	}
 
 	/**
@@ -518,10 +626,8 @@ final class Aggregator {
 	 *
 	 * @since 0.0.1184
 	 * @global \wpdb $wpdb
-	 *
-	 * @return bool True if there are more packages to process, false if cycle complete.
 	 */
-	public static function snapshot_packages() {
+	public static function aggregate_package_stats() {
 
 		global $wpdb;
 
@@ -537,10 +643,8 @@ final class Aggregator {
 			STATS_AGGREGATOR_BATCH_SIZE,
 		) );
 
-		if ( empty( $package_ids ) ) {
-			\update_option( 'troy_server_cron_batch_last_id_packages', 0, false );
-			return false;
-		}
+		if ( empty( $package_ids ) )
+			return;
 
 		$package_ids_str = implode( ',', array_map( 'intval', $package_ids ) );
 
@@ -614,114 +718,29 @@ final class Aggregator {
 		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
 		$max_id = max( $package_ids );
-		\update_option( 'troy_server_cron_batch_last_id_packages', $max_id, false );
 
-		return true;
-	}
+		// Check if more packages exist after this batch.
+		$has_more = (bool) $wpdb->get_var( $wpdb->prepare(
+			"SELECT 1
+			FROM {$wpdb->prefix}troy_packages
+			WHERE id > %d
+			LIMIT 1",
+			$max_id,
+		) );
 
-	/**
-	 * Snapshots global stats (locales, PHP, WP versions across all plugins).
-	 *
-	 * Should be called after all plugin batches complete (full cycle).
-	 *
-	 * @since 0.0.1184
-	 * @global \wpdb $wpdb
-	 */
-	public static function snapshot_global_stats() {
-
-		global $wpdb;
-
-		// phpcs:disable Generic.WhiteSpace.ScopeIndent.IncorrectExact -- No love for goto.
-
-		aggregate_locales: {
-
-			$locale_rows = $wpdb->get_results(
-				"SELECT
-					r.epoch,
-					jt.locale,
-					COUNT(DISTINCT r.uuid) as install_count
-				FROM {$wpdb->prefix}troy_plugin_stats_requests_live r,
-					JSON_TABLE(
-						r.locales,
-						'$[*]' COLUMNS(locale VARCHAR(15) PATH '$')
-					) jt
-				WHERE jt.locale IS NOT null
-					AND jt.locale != ''
-				GROUP BY r.epoch, jt.locale",
-			);
-
-			foreach ( $locale_rows as $row ) {
-				$wpdb->replace(
-					"{$wpdb->prefix}troy_stats_locales",
-					[
-						'epoch'         => $row->epoch,
-						'locale'        => $row->locale,
-						'install_count' => $row->install_count,
-					],
-					[ '%d', '%s', '%d' ],
-				);
-			}
-		}
-
-		aggregate_php: {
-
-			$php_rows = $wpdb->get_results(
-				"SELECT
-					epoch,
-					php_version,
-					COUNT(DISTINCT uuid) as install_count
-				FROM {$wpdb->prefix}troy_plugin_stats_requests_live
-				WHERE php_version != ''
-				GROUP BY epoch, php_version",
-			);
-
-			foreach ( $php_rows as $row ) {
-				$wpdb->replace(
-					"{$wpdb->prefix}troy_stats_php",
-					[
-						'epoch'         => $row->epoch,
-						'php_version'   => $row->php_version,
-						'install_count' => $row->install_count,
-					],
-					[ '%d', '%s', '%d' ],
-				);
-			}
-		}
-
-		aggregate_wp: {
-
-			$wp_rows = $wpdb->get_results(
-				"SELECT
-					epoch,
-					wp_version,
-					COUNT(DISTINCT uuid) as install_count
-				FROM {$wpdb->prefix}troy_plugin_stats_requests_live
-				WHERE wp_version != ''
-				GROUP BY epoch, wp_version",
-			);
-
-			foreach ( $wp_rows as $row ) {
-				$wpdb->replace(
-					"{$wpdb->prefix}troy_stats_wp",
-					[
-						'epoch'         => $row->epoch,
-						'wp_version'    => $row->wp_version,
-						'install_count' => $row->install_count,
-					],
-					[ '%d', '%s', '%d' ],
-				);
-			}
-		}
-
-		// phpcs:enable Generic.WhiteSpace.ScopeIndent.IncorrectExact
+		\update_option(
+			'troy_server_cron_batch_last_id_packages',
+			$has_more ? $max_id : 0,
+			false,
+		);
 	}
 
 	/**
 	 * Creates daily snapshots for historical comparison.
-	 *
+
 	 * Table stats_totals_daily_snapshots: Cumulative (frozen copy of stats_totals).
 	 * Table stats_versions_daily_snapshots: Cumulative (frozen copy of stats_versions).
-	 *
+
 	 * @since 0.0.1184
 	 * @global \wpdb $wpdb
 	 */
@@ -729,7 +748,14 @@ final class Aggregator {
 
 		global $wpdb;
 
-		$today      = \current_time( 'Y-m-d' );
+		$timezone = \wp_timezone();
+		$now      = new \DateTime( 'now', $timezone );
+
+		// If within first 5 minutes of day, this data belongs to yesterday.
+		$day = $now->format( 'H:i' ) < '00:05'
+			? new \DateTime( 'yesterday', $timezone )->format( 'Y-m-d' )
+			: $now->format( 'Y-m-d' );
+
 		$this_epoch = API\Utils::get_epoch();
 		$last_epoch = $this_epoch - 1;
 
@@ -757,7 +783,7 @@ final class Aggregator {
 					total_installs_last_epoch  = VALUES(total_installs_last_epoch),
 					active_installs_this_epoch = VALUES(active_installs_this_epoch),
 					active_installs_last_epoch = VALUES(active_installs_last_epoch)",
-				$today,
+				$day,
 			) );
 		}
 
@@ -781,7 +807,7 @@ final class Aggregator {
 					views           = VALUES(views),
 					total_installs  = VALUES(total_installs),
 					active_installs = VALUES(active_installs)",
-				$today,
+				$day,
 			) );
 		}
 

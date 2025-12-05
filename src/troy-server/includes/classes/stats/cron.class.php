@@ -54,46 +54,62 @@ final class Cron extends \Troy\Server\Cron {
 	 * }
 	 */
 	protected const CRON_JOBS = [
+		'troy_server_cron_stats_aggregate'      => [
+			'callback' => [ self::class, 'aggregate' ],
+			'schedule' => 'tenminutes',
+			'interval' => 10 * \MINUTE_IN_SECONDS,
+		],
 		'troy_server_cron_stats_take_snapshot'  => [
-			'callback' => [ self::class, 'run_snapshot' ],
+			'callback' => [ self::class, 'snapshot' ],
 			'schedule' => 'tenminutes',
 			'interval' => 10 * \MINUTE_IN_SECONDS,
 		],
 		'troy_server_cron_stats_finalize_epoch' => [
-			'callback' => [ self::class, 'run_finalize_epoch' ],
+			'callback' => [ self::class, 'finalize_epoch' ],
 			'schedule' => 'daily',
 		],
 	];
 
 	/**
-	 * Run a stats snapshot.
+	 * Run stats aggregation.
 	 *
 	 * Aggregates live data from all _live tables into aggregated tables in batches.
 	 * Processes 100 IDs per batch, tracking progress via options.
 	 * This runs every 10 minutes to keep stats near-realtime.
 	 *
+	 * @hook troy_server_cron_stats_aggregate 10
+	 * @since 0.0.1184
+	 */
+	public static function aggregate() {
+
+		// Magic number: 2. Because we should optimize if we cannot even aggregate within 2 minutes.
+		if ( ! self::acquire_lock( 'troy_server_stats_aggregate.lock', 2 * \MINUTE_IN_SECONDS ) )
+			return;
+
+		Aggregator::aggregate_plugin_stats();
+		Aggregator::aggregate_package_stats();
+
+		Aggregator::snapshot_global_stats();
+
+		self::release_lock( 'troy_server_stats_aggregate.lock' );
+	}
+
+	/**
+	 * Run daily stats snapshots.
+	 *
+	 * Updates daily snapshots from already-aggregated tables.
+	 * This runs every 10 minutes to keep stats near-realtime.
+	 *
 	 * @hook troy_server_cron_stats_take_snapshot 10
 	 * @since 0.0.1184
 	 */
-	public static function run_snapshot() {
+	public static function snapshot() {
 
-		// Magic number: 2. Because we should optimize if we cannot even aggregate within 2 minutes.
+		// Magic number: 2. Because we should optimize if we cannot even snapshot within 2 minutes.
 		if ( ! self::acquire_lock( 'troy_server_stats_snapshot.lock', 2 * \MINUTE_IN_SECONDS ) )
 			return;
 
-		// Process a batch of plugins.
-		$plugins_has_more = Aggregator::snapshot_plugins();
-
-		// When plugin cycle completes, update global stats.
-		if ( ! $plugins_has_more )
-			Aggregator::snapshot_global_stats();
-
-		// Process a batch of packages.
-		Aggregator::snapshot_packages();
-
 		// Update daily snapshots (reads from already-aggregated tables).
-		// FIXME: Data from ~23:50-23:59 won't be in yesterday's snapshot. Fix by also
-		// updating yesterday's snapshot if we're within the first ~15 minutes of a new day.
 		Aggregator::snapshot_to_date();
 
 		self::release_lock( 'troy_server_stats_snapshot.lock' );
@@ -108,7 +124,7 @@ final class Cron extends \Troy\Server\Cron {
 	 * @hook troy_server_cron_stats_finalize_epoch 10
 	 * @since 0.0.1184
 	 */
-	public static function run_finalize_epoch() {
+	public static function finalize_epoch() {
 
 		// Magic number: 5. Huge numbers of requests may cause long finalization times.
 		if ( ! self::acquire_lock( 'troy_server_stats_finalize.lock', 5 * \MINUTE_IN_SECONDS ) )
