@@ -64,6 +64,10 @@ Troy Client requires network activation on WordPress Multisite installations.
 
 == Changelog ==
 
+= 1.0.1184 =
+
+* Stable proof of concept.
+
 = 0.0.1184 =
 
 * Initial proof of concept.

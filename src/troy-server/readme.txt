@@ -105,6 +105,10 @@ It's best to run Troy Server on a standalone WordPress instance. This can also b
 
 == Changelog ==
 
+= 1.0.1184 =
+
+* Stable proof of concept.
+
 = 0.0.1184 =
 
 * Initial proof of concept.
