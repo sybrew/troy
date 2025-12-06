@@ -549,24 +549,30 @@ final class Stats {
 			\ARRAY_A,
 		);
 
-		// Locale breakdown from update requests
+		$this_epoch = API\Utils::get_epoch();
+		$last_epoch = $this_epoch - 1;
+
+		// Locale breakdown from update requests with epoch comparison
 		$locales = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT
 					locale,
-					SUM(install_count) as count
+					COALESCE(SUM(CASE WHEN epoch = %d THEN install_count ELSE 0 END), 0) as this_count,
+					COALESCE(SUM(CASE WHEN epoch = %d THEN install_count ELSE 0 END), 0) as last_count
 				FROM {$wpdb->prefix}troy_plugin_stats_locales
 				WHERE plugin_id = %d
+					AND epoch IN (%d, %d)
 				GROUP BY locale
-				ORDER BY count DESC
-				LIMIT 10",
+				ORDER BY this_count DESC, last_count DESC
+				LIMIT 7",
+				$this_epoch,
+				$last_epoch,
 				$plugin_id,
+				$this_epoch,
+				$last_epoch,
 			),
 			\ARRAY_A,
 		);
-
-		$this_epoch = API\Utils::get_epoch();
-		$last_epoch = $this_epoch - 1;
 
 		// Request counts by epoch for this plugin.
 		$request_stats = $wpdb->get_row( $wpdb->prepare(
@@ -605,34 +611,46 @@ final class Stats {
 		$last_active    = (int) ( $install_stats->last_active ?? 0 );
 		$last_inactive  = (int) ( $install_stats->last_inactive ?? 0 );
 
-		// PHP version breakdown from update requests
+		// PHP version breakdown from update requests with epoch comparison
 		$php_versions = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT
 					php_version as version,
-					SUM(install_count) as count
+					COALESCE(SUM(CASE WHEN epoch = %d THEN install_count ELSE 0 END), 0) as this_count,
+					COALESCE(SUM(CASE WHEN epoch = %d THEN install_count ELSE 0 END), 0) as last_count
 				FROM {$wpdb->prefix}troy_plugin_stats_php
 				WHERE plugin_id = %d
+					AND epoch IN (%d, %d)
 				GROUP BY php_version
-				ORDER BY count DESC
-				LIMIT 10",
+				ORDER BY this_count DESC, last_count DESC
+				LIMIT 7",
+				$this_epoch,
+				$last_epoch,
 				$plugin_id,
+				$this_epoch,
+				$last_epoch,
 			),
 			\ARRAY_A,
 		);
 
-		// WP version breakdown from update requests
+		// WP version breakdown from update requests with epoch comparison
 		$wp_versions = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT
 					wp_version as version,
-					SUM(install_count) as count
+					COALESCE(SUM(CASE WHEN epoch = %d THEN install_count ELSE 0 END), 0) as this_count,
+					COALESCE(SUM(CASE WHEN epoch = %d THEN install_count ELSE 0 END), 0) as last_count
 				FROM {$wpdb->prefix}troy_plugin_stats_wp
 				WHERE plugin_id = %d
+					AND epoch IN (%d, %d)
 				GROUP BY wp_version
-				ORDER BY count DESC
-				LIMIT 10",
+				ORDER BY this_count DESC, last_count DESC
+				LIMIT 7",
+				$this_epoch,
+				$last_epoch,
 				$plugin_id,
+				$this_epoch,
+				$last_epoch,
 			),
 			\ARRAY_A,
 		);
@@ -770,125 +788,197 @@ final class Stats {
 	}
 
 	/**
-	 * Gets global PHP version usage statistics.
+	 * Gets global PHP version usage statistics with epoch breakdown.
 	 *
 	 * @since 0.0.1184
 	 * @global \wpdb $wpdb
 	 *
 	 * @param int $limit Number of versions to return.
-	 * @return array[] {
-	 *     Array of PHP versions with usage counts.
+	 * @return array {
+	 *     Epoch information and version data.
 	 *
-	 *     @type string $version The PHP version.
-	 *     @type int    $count   Number of installations using this version.
+	 *     @type int     $this_epoch Epoch number of the current epoch.
+	 *     @type int     $last_epoch Epoch number of the previous epoch.
+	 *     @type array[] $versions {
+	 *         Array of PHP versions with epoch-based usage counts.
+	 *
+	 *         @type string $version        The PHP version.
+	 *         @type int    $this_count     Installations in this epoch.
+	 *         @type int    $last_count     Installations in last epoch.
+	 *         @type float  $change_percent Percentage change between epochs.
+	 *     }
 	 * }
 	 */
 	public static function get_php_version_stats( $limit = 20 ) {
 
 		global $wpdb;
 
+		$this_epoch = API\Utils::get_epoch();
+		$last_epoch = $this_epoch - 1;
+
 		$results = $wpdb->get_results( $wpdb->prepare(
 			"SELECT
 				php_version as version,
-				SUM(install_count) as count
+				COALESCE(SUM(CASE WHEN epoch = %d THEN install_count ELSE 0 END), 0) as this_count,
+				COALESCE(SUM(CASE WHEN epoch = %d THEN install_count ELSE 0 END), 0) as last_count
 			FROM {$wpdb->prefix}troy_stats_php
+			WHERE epoch IN (%d, %d)
 			GROUP BY php_version
-			ORDER BY count DESC
+			ORDER BY this_count DESC, last_count DESC
 			LIMIT %d",
+			$this_epoch,
+			$last_epoch,
+			$this_epoch,
+			$last_epoch,
 			$limit,
 		) );
 
-		if ( ! $results )
-			return [];
-
-		return array_map(
-			fn( $row ) => [
-				'version' => $row->version,
-				'count'   => (int) $row->count,
-			],
-			$results,
-		);
+		return [
+			'this_epoch' => $this_epoch,
+			'last_epoch' => $last_epoch,
+			'versions'   => $results
+				? array_map(
+					fn( $row ) => [
+						'version'        => $row->version,
+						'this_count'     => (int) $row->this_count,
+						'last_count'     => (int) $row->last_count,
+						'change_percent' => $row->last_count
+							? round( ( ( $row->this_count - $row->last_count ) / $row->last_count ) * 100, 1 )
+							: ( $row->this_count ? \INF : 0.0 ),
+					],
+					$results,
+				)
+				: [],
+		];
 	}
 
 	/**
-	 * Gets global WordPress version usage statistics.
+	 * Gets global WordPress version usage statistics with epoch breakdown.
 	 *
 	 * @since 0.0.1184
 	 * @global \wpdb $wpdb
 	 *
 	 * @param int $limit Number of versions to return.
-	 * @return array[] {
-	 *     Array of WP versions with usage counts.
+	 * @return array {
+	 *     Epoch information and version data.
 	 *
-	 *     @type string $version The WordPress version.
-	 *     @type int    $count   Number of installations using this version.
+	 *     @type int     $this_epoch Epoch number of the current epoch.
+	 *     @type int     $last_epoch Epoch number of the previous epoch.
+	 *     @type array[] $versions {
+	 *         Array of WP versions with epoch-based usage counts.
+	 *
+	 *         @type string $version        The WordPress version.
+	 *         @type int    $this_count     Installations in this epoch.
+	 *         @type int    $last_count     Installations in last epoch.
+	 *         @type float  $change_percent Percentage change between epochs.
+	 *     }
 	 * }
 	 */
 	public static function get_wp_version_stats( $limit = 20 ) {
 
 		global $wpdb;
 
+		$this_epoch = API\Utils::get_epoch();
+		$last_epoch = $this_epoch - 1;
+
 		$results = $wpdb->get_results( $wpdb->prepare(
 			"SELECT
 				wp_version as version,
-				SUM(install_count) as count
+				COALESCE(SUM(CASE WHEN epoch = %d THEN install_count ELSE 0 END), 0) as this_count,
+				COALESCE(SUM(CASE WHEN epoch = %d THEN install_count ELSE 0 END), 0) as last_count
 			FROM {$wpdb->prefix}troy_stats_wp
+			WHERE epoch IN (%d, %d)
 			GROUP BY wp_version
-			ORDER BY count DESC
+			ORDER BY this_count DESC, last_count DESC
 			LIMIT %d",
+			$this_epoch,
+			$last_epoch,
+			$this_epoch,
+			$last_epoch,
 			$limit,
 		) );
 
-		if ( ! $results )
-			return [];
-
-		return array_map(
-			fn( $row ) => [
-				'version' => $row->version,
-				'count'   => (int) $row->count,
-			],
-			$results,
-		);
+		return [
+			'this_epoch' => $this_epoch,
+			'last_epoch' => $last_epoch,
+			'versions'   => $results
+				? array_map(
+					fn( $row ) => [
+						'version'        => $row->version,
+						'this_count'     => (int) $row->this_count,
+						'last_count'     => (int) $row->last_count,
+						'change_percent' => $row->last_count
+							? round( ( ( $row->this_count - $row->last_count ) / $row->last_count ) * 100, 1 )
+							: ( $row->this_count ? \INF : 0.0 ),
+					],
+					$results,
+				)
+				: [],
+		];
 	}
 
 	/**
-	 * Gets global locale usage statistics.
+	 * Gets global locale usage statistics with epoch breakdown.
 	 *
 	 * @since 0.0.1184
 	 * @global \wpdb $wpdb
 	 *
 	 * @param int $limit Number of locales to return.
-	 * @return array[] {
-	 *     Array of locales with usage counts.
+	 * @return array {
+	 *     Epoch information and locale data.
 	 *
-	 *     @type string $locale The locale code.
-	 *     @type int    $count  Number of installations using this locale.
+	 *     @type int     $this_epoch Epoch number of the current epoch.
+	 *     @type int     $last_epoch Epoch number of the previous epoch.
+	 *     @type array[] $locales {
+	 *         Array of locales with epoch-based usage counts.
+	 *
+	 *         @type string $locale         The locale code.
+	 *         @type int    $this_count     Installations in this epoch.
+	 *         @type int    $last_count     Installations in last epoch.
+	 *         @type float  $change_percent Percentage change between epochs.
+	 *     }
 	 * }
 	 */
 	public static function get_locale_stats( $limit = 20 ) {
 
 		global $wpdb;
 
+		$this_epoch = API\Utils::get_epoch();
+		$last_epoch = $this_epoch - 1;
+
 		$results = $wpdb->get_results( $wpdb->prepare(
 			"SELECT
 				locale,
-				SUM(install_count) as count
+				COALESCE(SUM(CASE WHEN epoch = %d THEN install_count ELSE 0 END), 0) as this_count,
+				COALESCE(SUM(CASE WHEN epoch = %d THEN install_count ELSE 0 END), 0) as last_count
 			FROM {$wpdb->prefix}troy_stats_locales
+			WHERE epoch IN (%d, %d)
 			GROUP BY locale
-			ORDER BY count DESC
+			ORDER BY this_count DESC, last_count DESC
 			LIMIT %d",
+			$this_epoch,
+			$last_epoch,
+			$this_epoch,
+			$last_epoch,
 			$limit,
 		) );
 
-		if ( ! $results )
-			return [];
-
-		return array_map(
-			fn( $row ) => [
-				'locale' => $row->locale,
-				'count'  => (int) $row->count,
-			],
-			$results,
-		);
+		return [
+			'this_epoch' => $this_epoch,
+			'last_epoch' => $last_epoch,
+			'locales'    => $results
+				? array_map(
+					fn( $row ) => [
+						'locale'         => $row->locale,
+						'this_count'     => (int) $row->this_count,
+						'last_count'     => (int) $row->last_count,
+						'change_percent' => $row->last_count
+							? round( ( ( $row->this_count - $row->last_count ) / $row->last_count ) * 100, 1 )
+							: ( $row->this_count ? \INF : 0.0 ),
+					],
+					$results,
+				)
+				: [],
+		];
 	}
 }

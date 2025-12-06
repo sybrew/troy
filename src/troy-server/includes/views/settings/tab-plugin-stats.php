@@ -264,22 +264,50 @@ $locales          = Settings\Stats::get_locale_stats();
 			<thead>
 				<tr>
 					<th scope=col><?= \esc_html__( 'PHP Version', 'troy-server' ) ?></th>
-					<th scope=col><?= \esc_html__( 'Installations', 'troy-server' ) ?></th>
+					<th scope=col>
+						<?php
+						echo \esc_html( \sprintf(
+							/* translators: %d is the epoch number */
+							\__( 'Last Epoch (%d)', 'troy-server' ),
+							$php_versions['last_epoch'],
+						) );
+						?>
+					</th>
+					<th scope=col>
+						<?php
+						echo \esc_html( \sprintf(
+							/* translators: %d is the epoch number */
+							\__( 'This Epoch (%d)', 'troy-server' ),
+							$php_versions['this_epoch'],
+						) );
+						?>
+					</th>
+					<th scope=col><?= \esc_html__( 'Change', 'troy-server' ) ?></th>
 				</tr>
 			</thead>
 			<tbody>
 				<?php
-				if ( empty( $php_versions ) ) {
+				if ( empty( $php_versions['versions'] ) ) {
 					?>
 					<tr>
-						<td colspan=2><?= \esc_html__( 'No PHP version data available.', 'troy-server' ) ?></td>
+						<td colspan=4><?= \esc_html__( 'No PHP version data available.', 'troy-server' ) ?></td>
 					</tr>
 					<?php
-				} else foreach ( $php_versions as $version ) {
+				} else foreach ( $php_versions['versions'] as $version ) {
 					?>
 					<tr>
 						<td><code><?= \esc_html( $version['version'] ?: \__( 'Not reported', 'troy-server' ) ) ?></code></td>
-						<td><?= \esc_html( \number_format_i18n( $version['count'] ) ) ?></td>
+						<td><?= \esc_html( \number_format_i18n( $version['last_count'] ) ) ?></td>
+						<td><?= \esc_html( \number_format_i18n( $version['this_count'] ) ) ?></td>
+						<td class="<?= $version['change_percent'] >= 0 ? 'troy-server-stats-positive' : 'troy-server-stats-negative' ?>">
+							<?php
+							if ( \is_infinite( $version['change_percent'] ) ) {
+								echo '+∞%';
+							} else {
+								echo \esc_html( ( $version['change_percent'] >= 0 ? '+' : '' ) . $version['change_percent'] . '%' );
+							}
+							?>
+						</td>
 					</tr>
 					<?php
 				}
@@ -304,22 +332,50 @@ $locales          = Settings\Stats::get_locale_stats();
 			<thead>
 				<tr>
 					<th scope=col><?= \esc_html__( 'WordPress Version', 'troy-server' ) ?></th>
-					<th scope=col><?= \esc_html__( 'Installations', 'troy-server' ) ?></th>
+					<th scope=col>
+						<?php
+						echo \esc_html( \sprintf(
+							/* translators: %d is the epoch number */
+							\__( 'Last Epoch (%d)', 'troy-server' ),
+							$wp_versions['last_epoch'],
+						) );
+						?>
+					</th>
+					<th scope=col>
+						<?php
+						echo \esc_html( \sprintf(
+							/* translators: %d is the epoch number */
+							\__( 'This Epoch (%d)', 'troy-server' ),
+							$wp_versions['this_epoch'],
+						) );
+						?>
+					</th>
+					<th scope=col><?= \esc_html__( 'Change', 'troy-server' ) ?></th>
 				</tr>
 			</thead>
 			<tbody>
 				<?php
-				if ( empty( $wp_versions ) ) {
+				if ( empty( $wp_versions['versions'] ) ) {
 					?>
 					<tr>
-						<td colspan=2><?= \esc_html__( 'No WordPress version data available.', 'troy-server' ) ?></td>
+						<td colspan=4><?= \esc_html__( 'No WordPress version data available.', 'troy-server' ) ?></td>
 					</tr>
 					<?php
-				} else foreach ( $wp_versions as $version ) {
+				} else foreach ( $wp_versions['versions'] as $version ) {
 					?>
 					<tr>
 						<td><code><?= \esc_html( $version['version'] ?: \__( 'Not reported', 'troy-server' ) ) ?></code></td>
-						<td><?= \esc_html( \number_format_i18n( $version['count'] ) ) ?></td>
+						<td><?= \esc_html( \number_format_i18n( $version['last_count'] ) ) ?></td>
+						<td><?= \esc_html( \number_format_i18n( $version['this_count'] ) ) ?></td>
+						<td class="<?= $version['change_percent'] >= 0 ? 'troy-server-stats-positive' : 'troy-server-stats-negative' ?>">
+							<?php
+							if ( \is_infinite( $version['change_percent'] ) ) {
+								echo '+∞%';
+							} else {
+								echo \esc_html( ( $version['change_percent'] >= 0 ? '+' : '' ) . $version['change_percent'] . '%' );
+							}
+							?>
+						</td>
 					</tr>
 					<?php
 				}
@@ -344,22 +400,50 @@ $locales          = Settings\Stats::get_locale_stats();
 			<thead>
 				<tr>
 					<th scope=col><?= \esc_html__( 'Locale', 'troy-server' ) ?></th>
-					<th scope=col><?= \esc_html__( 'Installations', 'troy-server' ) ?></th>
+					<th scope=col>
+						<?php
+						echo \esc_html( \sprintf(
+							/* translators: %d is the epoch number */
+							\__( 'Last Epoch (%d)', 'troy-server' ),
+							$locales['last_epoch'],
+						) );
+						?>
+					</th>
+					<th scope=col>
+						<?php
+						echo \esc_html( \sprintf(
+							/* translators: %d is the epoch number */
+							\__( 'This Epoch (%d)', 'troy-server' ),
+							$locales['this_epoch'],
+						) );
+						?>
+					</th>
+					<th scope=col><?= \esc_html__( 'Change', 'troy-server' ) ?></th>
 				</tr>
 			</thead>
 			<tbody>
 				<?php
-				if ( empty( $locales ) ) {
+				if ( empty( $locales['locales'] ) ) {
 					?>
 					<tr>
-						<td colspan=2><?= \esc_html__( 'No locale data available.', 'troy-server' ) ?></td>
+						<td colspan=4><?= \esc_html__( 'No locale data available.', 'troy-server' ) ?></td>
 					</tr>
 					<?php
-				} else foreach ( $locales as $locale ) {
+				} else foreach ( $locales['locales'] as $locale ) {
 					?>
 					<tr>
 						<td><code><?= \esc_html( $locale['locale'] ?: \__( 'Not reported', 'troy-server' ) ) ?></code></td>
-						<td><?= \esc_html( \number_format_i18n( $locale['count'] ) ) ?></td>
+						<td><?= \esc_html( \number_format_i18n( $locale['last_count'] ) ) ?></td>
+						<td><?= \esc_html( \number_format_i18n( $locale['this_count'] ) ) ?></td>
+						<td class="<?= $locale['change_percent'] >= 0 ? 'troy-server-stats-positive' : 'troy-server-stats-negative' ?>">
+							<?php
+							if ( \is_infinite( $locale['change_percent'] ) ) {
+								echo '+∞%';
+							} else {
+								echo \esc_html( ( $locale['change_percent'] >= 0 ? '+' : '' ) . $locale['change_percent'] . '%' );
+							}
+							?>
+						</td>
 					</tr>
 					<?php
 				}

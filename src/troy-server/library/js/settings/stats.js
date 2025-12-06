@@ -302,6 +302,7 @@
 
 		const listItems = items
 			.map( item => {
+
 				const label = escape.string( item[ labelKey ] || fallback || i18n.notReported );
 				const value = 'string' === formatAs
 					? escape.string( item[ valueKey ] )
@@ -315,6 +316,64 @@
 			<div class="troy-server-stats-detail-section">
 				<h4>${ escape.string( title ) }</h4>
 				<ul class="troy-server-stats-detail-list">${ listItems }</ul>
+			</div>
+		`;
+	};
+
+	/**
+	 * Builds an HTML detail section with epoch comparison table.
+	 *
+	 * @since 0.0.1184
+	 *
+	 * @param {string} title     The section heading.
+	 * @param {Array}  items     Array of data items with this_count/last_count.
+	 * @param {string} labelKey  Property name for the label.
+	 * @param {Object} data      Plugin details data containing epoch info.
+	 * @param {string} fallback  Fallback text when label is empty.
+	 * @return {string} HTML string for the detail section with epoch table.
+	 */
+	const buildEpochDetailSection = ( title, items, labelKey, data, fallback = null ) => {
+
+		if ( ! items?.length )
+			return '';
+
+		const rows = items
+			.map( item => {
+
+				const label       = escape.string( item[ labelKey ] || fallback || i18n.notReported );
+				const thisCount   = parseInt( item.this_count, 10 ) || 0;
+				const lastCount   = parseInt( item.last_count, 10 ) || 0;
+				const change      = thisCount - lastCount;
+				const percent     = calcChangePercent( thisCount, lastCount );
+				const changeClass = getChangeClass( change );
+
+				return `
+					<tr>
+						<td><code>${ label }</code></td>
+						<td>${ sanitize.number( lastCount ) }</td>
+						<td>${ sanitize.number( thisCount ) }</td>
+						<td class="${ changeClass }">${ formatChangeWithPercent( change, percent ) }</td>
+					</tr>
+				`;
+			} )
+			.join( '' );
+
+		return `
+			<div class="troy-server-stats-detail-section">
+				<h4>${ escape.string( title ) }</h4>
+				<table class="widefat striped">
+					<thead>
+						<tr>
+							<th scope="col">${ escape.string( title ) }</th>
+							<th scope="col">${ escape.string( i18n.lastEpochHeader.replace( '%d', data.last_epoch ) ) }</th>
+							<th scope="col">${ escape.string( i18n.thisEpochHeader.replace( '%d', data.this_epoch ) ) }</th>
+							<th scope="col">${ escape.string( i18n.change ) }</th>
+						</tr>
+					</thead>
+					<tbody>
+						${ rows }
+					</tbody>
+				</table>
 			</div>
 		`;
 	};
@@ -581,9 +640,9 @@
 		${ buildEpochComparisonTable( data ) }
 		${ buildVersionDetailsTable( data ) }
 		${ buildDetailSection( i18n.downloadsByType, data.download_types, 'type', 'downloads' ) }
-		${ buildDetailSection( i18n.locales, data.locales, 'locale', 'count' ) }
-		${ buildDetailSection( i18n.phpVersions, data.php_versions, 'version', 'count' ) }
-		${ buildDetailSection( i18n.wpVersions, data.wp_versions, 'version', 'count' ) }
+		${ buildEpochDetailSection( i18n.locales, data.locales, 'locale', data ) }
+		${ buildEpochDetailSection( i18n.phpVersions, data.php_versions, 'version', data ) }
+		${ buildEpochDetailSection( i18n.wpVersions, data.wp_versions, 'version', data ) }
 	`;
 
 	/**
