@@ -51,6 +51,7 @@ final class Info extends Base_Endpoint {
 	/**
 	 * Handle the plugin information request.
 	 *
+	 * @rest plugin/get/info/plugin-name POST
 	 * @since 0.0.1184
 	 */
 	public function handle_request() {

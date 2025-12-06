@@ -203,6 +203,9 @@ final class Plugins_API {
 					if ( empty( $filename_by_slug[ $slug ] ) )
 						continue;
 
+					if ( isset( $plugin_data['icons'] ) )
+						$plugin_data['icons'] = array_map( [ Sanitize::class, 'static_image_url' ], $plugin_data['icons'] );
+
 					$memo->{$key}[ $filename_by_slug[ $slug ] ] = (object) $plugin_data;
 				}
 			}
@@ -358,6 +361,9 @@ final class Plugins_API {
 				);
 			} else {
 				$res = (object) $res;
+
+				if ( isset( $res->banners ) )
+					$res->banners = array_map( [ Sanitize::class, 'static_image_url' ], (array) $res->banners );
 			}
 
 			if ( isset( $res->error ) )
@@ -392,6 +398,7 @@ final class Plugins_API {
 
 		return $args;
 	}
+
 
 	/**
 	 * Outputs CSS for the plugin information thickbox modal.

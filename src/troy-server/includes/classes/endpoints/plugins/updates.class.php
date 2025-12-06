@@ -52,6 +52,7 @@ final class Updates extends Base_Endpoint {
 	/**
 	 * Handle the plugin updates request.
 	 *
+	 * @rest plugin/get/updates/plugin-name POST
 	 * @since 0.0.1184
 	 */
 	public function handle_request() {

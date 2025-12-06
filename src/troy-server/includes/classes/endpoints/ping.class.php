@@ -45,6 +45,7 @@ final class Ping extends Base_Endpoint {
 	/**
 	 * Handle the ping request.
 	 *
+	 * @rest ping GET
 	 * @since 0.0.1184
 	 */
 	public function handle_request() {

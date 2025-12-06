@@ -77,6 +77,7 @@ final class Download extends Base_Endpoint {
 	/**
 	 * Handle the core download request logic.
 	 *
+	 * @rest plugin/get/zip/plugin-name(/version)? GET
 	 * @since 0.0.1184
 	 */
 	public function handle_request() {

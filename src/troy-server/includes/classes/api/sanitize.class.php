@@ -621,7 +621,9 @@ final class Sanitize {
 
 	/**
 	 * Sanitizes a static image URL.
-	 * Detects if the image is animated and returns an empty string if it is.
+	 *
+	 * Detects animated images and returns an empty string if found.
+	 * Detects SVGs with dangerous content (scripts, event handlers, animations) and blocks them.
 	 *
 	 * @since 0.0.1184
 	 *
@@ -635,13 +637,13 @@ final class Sanitize {
 		if ( empty( $sanitized_url ) )
 			return '';
 
-		$body = \wp_remote_retrieve_body( \wp_safe_remote_get(
+		$body = trim( \wp_remote_retrieve_body( \wp_safe_remote_get(
 			$sanitized_url,
 			[
 				'timeout' => 3, // Image should be locally hosted, or at worst at a CDN.
 				'headers' => [ 'Range' => 'bytes=0-20480' ],
 			],
-		) );
+		) ) );
 
 		// Body becomes empty on error via wp_remote_retrieve_body().
 		// Assume a fluke and immediately return the sanitized URL.
@@ -650,14 +652,62 @@ final class Sanitize {
 
 		$header = substr( $body, 0, 20 );
 
-		if ( str_starts_with( $header, 'GIF' ) ) {
-			if ( preg_match_all( '#\x00\x21\xF9\x04.{4}\x00[\x2C\x21]#s', $body ) > 1 )
-				return '';
-		} elseif ( str_starts_with( $header, "\x89PNG" ) ) { // png
-			if ( str_contains( $body, 'acTL' ) )
-				return '';
-		} elseif ( str_starts_with( $header, 'RIFF' ) ) { // webp
-			if ( str_contains( $body, 'ANIM' ) )
+		switch ( true ) {
+			case str_starts_with( $header, "\xFF\xD8\xFF" ): // JPEG/JFIF/Exif
+			case str_starts_with( $header, "\xFF\xD9" ):     // JPEG (rare EOF-first)
+				// JPEG is always static, no further validation needed.
+				break;
+
+			case str_starts_with( $header, "\x89PNG" ):
+				// Animated PNG detection: acTL chunk (animation).
+				if ( str_contains( $body, 'acTL' ) )
+					return '';
+				break;
+
+			case str_starts_with( $header, 'RIFF' ) && str_contains( $header, 'WEBP' ):
+				// Animated WebP detection: ANIM chunk (animation).
+				if ( str_contains( $body, 'ANIM' ) )
+					return '';
+				break;
+
+			case str_starts_with( $header, 'GIF' ):
+				// Animated GIF detection: multiple graphic control extensions (animation).
+				if ( preg_match_all( '#\x00\x21\xF9\x04.{4}\x00[\x2C\x21]#s', $body ) > 1 )
+					return '';
+				break;
+
+			case str_starts_with( $header, '<svg' ):
+			case str_starts_with( $header, '<?xml' ):
+				// SVG revalidation: must contain <svg element.
+				if ( ! str_contains( $body, '<svg' ) )
+					return '';
+
+				// SVG validation: block dangerous content.
+				if ( preg_match(
+					  '/<(?:\w+:)?('                     // Element with optional namespace prefix.
+					. 'set|animate'                      // SMIL animation elements.
+					. '|script|handler'                  // Script elements.
+					. '|foreignObject'                   // Foreign content container.
+					. '|iframe|object|embed'             // Embedded content elements.
+					. '|use|image|link|feImage'          // External resource loaders.
+					. '|mpath|discard|tref'              // Motion path, discard, and text reference.
+					. ')\b'
+					. '|<!--'                            // XML comments (may hide malicious content).
+					. '|\bon\w+\s*='                     // Event handlers.
+					. '|(java|vb)script\s*:'             // Script protocols.
+					. '|data:(?!image\/(png|jpe?g)[;,])' // Data URIs not pointing to safe static image types.
+					. '|&#'                              // Encoded entities.
+					. '|@import'                         // CSS imports.
+					. '|url\s*\('                        // CSS url() function.
+					. '|-moz-binding'                    // Firefox XBL binding.
+					. '/i',
+					$body,
+				) )
+					return '';
+				break;
+
+			default:
+				// Reject unrecognized image types.
 				return '';
 		}
 
