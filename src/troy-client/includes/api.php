@@ -363,13 +363,13 @@ function make_fully_qualified_repo_url( $repo ) {
  *
  * @since 0.0.1184
  *
- * @param string       $repo   The Troy Server endpoint.
- * @param array|string $body   The request body. Use array to send as JSON, string for raw body content.
- * @param string       $method The request method. Accepts 'GET', 'POST'. Default 'POST'.
+ * @param string       $endpoint Troy Server endpoint.
+ * @param array|string $body     The request body. Use array to send as JSON, string for raw body content.
+ * @param string       $method   The request method. Accepts 'GET', 'POST'. Default 'POST'.
  * @return array|\WP_Error Array containing 'headers', 'body', 'response', 'cookies', and/or 'filename'.
  *                         A \WP_Error instance upon error.
  */
-function make_troy_api_request( $repo, $body = '', $method = 'POST' ) {
+function make_troy_api_request( $endpoint, $body = '', $method = 'POST' ) {
 
 	if ( \is_array( $body ) ) {
 		$body         = json_encode( $body );
@@ -377,7 +377,7 @@ function make_troy_api_request( $repo, $body = '', $method = 'POST' ) {
 	}
 
 	return \wp_remote_request(
-		$repo,
+		$endpoint,
 		[
 			'method'      => $method,
 			'headers'     => [
@@ -405,14 +405,14 @@ function make_troy_api_request( $repo, $body = '', $method = 'POST' ) {
  *
  * @since 0.0.1184
  *
- * @param string       $key    The cache key. Underscore-prefix is reserved for internal use.
- * @param string       $repo   The Troy Server endpoint.
- * @param array|string $body   The request body. Use array to send as JSON, string for raw body content.
- * @param string       $method The request method. Accepts 'GET', 'POST'. Default 'POST'.
+ * @param string       $key      The cache key. Underscore-prefix is reserved for internal use.
+ * @param string       $endpoint The Troy Server endpoint.
+ * @param array|string $body     The request body. Use array to send as JSON, string for raw body content.
+ * @param string       $method   The request method. Accepts 'GET', 'POST'. Default 'POST'.
  * @return array|\WP_Error Array containing 'headers', 'body', 'response', 'cookies', and/or 'filename'.
  *                         A \WP_Error instance upon error.
  */
-function make_troy_api_request_cached( $key, $repo, $body = '', $method = 'POST' ) {
+function make_troy_api_request_cached( $key, $endpoint, $body = '', $method = 'POST' ) {
 
 	static $memo;
 
@@ -446,7 +446,7 @@ function make_troy_api_request_cached( $key, $repo, $body = '', $method = 'POST'
 	if ( isset( $err_memo[ $key ] ) )
 		return $err_memo[ $key ];
 
-	$res = make_troy_api_request( $repo, $body, $method );
+	$res = make_troy_api_request( $endpoint, $body, $method );
 
 	// WordPress's API will resolve redirects until no more redirects are available,
 	// but we limit this to 2 redirects. So, when we hit another, we assume the request failed.

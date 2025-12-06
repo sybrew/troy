@@ -255,7 +255,7 @@ final class Plugins_API {
 	}
 
 	/**
-	 * Filters the plugin API to bind to The SEO Framework's own updater service.
+	 * Filters the plugin API to get plugin information from Troy's embedded services.
 	 *
 	 * @since 0.0.1184
 	 *
@@ -362,8 +362,24 @@ final class Plugins_API {
 			} else {
 				$res = (object) $res;
 
-				if ( isset( $res->banners ) )
-					$res->banners = array_map( [ Sanitize::class, 'static_image_url' ], (array) $res->banners );
+				// Even though we sanitize our Troy Server data, people can modify their servers. Let's never trust remote URLs, sanitize their data.
+				foreach ( [ 'banners', 'icons' ] as $field ) {
+					if ( empty( $res->$field ) )
+						continue;
+
+					$res->$field = array_map( [ Sanitize::class, 'static_image_url' ], (array) $res->$field );
+				}
+
+				if ( ! empty( $res->sections ) ) {
+					foreach ( $res->sections as $section_name => $content ) {
+						// Resolve relative links; homepage points to custom plugin permalink.
+						// On failure, relative links will resolve to WordPress.org's plugin repo.
+						$content = \links_add_base_url( $content, $res->homepage );
+
+						// This is what WordPress should've done in the first place at `install_plugin_information()`.
+						$res->sections[ $section_name ] = \wp_kses_post( $content );
+					}
+				}
 			}
 
 			if ( isset( $res->error ) )
