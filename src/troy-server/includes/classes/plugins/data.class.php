@@ -361,8 +361,14 @@ final class Data {
 	 * Gets the plugin zip row data by version.
 	 *
 	 * @since 0.0.1184
+	 * @since 1.1.1184 Added $args parameter.
 	 * @global \wpdb $wpdb
 	 *
+	 * @param array $args {
+	 *     Optional. Additional arguments.
+	 *
+	 *     @type int $limit The maximum number of tags to return. Default 100.
+	 * }
 	 * @return ?object[] {
 	 *     An array of plugin zips, or null if none are found.
 	 *
@@ -385,12 +391,17 @@ final class Data {
 	 *     @type string updated_at       The row last updated timestamp.
 	 * }
 	 */
-	public function get_zips() {
+	public function get_zips( $args = [] ) {
 
 		global $wpdb;
 
+		$query = "SELECT * FROM {$wpdb->prefix}troy_plugin_zips WHERE plugin_id = %d";
+
+		if ( ! empty( $args['limit'] ) )
+			$query .= $wpdb->prepare( ' LIMIT %d', $args['limit'] );
+
 		return $wpdb->get_results( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}troy_plugin_zips WHERE plugin_id = %d",
+			$query, // phpcs:ignore WordPress.DB.PreparedSQL -- Prepared above.
 			$this->plugin_id,
 		) );
 	}

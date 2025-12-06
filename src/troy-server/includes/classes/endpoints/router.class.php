@@ -68,6 +68,7 @@ final class Router {
 		if ( ! $request_path )
 			return;
 
+		// phpcs:disable WordPress.Security.NonceVerification -- Public API, no nonce needed.
 		// Match API endpoints using switch for better performance
 		switch ( true ) {
 			case 'ping' === $request_path:
@@ -80,6 +81,19 @@ final class Router {
 
 			case 'plugin/get/info' === $request_path:
 				new Plugins\Info()->handle_request();
+				break;
+
+			case str_starts_with( $request_path, 'plugin/get/tags/' ):
+				// Filter duplicated slashes and reset indexes.
+				$path_parts = array_values( array_filter( explode( '/', $request_path ) ) );
+
+				if ( \count( $path_parts ) >= 4 ) {
+					new Plugins\Tags(
+						$path_parts[3], // slug
+						! empty( $_GET['include_beta'] ),
+						$_GET['limit'] ?? 100,
+					)->handle_request();
+				}
 				break;
 
 			case str_starts_with( $request_path, 'plugin/get/zip/' ):
@@ -110,5 +124,6 @@ final class Router {
 				// Not a Troy API endpoint, let WordPress handle it
 				break;
 		}
+		// phpcs:enable WordPress.Security.NonceVerification
 	}
 }
