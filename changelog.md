@@ -1,3 +1,7 @@
+= 1.1.1184 =
+
+* Barn proof of concept.
+
 = 1.0.1184 =
 
 * Stable proof of concept.
