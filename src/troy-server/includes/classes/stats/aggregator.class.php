@@ -88,41 +88,33 @@ final class Aggregator {
 
 		aggregate_request_counts: {
 
-			$rows = $wpdb->get_results(
-				"SELECT
+			$wpdb->query(
+				"INSERT INTO {$wpdb->prefix}troy_plugin_stats_requests
+					(plugin_id, epoch, version, is_active, request_count)
+				SELECT
 					plugin_id,
 					epoch,
 					version,
 					is_active,
-					SUM(request_count) as request_count
+					SUM(request_count)
 				FROM {$wpdb->prefix}troy_plugin_stats_requests_live
 				WHERE plugin_id IN ($plugin_ids_str)
-				GROUP BY plugin_id, epoch, version, is_active",
+				GROUP BY plugin_id, epoch, version, is_active
+				ON DUPLICATE KEY UPDATE
+					request_count = VALUES(request_count)",
 			);
-
-			foreach ( $rows as $row ) {
-				$wpdb->replace(
-					"{$wpdb->prefix}troy_plugin_stats_requests",
-					[
-						'plugin_id'     => $row->plugin_id,
-						'epoch'         => $row->epoch,
-						'version'       => $row->version,
-						'is_active'     => $row->is_active,
-						'request_count' => $row->request_count,
-					],
-					[ '%d', '%d', '%s', '%d', '%d' ],
-				);
-			}
 		}
 
 		aggregate_locale_stats: {
 
-			$rows = $wpdb->get_results(
-				"SELECT
+			$wpdb->query(
+				"INSERT INTO {$wpdb->prefix}troy_plugin_stats_locales
+					(plugin_id, epoch, locale, install_count)
+				SELECT
 					r.plugin_id,
 					r.epoch,
 					jt.locale,
-					COUNT(DISTINCT r.uuid) as install_count
+					COUNT(DISTINCT r.uuid)
 				FROM {$wpdb->prefix}troy_plugin_stats_requests_live r,
 					JSON_TABLE(
 						r.locales,
@@ -131,77 +123,48 @@ final class Aggregator {
 				WHERE r.plugin_id IN ($plugin_ids_str)
 					AND jt.locale IS NOT null
 					AND jt.locale != ''
-				GROUP BY r.plugin_id, r.epoch, jt.locale",
+				GROUP BY r.plugin_id, r.epoch, jt.locale
+				ON DUPLICATE KEY UPDATE
+					install_count = VALUES(install_count)",
 			);
-
-			foreach ( $rows as $row ) {
-				$wpdb->replace(
-					"{$wpdb->prefix}troy_plugin_stats_locales",
-					[
-						'plugin_id'     => $row->plugin_id,
-						'epoch'         => $row->epoch,
-						'locale'        => $row->locale,
-						'install_count' => $row->install_count,
-					],
-					[ '%d', '%d', '%s', '%d' ],
-				);
-			}
 		}
 
 		aggregate_php_stats: {
 
-			$rows = $wpdb->get_results(
-				"SELECT
+			$wpdb->query(
+				"INSERT INTO {$wpdb->prefix}troy_plugin_stats_php
+					(plugin_id, epoch, php_version, install_count)
+				SELECT
 					plugin_id,
 					epoch,
 					php_version,
-					COUNT(DISTINCT uuid) as install_count
+					COUNT(DISTINCT uuid)
 				FROM {$wpdb->prefix}troy_plugin_stats_requests_live
 				WHERE plugin_id IN ($plugin_ids_str)
 					AND php_version != ''
-				GROUP BY plugin_id, epoch, php_version",
+				GROUP BY plugin_id, epoch, php_version
+				ON DUPLICATE KEY UPDATE
+					install_count = VALUES(install_count)",
 			);
-
-			foreach ( $rows as $row ) {
-				$wpdb->replace(
-					"{$wpdb->prefix}troy_plugin_stats_php",
-					[
-						'plugin_id'     => $row->plugin_id,
-						'epoch'         => $row->epoch,
-						'php_version'   => $row->php_version,
-						'install_count' => $row->install_count,
-					],
-					[ '%d', '%d', '%s', '%d' ],
-				);
-			}
 		}
 
 		aggregate_wp_stats: {
 
-			$rows = $wpdb->get_results(
-				"SELECT
+			$wpdb->query(
+				"INSERT INTO {$wpdb->prefix}troy_plugin_stats_wp
+					(plugin_id, epoch, wp_version, install_count)
+				SELECT
 					plugin_id,
 					epoch,
 					wp_version,
-					COUNT(DISTINCT uuid) as install_count
+					COUNT(DISTINCT uuid)
 				FROM {$wpdb->prefix}troy_plugin_stats_requests_live
 				WHERE plugin_id IN ($plugin_ids_str)
 					AND wp_version != ''
-				GROUP BY plugin_id, epoch, wp_version",
+				GROUP BY plugin_id, epoch, wp_version
+				ON DUPLICATE KEY UPDATE
+					install_count = VALUES(install_count)",
 			);
-
-			foreach ( $rows as $row ) {
-				$wpdb->replace(
-					"{$wpdb->prefix}troy_plugin_stats_wp",
-					[
-						'plugin_id'     => $row->plugin_id,
-						'epoch'         => $row->epoch,
-						'wp_version'    => $row->wp_version,
-						'install_count' => $row->install_count,
-					],
-					[ '%d', '%d', '%s', '%d' ],
-				);
-			}
 		}
 
 		aggregate_install_counts: {
