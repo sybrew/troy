@@ -3,8 +3,8 @@ name: Build Release Packages
 # To run this workflow, create a new tag and push it to the repository.
 #
 # Example:
-#   git tag v1.2.3
-#   git push origin v1.2.3
+#   git tag v1.0.1184
+#   git push origin v1.0.1184
 #
 # After pushing the tag, this workflow will automatically create
 # a draft release with the corresponding release packages attached.
