@@ -105,6 +105,10 @@ It's best to run Troy Server on a standalone WordPress instance. This can also b
 
 == Changelog ==
 
+= 1.3.1184 =
+
+* The installer script no longer crashes when trying to install Troy Client on a new site.
+
 = 1.2.1184 =
 
 * Shed proof of concept. We're running out of farm buildings!

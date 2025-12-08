@@ -64,6 +64,10 @@ Troy Client requires network activation on WordPress multisite installations.
 
 == Changelog ==
 
+= 1.3.1184 =
+
+* Monorepo version bump. Nothing changed for Troy Client.
+
 = 1.2.1184 =
 
 * Shed proof of concept. We're running out of farm buildings!

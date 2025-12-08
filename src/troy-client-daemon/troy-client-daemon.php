@@ -12,7 +12,7 @@
  * Plugin Name: Troy Client Daemon - Must Use only
  * Plugin URI: https://deploytroy.org/
  * Description: This daemon forces installation and activation of Troy Client. It blocks the WordPress update API if Troy Client is not active.
- * Version: 1.2.1184
+ * Version: 1.3.1184
  * Author: Sybre Waaijer
  * Author URI: https://deploytroy.org/
  * License: MIT
