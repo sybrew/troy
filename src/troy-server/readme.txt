@@ -101,9 +101,13 @@ Troy Server is not yet available on WordPress.org.
 
 = Recommendations =
 
-It's best to run Troy Server on a standalone WordPress instance. This can also be a Multisite subdomain or subdirectory. Note that multilingual plugins are not supported and may interfere with repository URL generation. Repository URLs are limited to 191 characters.
+It's best to run Troy Server on a standalone WordPress instance. This can also be a multisite subdomain or subdirectory. Note that multilingual plugins are not supported and may interfere with repository URL generation. Repository URLs are limited to 191 characters.
 
 == Changelog ==
+
+= 1.2.1184 =
+
+* Shed proof of concept. We're running out of farm buildings!
 
 = 1.1.1184 =
 

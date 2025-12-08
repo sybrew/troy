@@ -206,6 +206,10 @@ final class Plugins_API {
 					if ( isset( $plugin_data['icons'] ) )
 						$plugin_data['icons'] = array_map( [ Sanitize::class, 'static_image_url' ], $plugin_data['icons'] );
 
+					// Even though our Troy Server sends false, people can modify their servers.
+					// Block forced auto-updates for Troy plugins. Security issue or not, let the user decide.
+					$plugin_data['autoupdate'] = false;
+
 					$memo->{$key}[ $filename_by_slug[ $slug ] ] = (object) $plugin_data;
 				}
 			}

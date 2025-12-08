@@ -104,7 +104,7 @@ final class HTTP {
 				);
 
 				// Let's not relegate to wp_json_encode().
-				$parsed_args['body']['plugins'] = json_encode( $translations );
+				$parsed_args['body']['translations'] = json_encode( $translations );
 			}
 		}
 

@@ -9,10 +9,7 @@
  *
  * Available channels:
  * - 'tag'  (default) Only receive stable tagged releases.
- * - 'beta' Receive both beta and stable releases, whichever is newer.
- *
- * Note: The channel only affects which versions are offered for updates.
- * Beta versions must still be published on your Troy Server with type 'beta'.
+ * - 'beta' Receive both beta and stable tagged releases, whichever is newer.
  *
  * @package Troy\Channel
  */

@@ -25,7 +25,7 @@ Statistics are collected about the plugins registered on the server, such as the
 
 The server provides an interface to generate a Troy Package, which is a ZIP file that contains a tiny installer plugin. It installs Troy Client and your selection of plugins and themes. This package can be distributed to your clients via a simple download link, allowing them to easily install and activate the Troy Client and its dependencies.
 
-It's best to run Troy Server on a standalone WordPress instance, this can even be a Multisite subdomain or subdirectory. Multilingual plugins will never be supported by Troy Server and may interfere with the repo URL generation. Keep in mind that a repo URL is limited to 191 characters.
+It's best to run Troy Server on a standalone WordPress instance, this can even be a multisite subdomain or subdirectory. Multilingual plugins will never be supported by Troy Server and may interfere with the repo URL generation. Keep in mind that a repo URL is limited to 191 characters.
 
 Troy Server has "up-to-date" server requirements, but nothing too special. You must use MySQL 8.0.19 or higher, PHP 8.4 or higher, and WordPress 6.8 or higher. We recommend running this on a server that can handle Pong. The update service is ridiculously optimized. For the webserver we recommend using Apache, since it is faster at handling PHP requests than Nginx.
 

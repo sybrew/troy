@@ -60,9 +60,13 @@ Once activated, Troy Client will automatically detect any installed plugins with
 
 = Multisite =
 
-Troy Client requires network activation on WordPress Multisite installations.
+Troy Client requires network activation on WordPress multisite installations.
 
 == Changelog ==
+
+= 1.2.1184 =
+
+* Shed proof of concept. We're running out of farm buildings!
 
 = 1.1.1184 =
 

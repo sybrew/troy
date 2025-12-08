@@ -1,3 +1,7 @@
+= 1.2.1184 =
+
+* Shed proof of concept. We're running out of farm buildings!
+
 = 1.1.1184 =
 
 * Barn proof of concept.

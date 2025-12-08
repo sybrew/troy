@@ -54,7 +54,7 @@ final class Headers {
 	 * @return bool True if the filter has been applied, false otherwise.
 	 */
 	public static function is_filtered() {
-		return static::$filtered;
+		return self::$filtered;
 	}
 
 	/**
@@ -71,7 +71,7 @@ final class Headers {
 	 */
 	public static function register_plugin_headers( $headers ) {
 
-		static::$filtered = true;
+		self::$filtered = true;
 
 		// In PHP 8.1+ we can unpack string-keyed arrays.
 		return array_merge(
