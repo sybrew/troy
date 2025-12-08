@@ -64,6 +64,10 @@ Troy Client requires network activation on WordPress multisite installations.
 
 == Changelog ==
 
+= 1.4.1184 =
+
+* Fixed PHP warning for Shiny Updates where a required update header was missing.
+
 = 1.3.1184 =
 
 * Monorepo version bump. Nothing changed for Troy Client.

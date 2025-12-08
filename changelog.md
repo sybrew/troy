@@ -1,3 +1,9 @@
+= 1.4.1184 =
+
+* Fixed PHP warning for Shiny Updates where a required update header was missing.
+* Troy Mode now hides more admin menu items when enabled.
+* Troy Packages no longer remove slashes from links in the plugin header docblock.
+
 = 1.3.1184 =
 
 * The installer script no longer crashes when trying to install Troy Client on a new site.

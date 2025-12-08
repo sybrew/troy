@@ -149,12 +149,17 @@ final class Sanitize {
 	 * Sanitizes a value for use in docblocks by removing characters that could break docblock syntax.
 	 *
 	 * @since 0.0.1184
+	 * @since 1.4.1184 No longer removes slashes and asterisks inside the content.
 	 *
 	 * @param string $value The value to sanitize.
 	 * @return string The sanitized value with * and / removed.
 	 */
 	public static function docblock_content( $value ) {
-		return str_replace( [ '*', '/' ], '', $value );
+		return preg_replace(
+			'~(/\*+)|(\*+/)~',
+			'',
+			preg_replace( '/[\s\r\n\t\v]+/u', ' ', trim( $value ) ),
+		);
 	}
 
 	/**

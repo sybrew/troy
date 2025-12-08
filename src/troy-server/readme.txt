@@ -105,6 +105,11 @@ It's best to run Troy Server on a standalone WordPress instance. This can also b
 
 == Changelog ==
 
+= 1.4.1184 =
+
+* Troy Mode now hides more admin menu items when enabled.
+* Troy Packages no longer remove slashes from links in the plugin header docblock.
+
 = 1.3.1184 =
 
 * The installer script no longer crashes when trying to install Troy Client on a new site.

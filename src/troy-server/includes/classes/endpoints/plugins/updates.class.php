@@ -141,9 +141,6 @@ final class Updates extends Base_Endpoint {
 					// ID should actually be equal to the "Update URI", but that header never considered real plugin authors.
 					'id'               => $origin_url,
 					'slug'             => $slug,
-					// The 'plugin' field is expected by WordPress, but overwritten immediately by the original filename.
-					// Then, it remains unused. Ehh...? TODO reintroduce for future-proofing? We'd have to write the filename.
-					// 'plugin'           => $slug,
 					'new_version'      => null,
 					'url'              => $metas?->permalink ?: '',
 					'package'          => '', // Plugin update package URL. Filled below.

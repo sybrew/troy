@@ -210,6 +210,9 @@ final class Plugins_API {
 					// Block forced auto-updates for Troy plugins. Security issue or not, let the user decide.
 					$plugin_data['autoupdate'] = false;
 
+					// Set the plugin basename for WP_Plugin_Install_List_Table compatibility.
+					$plugin_data['plugin'] = $filename_by_slug[ $slug ];
+
 					$memo->{$key}[ $filename_by_slug[ $slug ] ] = (object) $plugin_data;
 				}
 			}

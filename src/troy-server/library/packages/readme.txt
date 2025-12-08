@@ -2,7 +2,7 @@
 License: MIT
 License URI: https://spdx.org/licenses/MIT.html
 
-This installer package is part of the Troy project, a WordPress plugin deployment and management system. Activate this plugin to quickly install Troy Client and plugins and themnes required by the destributor of this package.
+This installer package is part of the Troy project, a WordPress plugin deployment and management system. Activate this plugin to quickly install Troy Client and plugins and themes required by the destributor of this package.
 
 == Description ==
 

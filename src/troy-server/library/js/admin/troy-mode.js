@@ -37,9 +37,6 @@ window.troyServerMode = ( () => {
 
 	const visibleIds = new Set( [
 		'menu-dashboard',
-		'menu-plugins',
-		'menu-tools',
-		'menu-settings',
 		'collapse-menu',
 	] );
 
