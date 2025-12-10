@@ -65,19 +65,31 @@ final class Aggregator {
 
 		$last_id = (int) \get_option( 'troy_server_cron_batch_last_id_plugins', 0 );
 
-		// Get batch of plugin IDs.
-		$plugin_ids = $wpdb->get_col( $wpdb->prepare(
-			"SELECT id
-			FROM {$wpdb->prefix}troy_plugins
-			WHERE id > %d
-			ORDER BY id
-			LIMIT %d",
-			$last_id,
-			STATS_AGGREGATOR_BATCH_SIZE,
-		) );
+		// Get batch of plugin IDs; retry once from start if none found.
+		while ( true ) {
+			$plugin_ids = $wpdb->get_col( $wpdb->prepare(
+				"SELECT id
+				FROM {$wpdb->prefix}troy_plugins
+				WHERE id > %d
+				ORDER BY id
+				LIMIT %d",
+				$last_id,
+				STATS_AGGREGATOR_BATCH_SIZE,
+			) );
 
-		if ( empty( $plugin_ids ) )
+			if ( $plugin_ids )
+				break;
+
+			// No plugins found; reset and retry once from start.
+			if ( $last_id > 0 ) {
+				\update_option( 'troy_server_cron_batch_last_id_plugins', 0, false );
+				$last_id = 0;
+				continue;
+			}
+
+			// Still no plugins; end processing.
 			return;
+		}
 
 		$plugin_ids_str = implode( ',', array_map( 'intval', $plugin_ids ) );
 		$this_epoch     = API\Utils::get_epoch();
@@ -588,18 +600,31 @@ final class Aggregator {
 
 		$last_id = (int) \get_option( 'troy_server_cron_batch_last_id_packages', 0 );
 
-		$package_ids = $wpdb->get_col( $wpdb->prepare(
-			"SELECT id
-			FROM {$wpdb->prefix}troy_packages
-			WHERE id > %d
-			ORDER BY id
-			LIMIT %d",
-			$last_id,
-			STATS_AGGREGATOR_BATCH_SIZE,
-		) );
+		// Get batch of package IDs; retry once from start if none found.
+		while ( true ) {
+			$package_ids = $wpdb->get_col( $wpdb->prepare(
+				"SELECT id
+				FROM {$wpdb->prefix}troy_packages
+				WHERE id > %d
+				ORDER BY id
+				LIMIT %d",
+				$last_id,
+				STATS_AGGREGATOR_BATCH_SIZE,
+			) );
 
-		if ( empty( $package_ids ) )
+			if ( $package_ids )
+				break;
+
+			// No packages found; reset and retry once from start.
+			if ( $last_id > 0 ) {
+				\update_option( 'troy_server_cron_batch_last_id_packages', 0, false );
+				$last_id = 0;
+				continue;
+			}
+
+			// Still no packages; end processing.
 			return;
+		}
 
 		$package_ids_str = implode( ',', array_map( 'intval', $package_ids ) );
 

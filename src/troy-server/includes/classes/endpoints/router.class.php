@@ -122,7 +122,6 @@ final class Router {
 
 			default:
 				// Not a Troy API endpoint, let WordPress handle it
-				break;
 		}
 		// phpcs:enable WordPress.Security.NonceVerification
 	}
