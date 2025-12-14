@@ -802,6 +802,7 @@ final class Aggregator {
 	 * Cleans all live tables: requests, views, downloads (plugin and package).
 	 *
 	 * @since 0.0.1184
+	 * @since 1.5.1184 Now retains last_epoch data to support accurate install counts.
 	 * @global \wpdb $wpdb
 	 */
 	public static function finalize_old_epochs() {
@@ -809,9 +810,11 @@ final class Aggregator {
 		global $wpdb;
 
 		$this_epoch       = API\Utils::get_epoch();
+		$last_epoch       = $this_epoch - 1;
 		$this_epoch_start = $this_epoch * \WEEK_IN_SECONDS;
 
-		// If we're 2 days into this epoch, it's safe to finalize last epochs.
+		// If we're 2 days into this epoch, it's safe to finalize old epochs.
+		// We retain last_epoch data so aggregate_install_counts can query both epochs.
 		if ( time() < $this_epoch_start + STATS_AGGREGATOR_EPOCH_FINALIZE_DELAY )
 			return;
 
@@ -820,7 +823,7 @@ final class Aggregator {
 			$wpdb->query( $wpdb->prepare(
 				"DELETE FROM {$wpdb->prefix}troy_plugin_stats_requests_live
 				WHERE epoch < %d",
-				$this_epoch,
+				$last_epoch,
 			) );
 		}
 
@@ -829,7 +832,7 @@ final class Aggregator {
 			$wpdb->query( $wpdb->prepare(
 				"DELETE FROM {$wpdb->prefix}troy_plugin_stats_views_live
 				WHERE epoch < %d",
-				$this_epoch,
+				$last_epoch,
 			) );
 		}
 
@@ -838,7 +841,7 @@ final class Aggregator {
 			$wpdb->query( $wpdb->prepare(
 				"DELETE FROM {$wpdb->prefix}troy_plugin_stats_downloads_live
 				WHERE epoch < %d",
-				$this_epoch,
+				$last_epoch,
 			) );
 		}
 
@@ -847,7 +850,7 @@ final class Aggregator {
 			$wpdb->query( $wpdb->prepare(
 				"DELETE FROM {$wpdb->prefix}troy_package_stats_downloads_live
 				WHERE epoch < %d",
-				$this_epoch,
+				$last_epoch,
 			) );
 		}
 	}

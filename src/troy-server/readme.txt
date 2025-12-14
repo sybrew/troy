@@ -112,6 +112,8 @@ It's best to run Troy Server on a standalone WordPress instance. This can also b
 * Resolved an issue where change values weren't colored correctly in the stats overview tables.
 * Resolved an issue where plugin stats would stop aggregating forever after a failed attempt (this fix works retroactively).
 * Resolved an issue where tooltips would be clipped by the accordion wrappers on the settings pages.
+* Resolved an issue where "last epoch" installation counts were reset to 0 during epoch finalization. This resolves itself in a week automatically.
+	* We couldn't retroactively fix this because the snapshot data is relative to the server time, not epochs. Luckily, this is caught in the first week.
 * Added RTL support for the stats interface.
 
 = 1.4.1184 =
