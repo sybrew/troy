@@ -107,6 +107,7 @@ It's best to run Troy Server on a standalone WordPress instance. This can also b
 
 = 1.5.1184 =
 
+* The info page now shows the number of downloads and active installs for each plugin.
 * Troy Mode now removes more admin menu items when enabled.
 * Resolved an issue where change values weren't colored correctly in the stats overview tables.
 * Resolved an issue where plugin stats would stop aggregating forever after a failed attempt (this fix works retroactively).

@@ -552,8 +552,8 @@ final class Data {
 	 * @since 0.0.1184
 	 * @global \wpdb $wpdb
 	 *
-	 * @return ?object[] {
-	 *     An array of plugin stats, or null if none are found.
+	 * @return ?object {
+	 *     The total plugin stats, or null if none are found.
 	 *
 	 *     @type int    id                         The stats ID.
 	 *     @type int    plugin_id                  The plugin ID.
@@ -568,11 +568,11 @@ final class Data {
 	 *     @type string updated_at                 The row last updated timestamp.
 	 * }
 	 */
-	public function get_stats_totals() {
+	public function get_stats_totals_row() {
 
 		global $wpdb;
 
-		return $wpdb->get_results( $wpdb->prepare(
+		return $wpdb->get_row( $wpdb->prepare(
 			"SELECT * FROM {$wpdb->prefix}troy_plugin_stats_totals WHERE plugin_id = %d",
 			$this->plugin_id,
 		) );
