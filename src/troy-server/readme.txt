@@ -114,6 +114,7 @@ It's best to run Troy Server on a standalone WordPress instance. This can also b
 * Resolved an issue where tooltips would be clipped by the accordion wrappers on the settings pages.
 * Resolved an issue where "last epoch" installation counts were reset to 0 during epoch finalization. This resolves itself in a week automatically.
 	* We couldn't retroactively fix this because the snapshot data is relative to the server time, not epochs. Luckily, this is caught in the first week.
+* Resolved an issue where `package_stats_total_daily_snapshots` wasn't being populated. This data is still unused, however.
 * Added RTL support for the stats interface.
 
 = 1.4.1184 =

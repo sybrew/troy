@@ -741,7 +741,7 @@ final class Aggregator {
 
 		// phpcs:disable Generic.WhiteSpace.ScopeIndent.IncorrectExact -- No love for goto.
 
-		snapshot_totals: {
+		snapshot_plugin_totals: {
 
 			$wpdb->query( $wpdb->prepare(
 				"INSERT INTO {$wpdb->prefix}troy_plugin_stats_totals_daily_snapshots
@@ -767,7 +767,7 @@ final class Aggregator {
 			) );
 		}
 
-		snapshot_versions: {
+		snapshot_plugin_versions: {
 
 			$wpdb->query( $wpdb->prepare(
 				"INSERT INTO {$wpdb->prefix}troy_plugin_stats_versions_daily_snapshots
@@ -787,6 +787,22 @@ final class Aggregator {
 					views           = VALUES(views),
 					total_installs  = VALUES(total_installs),
 					active_installs = VALUES(active_installs)",
+				$day,
+			) );
+		}
+
+		snapshot_package_totals: {
+
+			$wpdb->query( $wpdb->prepare(
+				"INSERT INTO {$wpdb->prefix}troy_package_stats_totals_daily_snapshots
+					(package_id, date, downloads)
+				SELECT
+					package_id,
+					%s,
+					downloads
+				FROM {$wpdb->prefix}troy_package_stats_totals
+				ON DUPLICATE KEY UPDATE
+					downloads = VALUES(downloads)",
 				$day,
 			) );
 		}
