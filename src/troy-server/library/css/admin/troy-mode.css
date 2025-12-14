@@ -41,14 +41,11 @@
 	display: none;
 }
 
+/* Match this with JS visibility rules in troy-mode.js "visibleIds" set */
 .troy-mode-active #adminmenu :is(
 	#menu-dashboard,
-	[id*="troy-server"],
-	#menu-plugins,
-	#menu-tools,
-	#menu-settings,
-	#troy-mode-toggle,
 	#collapse-menu,
+	[id*="troy-server"],
 ) {
 	display: block;
 }

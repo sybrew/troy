@@ -107,7 +107,11 @@ It's best to run Troy Server on a standalone WordPress instance. This can also b
 
 = 1.5.1184 =
 
-* Fixed an issue where plugin stats would stop aggregating forever after a failed attempt (this fix works retroactively).
+* Troy Mode now removes more admin menu items when enabled.
+* Resolved an issue where change values weren't colored correctly in the stats overview tables.
+* Resolved an issue where plugin stats would stop aggregating forever after a failed attempt (this fix works retroactively).
+* Resolved an issue where tooltips would be clipped by the accordion wrappers on the settings pages.
+* Added RTL support for the stats interface.
 
 = 1.4.1184 =
 

@@ -120,48 +120,50 @@ $locales          = Settings\Stats::get_locale_stats();
 		<p class=description>
 			<?= \esc_html__( 'The "Installations" count uses the highest value between this and last epoch, since a new epoch may still be catching up. This count is used publicly to display the number of active installations.', 'troy-server' ) ?>
 		</p>
-		<table class="widefat striped troy-server-stats-table" id=troy-server-stats-plugins-table>
-			<thead>
-				<tr>
-					<th scope=col><?= \esc_html__( 'Plugin', 'troy-server' ) ?></th>
-					<th scope=col><?= \esc_html__( 'Downloads', 'troy-server' ) ?></th>
-					<th scope=col><?= \esc_html__( 'Views', 'troy-server' ) ?></th>
-					<th scope=col><?= \esc_html__( 'Installations', 'troy-server' ) ?></th>
-					<th scope=col><?= \esc_html__( 'Active Installations', 'troy-server' ) ?></th>
-					<th scope=col><?= \esc_html__( 'Inactive Installations', 'troy-server' ) ?></th>
-					<th scope=col><?= \esc_html__( 'Actions', 'troy-server' ) ?></th>
-				</tr>
-			</thead>
-			<tbody>
-				<?php
-				if ( empty( $top_plugins ) ) {
-					?>
+		<div class=troy-server-stats-table-wrap>
+			<table class="widefat striped troy-server-stats-table" id=troy-server-stats-plugins-table>
+				<thead>
 					<tr>
-						<td colspan=7><?= \esc_html__( 'No plugin data available.', 'troy-server' ) ?></td>
+						<th scope=col><?= \esc_html__( 'Plugin', 'troy-server' ) ?></th>
+						<th scope=col><?= \esc_html__( 'Downloads', 'troy-server' ) ?></th>
+						<th scope=col><?= \esc_html__( 'Views', 'troy-server' ) ?></th>
+						<th scope=col><?= \esc_html__( 'Installations', 'troy-server' ) ?></th>
+						<th scope=col><?= \esc_html__( 'Active Installations', 'troy-server' ) ?></th>
+						<th scope=col><?= \esc_html__( 'Inactive Installations', 'troy-server' ) ?></th>
+						<th scope=col><?= \esc_html__( 'Actions', 'troy-server' ) ?></th>
 					</tr>
+				</thead>
+				<tbody>
 					<?php
-				} else foreach ( $top_plugins as $plugin ) {
+					if ( empty( $top_plugins ) ) {
+						?>
+						<tr>
+							<td colspan=7><?= \esc_html__( 'No plugin data available.', 'troy-server' ) ?></td>
+						</tr>
+						<?php
+					} else foreach ( $top_plugins as $plugin ) {
+						?>
+						<tr data-plugin-id="<?= \esc_attr( $plugin['plugin_id'] ) ?>">
+							<td>
+								<strong><?= \esc_html( $plugin['name'] ) ?></strong> <code>(<?= \esc_html( $plugin['slug'] ) ?>)</code>
+							</td>
+							<td><?= \esc_html( \number_format_i18n( $plugin['downloads'] ) ) ?></td>
+							<td><?= \esc_html( \number_format_i18n( $plugin['views'] ) ) ?></td>
+							<td><?= \esc_html( \number_format_i18n( $plugin['total_installs'] ) ) ?></td>
+							<td><?= \esc_html( \number_format_i18n( $plugin['active_installs'] ) ) ?></td>
+							<td><?= \esc_html( \number_format_i18n( $plugin['inactive_installs'] ) ) ?></td>
+							<td>
+								<button type=button class="button button-small troy-server-stats-details-btn" data-plugin-id="<?= \esc_attr( $plugin['plugin_id'] ) ?>">
+									<?= \esc_html__( 'Details', 'troy-server' ) ?>
+								</button>
+							</td>
+						</tr>
+						<?php
+					}
 					?>
-					<tr data-plugin-id="<?= \esc_attr( $plugin['plugin_id'] ) ?>">
-						<td>
-							<strong><?= \esc_html( $plugin['name'] ) ?></strong> <code>(<?= \esc_html( $plugin['slug'] ) ?>)</code>
-						</td>
-						<td><?= \esc_html( \number_format_i18n( $plugin['downloads'] ) ) ?></td>
-						<td><?= \esc_html( \number_format_i18n( $plugin['views'] ) ) ?></td>
-						<td><?= \esc_html( \number_format_i18n( $plugin['total_installs'] ) ) ?></td>
-						<td><?= \esc_html( \number_format_i18n( $plugin['active_installs'] ) ) ?></td>
-						<td><?= \esc_html( \number_format_i18n( $plugin['inactive_installs'] ) ) ?></td>
-						<td>
-							<button type=button class="button button-small troy-server-stats-details-btn" data-plugin-id="<?= \esc_attr( $plugin['plugin_id'] ) ?>">
-								<?= \esc_html__( 'Details', 'troy-server' ) ?>
-							</button>
-						</td>
-					</tr>
-					<?php
-				}
-				?>
-			</tbody>
-		</table>
+				</tbody>
+			</table>
+		</div>
 	</div>
 </div>
 
@@ -176,76 +178,78 @@ $locales          = Settings\Stats::get_locale_stats();
 		<p class=description>
 			<?= \esc_html__( 'An epoch spans one week. Installation counts are based on unique update requests per epoch.', 'troy-server' ) ?>
 		</p>
-		<table class="widefat striped troy-server-stats-table" id=troy-server-stats-epochs-table>
-			<thead>
-				<tr>
-					<th scope=col><?= \esc_html__( 'Metric', 'troy-server' ) ?></th>
-					<th scope=col>
-						<?php
-						echo \esc_html( \sprintf(
-							/* translators: %d is the epoch number */
-							\__( 'Last Epoch (%d)', 'troy-server' ),
-							$epoch_comparison['last_epoch'],
-						) );
-						?>
-					</th>
-					<th scope=col>
-						<?php
-						echo \esc_html( \sprintf(
-							/* translators: %d is the epoch number */
-							\__( 'This Epoch (%d)', 'troy-server' ),
-							$epoch_comparison['this_epoch'],
-						) );
-						?>
-					</th>
-					<th scope=col><?= \esc_html__( 'Change', 'troy-server' ) ?></th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td><?= \esc_html__( 'Update Requests', 'troy-server' ) ?></td>
-					<td><?= \esc_html( \number_format_i18n( $epoch_comparison['last_requests'] ) ) ?></td>
-					<td><?= \esc_html( \number_format_i18n( $epoch_comparison['this_requests'] ) ) ?></td>
-					<td class="<?= $epoch_comparison['requests_change_percent'] >= 0 ? 'troy-server-stats-positive' : 'troy-server-stats-negative' ?>">
-						<?php
-						if ( \is_infinite( $epoch_comparison['requests_change_percent'] ) ) {
-							echo '+∞%';
-						} else {
-							echo \esc_html( ( $epoch_comparison['requests_change_percent'] >= 0 ? '+' : '' ) . $epoch_comparison['requests_change_percent'] . '%' );
-						}
-						?>
-					</td>
-				</tr>
-				<tr>
-					<td><?= \esc_html__( 'Active Installations', 'troy-server' ) ?></td>
-					<td><?= \esc_html( \number_format_i18n( $epoch_comparison['last_active_installs'] ) ) ?></td>
-					<td><?= \esc_html( \number_format_i18n( $epoch_comparison['this_active_installs'] ) ) ?></td>
-					<td class="<?= $epoch_comparison['active_change_percent'] >= 0 ? 'troy-server-stats-positive' : 'troy-server-stats-negative' ?>">
-						<?php
-						if ( \is_infinite( $epoch_comparison['active_change_percent'] ) ) {
-							echo '+∞%';
-						} else {
-							echo \esc_html( ( $epoch_comparison['active_change_percent'] >= 0 ? '+' : '' ) . $epoch_comparison['active_change_percent'] . '%' );
-						}
-						?>
-					</td>
-				</tr>
-				<tr>
-					<td><?= \esc_html__( 'Inactive Installations', 'troy-server' ) ?></td>
-					<td><?= \esc_html( \number_format_i18n( $epoch_comparison['last_inactive_installs'] ) ) ?></td>
-					<td><?= \esc_html( \number_format_i18n( $epoch_comparison['this_inactive_installs'] ) ) ?></td>
-					<td class="<?= $epoch_comparison['inactive_change_percent'] >= 0 ? 'troy-server-stats-positive' : 'troy-server-stats-negative' ?>">
-						<?php
-						if ( \is_infinite( $epoch_comparison['inactive_change_percent'] ) ) {
-							echo '+∞%';
-						} else {
-							echo \esc_html( ( $epoch_comparison['inactive_change_percent'] >= 0 ? '+' : '' ) . $epoch_comparison['inactive_change_percent'] . '%' );
-						}
-						?>
-					</td>
-				</tr>
-			</tbody>
-		</table>
+		<div class=troy-server-stats-table-wrap>
+			<table class="widefat striped troy-server-stats-table" id=troy-server-stats-epochs-table>
+				<thead>
+					<tr>
+						<th scope=col><?= \esc_html__( 'Metric', 'troy-server' ) ?></th>
+						<th scope=col>
+							<?php
+							echo \esc_html( \sprintf(
+								/* translators: %d is the epoch number */
+								\__( 'Last Epoch (%d)', 'troy-server' ),
+								$epoch_comparison['last_epoch'],
+							) );
+							?>
+						</th>
+						<th scope=col>
+							<?php
+							echo \esc_html( \sprintf(
+								/* translators: %d is the epoch number */
+								\__( 'This Epoch (%d)', 'troy-server' ),
+								$epoch_comparison['this_epoch'],
+							) );
+							?>
+						</th>
+						<th scope=col><?= \esc_html__( 'Change', 'troy-server' ) ?></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td><?= \esc_html__( 'Update Requests', 'troy-server' ) ?></td>
+						<td><?= \esc_html( \number_format_i18n( $epoch_comparison['last_requests'] ) ) ?></td>
+						<td><?= \esc_html( \number_format_i18n( $epoch_comparison['this_requests'] ) ) ?></td>
+						<td class="<?= $epoch_comparison['requests_change_percent'] >= 0 ? 'troy-server-stats-positive' : 'troy-server-stats-negative' ?>">
+							<?php
+							if ( \is_infinite( $epoch_comparison['requests_change_percent'] ) ) {
+								echo '+∞%';
+							} else {
+								echo \esc_html( ( $epoch_comparison['requests_change_percent'] >= 0 ? '+' : '' ) . $epoch_comparison['requests_change_percent'] . '%' );
+							}
+							?>
+						</td>
+					</tr>
+					<tr>
+						<td><?= \esc_html__( 'Active Installations', 'troy-server' ) ?></td>
+						<td><?= \esc_html( \number_format_i18n( $epoch_comparison['last_active_installs'] ) ) ?></td>
+						<td><?= \esc_html( \number_format_i18n( $epoch_comparison['this_active_installs'] ) ) ?></td>
+						<td class="<?= $epoch_comparison['active_change_percent'] >= 0 ? 'troy-server-stats-positive' : 'troy-server-stats-negative' ?>">
+							<?php
+							if ( \is_infinite( $epoch_comparison['active_change_percent'] ) ) {
+								echo '+∞%';
+							} else {
+								echo \esc_html( ( $epoch_comparison['active_change_percent'] >= 0 ? '+' : '' ) . $epoch_comparison['active_change_percent'] . '%' );
+							}
+							?>
+						</td>
+					</tr>
+					<tr>
+						<td><?= \esc_html__( 'Inactive Installations', 'troy-server' ) ?></td>
+						<td><?= \esc_html( \number_format_i18n( $epoch_comparison['last_inactive_installs'] ) ) ?></td>
+						<td><?= \esc_html( \number_format_i18n( $epoch_comparison['this_inactive_installs'] ) ) ?></td>
+						<td class="<?= $epoch_comparison['inactive_change_percent'] >= 0 ? 'troy-server-stats-positive' : 'troy-server-stats-negative' ?>">
+							<?php
+							if ( \is_infinite( $epoch_comparison['inactive_change_percent'] ) ) {
+								echo '+∞%';
+							} else {
+								echo \esc_html( ( $epoch_comparison['inactive_change_percent'] >= 0 ? '+' : '' ) . $epoch_comparison['inactive_change_percent'] . '%' );
+							}
+							?>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
 	</div>
 </div>
 
@@ -260,60 +264,62 @@ $locales          = Settings\Stats::get_locale_stats();
 		<p class=description>
 			<?= \esc_html__( 'PHP versions reported by active installations during update checks.', 'troy-server' ) ?>
 		</p>
-		<table class="widefat striped troy-server-stats-table" id=troy-server-stats-php-versions-table>
-			<thead>
-				<tr>
-					<th scope=col><?= \esc_html__( 'PHP Version', 'troy-server' ) ?></th>
-					<th scope=col>
-						<?php
-						echo \esc_html( \sprintf(
-							/* translators: %d is the epoch number */
-							\__( 'Last Epoch (%d)', 'troy-server' ),
-							$php_versions['last_epoch'],
-						) );
-						?>
-					</th>
-					<th scope=col>
-						<?php
-						echo \esc_html( \sprintf(
-							/* translators: %d is the epoch number */
-							\__( 'This Epoch (%d)', 'troy-server' ),
-							$php_versions['this_epoch'],
-						) );
-						?>
-					</th>
-					<th scope=col><?= \esc_html__( 'Change', 'troy-server' ) ?></th>
-				</tr>
-			</thead>
-			<tbody>
-				<?php
-				if ( empty( $php_versions['versions'] ) ) {
-					?>
+		<div class=troy-server-stats-table-wrap>
+			<table class="widefat striped troy-server-stats-table" id=troy-server-stats-php-versions-table>
+				<thead>
 					<tr>
-						<td colspan=4><?= \esc_html__( 'No PHP version data available.', 'troy-server' ) ?></td>
-					</tr>
-					<?php
-				} else foreach ( $php_versions['versions'] as $version ) {
-					?>
-					<tr>
-						<td><code><?= \esc_html( $version['version'] ?: \__( 'Not reported', 'troy-server' ) ) ?></code></td>
-						<td><?= \esc_html( \number_format_i18n( $version['last_count'] ) ) ?></td>
-						<td><?= \esc_html( \number_format_i18n( $version['this_count'] ) ) ?></td>
-						<td class="<?= $version['change_percent'] >= 0 ? 'troy-server-stats-positive' : 'troy-server-stats-negative' ?>">
+						<th scope=col><?= \esc_html__( 'PHP Version', 'troy-server' ) ?></th>
+						<th scope=col>
 							<?php
-							if ( \is_infinite( $version['change_percent'] ) ) {
-								echo '+∞%';
-							} else {
-								echo \esc_html( ( $version['change_percent'] >= 0 ? '+' : '' ) . $version['change_percent'] . '%' );
-							}
+							echo \esc_html( \sprintf(
+								/* translators: %d is the epoch number */
+								\__( 'Last Epoch (%d)', 'troy-server' ),
+								$php_versions['last_epoch'],
+							) );
 							?>
+						</th>
+						<th scope=col>
+							<?php
+							echo \esc_html( \sprintf(
+								/* translators: %d is the epoch number */
+								\__( 'This Epoch (%d)', 'troy-server' ),
+								$php_versions['this_epoch'],
+							) );
+							?>
+						</th>
+						<th scope=col><?= \esc_html__( 'Change', 'troy-server' ) ?></th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php
+					if ( empty( $php_versions['versions'] ) ) {
+						?>
+						<tr>
+							<td colspan=4><?= \esc_html__( 'No PHP version data available.', 'troy-server' ) ?></td>
+						</tr>
+						<?php
+					} else foreach ( $php_versions['versions'] as $version ) {
+						?>
+						<tr>
+							<td><code><?= \esc_html( $version['version'] ?: \__( 'Not reported', 'troy-server' ) ) ?></code></td>
+							<td><?= \esc_html( \number_format_i18n( $version['last_count'] ) ) ?></td>
+							<td><?= \esc_html( \number_format_i18n( $version['this_count'] ) ) ?></td>
+							<td class="<?= $version['change_percent'] >= 0 ? 'troy-server-stats-positive' : 'troy-server-stats-negative' ?>">
+								<?php
+								if ( \is_infinite( $version['change_percent'] ) ) {
+									echo '+∞%';
+								} else {
+									echo \esc_html( ( $version['change_percent'] >= 0 ? '+' : '' ) . $version['change_percent'] . '%' );
+								}
+								?>
 						</td>
 					</tr>
-					<?php
-				}
-				?>
-			</tbody>
-		</table>
+						<?php
+					}
+					?>
+				</tbody>
+			</table>
+		</div>
 	</div>
 </div>
 
@@ -328,60 +334,62 @@ $locales          = Settings\Stats::get_locale_stats();
 		<p class=description>
 			<?= \esc_html__( 'WordPress versions reported by active installations during update checks.', 'troy-server' ) ?>
 		</p>
-		<table class="widefat striped troy-server-stats-table" id=troy-server-stats-wp-versions-table>
-			<thead>
-				<tr>
-					<th scope=col><?= \esc_html__( 'WordPress Version', 'troy-server' ) ?></th>
-					<th scope=col>
-						<?php
-						echo \esc_html( \sprintf(
-							/* translators: %d is the epoch number */
-							\__( 'Last Epoch (%d)', 'troy-server' ),
-							$wp_versions['last_epoch'],
-						) );
-						?>
-					</th>
-					<th scope=col>
-						<?php
-						echo \esc_html( \sprintf(
-							/* translators: %d is the epoch number */
-							\__( 'This Epoch (%d)', 'troy-server' ),
-							$wp_versions['this_epoch'],
-						) );
-						?>
-					</th>
-					<th scope=col><?= \esc_html__( 'Change', 'troy-server' ) ?></th>
-				</tr>
-			</thead>
-			<tbody>
-				<?php
-				if ( empty( $wp_versions['versions'] ) ) {
-					?>
+		<div class=troy-server-stats-table-wrap>
+			<table class="widefat striped troy-server-stats-table" id=troy-server-stats-wp-versions-table>
+				<thead>
 					<tr>
-						<td colspan=4><?= \esc_html__( 'No WordPress version data available.', 'troy-server' ) ?></td>
-					</tr>
-					<?php
-				} else foreach ( $wp_versions['versions'] as $version ) {
-					?>
-					<tr>
-						<td><code><?= \esc_html( $version['version'] ?: \__( 'Not reported', 'troy-server' ) ) ?></code></td>
-						<td><?= \esc_html( \number_format_i18n( $version['last_count'] ) ) ?></td>
-						<td><?= \esc_html( \number_format_i18n( $version['this_count'] ) ) ?></td>
-						<td class="<?= $version['change_percent'] >= 0 ? 'troy-server-stats-positive' : 'troy-server-stats-negative' ?>">
+						<th scope=col><?= \esc_html__( 'WordPress Version', 'troy-server' ) ?></th>
+						<th scope=col>
 							<?php
-							if ( \is_infinite( $version['change_percent'] ) ) {
-								echo '+∞%';
-							} else {
-								echo \esc_html( ( $version['change_percent'] >= 0 ? '+' : '' ) . $version['change_percent'] . '%' );
-							}
+							echo \esc_html( \sprintf(
+								/* translators: %d is the epoch number */
+								\__( 'Last Epoch (%d)', 'troy-server' ),
+								$wp_versions['last_epoch'],
+							) );
 							?>
+						</th>
+						<th scope=col>
+							<?php
+							echo \esc_html( \sprintf(
+								/* translators: %d is the epoch number */
+								\__( 'This Epoch (%d)', 'troy-server' ),
+								$wp_versions['this_epoch'],
+							) );
+							?>
+						</th>
+						<th scope=col><?= \esc_html__( 'Change', 'troy-server' ) ?></th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php
+					if ( empty( $wp_versions['versions'] ) ) {
+						?>
+						<tr>
+							<td colspan=4><?= \esc_html__( 'No WordPress version data available.', 'troy-server' ) ?></td>
+						</tr>
+						<?php
+					} else foreach ( $wp_versions['versions'] as $version ) {
+						?>
+						<tr>
+							<td><code><?= \esc_html( $version['version'] ?: \__( 'Not reported', 'troy-server' ) ) ?></code></td>
+							<td><?= \esc_html( \number_format_i18n( $version['last_count'] ) ) ?></td>
+							<td><?= \esc_html( \number_format_i18n( $version['this_count'] ) ) ?></td>
+							<td class="<?= $version['change_percent'] >= 0 ? 'troy-server-stats-positive' : 'troy-server-stats-negative' ?>">
+								<?php
+								if ( \is_infinite( $version['change_percent'] ) ) {
+									echo '+∞%';
+								} else {
+									echo \esc_html( ( $version['change_percent'] >= 0 ? '+' : '' ) . $version['change_percent'] . '%' );
+								}
+								?>
 						</td>
 					</tr>
-					<?php
-				}
-				?>
-			</tbody>
-		</table>
+						<?php
+					}
+					?>
+				</tbody>
+			</table>
+		</div>
 	</div>
 </div>
 
@@ -396,60 +404,62 @@ $locales          = Settings\Stats::get_locale_stats();
 		<p class=description>
 			<?= \esc_html__( 'Locales reported by active installations during update checks.', 'troy-server' ) ?>
 		</p>
-		<table class="widefat striped troy-server-stats-table" id=troy-server-stats-locales-table>
-			<thead>
-				<tr>
-					<th scope=col><?= \esc_html__( 'Locale', 'troy-server' ) ?></th>
-					<th scope=col>
-						<?php
-						echo \esc_html( \sprintf(
-							/* translators: %d is the epoch number */
-							\__( 'Last Epoch (%d)', 'troy-server' ),
-							$locales['last_epoch'],
-						) );
-						?>
-					</th>
-					<th scope=col>
-						<?php
-						echo \esc_html( \sprintf(
-							/* translators: %d is the epoch number */
-							\__( 'This Epoch (%d)', 'troy-server' ),
-							$locales['this_epoch'],
-						) );
-						?>
-					</th>
-					<th scope=col><?= \esc_html__( 'Change', 'troy-server' ) ?></th>
-				</tr>
-			</thead>
-			<tbody>
-				<?php
-				if ( empty( $locales['locales'] ) ) {
-					?>
+		<div class=troy-server-stats-table-wrap>
+			<table class="widefat striped troy-server-stats-table" id=troy-server-stats-locales-table>
+				<thead>
 					<tr>
-						<td colspan=4><?= \esc_html__( 'No locale data available.', 'troy-server' ) ?></td>
-					</tr>
-					<?php
-				} else foreach ( $locales['locales'] as $locale ) {
-					?>
-					<tr>
-						<td><code><?= \esc_html( $locale['locale'] ?: \__( 'Not reported', 'troy-server' ) ) ?></code></td>
-						<td><?= \esc_html( \number_format_i18n( $locale['last_count'] ) ) ?></td>
-						<td><?= \esc_html( \number_format_i18n( $locale['this_count'] ) ) ?></td>
-						<td class="<?= $locale['change_percent'] >= 0 ? 'troy-server-stats-positive' : 'troy-server-stats-negative' ?>">
+						<th scope=col><?= \esc_html__( 'Locale', 'troy-server' ) ?></th>
+						<th scope=col>
 							<?php
-							if ( \is_infinite( $locale['change_percent'] ) ) {
-								echo '+∞%';
-							} else {
-								echo \esc_html( ( $locale['change_percent'] >= 0 ? '+' : '' ) . $locale['change_percent'] . '%' );
-							}
+							echo \esc_html( \sprintf(
+								/* translators: %d is the epoch number */
+								\__( 'Last Epoch (%d)', 'troy-server' ),
+								$locales['last_epoch'],
+							) );
 							?>
-						</td>
+						</th>
+						<th scope=col>
+							<?php
+							echo \esc_html( \sprintf(
+								/* translators: %d is the epoch number */
+								\__( 'This Epoch (%d)', 'troy-server' ),
+								$locales['this_epoch'],
+							) );
+							?>
+						</th>
+						<th scope=col><?= \esc_html__( 'Change', 'troy-server' ) ?></th>
 					</tr>
+				</thead>
+				<tbody>
 					<?php
-				}
-				?>
-			</tbody>
-		</table>
+					if ( empty( $locales['locales'] ) ) {
+						?>
+						<tr>
+							<td colspan=4><?= \esc_html__( 'No locale data available.', 'troy-server' ) ?></td>
+						</tr>
+						<?php
+					} else foreach ( $locales['locales'] as $locale ) {
+						?>
+						<tr>
+							<td><code><?= \esc_html( $locale['locale'] ?: \__( 'Not reported', 'troy-server' ) ) ?></code></td>
+							<td><?= \esc_html( \number_format_i18n( $locale['last_count'] ) ) ?></td>
+							<td><?= \esc_html( \number_format_i18n( $locale['this_count'] ) ) ?></td>
+							<td class="<?= $locale['change_percent'] >= 0 ? 'troy-server-stats-positive' : 'troy-server-stats-negative' ?>">
+								<?php
+								if ( \is_infinite( $locale['change_percent'] ) ) {
+									echo '+∞%';
+								} else {
+									echo \esc_html( ( $locale['change_percent'] >= 0 ? '+' : '' ) . $locale['change_percent'] . '%' );
+								}
+								?>
+							</td>
+						</tr>
+						<?php
+					}
+					?>
+				</tbody>
+			</table>
+		</div>
 	</div>
 </div>
 

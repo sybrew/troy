@@ -35,6 +35,7 @@ window.troyServerMode = ( () => {
 	const _bodyClass  = 'troy-mode-active';
 	const _buttonId   = 'troy-mode-toggle';
 
+	// Match this with CSS visibility rules in troy-mode.css "troy-mode-active #adminmenu :is..."
 	const visibleIds = new Set( [
 		'menu-dashboard',
 		'collapse-menu',

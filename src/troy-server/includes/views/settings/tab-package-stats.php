@@ -79,40 +79,42 @@ $packages_summary = Settings\Stats::get_packages_summary();
 		</button>
 	</h3>
 	<div id=troy-server-stats-packages class=troy-server-settings-accordion-panel>
-		<table class="widefat striped troy-server-stats-table" id=troy-server-stats-packages-table>
-			<thead>
-				<tr>
-					<th scope=col><?= \esc_html__( 'Package', 'troy-server' ) ?></th>
-					<th scope=col><?= \esc_html__( 'Downloads', 'troy-server' ) ?></th>
-					<th scope=col><?= \esc_html__( 'Actions', 'troy-server' ) ?></th>
-				</tr>
-			</thead>
-			<tbody>
-				<?php
-				if ( empty( $packages_summary ) ) {
-					?>
+		<div class=troy-server-stats-table-wrap>
+			<table class="widefat striped troy-server-stats-table" id=troy-server-stats-packages-table>
+				<thead>
 					<tr>
-						<td colspan=3><?= \esc_html__( 'No package data available.', 'troy-server' ) ?></td>
+						<th scope=col><?= \esc_html__( 'Package', 'troy-server' ) ?></th>
+						<th scope=col><?= \esc_html__( 'Downloads', 'troy-server' ) ?></th>
+						<th scope=col><?= \esc_html__( 'Actions', 'troy-server' ) ?></th>
 					</tr>
+				</thead>
+				<tbody>
 					<?php
-				} else foreach ( $packages_summary as $package ) {
+					if ( empty( $packages_summary ) ) {
+						?>
+						<tr>
+							<td colspan=3><?= \esc_html__( 'No package data available.', 'troy-server' ) ?></td>
+						</tr>
+						<?php
+					} else foreach ( $packages_summary as $package ) {
+						?>
+						<tr data-package-id="<?= \esc_attr( $package['package_id'] ) ?>">
+							<td>
+								<strong><?= \esc_html( $package['name'] ) ?></strong> <code>(<?= \esc_html( $package['slug'] ) ?>)</code>
+							</td>
+							<td><?= \esc_html( \number_format_i18n( $package['downloads'] ) ) ?></td>
+							<td>
+								<button type=button class="button button-small troy-server-stats-package-details-btn" data-package-id="<?= \esc_attr( $package['package_id'] ) ?>">
+									<?= \esc_html__( 'Details', 'troy-server' ) ?>
+								</button>
+							</td>
+						</tr>
+						<?php
+					}
 					?>
-					<tr data-package-id="<?= \esc_attr( $package['package_id'] ) ?>">
-						<td>
-							<strong><?= \esc_html( $package['name'] ) ?></strong> <code>(<?= \esc_html( $package['slug'] ) ?>)</code>
-						</td>
-						<td><?= \esc_html( \number_format_i18n( $package['downloads'] ) ) ?></td>
-						<td>
-							<button type=button class="button button-small troy-server-stats-package-details-btn" data-package-id="<?= \esc_attr( $package['package_id'] ) ?>">
-								<?= \esc_html__( 'Details', 'troy-server' ) ?>
-							</button>
-						</td>
-					</tr>
-					<?php
-				}
-				?>
-			</tbody>
-		</table>
+				</tbody>
+			</table>
+		</div>
 	</div>
 </div>
 

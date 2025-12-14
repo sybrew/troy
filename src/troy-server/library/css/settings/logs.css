@@ -29,7 +29,7 @@
 .troy-server-logs-count {
 	font-weight: normal;
 	color: #646970;
-	margin-left: .25em;
+	margin-inline-start: .25em;
 }
 
 /* Table Actions */
@@ -59,7 +59,7 @@
 
 .troy-server-logs-table-wrap {
 	max-height: 500px;
-	overflow-y: auto;
+	overflow: auto;
 	border: 1px solid #c3c4c7;
 	border-radius: 4px;
 }
@@ -163,7 +163,7 @@
 	border-top-color: var(--troy-server-theme-color);
 	border-radius: 50%;
 	animation: troy-logs-spin .8s linear infinite;
-	margin-right: .5em;
+	margin-inline-end: .5em;
 	vertical-align: middle;
 }
 
@@ -177,7 +177,7 @@
 @media screen and (max-width: 782px) {
 	.troy-server-logs-controls {
 		flex-direction: column;
-		align-items: flex-start;
+		align-items: start;
 	}
 
 	.troy-server-logs-table-wrap {

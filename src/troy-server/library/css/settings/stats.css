@@ -11,17 +11,17 @@
 	align-items: center;
 	gap: 1em;
 	margin: 1em 0;
-	flex-wrap: wrap;
+	flex-wrap: wrap
 }
 
 .troy-server-stats-date-range label {
 	display: flex;
 	align-items: center;
-	gap: .5em;
+	gap: .5em
 }
 
 .troy-server-stats-date-range select {
-	min-width: 150px;
+	min-width: 150px
 }
 
 /* Stats Cards Grid */
@@ -29,7 +29,7 @@
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
 	gap: 1em;
-	margin: 1em 0;
+	margin: 1em 0
 }
 
 .troy-server-stats-card {
@@ -38,19 +38,19 @@
 	border-radius: 4px;
 	padding: 1em;
 	text-align: center;
-	transition: border-color .2s ease, box-shadow .2s ease;
+	transition: border-color .2s ease, box-shadow .2s ease
 }
 
 .troy-server-stats-card:hover {
 	border-color: var(--troy-server-theme-color);
-	box-shadow: 0 1px 3px rgba(0, 0, 0, .1);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, .1)
 }
 
 .troy-server-stats-card-label {
 	display: block;
 	color: #646970;
 	letter-spacing: .5px;
-	margin-bottom: 1em;
+	margin-bottom: 1em
 }
 
 .troy-server-stats-card-value {
@@ -58,70 +58,71 @@
 	font-size: larger;
 	font-weight: 600;
 	color: #1d2327;
-	line-height: 1.2;
+	line-height: 1.2
 }
 
 .troy-server-stats-card-change {
 	display: block;
 	font-size: smaller;
-	margin-top: .25em;
+	margin-top: .25em
 }
 
 /* Stats Tables */
+.troy-server-stats-table-wrap {
+	overflow-x: auto
+}
+
 .troy-server-stats-table {
 	margin-top: 1em;
-	min-width: fit-content;
+	min-width: fit-content
 }
 
 .troy-server-stats-table td {
-	max-inline-size: 35ch;
-	min-width: 7ch;
+	max-width: 35ch;
+	min-width: 7ch
 }
 
 .troy-server-stats-table td,
 .troy-server-stats-table td code {
-	word-break: auto-phrase;
+	word-break: auto-phrase
 }
 
 .troy-server-stats-table th,
 .troy-server-stats-table td {
-	vertical-align: middle;
+	vertical-align: middle
 }
 
 .troy-server-stats-table .button-small {
 	min-height: 28px;
 	line-height: 26px;
-	padding: 0 8px;
+	padding: 0 8px
 }
 
 /* Trend Indicators */
-.troy-server-stats-positive {
+.troy-server-stats-table .troy-server-stats-positive {
 	color: #00a32a;
-	font-weight: 600;
+	font-weight: 600
 }
 
-.troy-server-stats-negative {
+.troy-server-stats-table .troy-server-stats-negative {
 	color: #d63638;
-	font-weight: 600;
+	font-weight: 600
 }
 
 /* Modal Styles */
 .troy-server-stats-modal {
 	position: fixed;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
+	inset: 0;
 	background: rgba(0, 0, 0, .6);
 	z-index: 100100;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	padding: 2em;
+	padding: 2em
 }
 
 .troy-server-stats-modal[hidden] {
-	display: none;
+	display: none
 }
 
 .troy-server-stats-modal-content {
@@ -133,7 +134,7 @@
 	overflow: hidden;
 	display: flex;
 	flex-direction: column;
-	box-shadow: 0 5px 20px rgba(0, 0, 0, .3);
+	box-shadow: 0 5px 20px rgba(0, 0, 0, .3)
 }
 
 .troy-server-stats-modal-header {
@@ -142,12 +143,12 @@
 	justify-content: space-between;
 	padding: 1em 1.5em;
 	border-bottom: 1px solid #c3c4c7;
-	background: #f6f7f7;
+	background: #f6f7f7
 }
 
 .troy-server-stats-modal-header h3 {
 	margin: 0;
-	font-size: 1.1em;
+	font-size: 1.1em
 }
 
 .troy-server-stats-modal-close {
@@ -162,30 +163,30 @@
 	text-align: center;
 	color: #646970;
 	border-radius: 4px;
-	transition: background .15s ease;
+	transition: background .15s ease
 }
 
 .troy-server-stats-modal-close:hover {
 	background: #dcdcde;
-	color: #1d2327;
+	color: #1d2327
 }
 
 .troy-server-stats-modal-body {
 	padding: 1.5em;
-	overflow-y: auto;
+	overflow-y: auto
 }
 
 .troy-server-stats-modal-body .troy-server-stats-cards {
-	margin-top: 0;
+	margin-top: 0
 }
 
 /* Modal Detail Sections */
 .troy-server-stats-detail-section {
-	margin-bottom: 1.5em;
+	margin-bottom: 1.5em
 }
 
 .troy-server-stats-detail-section:last-child {
-	margin-bottom: 0;
+	margin-bottom: 0
 }
 
 .troy-server-stats-detail-section h4 {
@@ -193,7 +194,7 @@
 	font-size: .9em;
 	color: #1d2327;
 	border-bottom: 1px solid #dcdcde;
-	padding-bottom: .5em;
+	padding-bottom: .5em
 }
 
 .troy-server-stats-detail-list {
@@ -202,7 +203,7 @@
 	gap: .5em;
 	list-style: none;
 	margin: 0;
-	padding: 0;
+	padding: 0
 }
 
 .troy-server-stats-detail-list li {
@@ -210,22 +211,22 @@
 	justify-content: space-between;
 	padding: .5em;
 	background: #f6f7f7;
-	border-radius: 3px;
+	border-radius: 3px
 }
 
 .troy-server-stats-detail-list .label {
-	color: #646970;
+	color: #646970
 }
 
 .troy-server-stats-detail-list .value {
-	font-weight: 600;
+	font-weight: 600
 }
 
 /* Loading State */
 .troy-server-stats-loading {
 	text-align: center;
 	padding: 2em;
-	color: #646970;
+	color: #646970
 }
 
 .troy-server-stats-loading::before {
@@ -237,36 +238,36 @@
 	border-top-color: var(--troy-server-theme-color);
 	border-radius: 50%;
 	animation: troy-stats-spin .8s linear infinite;
-	margin-right: .5em;
-	vertical-align: middle;
+	margin-inline-end: .5em;
+	vertical-align: middle
 }
 
 @keyframes troy-stats-spin {
 	to {
-		transform: rotate(360deg);
+		transform: rotate(360deg)
 	}
 }
 
 /* Error State */
 .troy-server-stats-error {
 	background: #fcf0f1;
-	border-left: 4px solid #d63638;
+	border-inline-start: 4px solid #d63638;
 	padding: 1em;
-	margin: 1em 0;
+	margin: 1em 0
 }
 
 /* Responsive */
 @media screen and (max-width: 782px) {
 	.troy-server-stats-date-range {
 		flex-direction: column;
-		align-items: flex-start;
+		align-items: start
 	}
 
 	.troy-server-stats-modal {
-		padding: 1em;
+		padding: 1em
 	}
 
 	.troy-server-stats-modal-content {
-		max-height: 90vh;
+		max-height: 90vh
 	}
 }

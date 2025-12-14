@@ -361,7 +361,7 @@
 		return `
 			<div class="troy-server-stats-detail-section">
 				<h4>${ escape.string( title ) }</h4>
-				<table class="widefat striped">
+				<table class="widefat striped troy-server-stats-table">
 					<thead>
 						<tr>
 							<th scope="col">${ escape.string( title ) }</th>
@@ -527,7 +527,7 @@
 		return `
 		<div class="troy-server-stats-detail-section">
 			<h4>${ escape.string( i18n.epochComparison ) }</h4>
-			<table class="widefat striped">
+			<table class="widefat striped troy-server-stats-table">
 				<thead>
 					<tr>
 						<th scope="col">${ escape.string( i18n.metric ) }</th>
@@ -603,7 +603,7 @@
 		return `
 		<div class="troy-server-stats-detail-section">
 			<h4>${ escape.string( i18n.detailsPerVersion ) }</h4>
-			<table class="widefat striped">
+			<table class="widefat striped troy-server-stats-table">
 				<thead>
 					<tr>
 						<th scope="col">${ escape.string( i18n.version ) }</th>
