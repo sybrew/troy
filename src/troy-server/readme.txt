@@ -107,16 +107,17 @@ It's best to run Troy Server on a standalone WordPress instance. This can also b
 
 = 1.5.1184 =
 
-* The info page now shows the number of downloads and active installs for each plugin.
-* Troy Mode now removes more admin menu items when enabled.
+* Added public stats endpoint to retrieve active install, download, and rating counts for a plugin.
+* Added download and active install counts to the info endpoint response for each plugin.
+* Added RTL support for the stats interfaces.
+* Changed Troy Mode to remove more admin menu items when enabled.
 * Resolved an issue where change values weren't colored correctly in the stats overview tables.
 * Resolved an issue where plugin stats would stop aggregating forever after a failed attempt (this fix works retroactively).
 * Resolved an issue where tooltips would be clipped by the accordion wrappers on the settings pages.
 * Resolved an issue where "last epoch" installation counts were reset to 0 during epoch finalization. This resolves itself in a week automatically.
-	* We couldn't retroactively fix this because the snapshot data is relative to the server time, not epochs. Luckily, this is caught in the first week.
+	* We couldn't retroactively fix this because the snapshot data is relative to the server time, not epochs. Luckily, this issue is caught in the second week.
 * Resolved an issue with plugin info thickbox filtering when WordPress passes a fields array with boolean values.
 * Resolved an issue where `package_stats_total_daily_snapshots` wasn't being populated. This data is still unused, however.
-* Added RTL support for the stats interface.
 
 = 1.4.1184 =
 

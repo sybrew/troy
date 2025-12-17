@@ -48,6 +48,9 @@ final class Router {
 	 *
 	 * This bypasses WordPress's query parsing for better performance.
 	 *
+	 * POST requests' body extraction handled within the endpoint classes.
+	 * GET requests are unpacked here.
+	 *
 	 * @hook init 10
 	 * @since 0.0.1184
 	 */
@@ -69,7 +72,6 @@ final class Router {
 			return;
 
 		// phpcs:disable WordPress.Security.NonceVerification -- Public API, no nonce needed.
-		// Match API endpoints using switch for better performance
 		switch ( true ) {
 			case 'ping' === $request_path:
 				new Ping()->handle_request();
@@ -81,6 +83,17 @@ final class Router {
 
 			case 'plugin/get/info' === $request_path:
 				new Plugins\Info()->handle_request();
+				break;
+
+			case str_starts_with( $request_path, 'plugin/get/stats/' ):
+				// Filter duplicated slashes and reset indexes.
+				$path_parts = array_values( array_filter( explode( '/', $request_path ) ) );
+
+				if ( \count( $path_parts ) >= 4 ) {
+					new Plugins\Stats(
+						$path_parts[3], // slug
+					)->handle_request();
+				}
 				break;
 
 			case str_starts_with( $request_path, 'plugin/get/tags/' ):
