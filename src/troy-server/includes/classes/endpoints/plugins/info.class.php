@@ -137,9 +137,28 @@ final class Info extends Base_Endpoint {
 				'banners'         => $this->get_banners_array( $info_row ),
 			];
 
-			// Filter response based on requested fields
-			if ( $fields )
-				$response = $this->filter_response_by_fields( $response, $fields );
+			// Handle specific field inclusions/exclusions
+			if ( $fields ) {
+
+				$fields = array_merge(
+					$fields,
+					// Common fields that are always included
+					[
+						'name'    => true,
+						'slug'    => true,
+						'version' => true,
+					],
+				);
+
+				$filtered = [];
+
+				// Add requested fields. WordPress sends ['field' => bool], so iterate keys.
+				foreach ( $fields as $field => $include )
+					if ( $include && isset( $response[ $field ] ) )
+						$filtered[ $field ] = $response[ $field ];
+
+				$response = $filtered;
+			}
 
 			// Record plugin info request stats
 			$this->record_info_request_stats( $plugin_id, $version, $locale, $screen );
@@ -438,39 +457,6 @@ final class Info extends Base_Endpoint {
 				'1x' => $meta_row->logo_uri,
 			]
 			: [];
-	}
-
-	/**
-	 * Filter response based on requested fields.
-	 *
-	 * @since 0.0.1184
-	 *
-	 * @param array $response Response array.
-	 * @param array $fields   Optional. Requested fields. If empty, all fields are returned.
-	 * @return array Filtered response.
-	 */
-	private function filter_response_by_fields( $response, $fields = [] ) {
-
-		// If fields is empty, return all
-		if ( empty( $fields ) )
-			return $response;
-
-		// Handle specific field inclusions/exclusions
-		$filtered = [];
-
-		// Common fields that are always included
-		$always_include = [ 'name', 'slug', 'version' ];
-
-		foreach ( $always_include as $field )
-			if ( isset( $response[ $field ] ) )
-				$filtered[ $field ] = $response[ $field ];
-
-		// Add requested fields
-		foreach ( $fields as $field )
-			if ( isset( $response[ $field ] ) )
-				$filtered[ $field ] = $response[ $field ];
-
-		return $filtered;
 	}
 
 	/**

@@ -179,6 +179,7 @@ final class Utils {
 					'versions' => $api_versions,
 					'expire'   => time() + $expire,
 				],
+				true,
 			);
 		}
 

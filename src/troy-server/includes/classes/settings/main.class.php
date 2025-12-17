@@ -265,7 +265,7 @@ final class Main {
 		// TODO: Sanitize.
 
 		$result = \get_option( 'troy_server_settings', $settings ) !== $settings
-			? (int) \update_option( 'troy_server_settings', $settings )
+			? (int) \update_option( 'troy_server_settings', $settings, true )
 			: 2;
 
 		\wp_safe_redirect( \add_query_arg( self::SAVED_RESPONSE, $result, \wp_get_referer() ) );

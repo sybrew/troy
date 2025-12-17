@@ -481,7 +481,7 @@ function recheck_dependencies( $recheck = null ) {
 	} else {
 		\is_multisite()
 			? \update_site_option( 'troy_client_recheck_dependencies', $recheck )
-			: \update_option( 'troy_client_recheck_dependencies', $recheck );
+			: \update_option( 'troy_client_recheck_dependencies', $recheck, true );
 	}
 
 	return 'yes' === $recheck;
