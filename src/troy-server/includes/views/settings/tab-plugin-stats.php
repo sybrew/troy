@@ -56,7 +56,7 @@ usort(
 $epoch_time_format = 'D j, ' . \get_option( 'time_format' );
 
 ?>
-<h2><?= \esc_html__( 'Troy Server Stats', 'troy-server' ) ?></h2>
+<h2><?= \esc_html__( 'Plugin Stats', 'troy-server' ) ?></h2>
 
 <p><?= \esc_html__( 'Troy Server collects anonymized data from your plugin users. Here, you can inspect the details.', 'troy-server' ) ?></p>
 <p><?= \esc_html__( 'The data is aggregated automatically every 10 minutes.', 'troy-server' ) ?></p>

@@ -70,7 +70,7 @@ $current_tab = isset( $_GET['tab'], $tabs[ $_GET['tab'] ] ) ? $_GET['tab'] : 'pl
 ?>
 <div class=troy-server-settings-header>
 	<div class=troy-server-settings-title-section>
-		<h1><?= \esc_html__( 'Troy Server', 'troy-server' ) ?></h1>
+		<h1><?= Settings\Main::TROY_ICON_SVG ?><?= \esc_html__( 'Troy Server', 'troy-server' ) ?></h1>
 	</div>
 	<nav class="troy-server-settings-tabs-wrapper hide-if-no-js" aria-label="<?= \esc_attr__( 'Secondary menu', 'default' ) ?>">
 		<?php

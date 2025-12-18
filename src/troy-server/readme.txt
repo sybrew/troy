@@ -112,6 +112,7 @@ It's best to run Troy Server on a standalone WordPress instance. This can also b
 * Added auto-refresh checkboxes to the stats pages to enable automatic refreshing every 15 seconds, this also affects the detailed modals.
 * Added epoch end date and total plugin count to the plugin stats overview data.
 * Added RTL support for the stats interfaces.
+* Added Troy icon to menu and settings page.
 * Changed PHP, WordPress, Plugin, and Package stats to sort by the version number instead of downloads or "this epoch" counts.
 * Changed Troy Mode to remove more admin menu items when enabled.
 * Resolved an issue where change values weren't colored correctly in the stats overview tables.
