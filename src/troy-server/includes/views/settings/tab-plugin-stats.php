@@ -43,6 +43,18 @@ $php_versions     = Settings\Stats::get_php_version_stats();
 $wp_versions      = Settings\Stats::get_wp_version_stats();
 $locales          = Settings\Stats::get_locale_stats();
 
+// Sort versions descending (high to low).
+usort(
+	$php_versions['versions'],
+	fn( $a, $b ) => version_compare( $b['version'], $a['version'] ),
+);
+usort(
+	$wp_versions['versions'],
+	fn( $a, $b ) => version_compare( $b['version'], $a['version'] ),
+);
+
+$epoch_time_format = 'D j, ' . \get_option( 'time_format' );
+
 ?>
 <h2><?= \esc_html__( 'Troy Server Stats', 'troy-server' ) ?></h2>
 
@@ -58,6 +70,12 @@ $locales          = Settings\Stats::get_locale_stats();
 		<option value=90><?= \esc_html__( 'Last 90 Days', 'troy-server' ) ?></option>
 		<option value=30><?= \esc_html__( 'Last 30 Days', 'troy-server' ) ?></option>
 	</select>
+</div>
+<div class=troy-server-stats-date-range>
+	<label class=troy-server-stats-auto-refresh>
+		<input type=checkbox id=troy-server-stats-auto-refresh>
+		<?= \esc_html__( 'Auto-refresh every 15 seconds', 'troy-server' ) ?>
+	</label>
 </div>
 
 <hr class=hr-separator>
@@ -100,6 +118,17 @@ $locales          = Settings\Stats::get_locale_stats();
 			<div class=troy-server-stats-card>
 				<span class=troy-server-stats-card-label><?= \esc_html__( 'Epoch', 'troy-server' ) ?></span>
 				<span class=troy-server-stats-card-value data-stat=this_epoch><?= \esc_html( $overview['this_epoch'] ) ?></span>
+			</div>
+			<div class=troy-server-stats-card>
+				<span class=troy-server-stats-card-label><?= \esc_html__( 'Epoch End', 'troy-server' ) ?></span>
+				<span class=troy-server-stats-card-value data-stat=this_epoch_end>
+					<?php
+					echo \esc_html( \date_i18n(
+						$epoch_time_format,
+						( $overview['this_epoch'] + 1 ) * \WEEK_IN_SECONDS,
+					) );
+					?>
+				</span>
 			</div>
 			<div class=troy-server-stats-card>
 				<span class=troy-server-stats-card-label><?= \esc_html__( 'Last Snapshot', 'troy-server' ) ?></span>

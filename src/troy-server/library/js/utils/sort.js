@@ -49,6 +49,7 @@ window.troyServerSort = ( () => {
 	 * `versioning.c` file in the PHP source code, adapted for JavaScript.
 	 *
 	 * @since 0.0.1184
+	 * @since 1.5.1184 Added support for 2-part versions (e.g., "6.9" -> "6.9.0")
 	 * @link https://gist.github.com/sybrew/fd5b447d1a9ccd4a3344d8267828d7a1
 	 * @see https://github.com/php/php-src/blob/php-8.4.8/ext/standard/versioning.c#L87-L99
 	 *
@@ -91,7 +92,9 @@ window.troyServerSort = ( () => {
 
 		const parseVersionIndex = version => {
 
-			const match = version.match( versionRegex );
+			// Normalize 2-part versions (e.g., "6.9" → "6.9.0") for WordPress compatibility.
+			const normalized = /^\d+\.\d+$/.test( version ) ? `${ version }.0` : version;
+			const match      = normalized.match( versionRegex );
 
 			if ( ! match ) return [ 0, 0, 0, 0 ];
 

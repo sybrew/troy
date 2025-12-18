@@ -44,6 +44,13 @@ $packages_summary = Settings\Stats::get_packages_summary();
 
 <p><?= \esc_html__( 'Download statistics for installer packages.', 'troy-server' ) ?></p>
 
+<div class=troy-server-stats-date-range>
+	<label class=troy-server-stats-auto-refresh>
+		<input type=checkbox id=troy-server-stats-auto-refresh>
+		<?= \esc_html__( 'Auto-refresh every 15 seconds', 'troy-server' ) ?>
+	</label>
+</div>
+
 <hr class=hr-separator>
 
 <div class=troy-server-settings-accordion>
@@ -57,15 +64,15 @@ $packages_summary = Settings\Stats::get_packages_summary();
 		<div class=troy-server-stats-cards id=troy-server-package-stats-overview-cards>
 			<div class=troy-server-stats-card>
 				<span class=troy-server-stats-card-label><?= \esc_html__( 'Downloads', 'troy-server' ) ?></span>
-				<span class=troy-server-stats-card-value><?= \esc_html( \number_format_i18n( $package_overview['total_downloads'] ) ) ?></span>
+				<span class=troy-server-stats-card-value data-stat=total_downloads><?= \esc_html( \number_format_i18n( $package_overview['total_downloads'] ) ) ?></span>
 			</div>
 			<div class=troy-server-stats-card>
 				<span class=troy-server-stats-card-label><?= \esc_html__( 'Packages', 'troy-server' ) ?></span>
-				<span class=troy-server-stats-card-value><?= \esc_html( \number_format_i18n( $package_overview['total_packages'] ) ) ?></span>
+				<span class=troy-server-stats-card-value data-stat=total_packages><?= \esc_html( \number_format_i18n( $package_overview['total_packages'] ) ) ?></span>
 			</div>
 			<div class=troy-server-stats-card>
 				<span class=troy-server-stats-card-label><?= \esc_html__( 'Last Snapshot', 'troy-server' ) ?></span>
-				<span class=troy-server-stats-card-value><?= \esc_html( $package_overview['last_snapshot'] ?? '-' ) ?></span>
+				<span class=troy-server-stats-card-value data-stat=last_snapshot><?= \esc_html( $package_overview['last_snapshot'] ?? '-' ) ?></span>
 			</div>
 		</div>
 	</div>

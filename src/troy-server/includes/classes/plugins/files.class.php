@@ -196,7 +196,10 @@ final class Files {
 
 		$zips = new Data( $plugin_id )->get_zips();
 
-		usort( $zips, fn( $a, $b ) => version_compare( $b->version, $a->version ) );
+		usort(
+			$zips,
+			fn( $a, $b ) => version_compare( $b->version, $a->version ),
+		);
 
 		switch ( API\Sanitize::channel( $args['channel'] ) ) {
 			case 'beta':

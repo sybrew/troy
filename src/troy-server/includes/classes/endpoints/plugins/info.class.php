@@ -401,7 +401,10 @@ final class Info extends Base_Endpoint {
 				$versions[ $zip->version ] = Files::get_plugin_zip_url_by_slug( $slug, $zip->version );
 
 		// Sort versions in descending order
-		uksort( $versions, fn( $a, $b ) => version_compare( $b, $a ) );
+		uksort(
+			$versions,
+			fn( $a, $b ) => version_compare( $b, $a ),
+		);
 
 		return $versions;
 	}

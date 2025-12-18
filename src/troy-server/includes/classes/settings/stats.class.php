@@ -74,6 +74,7 @@ final class Stats {
 				'wp-api-fetch',
 				'troy-server-escape',
 				'troy-server-sanitize',
+				'troy-server-sort',
 			],
 			VERSION,
 			true,
@@ -128,6 +129,7 @@ final class Stats {
 	 * Gets the overall stats overview.
 	 *
 	 * @since 0.0.1184
+	 * @since 1.5.1184 Added this_epoch_end to the returned data.
 	 * @global \wpdb $wpdb
 	 *
 	 * @param ?string $start_date Optional. Start date in Y-m-d format.
@@ -142,6 +144,7 @@ final class Stats {
 	 *     @type int    $inactive_installs Inactive installations of this epoch.
 	 *     @type int    $this_epoch        This epoch number.
 	 *     @type int    $last_epoch        The last epoch number.
+	 *     @type string $this_epoch_end    Formatted date/time when this epoch ends.
 	 *     @type int    $total_plugins     Total number of plugins.
 	 *     @type int    $total_packages    Total number of packages.
 	 *     @type string $last_snapshot     Last snapshot timestamp.
@@ -235,6 +238,11 @@ final class Stats {
 			FROM {$wpdb->prefix}troy_plugin_stats_totals_daily_snapshots",
 		);
 
+		$this_epoch_end = \date_i18n(
+			'D j, ' . \get_option( 'time_format' ),
+			( $this_epoch + 1 ) * \WEEK_IN_SECONDS,
+		);
+
 		return [
 			'total_downloads'   => (int) ( $totals->total_downloads ?? 0 ),
 			'total_views'       => (int) ( $totals->total_views ?? 0 ),
@@ -243,6 +251,7 @@ final class Stats {
 			'inactive_installs' => $this_inactive,
 			'this_epoch'        => $this_epoch,
 			'last_epoch'        => $last_epoch,
+			'this_epoch_end'    => $this_epoch_end,
 			'total_plugins'     => $total_plugins,
 			'total_packages'    => $total_packages,
 			'last_snapshot'     => $last_snapshot,

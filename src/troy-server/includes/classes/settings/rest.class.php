@@ -61,6 +61,7 @@ final class REST {
 	 * Register stats-related REST routes.
 	 *
 	 * @since 0.0.1184
+	 * @since 1.5.1184 Added package-overview route.
 	 */
 	private static function register_stats_routes() {
 
@@ -74,6 +75,7 @@ final class REST {
 		foreach (
 			[
 				'overview'            => [ \WP_REST_Server::READABLE, 'get_overview' ],
+				'package-overview'    => [ \WP_REST_Server::READABLE, 'get_package_overview' ],
 				'top-plugins'         => [ \WP_REST_Server::READABLE, 'get_top_plugins' ],
 				'packages'            => [ \WP_REST_Server::READABLE, 'get_packages' ],
 				'epoch-comparison'    => [ \WP_REST_Server::READABLE, 'get_epoch_comparison' ],
@@ -192,6 +194,22 @@ final class REST {
 
 		return new \WP_REST_Response(
 			Stats::get_packages_summary( $limit ),
+			200,
+		);
+	}
+
+	/**
+	 * Gets package overview statistics.
+	 *
+	 * @rest troy-server/v1/stats/package-overview GET
+	 * @since 1.5.1184
+	 *
+	 * @return \WP_REST_Response
+	 */
+	public static function get_package_overview() {
+
+		return new \WP_REST_Response(
+			Stats::get_package_overview(),
 			200,
 		);
 	}

@@ -28,6 +28,7 @@
 
 	const escape   = window.troyServerEscape;
 	const sanitize = window.troyServerSanitize;
+	const sort     = window.troyServerSort;
 
 	const config   = window.troyServerStats || {};
 	const restBase = config.restBase || '';
@@ -49,12 +50,19 @@
 		if ( ! elements.size ) {
 			[
 				'range',
+				'auto-refresh',
 				'overview-cards',
 				'plugins-table',
 				'modal',
 				'modal-title',
 				'modal-body',
 			].forEach( key => elements.set( key, document.getElementById( `troy-server-stats-${ key }` ) ) );
+
+			// Package stats elements use different prefix.
+			[
+				'package-overview-cards',
+				'packages-table',
+			].forEach( key => elements.set( key, document.getElementById( `troy-server-${ key }` ) ) );
 		}
 
 		return elements.get( id );
@@ -142,6 +150,7 @@
 			inactive_installs: sanitize.number( data.inactive_installs ),
 			total_views:       sanitize.number( data.total_views ),
 			this_epoch:        String( data.this_epoch ?? '-' ),
+			this_epoch_end:    data.this_epoch_end || '-',
 			total_plugins:     sanitize.number( data.total_plugins ),
 			last_snapshot:     data.last_snapshot || '-',
 		};
@@ -201,6 +210,77 @@
 	};
 
 	/**
+	 * Updates the package overview cards with new data.
+	 *
+	 * @since 0.0.1184
+	 *
+	 * @param {Object} data Package overview data from the API.
+	 */
+	const updatePackageOverviewCards = data => {
+
+		const overviewCards = getEl( 'package-overview-cards' );
+
+		if ( ! overviewCards )
+			return;
+
+		const statMap = {
+			total_downloads: sanitize.number( data.total_downloads ),
+			total_packages:  sanitize.number( data.total_packages ),
+			last_snapshot:   data.last_snapshot || '-',
+		};
+
+		Object.entries( statMap ).forEach( ( [ key, value ] ) => {
+
+			const el = overviewCards.querySelector( `[data-stat="${ key }"]` );
+
+			if ( el )
+				el.textContent = escape.string( value );
+		} );
+	};
+
+	/**
+	 * Updates the packages table with new data.
+	 *
+	 * @since 0.0.1184
+	 *
+	 * @param {Array} packages Array of package data from the API.
+	 */
+	const updatePackagesTable = packages => {
+
+		const packagesTable = getEl( 'packages-table' );
+
+		if ( ! packagesTable )
+			return;
+
+		const tbody = packagesTable.querySelector( 'tbody' );
+
+		if ( ! packages.length ) {
+			tbody.innerHTML = `<tr><td colspan="3">${ i18n.noData }</td></tr>`;
+			return;
+		}
+
+		tbody.innerHTML = packages
+			.map(
+				pkg => `
+					<tr data-package-id="${ +pkg.package_id }">
+						<td>
+							<strong>${ escape.string( pkg.name ) }</strong> <code>(${ escape.string( pkg.slug ) })</code>
+						</td>
+						<td>${ sanitize.number( pkg.downloads ) }</td>
+						<td>
+							<button type="button" class="button button-small troy-server-stats-package-details-btn" data-package-id="${ +pkg.package_id }">
+								${ i18n.details }
+							</button>
+						</td>
+					</tr>
+				`,
+			)
+			.join( '' );
+
+		bindPackageDetailButtons();
+	};
+
+	/**
 	 * Shows the modal with content.
 	 *
 	 * @since 0.0.1184
@@ -236,7 +316,8 @@
 		if ( ! modal )
 			return;
 
-		modal.hidden                 = true;
+		modal.hidden = true;
+
 		document.body.style.overflow = '';
 	};
 
@@ -250,6 +331,23 @@
 	const showPluginDetails = async pluginId => {
 
 		showModal( i18n.loading, `<p class="troy-server-stats-loading">${ i18n.loading }</p>` );
+
+		const modal = getEl( 'modal' );
+
+		modal.dataset.type = 'plugin';
+		modal.dataset.id   = pluginId;
+
+		await refreshPluginDetails( pluginId );
+	};
+
+	/**
+	 * Refreshes plugin details in the modal without showing loading state.
+	 *
+	 * @since 0.0.1184
+	 *
+	 * @param {number} pluginId The plugin ID to fetch details for.
+	 */
+	const refreshPluginDetails = async pluginId => {
 
 		try {
 			const data = await fetchStats( `plugin/${ pluginId }`, getDateParams() );
@@ -271,6 +369,23 @@
 	const showPackageDetails = async packageId => {
 
 		showModal( i18n.loading, `<p class="troy-server-stats-loading">${ i18n.loading }</p>` );
+
+		const modal = getEl( 'modal' );
+
+		modal.dataset.type = 'package';
+		modal.dataset.id   = packageId;
+
+		await refreshPackageDetails( packageId );
+	};
+
+	/**
+	 * Refreshes package details in the modal without showing loading state.
+	 *
+	 * @since 0.0.1184
+	 *
+	 * @param {number} packageId The package ID to fetch details for.
+	 */
+	const refreshPackageDetails = async packageId => {
 
 		try {
 			const data = await fetchStats( `package/${ packageId }` );
@@ -629,21 +744,28 @@
 	 * @param {Object} data Plugin details data from the API.
 	 * @return {string} HTML content for the modal.
 	 */
-	const buildPluginDetailsHtml = data => `
-		<div class="troy-server-stats-cards">
-			${ buildCard( i18n.totalDownloads, data.total_downloads ) }
-			${ buildCard( i18n.installations, data.total_installs ) }
-			${ buildCard( i18n.activeInstalls, data.active_installs ) }
-			${ buildCard( i18n.inactiveInstalls, data.inactive_installs ) }
-			${ buildCard( i18n.lastSnapshot, data.last_snapshot || '-', 'string' ) }
-		</div>
-		${ buildEpochComparisonTable( data ) }
-		${ buildVersionDetailsTable( data ) }
-		${ buildDetailSection( i18n.downloadsByType, data.download_types, 'type', 'downloads' ) }
-		${ buildEpochDetailSection( i18n.locales, data.locales, 'locale', data ) }
-		${ buildEpochDetailSection( i18n.phpVersions, data.php_versions, 'version', data ) }
-		${ buildEpochDetailSection( i18n.wpVersions, data.wp_versions, 'version', data ) }
-	`;
+	const buildPluginDetailsHtml = data => {
+
+		const sortedVersionDetails = sort.versions( [ ...( data.version_details || [] ) ], 'DESC' );
+		const sortedPhpVersions    = sort.versions( [ ...( data.php_versions || [] ) ], 'DESC' );
+		const sortedWpVersions     = sort.versions( [ ...( data.wp_versions || [] ) ], 'DESC' );
+
+		return `
+			<div class="troy-server-stats-cards">
+				${ buildCard( i18n.totalDownloads, data.total_downloads ) }
+				${ buildCard( i18n.installations, data.total_installs ) }
+				${ buildCard( i18n.activeInstalls, data.active_installs ) }
+				${ buildCard( i18n.inactiveInstalls, data.inactive_installs ) }
+				${ buildCard( i18n.lastSnapshot, data.last_snapshot || '-', 'string' ) }
+			</div>
+			${ buildEpochComparisonTable( data ) }
+			${ buildVersionDetailsTable( { ...data, version_details: sortedVersionDetails } ) }
+			${ buildDetailSection( i18n.downloadsByType, data.download_types, 'type', 'downloads' ) }
+			${ buildEpochDetailSection( i18n.locales, data.locales, 'locale', data ) }
+			${ buildEpochDetailSection( i18n.phpVersions, sortedPhpVersions, 'version', data ) }
+			${ buildEpochDetailSection( i18n.wpVersions, sortedWpVersions, 'version', data ) }
+		`;
+	};
 
 	/**
 	 * Builds HTML for package details modal content.
@@ -701,13 +823,47 @@
 		const params = getDateParams();
 
 		try {
-			const [ overview, topPlugins ] = await Promise.all( [
-				fetchStats( 'overview', params ),
-				fetchStats( 'top-plugins', params ),
-			] );
+			// Determine which stats to fetch based on available elements.
+			const hasPluginStats  = !! getEl( 'overview-cards' );
+			const hasPackageStats = !! getEl( 'package-overview-cards' );
 
-			updateOverviewCards( overview );
-			updatePluginsTable( topPlugins );
+			const fetches = [];
+
+			if ( hasPluginStats ) {
+				fetches.push( fetchStats( 'overview', params ) );
+				fetches.push( fetchStats( 'top-plugins', params ) );
+			}
+
+			if ( hasPackageStats ) {
+				fetches.push( fetchStats( 'package-overview' ) );
+				fetches.push( fetchStats( 'packages' ) );
+			}
+
+			const results = await Promise.all( fetches );
+
+			let idx = 0;
+
+			if ( hasPluginStats ) {
+				updateOverviewCards( results[ idx++ ] );
+				updatePluginsTable( results[ idx++ ] );
+			}
+
+			if ( hasPackageStats ) {
+				updatePackageOverviewCards( results[ idx++ ] );
+				updatePackagesTable( results[ idx++ ] );
+			}
+
+			const modal = getEl( 'modal' );
+
+			if ( modal && ! modal.hidden ) {
+				switch ( modal.dataset?.type ) {
+					case 'plugin':
+						refreshPluginDetails( modal.dataset.id );
+						break;
+					case 'package':
+						refreshPackageDetails( modal.dataset.id );
+				}
+			}
 		} catch ( error ) {
 			console.error( 'Failed to refresh stats:', error );
 		}
@@ -720,11 +876,27 @@
 	 */
 	const init = () => {
 
-		const modal      = getEl( 'modal' );
-		const modalClose = modal?.querySelector( '.troy-server-stats-modal-close' );
+		const modal       = getEl( 'modal' );
+		const modalClose  = modal?.querySelector( '.troy-server-stats-modal-close' );
+		const autoRefresh = getEl( 'auto-refresh' );
 
 		getEl( 'range' )?.addEventListener( 'change', refreshAllStats );
 		modalClose?.addEventListener( 'click', hideModal );
+
+		let autoRefreshInterval = null;
+
+		autoRefresh?.addEventListener(
+			'change',
+			() => {
+
+				if ( autoRefresh.checked ) {
+					refreshAllStats();
+					autoRefreshInterval = setInterval( refreshAllStats, 15000 );
+				} else {
+					clearInterval( autoRefreshInterval );
+				}
+			},
+		);
 
 		modal?.addEventListener(
 			'click',
@@ -737,7 +909,7 @@
 		document.addEventListener(
 			'keydown',
 			e => {
-				if ( 'Escape' === e.key && ! modal?.hidden )
+				if ( 'Escape' === e.key && modal && ! modal.hidden )
 					hideModal();
 			},
 		);

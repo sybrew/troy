@@ -109,7 +109,10 @@ It's best to run Troy Server on a standalone WordPress instance. This can also b
 
 * Added public stats endpoint to retrieve active install, download, and rating counts for a plugin.
 * Added download and active install counts to the info endpoint response for each plugin.
+* Added auto-refresh checkboxes to the stats pages to enable automatic refreshing every 15 seconds, this also affects the detailed modals.
+* Added epoch end date and total plugin count to the plugin stats overview data.
 * Added RTL support for the stats interfaces.
+* Changed PHP, WordPress, Plugin, and Package stats to sort by the version number instead of downloads or "this epoch" counts.
 * Changed Troy Mode to remove more admin menu items when enabled.
 * Resolved an issue where change values weren't colored correctly in the stats overview tables.
 * Resolved an issue where plugin stats would stop aggregating forever after a failed attempt (this fix works retroactively).
