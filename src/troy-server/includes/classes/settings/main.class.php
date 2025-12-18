@@ -89,7 +89,7 @@ final class Main {
 	 *
 	 * Fill black to ensure poper coloring via currentColor and CSS filters.
 	 *
-	 * @since 0.0.1184
+	 * @since 1.5.1184
 	 */
 	public const TROY_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="black"><path d="M19.44,6.29c-.53-.6-1.17-1.7-1.24-2.19s-.29-.67-1.03-1.44c0,0,.4-.33.29-.76,0,0-.05.29-.8.36-.49.05-.67.21-.67.21,0,0,0,0,0,0-.19-.14-.64-.14-1.12.02-.71.12-1.37.46-1.88.97-.65.65-1.02,1.53-1.02,2.45,0,.96-.78,1.75-1.74,1.75h-5.22c-.96,0-1.74.78-1.74,1.74v8.7h1.74v-4.35c.46,0,.9-.18,1.23-.51.33-.33.51-.77.51-1.23v-.46c.96.86,2.2,1.33,3.48,1.33.59,0,1.18-.11,1.74-.31v5.53h1.74v-6.56c1.1-.99,1.74-2.4,1.74-3.88h0v-1.74s.04,0,.06,0c.09.22.36.58,1.22.75,1.28.26,1.21.64,1.28.9.1.41.78.4.95.09.07-.13.27,0,.37-.15.05-.08.03-.23.14-.32.3-.24.41-.44,0-.91Z"/><path d="M.29,9.4v5.22h1.74v-6.96h0c-.96,0-1.74.78-1.74,1.74Z"/><path d="M14.92,12.54h1.41c0,.37-.15.73-.41.99-.26.26-.62.41-.99.41v1.4c.74,0,1.45-.29,1.97-.82.52-.52.82-1.23.82-1.97v-1.4h-1.41c-.77,0-1.4.63-1.4,1.4Z"/><rect x="6.28" y="14.62" width="1.74" height="3.48"/></svg>';
 
@@ -109,6 +109,7 @@ final class Main {
 			self::REQUIRED_CAPABILITY,
 			self::SETTINGS_PAGE_SLUG,
 			[ __CLASS__, 'render_admin_menu' ],
+			// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions -- We want inline SVG here.
 			'data:image/svg+xml;base64,' . \base64_encode( self::TROY_ICON_SVG ),
 			3.1184,
 		);

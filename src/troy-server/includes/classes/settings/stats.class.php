@@ -147,7 +147,7 @@ final class Stats {
 	 *     @type string $this_epoch_end    Formatted date/time when this epoch ends.
 	 *     @type int    $total_plugins     Total number of plugins.
 	 *     @type int    $total_packages    Total number of packages.
-	 *     @type string $last_snapshot     Last snapshot timestamp.
+	 *     @type string $last_snapshot     Formatted last snapshot date/time.
 	 *     @type array  $epoch_installs    Per-epoch active/inactive breakdown.
 	 * }
 	 */
@@ -254,7 +254,7 @@ final class Stats {
 			'this_epoch_end'    => $this_epoch_end,
 			'total_plugins'     => $total_plugins,
 			'total_packages'    => $total_packages,
-			'last_snapshot'     => $last_snapshot,
+			'last_snapshot'     => self::format_snapshot( $last_snapshot ),
 			'epoch_installs'    => [
 				$this_epoch => [
 					'active'   => $this_active,
@@ -352,7 +352,7 @@ final class Stats {
 	 *
 	 *     @type int    $total_packages  Total number of active packages.
 	 *     @type int    $total_downloads Total package downloads.
-	 *     @type string $last_snapshot   Last snapshot timestamp.
+	 *     @type string $last_snapshot   Formatted last snapshot date/time.
 	 * }
 	 */
 	public static function get_package_overview() {
@@ -374,7 +374,7 @@ final class Stats {
 		return [
 			'total_packages'  => $total_packages,
 			'total_downloads' => $total_downloads,
-			'last_snapshot'   => $last_snapshot,
+			'last_snapshot'   => self::format_snapshot( $last_snapshot ),
 		];
 	}
 
@@ -724,7 +724,7 @@ final class Stats {
 			'php_versions'      => $php_versions,
 			'wp_versions'       => $wp_versions,
 			'version_details'   => $version_details,
-			'last_snapshot'     => $last_snapshot,
+			'last_snapshot'     => self::format_snapshot( $last_snapshot ),
 		];
 	}
 
@@ -791,7 +791,7 @@ final class Stats {
 			'name'            => $package->name ?: $package->slug,
 			'status'          => $package->status,
 			'total_downloads' => $total_downloads,
-			'last_snapshot'   => $last_snapshot,
+			'last_snapshot'   => self::format_snapshot( $last_snapshot ),
 			'versions'        => $versions,
 		];
 	}
@@ -989,5 +989,33 @@ final class Stats {
 				)
 				: [],
 		];
+	}
+
+	/**
+	 * Formats a database timestamp for display.
+	 *
+	 * Accounts for MySQL server timezone by querying the offset on first use.
+	 * Converts the timestamp to UTC, then formats using the site's timezone.
+	 *
+	 * @since 1.5.1184
+	 *
+	 * @param ?string $timestamp The database timestamp (Y-m-d H:i:s).
+	 * @return string Formatted date/time string or '-' if null.
+	 */
+	private static function format_snapshot( $timestamp ) {
+
+		if ( ! $timestamp )
+			return '-';
+
+		static $sql_offset_seconds;
+
+		$sql_offset_seconds ??= (int) $GLOBALS['wpdb']->get_var(
+			'SELECT TIMESTAMPDIFF(SECOND, UTC_TIMESTAMP(), NOW())'
+		);
+
+		return \wp_date(
+			'D j, ' . \get_option( 'time_format' ),
+			\strtotime( $timestamp ) - $sql_offset_seconds,
+		);
 	}
 }

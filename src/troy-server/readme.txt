@@ -115,6 +115,7 @@ It's best to run Troy Server on a standalone WordPress instance. This can also b
 * Added Troy icon to menu and settings page.
 * Changed PHP, WordPress, Plugin, and Package stats to sort by the version number instead of downloads or "this epoch" counts.
 * Changed Troy Mode to remove more admin menu items when enabled.
+* Changed the date format used in the stats overview tables to use a shorter format to improve readability; it also uses your site's time preferences now.
 * Resolved an issue where change values weren't colored correctly in the stats overview tables.
 * Resolved an issue where plugin stats would stop aggregating forever after a failed attempt (this fix works retroactively).
 * Resolved an issue where tooltips would be clipped by the accordion wrappers on the settings pages.
