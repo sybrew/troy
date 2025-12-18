@@ -109,7 +109,7 @@ It's best to run Troy Server on a standalone WordPress instance. This can also b
 
 * Added public stats endpoint to retrieve active install, download, and rating counts for a plugin.
 * Added download and active install counts to the info endpoint response for each plugin.
-* Added auto-refresh checkboxes to the stats pages to enable automatic refreshing every 15 seconds, this also affects the detailed modals.
+* Added auto*refresh checkboxes to the stats pages to enable automatic refreshing every 15 seconds; this also affects the detailed modals.
 * Added epoch end date and total plugin count to the plugin stats overview data.
 * Added RTL support for the stats interfaces.
 * Added Troy icon to menu and settings page.
@@ -119,8 +119,8 @@ It's best to run Troy Server on a standalone WordPress instance. This can also b
 * Resolved an issue where change values weren't colored correctly in the stats overview tables.
 * Resolved an issue where plugin stats would stop aggregating forever after a failed attempt (this fix works retroactively).
 * Resolved an issue where tooltips would be clipped by the accordion wrappers on the settings pages.
-* Resolved an issue where "last epoch" installation counts were reset to 0 during epoch finalization. This resolves itself in a week automatically.
-	* We couldn't retroactively fix this because the snapshot data is relative to the server time, not epochs. Luckily, this issue is caught in the second week.
+* Resolved an issue where "last epoch" installation counts were reset to 0 during epoch finalization. This resolves automatically in a week.
+	* We couldn't retroactively fix this because the snapshot data is relative to the server time, not epochs. Luckily, this issue was caught in the second week.
 * Resolved an issue with plugin info thickbox filtering when WordPress passes a fields array with boolean values.
 * Resolved an issue where `package_stats_total_daily_snapshots` wasn't being populated. This data is still unused, however.
 
