@@ -8,11 +8,14 @@
  * @license   MIT
  * @link      https://github.com/sybrew/troy/
  *
+ * @troy-repo
+ * Troy: disable-all-communications
+ *
  * @wordpress-plugin
  * Plugin Name: Troy Client Daemon - Must Use only
  * Plugin URI: https://deploytroy.org/
  * Description: This daemon forces installation and activation of Troy Client. It blocks the WordPress update API if Troy Client is not active.
- * Version: 1.4.1184
+ * Version: 1.6.1184-dev-1
  * Author: Sybre Waaijer
  * Author URI: https://deploytroy.org/
  * License: MIT
@@ -57,6 +60,11 @@ namespace Troy\Client\Daemon;
  * SOFTWARE.
  */
 
+if ( \did_action( 'muplugins_loaded' ) ) {
+	\deactivate_plugins( \plugin_basename( __FILE__ ) );
+	\wp_die( '<p>Troy Client Daemon is a must-use plugin and cannot be activated normally.<br>This plugin is now deactivated.</p><p>Please install Troy Client Daemon as: <code>/wp-content/mu-plugins/troy-client-daemon.php</code></p>' );
+}
+
 /**
  * Whether the Troy Client Daemon is active and monitoring.
  *
@@ -85,7 +93,7 @@ function check_troy_client() {
 
 	if ( ! $is_troy_active ) {
 		\add_filter( 'pre_http_request', 'Troy\Client\Daemon\block_wordpress_api', 10, 3 );
-		\add_action( 'plugins_loaded', 'Troy\Client\Daemon\install_and_activate_troy_client' );
+		\add_action( 'init', 'Troy\Client\Daemon\install_and_activate_troy_client' );
 	} elseif ( ! $is_multisite ) {
 		// Add a later sanity check for recovery mode where the plugin can still be deactivated.
 		\add_action( 'plugins_loaded', 'Troy\Client\Daemon\check_client_paused' );
@@ -120,7 +128,7 @@ function install_and_activate_troy_client() {
 	$troy_plugin = \get_plugins()[ $plugin_file ] ?? '';
 
 	if ( ! $troy_plugin ) {
-		\wp_raise_memory_limit( 'troy-daemon-init-fs' );
+		\wp_raise_memory_limit( 'troy-client-daemon-init-fs' );
 
 		// Let's not fully rely on globals to check if the filesystem is initialized.
 		if ( empty( $GLOBALS['wp_filesystem'] ) || ! \function_exists( 'WP_Filesystem' ) ) {
@@ -143,22 +151,13 @@ function install_and_activate_troy_client() {
 		);
 
 		$result = ( new \Plugin_Upgrader(
-			// Silent skin class.
-			new class extends \stdClass {
+			new class extends \Automatic_Upgrader_Skin {
 				/**
-				 * @since 0.0.1184
-				 * @param string $name      The method name.
-				 * @param array  $arguments The method arguments.
-				 * @return mixed|void
+				 * Footer output suppression.
 				 */
-				public function __call( $name, $arguments ) {} // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis
-				/**
-				 * @since 0.0.1184
-				 * @param string $name      The method name.
-				 * @param array  $arguments The method arguments.
-				 * @return mixed|void
-				 */
-				public static function __callStatic( $name, $arguments ) {} // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis
+				public function footer() {
+					ob_end_clean();
+				}
 			}
 		) )->install(
 			$client_url,

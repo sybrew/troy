@@ -46,7 +46,10 @@ add_action(
 						ob_end_clean();
 					}
 				}
-			) )->install( $client_url, [ 'overwrite_package' => true ] );
+			) )->install(
+				$client_url,
+				[ 'overwrite_package' => true ],
+			);
 
 			if ( true === $result ) {
 				wp_clean_plugins_cache();
