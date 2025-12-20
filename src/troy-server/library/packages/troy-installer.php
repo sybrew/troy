@@ -181,13 +181,13 @@ function output_registered_install_notices() {
 	if ( ! $messages )
 		return;
 
-	$dashicons   = [
+	$dashicons    = [
 		'info'    => [ 'editor-help', '#2271b1' ],
 		'success' => [ 'yes', '#00a32a' ],
 		'warning' => [ 'flag', '#ffae00' ],
 		'error'   => [ 'no', '#d63638' ],
 	];
-	$allowedtags = [
+	$allowed_tags = [
 		'a'       => [
 			'href'   => [],
 			'title'  => [],
@@ -214,7 +214,7 @@ function output_registered_install_notices() {
 		[ $dashicon, $color ] = $dashicons[ $type ];
 
 		// `\wp_kses_post()` in `\wp_admin_notice()` is too stringent and loose.
-		$message = \wp_kses( $message, $allowedtags );
+		$message = \wp_kses( $message, $allowed_tags );
 
 		$notice .= <<<HTML
 			<div style="display:flex;align-items:center;gap:1ch;padding:.5ch;">
@@ -617,8 +617,8 @@ function register_skin_messages( $skin, $args = [] ) {
 		$args['type'] = 'error';
 		$message      = \sprintf(
 			\count( $messages ) > 1
-				? 'The following installlation errors were given:<br>- %s'
-				: 'The following installlation error was given: %s',
+				? 'The following installation errors were given:<br>- %s'
+				: 'The following installation error was given: %s',
 			implode( '<br>- ', $messages ),
 		);
 	}

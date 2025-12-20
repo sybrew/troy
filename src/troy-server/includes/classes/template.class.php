@@ -78,12 +78,12 @@ final class Template {
 	 */
 	public static function get_view_location( $file ) {
 
-		static $realview;
+		static $real_view;
 
-		$realview ??= realpath( ABSPATH . 'includes/views' );
-		$path       = realpath( "$realview/$file.php" );
+		$real_view ??= realpath( ABSPATH . 'includes/views' );
+		$path        = realpath( "$real_view/$file.php" );
 
-		if ( $path && str_starts_with( $path, $realview ) )
+		if ( $path && str_starts_with( $path, $real_view ) )
 			return $path;
 
 		return null;

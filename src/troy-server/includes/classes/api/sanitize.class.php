@@ -572,7 +572,7 @@ final class Sanitize {
 	 * Schemes are supported in the URI but they're replaced. So don't bother, it's fluff.
 	 *
 	 * Do not use uppercase letters in the URI unless absolutely necessary.
-	 * They won't be collapsed with different cases from different plugins, leading to unneccessary requests.
+	 * They won't be collapsed with different cases from different plugins, leading to unnecessary requests.
 	 *
 	 * All URIs will be slashed. Troy Servers must enable trailing slashes for consistency and improved performance.
 	 * All URIs will be converted to HTTPS only. Troy Servers must have a valid TLS certificate.

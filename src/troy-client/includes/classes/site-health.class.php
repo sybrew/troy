@@ -154,7 +154,7 @@ final class Site_Health {
 			/* translators: %1$s: The plugin name, %2$s: The plugin slug. */
 			'plugin_name_slug'     => \__( '%1$s (slug: %2$s)', 'troy-client' ),
 			/* translators: %s: The plugin name and slug. */
-			'plugin_depdendency'   => \__( 'Pending plugin dependency', 'troy-client' ),
+			'plugin_dependency'    => \__( 'Pending plugin dependency', 'troy-client' ),
 		];
 
 		$plugins    = get_troy_plugins();
@@ -220,7 +220,7 @@ final class Site_Health {
 							array_map(
 								fn( $slug ) => \sprintf(
 									$i18n['plugin_name_slug'],
-									$_plugin_names[ $slug ] ?? $i18n['plugin_depdendency'],
+									$_plugin_names[ $slug ] ?? $i18n['plugin_dependency'],
 									$slug,
 								),
 								$slugs,

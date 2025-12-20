@@ -198,7 +198,7 @@ final class Download extends Base_Endpoint {
 			}
 		}
 
-		// TODO, check for referers?
+		// TODO, check for referrers?
 
 		// Record live download stat
 		$wpdb->insert(

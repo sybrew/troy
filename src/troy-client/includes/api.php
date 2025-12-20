@@ -72,7 +72,7 @@ function get_site_unique_id() {
 		// We don't use an rfc9562 UUID because we need to be able to extract a custom epoch.
 		$uuid = "$epoch-" . bin2hex( random_bytes( 32 ) );
 
-		// Not autoloaded -- we only use if when we make a request.
+		// Not auto-loaded -- we only use if when we make a request.
 		\update_option( 'troy_client_site_unique_id', $uuid, false );
 	}
 
@@ -179,7 +179,7 @@ function get_troy_plugin_slugs_per_repo() {
 /**
  * Returns a memoized and sanitized list of all Troy-supported plugins with their endpoints.
  *
- * "Troy:" repository headers will supercede "Troy Dependencies:" if a plugin is also a dependency.
+ * "Troy:" repository headers will supersede "Troy Dependencies:" if a plugin is also a dependency.
  *
  * When a Troy plugin registers Troy Dependencies, and one of the dependency slug exists,
  * the slug will be redirected to the registered dependency repository.
@@ -334,7 +334,7 @@ function has_troy_plugins() {
  * Schemes are supported in the URI but they're replaced. So don't bother, it's fluff.
  *
  * Do not use uppercase letters in the URI unless absolutely necessary.
- * They won't be collapsed with different cases from different plugins, leading to unneccessary requests.
+ * They won't be collapsed with different cases from different plugins, leading to unnecessary requests.
  *
  * All URIs will be slashed. Troy Servers must enable trailing slashes for consistency and improved performance.
  * All URIs will be converted to HTTPS only. Troy Servers must have a valid TLS certificate.

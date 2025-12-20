@@ -56,7 +56,7 @@ final class Admin_Menu {
 		// Collect post types with menu positions starting with 3.1184
 		foreach ( $wp_post_types as $post_type => $post_type_obj )
 			if ( str_starts_with( (string) $post_type_obj?->menu_position, '3.1184' ) )
-				// PHP implicitely converts keys from floats to integers in list arrays. Set to string to bypass.
+				// PHP implicitly converts keys from floats to integers in list arrays. Set to string to bypass.
 				$target_menus[ (string) $post_type_obj?->menu_position ] = $post_type_obj->name;
 
 		// Sort by position to maintain order

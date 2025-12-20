@@ -55,7 +55,7 @@ final class Zip_Uploader {
 	/**
 	 * @since 0.0.1184
 	 * @var int ZIP_DOWNLOAD_TIMEOUT Timeout for downloading ZIP files.
-	 *                               It takes 5 seconds to download 30MB at 50Mbps.
+	 *                               It takes 5 seconds to download 30MB at 50Mb/s.
 	 *                               We double that to be safe.
 	 */
 	private const ZIP_DOWNLOAD_TIMEOUT = 10;
@@ -298,8 +298,8 @@ final class Zip_Uploader {
 
 		find_temp_zip_main_plugin_file: {
 			// Extract the first subdirectory name, this is likely the plugin folder.
-			$subdirs            = glob( "{$temp_zip_extraction_dir}*", GLOB_ONLYDIR );
-			$plugin_subdir_name = $subdirs ? basename( $subdirs[0] ) : '';
+			$sub_dirs           = glob( "{$temp_zip_extraction_dir}*", GLOB_ONLYDIR ); // cspell:ignore ONLYDIR
+			$plugin_subdir_name = $sub_dirs ? basename( $sub_dirs[0] ) : '';
 
 			$temp_plugin_path = \trailingslashit(
 				"{$temp_zip_extraction_dir}{$plugin_subdir_name}"

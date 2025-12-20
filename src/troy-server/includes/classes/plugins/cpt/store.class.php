@@ -55,7 +55,7 @@ use Troy\Server\Plugins\{
  * How the store works:
  * 1. The metadata is registered via `Troy\Server\Plugins\CPT\Block_Editor::register_post_meta()`.
  * 2. The post is saved (REST or classic) via WordPress Core, it automatically saves the post meta.
- * 3. The post meta is sanizied via the `sanitize_callback` of `register_post_meta()`, which is `sanitize_editor_plugin_data()` below.
+ * 3. The post meta is sanitized via the `sanitize_callback` of `register_post_meta()`, which is `sanitize_editor_plugin_data()` below.
  * 4. Once the post is done saving, `handle_after_insert_post()` is called via `wp_after_insert_post`.
  * 5. `handle_save_post()` extracts the data from the post meta and block content and saves it to custom Troy Server tables.
  * 6. The function then deletes any redundant data from the post and post meta, such as the content.

@@ -60,6 +60,7 @@ final class Info {
 		// $locales = \get_available_languages();
 
 		// Let's use something more comprehensive.
+		// cspell:disable
 		return [
 			'af'             => [
 				'name'   => 'Afrikaans',
@@ -898,5 +899,6 @@ final class Info {
 				'native' => 'isiZulu',
 			],
 		];
+		// cspell:enable
 	}
 }

@@ -32,7 +32,7 @@ namespace Troy\Server\API;
  * SOFTWARE.
  */
 
-// TEMP: PHPCS bugged with PHP 8.4 assymetric visibility and property hooks.
+// TEMP: PHPCS bugged with PHP 8.4 asymmetric visibility and property hooks.
 // phpcs:disable Squiz.PHP.NonExecutableCode.Unreachable, Squiz.Commenting.VariableComment.Missing
 // phpcs:disable PSR2.Classes.PropertyDeclaration.ScopeMissing, PSR2.Classes.PropertyDeclaration.Multiple
 // phpcs:disable PHPCompatibility.Syntax.RemovedCurlyBraceArrayAccess.Found, Generic.WhiteSpace.ScopeIndent.IncorrectExact

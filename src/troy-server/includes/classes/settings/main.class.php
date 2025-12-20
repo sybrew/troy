@@ -87,7 +87,7 @@ final class Main {
 	/**
 	 * The menu icon SVG.
 	 *
-	 * Fill black to ensure poper coloring via currentColor and CSS filters.
+	 * Fill black to ensure proper coloring via currentColor and CSS filters.
 	 *
 	 * @since 1.5.1184
 	 */

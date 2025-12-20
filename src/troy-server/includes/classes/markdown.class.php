@@ -35,7 +35,7 @@ namespace Troy\Server;
 /**
  * Class Troy\Server\Markdown.
  *
- * Also handles autoloading for the Markdown library classes.
+ * Also handles auto-loading for the Markdown library classes.
  *
  * @since 0.0.1184
  */
@@ -111,9 +111,9 @@ final class Markdown {
 	 */
 	private static function autoload_dependencies() {
 
-		static $loaded_depencencies;
+		static $loaded_dependencies;
 
-		if ( $loaded_depencencies )
+		if ( $loaded_dependencies )
 			return;
 
 		$base_dir = ABSPATH . 'vendor/markdown/';
@@ -129,7 +129,7 @@ final class Markdown {
 			'Psr\EventDispatcher\\'   => "{$base_dir}php-fig-event-dispatcher/src/",
 		];
 
-		// These cannot feasibly be autoloaded -- too many classes in one file.
+		// These cannot feasibly be auto-loaded -- too many classes in one file.
 		require "{$base_dir}nette-utils/src/exceptions.php";
 
 		spl_autoload_register(
@@ -151,6 +151,6 @@ final class Markdown {
 			},
 		);
 
-		$loaded_depencencies = true;
+		$loaded_dependencies = true;
 	}
 }

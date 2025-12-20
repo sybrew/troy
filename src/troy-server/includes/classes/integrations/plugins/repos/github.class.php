@@ -65,7 +65,7 @@ final class GitHub {
 	 *     @type string $pat        Optional PAT for private repos.
 	 * }
 	 * @param string $auto_process Optional. Auto-process during cron. Default 'all'.
-	 *                             Acceptes 'all', 'tag', 'beta', and 'none'.
+	 *                             Accepts 'all', 'tag', 'beta', and 'none'.
 	 * @return array {
 	 *    The result of the connection attempt.
 	 *

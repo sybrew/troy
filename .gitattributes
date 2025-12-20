@@ -31,3 +31,4 @@ changelog.md export-ignore
 
 # Our baggage for development.
 phpcs.xml export-ignore
+cspell.json export-ignore

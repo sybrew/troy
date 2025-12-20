@@ -57,7 +57,7 @@ Follow these rules:
 
 ## WordPress PHP
 
-- Avoid functions wp_sprintf (except with %l lists), wp_json_encode, and status_header
+- Avoid functions wp_sprintf (except with %l lists), wp_parse_url, wp_json_encode, and status_header
 - Never add hooks in class constructs
 - In add_filter/add_action, write each argument on a new line when implementing anonymous functions
 - Do not create validate_callbacks for REST routes, but validate and sanitize parameters directly in the route callback

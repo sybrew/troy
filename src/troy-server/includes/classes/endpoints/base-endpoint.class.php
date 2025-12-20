@@ -115,7 +115,7 @@ abstract class Base_Endpoint {
 
 		$uuid = $_SERVER['HTTP_X_TROY_CLIENT_ID'] ?? '';
 
-		// Sanitize UUID: should be epoch-hexstring format like "2345[6]-64charHexString"
+		// Sanitize UUID: should be epoch-hex-string format like "2345[6]-64charHexString"
 		// This is future proofed to allow 4 or 5 digit epoch values (4 digits would only be valid until 2161)
 		if ( ! $uuid || ! preg_match( '/^\d{4,5}-[a-f0-9]{60,64}$/', $uuid ) )
 			return [

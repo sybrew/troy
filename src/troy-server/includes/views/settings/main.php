@@ -40,7 +40,7 @@ use Troy\Server\{
 
 /**
  * @since 0.0.1184
- * @param array The naviational tabs.
+ * @param array The navigation tabs for the Troy Server settings page.
  */
 $tabs = \apply_filters(
 	'troy_server_settings_tabs',

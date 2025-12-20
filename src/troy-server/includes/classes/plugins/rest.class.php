@@ -109,7 +109,7 @@ final class REST {
 				400,
 			);
 
-		// We simultanously should save the "short_description" as the post excerpt.
+		// We simultaneously should save the "short_description" as the post excerpt.
 		// This is because the post excerpt is used in the Block Editor, enabling easy readouts via SEO plugins etc.
 		// We should also store the content in the post content, but then nullify it as we extract it.
 
@@ -117,15 +117,15 @@ final class REST {
 
 		if ( $plugin_id ) {
 			// If no $plugin_id is assigned, assume it's a new post, and do not proceed getting the data.
-			$getdata = new Data( $plugin_id );
-			$post    = \get_post( $post_id );
+			$data = new Data( $plugin_id );
+			$post = \get_post( $post_id );
 
-			$data_plugins      = $getdata->get_plugins_row();
-			$data_metas        = $getdata->get_metas_row();
-			$data_infos        = $getdata->get_infos_row();
-			$data_zips         = $getdata->get_zips();
-			$data_contributors = $getdata->get_contributors();
-			$data_integration  = $getdata->get_integration();
+			$data_plugins      = $data->get_plugins_row();
+			$data_metas        = $data->get_metas_row();
+			$data_infos        = $data->get_infos_row();
+			$data_zips         = $data->get_zips();
+			$data_contributors = $data->get_contributors();
+			$data_integration  = $data->get_integration();
 
 			// Remit FETCH_OBJ_R opcode calls every time we'd otherwise use $data_plugins->slug hereinafter.
 			$slug = $data_plugins->slug;
@@ -169,7 +169,7 @@ final class REST {
 				];
 			}
 
-			$data = [
+			$response = [
 				'plugin_id'         => $plugin_id,
 				'name'              => $post->post_title,
 				'slug'              => $data_plugins->slug,
@@ -188,10 +188,10 @@ final class REST {
 				'integrations'      => $integrations,
 			];
 		} else {
-			$data = Store::get_default_plugin_data();
+			$response = Store::get_default_plugin_data();
 		}
 
-		return new \WP_REST_Response( $data, 200 );
+		return new \WP_REST_Response( $response, 200 );
 	}
 
 	/**
