@@ -64,6 +64,12 @@ Troy Client requires network activation on WordPress multisite installations.
 
 == Changelog ==
 
+= 1.6.1184 =
+
+* Added user agent filtering for all HTTP requests to Troy Servers to prevent site URL leakage.
+* Added privacy policy link to the plugin row meta.
+* Fixed image validation to explicitly set anonymous user agent.
+
 = 1.4.1184 =
 
 * Fixed PHP warning for Shiny Updates where a required update header was missing.

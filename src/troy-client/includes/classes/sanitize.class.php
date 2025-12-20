@@ -87,6 +87,7 @@ final class Sanitize {
 	 * rogue or compromised Troy Servers forwarding malicious image URLs.
 	 *
 	 * @since 1.1.1184
+	 * @since 1.6.1184 Explicitly set the user agent for the image request.
 	 *
 	 * @param string $url The URL to sanitize.
 	 * @return string The sanitized URL or empty string.
@@ -101,8 +102,12 @@ final class Sanitize {
 		$body = trim( \wp_remote_retrieve_body( \wp_safe_remote_get(
 			$sanitized_url,
 			[
-				'timeout' => 3, // Image should be locally hosted, or at worst at a CDN.
-				'headers' => [ 'Range' => 'bytes=0-20480' ],
+				'timeout'    => 3, // Image should be locally hosted, or at worst at a CDN.
+				'headers'    => [
+					'Range'      => 'bytes=0-20480',
+					'User-Agent' => 'Troy Client/' . VERSION, // See WP_Http_Curl::request()
+				],
+				'user-agent' => 'Troy Client/' . VERSION, // See WP_Http::request()
 			],
 		) ) );
 

@@ -16,7 +16,7 @@
  * Plugin Name: Troy Installer
  * Plugin URI: https://deploytroy.org/
  * Description: Troy Installer installs "Troy Client" and vendor plugins.
- * Version: 1.5.1184
+ * Version: 1.6.1184-dev-1
  * Author: Sybre Waaijer
  * Author URI: https://deploytroy.org/
  * License: MIT

@@ -175,15 +175,8 @@ function upgrade_from( $version ) {
  *
  * We make plugin versions 20 characters long because we haven't found plugins with a longer version.
  *
- * An epoch is 1 week long. Its identifier is calculated by flooring ( current UNIX timestamp / \WEEK_IN_SECONDS seconds ).
+ * An epoch is 1 week long. Its identifier is calculated by flooring ( current UNIX timestamp / \WEEK_IN_SECONDS ).
  * You can get this epoch via `Troy\Server\API\Utils::get_epoch()`, and last epoch via `Troy\Server\API\Utils::get_epoch( 'last' )`.
- *
- * We partition the update request stats by epoch because we expect a lot of data.
- * Partitioning allows accessing data by epoch, which is useful for calculating the active install count quickly.
- * It also allows for quick deletion of old data.
- *
- * We partition the download stats by day because we expect a lot of data.
- * Again, partitioning allows for quickly counting data by day, and deleting old data.
  *
  * We composited indexes:
  * - `plugin_id_user_id` for the contributors table to force unique contributors per plugin.
@@ -226,7 +219,7 @@ function upgrade_from( $version ) {
  * | troy_plugin_slug_transfers                  | Transfers of plugin slugs (for slug changes).                       |
  * | troy_plugin_metas                           | Meta data for plugins (for plugin cards).                           |
  * | troy_plugin_contributors                    | Contributors of the plugins (for plugin search and details).        |
- * | troy_plugin_infos                           | Parsed information of plugins (for plugin info page/tickbox).       |
+ * | troy_plugin_infos                           | Parsed information of plugins (for plugin info page/thickbox).      |
  * | troy_plugin_snapshots                       | Snapshots of plugin data by version (for future restore feature).   |
  * | troy_plugin_integrations                    | Integration settings for plugins (for automated releases).          |
  * | troy_plugin_integration_queue               | Queue for integration processing (for automated releases).          |

@@ -90,7 +90,7 @@ final class Dependencies {
 			function ( $user_agent, $url ) use ( &$plugin_url, &$slug ) {
 				return $url === $plugin_url ? "Troy Dependencies/$slug" : $user_agent;
 			},
-			10,
+			\PHP_INT_MAX,
 			2,
 		);
 

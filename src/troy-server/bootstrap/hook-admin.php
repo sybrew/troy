@@ -18,6 +18,7 @@ use Troy\Server\{
 	Admin_Scripts,
 	Packages,
 	Plugins,
+	Plugin_Table,
 	Settings,
 };
 
@@ -54,6 +55,9 @@ admin: {
 
 	// Fix admin menu ordering for settings and custom post types.
 	\add_action( 'admin_menu', [ Admin_Menu::class, 'reorder_menu_items' ], 999 );
+
+	// Add links to plugin row meta.
+	\add_filter( 'plugin_row_meta', [ Plugin_Table::class, 'add_row_meta' ], 10, 2 );
 }
 
 // We couldn't think of any useful settings yet, so we're disabling settings for now.

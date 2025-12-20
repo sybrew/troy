@@ -1015,7 +1015,7 @@ final class Stats {
 
 		return \wp_date(
 			'D j, ' . \get_option( 'time_format' ),
-			\strtotime( $timestamp ) - $sql_offset_seconds,
+			strtotime( $timestamp ) - $sql_offset_seconds,
 		);
 	}
 }

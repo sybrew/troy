@@ -147,22 +147,19 @@ final class Readme_Parser {
 	 */
 	private const HEADERS = [
 		// Troy Server new and preferred header names.
-		// 'tested wp'         => 'tested_wp', // TODO reimplement?
-		// 'requires wp'       => 'requires_wp', // TODO reimplement?
-		// 'requires php'      => 'requires_php', // TODO reimplement?
 		'support uri'       => 'support_uri',  // Brand new in Troy.
 		'homepage_url'      => 'homepage_url', // Brand new in Troy.
 		'locale'            => 'locale',       // Brand new in Troy.
 		'short description' => 'short_description', // Brand new in Troy.
 
 		// WordPress.org default header names, now fallback aliases.
-		// 'tested'            => 'tested_wp', // TODO reimplement?
-		// 'tested up to'      => 'tested_wp', // TODO reimplement?
-		// 'requires'          => 'requires_wp', // TODO reimplement?
-		// 'requires at least' => 'requires_wp', // TODO reimplement?
 		'donate link'       => 'donate_uri',
 
 		// WordPress.org recognized header names, not implemented.
+		// 'tested'            => 'tested_wp',
+		// 'tested up to'      => 'tested_wp',
+		// 'requires'          => 'requires_wp',
+		// 'requires at least' => 'requires_wp',
 		// 'contributors'      => 'contributors',
 		// 'tags'              => 'tags',
 		// 'donate link'       => 'donate_link',
@@ -279,12 +276,6 @@ final class Readme_Parser {
 	 *     The raw headers.
 	 *
 	 *     @type string $plugin_name       The name of the plugin.
-	 *     @type string $tested_wp         The WordPress version the plugin is tested up to.
-	 *     @type string $tested_php        The PHP version the plugin is tested up to.
-	 *     @type string $requires_wp       The minimum WordPress version required by the plugin.
-	 *     @type string $requires_php      The minimum PHP version required by the plugin.
-	 *     @type string $license           The license URI of the plugin.
-	 *     @type string $license_uri       The license URI of the plugin.
 	 *     @type string $homepage_url      The homepage URL of the plugin.
 	 *     @type string $locale            The locale of the plugin.
 	 *     @type string $support_uri       The support URI of the plugin.
@@ -295,12 +286,6 @@ final class Readme_Parser {
 	 */
 	public private(set) array $headers_raw = [
 		'plugin_name'       => '',
-		// 'tested_wp'    => '', // TODO reimplement?
-		// 'tested_php'   => '', // TODO reimplement?
-		// 'requires_wp'  => '', // TODO reimplement?
-		// 'requires_php' => '', // TODO reimplement?
-		// 'license'      => '', // TODO reimplement?
-		// 'license_uri'  => '', // TODO reimplement?
 		'homepage_url'      => '',
 		'locale'            => '',
 		'support_uri'       => '',
@@ -433,12 +418,6 @@ final class Readme_Parser {
 	 *     The sanitized headers.
 	 *
 	 *     @type string $plugin_name       The name of the plugin.
-	 *     @type string $tested_wp         The WordPress version the plugin is tested up to.
-	 *     @type string $tested_php        The PHP version the plugin is tested up to.
-	 *     @type string $requires_wp       The minimum WordPress version required by the plugin.
-	 *     @type string $requires_php      The minimum PHP version required by the plugin.
-	 *     @type string $license           The license URI of the plugin.
-	 *     @type string $license_uri       The license URI of the plugin.
 	 *     @type string $homepage_url      The homepage URL of the plugin.
 	 *     @type string $locale            The locale of the plugin.
 	 *     @type string $support_uri       The support URI of the plugin.
@@ -451,12 +430,6 @@ final class Readme_Parser {
 		get {
 			if ( ! ( $this->parsed & self::PARSED['headers'] ) ) {
 				$this->headers['plugin_name']       = \sanitize_text_field( trim( $this->headers_raw['plugin_name'] ) );
-				// $this->headers['tested_wp']      = API\Sanitize::tested_version( $this->headers_raw['tested_wp'] );
-				// $this->headers['tested_php']     = API\Sanitize::tested_version( $this->headers_raw['tested_php'] );
-				// $this->headers['requires_wp']    = API\Sanitize::tested_version( $this->headers_raw['requires_wp'] );
-				// $this->headers['requires_php']   = API\Sanitize::tested_version( $this->headers_raw['requires_php'] );
-				// $this->headers['license']        = \sanitize_text_field( $this->headers_raw['license_uri'] );
-				// $this->headers['license_uri']    = \sanitize_url( $this->headers_raw['license_uri'] );
 				$this->headers['homepage_url']      = \sanitize_url( $this->headers_raw['homepage_url'] );
 				$this->headers['locale']            = API\Sanitize::wp_locale( $this->headers_raw['locale'] );
 				$this->headers['support_uri']       = \sanitize_url( $this->headers_raw['support_uri'] );

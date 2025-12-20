@@ -16,6 +16,7 @@ use Troy\Client\{
 	Dependencies,
 	Headers,
 	HTTP,
+	Plugin_Table,
 	Plugins_API,
 	Protect_Client,
 	Site_Health,
@@ -60,6 +61,9 @@ use Troy\Client\{
 \add_action( 'pre_update_site_option_active_sitewide_plugins', [ Protect_Client::class, 'block_plugin_deactivation' ], \PHP_INT_MIN, 2 );
 \add_filter( 'network_admin_plugin_action_links_' . PLUGIN_BASENAME, [ Protect_Client::class, 'remove_deactivate_link' ] );
 
+// Add links to plugin row meta.
+\add_filter( 'plugin_row_meta', [ Plugin_Table::class, 'add_row_meta' ], 10, 2 );
+
 // Add Troy connection status to Site Health Status tab.
 \add_filter( 'site_status_tests', [ Site_Health::class, 'register_site_status_tests' ] );
 \add_action( 'rest_api_init', [ Site_Health::class, 'register_async_rest_routes' ], 100 );
@@ -78,6 +82,9 @@ use Troy\Client\{
 // Prevent Troy plugins from reaching WordPress.org. This primarily affects plugin search and info.
 \add_filter( 'plugins_api_args', [ Plugins_API::class, 'filter_plugins_api_args' ], \PHP_INT_MAX );
 \add_filter( 'http_request_args', [ HTTP::class, 'filter_request_args' ], \PHP_INT_MAX, 2 );
+
+// Filter the user agent for any Troy server requests.
+\add_filter( 'http_headers_useragent', [ HTTP::class, 'filter_user_agent' ], \PHP_INT_MAX, 2 );
 
 // Clear the API request cache after an update, for cached information may now be incompatible.
 \add_filter( 'upgrader_process_complete', [ Plugins_API::class, 'cleanup_after_upgrade' ] );

@@ -35,3 +35,13 @@ You can either install the plugin via your WordPress dashboard or via FTP.
 5. Go to your WordPress plugin dashboard to verify the transfer.
 6. Activate the plugin.
 7. Note: This plugin may be configured to automatically deactivate or even delete itself.
+
+== Changelog ==
+
+= 1.6.1184 =
+
+* Fixed typos.
+
+= 0.0.1184 =
+
+* Initial proof of concept.

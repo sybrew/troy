@@ -63,8 +63,8 @@ final class HTTP {
 	public static function filter_request_args( $parsed_args, $url ) {
 
 		if (
-			   false !== stripos( $url, 'api.wordpress.org/plugins/update-check' )
-			&& isset( $parsed_args['body'] )
+			   isset( $parsed_args['body'] )
+			&& false !== stripos( $url, 'api.wordpress.org/plugins/update-check' )
 		) {
 			$troy_plugins = get_troy_plugins();
 
@@ -109,5 +109,47 @@ final class HTTP {
 		}
 
 		return $parsed_args;
+	}
+
+	/**
+	 * Filters user agent for outgoing HTTP requests to Troy Servers.
+	 *
+	 * This prevents WordPress from leaking the site URL in the User-Agent header
+	 * when communicating with Troy Servers.
+	 *
+	 * @since 1.6.1184
+	 * @hook http_headers_useragent at \PHP_INT_MAX
+	 *
+	 * @param string $user_agent The default WordPress user agent.
+	 * @param string $url        The URL of the HTTP request.
+	 * @return string The filtered user agent.
+	 */
+	public static function filter_user_agent( $user_agent, $url ) {
+
+		$troy_user_agent = 'Troy Client/' . VERSION;
+
+		// Short-circuit if already set by explicit request args.
+		if ( $user_agent === $troy_user_agent )
+			return $user_agent;
+
+		static $troy_hosts;
+
+		if ( ! isset( $troy_hosts ) ) {
+			$troy_hosts = [];
+
+			foreach ( get_troy_plugin_repos_per_slug() as $repo_url ) {
+				$host = parse_url( $repo_url, \PHP_URL_HOST );
+
+				if ( $host )
+					$troy_hosts[ $host ] = true;
+			}
+		}
+
+		$host = parse_url( $url, \PHP_URL_HOST );
+
+		if ( $host && isset( $troy_hosts[ $host ] ) )
+			return $troy_user_agent;
+
+		return $user_agent;
 	}
 }

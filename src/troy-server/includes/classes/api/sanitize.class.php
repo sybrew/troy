@@ -158,7 +158,7 @@ final class Sanitize {
 		return preg_replace(
 			'~(/\*+)|(\*+/)~',
 			'',
-			preg_replace( '/[\s\r\n\t\v]+/u', ' ', trim( $value ) ),
+			preg_replace( '/[\s\r\n\v\t]+/u', ' ', trim( $value ) ),
 		);
 	}
 
@@ -645,8 +645,12 @@ final class Sanitize {
 		$body = trim( \wp_remote_retrieve_body( \wp_safe_remote_get(
 			$sanitized_url,
 			[
-				'timeout' => 3, // Image should be locally hosted, or at worst at a CDN.
-				'headers' => [ 'Range' => 'bytes=0-20480' ],
+				'timeout'    => 3, // Image should be locally hosted, or at worst at a CDN.
+				'headers'    => [
+					'Range'      => 'bytes=0-20480',
+					'User-Agent' => 'Troy Server/' . VERSION, // See WP_Http_Curl::request()
+				],
+				'user-agent' => 'Troy Server/' . VERSION, // See WP_Http::request()
 			],
 		) ) );
 

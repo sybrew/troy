@@ -733,10 +733,16 @@ final class Zip_Uploader {
 		$response = \wp_safe_remote_get(
 			$url,
 			[
-				'timeout'  => self::ZIP_DOWNLOAD_TIMEOUT,
-				'stream'   => true,
-				'filename' => $tmpfname,
-				'headers'  => $args['headers'] ?? [],
+				'timeout'    => self::ZIP_DOWNLOAD_TIMEOUT,
+				'stream'     => true,
+				'filename'   => $tmpfname,
+				'headers'    => array_merge(
+					[
+						'User-Agent' => 'Troy Server/' . VERSION, // See WP_Http_Curl::request()
+					],
+					$args['headers'] ?? [],
+				),
+				'user-agent' => 'Troy Server/' . VERSION, // See WP_Http::request()
 			],
 		);
 
