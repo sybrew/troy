@@ -25,13 +25,13 @@
 /* Suppress nags. */
 #update-nag,
 .update-nag {
-	display: none
+	display: none;
 }
 
 /* General */
 .troy-server-settings #wpcontent,
 .troy-server-settings.auto-fold #wpcontent {
-	padding-inline-start: 0
+	padding-inline-start: 0;
 }
 
 /* Better position for the WordPress admin notices. */
@@ -39,11 +39,11 @@
 	margin-top: 20px;
 	margin-bottom: 22px;
 	max-width: 1000px;
-	margin-inline: auto
+	margin-inline: auto;
 }
 
 .troy-server-settings .notice~.notice {
-	margin-top: 22px
+	margin-top: 22px;
 }
 
 /* Emulates .wrap h1 styling */
@@ -54,7 +54,7 @@
 	padding-block: 0;
 	padding-inline: .8rem;
 	font-size: 23px;
-	line-height: 1.3
+	line-height: 1.3;
 }
 
 /* Header */
@@ -62,7 +62,7 @@
 	text-align: center;
 	margin-bottom: 1rem;
 	background: #fff;
-	border-bottom: 1px solid #dcdcde
+	border-bottom: 1px solid #dcdcde;
 }
 
 .troy-server-settings-title-section {
@@ -70,7 +70,7 @@
 	align-items: center;
 	justify-content: center;
 	clear: both;
-	padding: 2rem 1rem 1.5rem
+	padding: 2rem 1rem 1.5rem;
 }
 
 .troy-server-settings-title-section h1 svg {
@@ -78,12 +78,12 @@
 	height: 1.25em;
 	fill: currentColor;
 	vertical-align: text-bottom;
-	padding-inline-end: .8rem
+	padding-inline-end: .8rem;
 }
 
 .troy-server-settings-tabs-wrapper {
 	display: inline-flex;
-	flex-wrap: wrap
+	flex-wrap: wrap;
 }
 
 .troy-server-settings-tab {
@@ -92,45 +92,45 @@
 	color: inherit;
 	padding: .5rem 1rem 1rem;
 	margin: 0 1rem;
-	transition: box-shadow .5s ease-in-out
+	transition: box-shadow .5s ease-in-out;
 }
 
 .troy-server-settings-tab:focus {
 	color: #1d2327;
 	outline: 1px solid #787c82;
-	box-shadow: none
+	box-shadow: none;
 }
 
 .troy-server-settings-tab.active {
 	box-shadow: inset 0 -3px var(--troy-server-theme-color);
-	font-weight: 600
+	font-weight: 600;
 }
 
 /* Body */
 .troy-server-settings-body {
 	max-width: 1000px;
 	margin-inline: auto;
-	padding-inline: 22px
+	padding-inline: 22px;
 }
 
 .troy-server-settings-form {
 	word-break: break-word;
 	word-break: auto-phrase;
-	line-break: loose
+	line-break: loose;
 }
 
 .troy-server-settings-form th {
 	min-width: 200px;
-	padding: 15px 10px
+	padding: 15px 10px;
 }
 
 .hr-separator {
-	margin: 20px 0 15px
+	margin: 20px 0 15px;
 }
 
 /* Accordions */
 .troy-server-settings-accordion {
-	border: 1px solid #c3c4c7
+	border: 1px solid #c3c4c7;
 }
 
 .troy-server-settings-accordion-heading {
@@ -139,11 +139,11 @@
 	font-size: inherit;
 	line-height: inherit;
 	font-weight: 600;
-	color: inherit
+	color: inherit;
 }
 
 .troy-server-settings-accordion-heading:first-child {
-	border-top: none
+	border-top: none;
 }
 
 .troy-server-settings-accordion-trigger {
@@ -162,12 +162,12 @@
 	align-items: center;
 	justify-content: space-between;
 	-webkit-user-select: auto;
-	user-select: auto
+	user-select: auto;
 }
 
 .troy-server-settings-accordion-trigger:hover,
 .troy-server-settings-accordion-trigger:active {
-	background: #f6f7f7
+	background: #f6f7f7;
 }
 
 .troy-server-settings-accordion-trigger:focus {
@@ -176,13 +176,13 @@
 	box-shadow: none;
 	outline-offset: -1px;
 	outline: 2px solid var(--troy-server-theme-color);
-	background-color: #f6f7f7
+	background-color: #f6f7f7;
 }
 
 .troy-server-settings-accordion-trigger .title {
 	pointer-events: none;
 	font-weight: 600;
-	flex-grow: 1
+	flex-grow: 1;
 }
 
 .troy-server-settings-accordion-trigger .icon {
@@ -194,36 +194,36 @@
 	inset-inline-end: 1.5em;
 	top: 50%;
 	transform: translateY(-70%) rotate(45deg);
-	width: .5rem
+	width: .5rem;
 }
 
 .troy-server-settings-accordion-trigger[aria-expanded="true"] .icon {
-	transform: translateY(-30%) rotate(-135deg)
+	transform: translateY(-30%) rotate(-135deg);
 }
 
 .troy-server-settings-accordion-panel {
 	margin: 0;
 	padding: 1em 1.5em;
-	background: #fff
+	background: #fff;
 }
 
 .troy-server-settings-accordion-panel[hidden] {
-	display: none
+	display: none;
 }
 
 .troy-server-settings-accordion-panel a .dashicons {
-	text-decoration: none
+	text-decoration: none;
 }
 
 /* Tooltip */
 [data-troy-server-tooltip] {
 	display: inline-block;
 	position: relative;
-	vertical-align: middle
+	vertical-align: middle;
 }
 
 [data-troy-server-tooltip]:not([data-troy-server-tooltip=""]) {
-	cursor: help
+	cursor: help;
 }
 
 [data-troy-server-tooltip]:not([data-troy-server-tooltip=""])::before {
@@ -236,7 +236,7 @@
 	margin-inline-start: 2px;
 	line-height: 1em;
 	width: 1em;
-	color: var(--troy-server-theme-color)
+	color: var(--troy-server-theme-color);
 }
 
 .troy-server-tooltip {
@@ -258,7 +258,7 @@
 	-moz-text-size-adjust: none;
 	text-size-adjust: none;
 	word-break: break-word;
-	line-break: auto
+	line-break: auto;
 }
 
 .troy-server-tooltip-text-wrap {
@@ -279,13 +279,13 @@
 	flex: 1 0 auto;
 	flex-flow: row wrap;
 	justify-content: flex-start;
-	max-width: 200px
+	max-width: 200px;
 }
 
 .troy-server-tooltip-text br {
 	display: block;
 	width: 100%;
-	content: "\A"
+	content: "\A";
 }
 
 .troy-server-tooltip-arrow {
@@ -294,7 +294,7 @@
 	z-index: 9999999;
 	left: 7px; /* absolute, recalculated in JS */
 	width: 0;
-	height: 0
+	height: 0;
 }
 
 .troy-server-tooltip-arrow:before {
@@ -304,7 +304,7 @@
 	border-top: 9px solid rgba(0, 0, 0, .25);
 	position: absolute;
 	bottom: 0;
-	left: 0 /* absolute, recalculated in JS */
+	left: 0; /* absolute, recalculated in JS */
 }
 
 .troy-server-tooltip-arrow:after {
@@ -314,29 +314,29 @@
 	border-top: 8px solid #424242;
 	position: absolute;
 	bottom: 1px;
-	left: 1px /* absolute, recalculated in JS */
+	left: 1px; /* absolute, recalculated in JS */
 }
 
 /* Media queries */
 @media (max-width: 782px) {
 	.troy-server-settings-body {
-		padding: 0 12px
+		padding: 0 12px;
 	}
 
 	.troy-server-settings .notice {
-		margin: 5px 10px 15px
+		margin: 5px 10px 15px;
 	}
 
 	.troy-server-settings .update-nag {
-		margin-inline: 10px
+		margin-inline: 10px;
 	}
 
 	.troy-server-settings .form-table th {
-		display: none
+		display: none;
 	}
 
 	.troy-server-settings .form-table tr {
-		display: grid
+		display: grid;
 	}
 
 	.troy-server-settings .form-table td {
@@ -345,7 +345,7 @@
 		grid-template-rows: 1fr;
 		gap: 8px;
 		padding: 8px 10px;
-		align-items: center
+		align-items: center;
 	}
 
 	.troy-server-settings .form-table td:before {
@@ -353,11 +353,11 @@
 		content: attr(data-colname);
 		white-space: nowrap;
 		font-weight: 600;
-		align-self: start
+		align-self: start;
 	}
 
 	.troy-server-settings .form-table td[data-select=true] {
 		grid-template-columns: 1fr 1fr 1fr;
-		order: 3
+		order: 3;
 	}
 }

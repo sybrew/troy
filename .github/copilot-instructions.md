@@ -125,7 +125,7 @@ Follow these rules:
 
 - Use lowercase hex colors
 - Remove zero before decimal points
-- Don't close last property with a semicolon
+- Close last property with a semicolon
 
 ## Avoid
 

@@ -24,14 +24,14 @@
 
 /* Hide the default block title in the editor, as we repositioned it. We load it here since the editor is an iframe. */
 .edit-post-visual-editor__post-title-wrapper {
-	display: none
+	display: none;
 }
 
 /* Hide figcaptions. They don't have a control to disable them in the editor. */
 /* This is a workaround until we can add a control to the block. */
 .wp-block-image.troy-server-block-plugin-logo figcaption,
 .wp-block-image.troy-server-block-plugin-banner figcaption {
-	display: none
+	display: none;
 }
 
 /* Normalize a forced width and font */
@@ -51,7 +51,7 @@
 }
 
 .troy-server-block-plugin-headergroup {
-	margin-block-start: 4rem !important /* Some root styles in Gutenberg supersede this */
+	margin-block-start: 4rem !important; /* Some root styles in Gutenberg supersede this */
 }
 
 .troy-server-block-plugin-banner {
@@ -64,7 +64,7 @@
 	grid-template-columns: 96px 1fr auto;
 	gap: 1rem;
 	margin: 0;
-	align-items: center
+	align-items: center;
 }
 
 .troy-server-block-plugin-heading :where(.wp-block) {
@@ -136,7 +136,7 @@
 
 .troy-server-block-plugin-title,
 .troy-server-block-plugin-title textarea {
-	resize: none
+	resize: none;
 }
 
 .troy-server-block-plugin-author {
