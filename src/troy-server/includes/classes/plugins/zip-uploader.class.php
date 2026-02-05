@@ -730,7 +730,7 @@ final class Zip_Uploader {
 				\__( 'Could not create temporary file.', 'troy-server' ),
 			);
 
-		$response = \wp_safe_remote_get(
+		$response = \wp_remote_get( // No safe: admin-provided URL, needs internal repo flexibility
 			$url,
 			[
 				'timeout'    => self::ZIP_DOWNLOAD_TIMEOUT,

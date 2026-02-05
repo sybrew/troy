@@ -190,8 +190,14 @@ final class Download extends Base_Endpoint {
 		// Check if this is an update download
 		if ( isset( $_SERVER['HTTP_USER_AGENT'] ) ) {
 			$user_agent = $_SERVER['HTTP_USER_AGENT'];
-			// WordPress uses download_url(), which results using their standard User Agent.
-			if ( str_contains( $user_agent, 'WordPress' ) ) {
+
+			// Troy Client filters the User-Agent to prevent site URL leaks (since 1.6.1184).
+			// 'WordPress' is kept for backward compatibility with older clients.
+			// Once this drops off, we can remove the 'WordPress' check.
+			if (
+				   str_contains( $user_agent, 'Troy Client' )
+				|| str_contains( $user_agent, 'WordPress' )
+			) {
 				$type = 'update';
 			} elseif ( str_contains( $user_agent, 'WP-CLI' ) ) {
 				$type = 'cli';

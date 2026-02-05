@@ -182,7 +182,7 @@ final class GitHub {
 	 */
 	public static function get_repo_tags( $owner_repo, $pat = '' ) {
 
-		$response = \wp_remote_get(
+		$response = \wp_remote_get( // No safe: hardcoded github.com URL
 			"https://api.github.com/repos/$owner_repo/tags?per_page=30&page=1",
 			[
 				'timeout'    => 3,

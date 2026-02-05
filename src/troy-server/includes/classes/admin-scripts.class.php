@@ -120,7 +120,7 @@ final class Admin_Scripts {
 		\wp_add_inline_style(
 			'common',
 			<<<CSS
-			:root{
+			:root {
 				--troy-server-theme-bg:{$colors[0]};
 				--troy-server-theme-bg-accent:{$colors[1]};
 				--troy-server-theme-color:{$colors[2]};

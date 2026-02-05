@@ -119,7 +119,7 @@ final class Utils {
 
 			// Limit this to 100 versions to avoid performance issues.
 			// At the moment of writing, this went back to 1617 days of releases.
-			$body = \wp_remote_retrieve_body( \wp_safe_remote_get(
+			$body = \wp_remote_retrieve_body( \wp_remote_get( // No safe: hardcoded github.com URL
 				'https://api.github.com/repos/WordPress/wordpress-develop/tags?per_page=100',
 				[
 					'timeout'    => 3,

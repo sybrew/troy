@@ -95,6 +95,62 @@
 	};
 
 	/**
+	 * Initializes the character counter for the description field.
+	 *
+	 * @since 1.6.1184
+	 */
+	const initDescriptionCharCounter = () => {
+
+		const descInput = document.getElementById( 'troy_package_description' );
+		const counter   = document.getElementById( 'troy_package_description__counter' );
+
+		if ( ! descInput || ! counter )
+			return;
+
+		const maxLength = parseInt( descInput.getAttribute( 'maxlength' ), 10 );
+
+		const updateCounter = () => {
+			counter.textContent = `${descInput.value.length}/${maxLength} characters`;
+		};
+
+		descInput.addEventListener( 'input', updateCounter );
+		updateCounter();
+	};
+
+	/**
+	 * Initializes checkbox dependencies for completion options.
+	 *
+	 * When delete_on_completion is checked, deactivate_on_completion is also checked.
+	 * When deactivate_on_completion is unchecked, delete_on_completion is also unchecked.
+	 *
+	 * @since 1.6.1184
+	 */
+	const initCompletionCheckboxDependencies = () => {
+
+		const deactivateCheckbox = document.getElementById( 'troy_package_deactivate_on_completion' );
+		const deleteCheckbox     = document.getElementById( 'troy_package_delete_on_completion' );
+
+		if ( ! deactivateCheckbox || ! deleteCheckbox )
+			return;
+
+		deleteCheckbox.addEventListener(
+			'change',
+			() => {
+				if ( deleteCheckbox.checked )
+					deactivateCheckbox.checked = true;
+			},
+		);
+
+		deactivateCheckbox.addEventListener(
+			'change',
+			() => {
+				if ( ! deactivateCheckbox.checked )
+					deleteCheckbox.checked = false;
+			},
+		);
+	};
+
+	/**
 	 * Initializes slug conflict validation.
 	 *
 	 * Validates the slug against existing plugins and packages on input change.
@@ -156,11 +212,15 @@
 		initPluginCheckboxes();
 		initSlugAutoFill();
 		initSlugValidation();
+		initDescriptionCharCounter();
+		initCompletionCheckboxDependencies();
 	} else {
 		document.addEventListener( 'DOMContentLoaded', () => {
 			initPluginCheckboxes();
 			initSlugAutoFill();
 			initSlugValidation();
+			initDescriptionCharCounter();
+			initCompletionCheckboxDependencies();
 		} );
 	}
 } )();

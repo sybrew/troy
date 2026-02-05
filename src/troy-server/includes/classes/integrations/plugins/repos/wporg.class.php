@@ -167,7 +167,7 @@ final class WPOrg {
 	 */
 	public static function get_plugin_info( $slug ) {
 
-		$response = \wp_remote_get(
+		$response = \wp_remote_get( // No safe: hardcoded wordpress.org URL
 			\sprintf(
 				'https://api.wordpress.org/plugins/info/1.0/%s.json',
 				API\Sanitize::slug( $slug ),

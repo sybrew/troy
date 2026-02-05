@@ -6,21 +6,22 @@
 </p>
 
 <p align="center">
-	<a href="https://deploytroy.org/docs/developers/quick-start/">Quick Start</a> · <a href="http://deploytroy.org/docs/"><strong>Documentation</strong></a> · <a href="https://deploytroy.org/changelogs/"><strong>Changelog</strong></a> · <a href="https://deploytroy.org/roadmap/"><strong>Roadmap</strong></a>
+	<a href="https://deploytroy.org/docs/developers/quick-start/">Quick Start</a> · <a href="https://deploytroy.org/docs/"><strong>Documentation</strong></a> · <a href="https://deploytroy.org/changelogs/"><strong>Changelog</strong></a> · <a href="https://deploytroy.org/roadmap/"><strong>Roadmap</strong></a>
 </p>
 
 <br>
 
 Troy is a set of tools to help WordPress plugin developers distribute their plugins and dependencies privately to clients, without relying on WordPress.org.
 
+Troy is an open-source project maintained by [Sybre Waaijer](https://github.com/sybrew/). If you find any issues or have suggestions, please [open an issue](https://github.com/sybrew/troy/issues) or [start a discussion](https://github.com/sybrew/troy/discussions).
+
 This is a monorepo that contains all Troy components, including:
+
 - **[Troy Server](#troy-server)**: A WordPress plugin that allows you to host your own plugin repository.
 - **[Troy Client](#troy-client)**: A WordPress plugin that enables sideloading for plugin updates, translations, and dependencies from any Troy Server.
 - [Troy Client Daemon](#troy-client-daemon): A must-use plugin that enforces Troy Client on a site and prevents data leaks to WordPress.org.
-- [Troy Installer](#troy-installer): A simple installer plugin that installs Troy Client and vendor plugins on your WordPress site.
+- [Troy Installer](#troy-installer): A simple installer plugin that installs Troy Client and vendor plugins on your WordPress site. Troy Server can generate this installer for you to distribute to your clients.
 - [Troy Client Snippets](#troy-client-snippets): Code snippets to customize or embed Troy Client functionality.
-
-This is an open-source project maintained by [Sybre Waaijer](https://github.com/sybrew/). If you find any issues or have suggestions, please open an issue on the [GitHub repository](https://github.com/sybrew/troy).
 
 ## Troy Server
 

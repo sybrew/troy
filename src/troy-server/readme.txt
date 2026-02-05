@@ -108,6 +108,9 @@ It's best to run Troy Server on a standalone WordPress instance. This can also b
 = 1.6.1184 =
 
 * Added privacy policy link to the plugin row meta.
+* Added character counter to package descriptions
+* Updated download stat detection to recognize Troy Client 1.6.1184's user agent for tracking.
+* Improved default package description to clarify Troy Client's role.
 
 = 1.5.1184 =
 

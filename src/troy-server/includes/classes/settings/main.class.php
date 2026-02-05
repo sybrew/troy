@@ -278,6 +278,7 @@ final class Main {
 			? (int) \update_option( 'troy_server_settings', $settings, true )
 			: 2;
 
+		// Using safe: referer header is user-controlled
 		\wp_safe_redirect( \add_query_arg( self::SAVED_RESPONSE, $result, \wp_get_referer() ) );
 		exit;
 	}

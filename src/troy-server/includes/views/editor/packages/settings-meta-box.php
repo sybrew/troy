@@ -45,7 +45,7 @@ if ( $post ) {
 	$data = new Data( post_id: $post->ID );
 
 	$package = $data->get_packages_row();
-	$meta    = $data->get_metas_row();
+	$meta    = $data->get_metas_row(); // can be empty if post is never saved.
 } else {
 	$package = null;
 	$meta    = null;
@@ -55,20 +55,13 @@ if ( ! $meta ) {
 
 	$current_user = \wp_get_current_user();
 
-	$meta = (object) [
-		'plugin_uri'               => API\Server::get_full_repo_url(),
-		'description'              => 'This package installs the "Troy Client" updater and vendor plugins.',
-		'version'                  => '1.0.0',
-		'author'                   => $current_user->display_name ?: '',
-		'author_uri'               => $current_user->user_url ?: '',
-		'requires_wp'              => '6.7',
-		'requires_php'             => '7.4',
-		'network'                  => 0,
-		'install_timeout'          => 30,
-		'deactivate_on_completion' => 1,
-		'delete_on_completion'     => 0,
-		'notice_severity'          => 'detailed',
-	];
+	$meta = (object) array_merge(
+		Store::get_default_package_data(),
+		[
+			'author'     => $current_user->display_name ?: '',
+			'author_uri' => $current_user->user_url ?: '',
+		],
+	);
 }
 ?>
 <table class=form-table>
@@ -110,16 +103,21 @@ if ( ! $meta ) {
 		</td>
 	</tr>
 	<tr>
-		<th><label for=troy_package_description><?= \esc_html__( 'Description', 'troy-server' ) ?></label></th>
+		<th>
+			<label for=troy_package_description><?= \esc_html__( 'Description', 'troy-server' ) ?></label>
+			<br>
+			<small id=troy_package_description__counter class=form-input-tip></small>
+		</th>
 		<td>
-			<input
-				type=text
+			<textarea
 				id=troy_package_description
 				name=troy_package[description]
-				value="<?= \esc_attr( $meta->description ) ?>"
 				class=large-text
+				maxlength=191
+				rows=2
 				required
-			>
+				style="resize:none"
+			><?= \esc_html( $meta->description ) ?></textarea>
 			<p class=description><?= \esc_html__( 'Brief description of the package contents.', 'troy-server' ) ?></p>
 		</td>
 	</tr>

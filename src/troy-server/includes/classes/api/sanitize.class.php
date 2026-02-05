@@ -642,7 +642,7 @@ final class Sanitize {
 		if ( empty( $sanitized_url ) )
 			return '';
 
-		$body = trim( \wp_remote_retrieve_body( \wp_safe_remote_get(
+		$body = trim( \wp_remote_retrieve_body( \wp_remote_get( // No safe: URL returned on failure below anyway
 			$sanitized_url,
 			[
 				'timeout'    => 3, // Image should be locally hosted, or at worst at a CDN.

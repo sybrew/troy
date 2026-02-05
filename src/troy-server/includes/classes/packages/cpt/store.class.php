@@ -192,7 +192,7 @@ final class Store {
 		return [
 			'package_id'               => 0,
 			'plugin_uri'               => API\Server::get_full_repo_url(),
-			'description'              => 'This package installs the "Troy Client" updater and vendor plugins.',
+			'description'              => 'This package installs vendor plugins and Troy Client (update handler). Troy Client is required while the others are active.',
 			'version'                  => '1.0.0',
 			'author'                   => '',
 			'author_uri'               => '',
