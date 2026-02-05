@@ -44,23 +44,6 @@
 }
 
 /* Plugin version management styles */
-.troy-server-editor-plugin-version-item {
-	border: 1px solid #e0e0e0;
-	padding: 12px;
-	background-color: #fff;
-	border-radius: 4px;
-}
-
-.troy-server-editor-plugin-version-item--remove {
-	background-color: #fdd;
-	border-color: #f0f0f0;
-	opacity: 0.8;
-}
-
-.troy-server-editor-plugin-version-item--remove .troy-server-editor-plugin-version-item-title {
-	text-decoration: line-through;
-}
-
 .troy-server-plugin-version-current {
 	border-left: 3px solid #00a32a;
 	background-color: rgba(0, 163, 42, 0.04);

@@ -65,18 +65,18 @@ $plugins = $wpdb->get_results(
 	ORDER BY m.name ASC",
 );
 ?>
-<div class=troy-package-metabox-plugin-list>
-	<div class=troy-package-plugin-item>
-		<label class=troy-package-plugin-option>
-			<span class=troy-package-plugin-option-box>
+<div class=troy-server-package-metabox-plugin-list>
+	<div class=troy-server-package-plugin-item>
+		<label class=troy-server-package-plugin-option>
+			<span class=troy-server-package-plugin-option-box>
 				<input type=checkbox checked disabled>
 			</span>
-			<span class=troy-package-plugin-option-content>
-				<span class=troy-package-plugin-option-title>
+			<span class=troy-server-package-plugin-option-content>
+				<span class=troy-server-package-plugin-option-title>
 					<?= \esc_html__( 'Troy Client', 'troy-server' ) ?>
 					<code>(troy-client)</code>
 				</span>
-				<span class=troy-package-plugin-option-desc><?= \esc_html__( 'Required for connecting your Troy Server plugins and themes to this repo.', 'troy-server' ) ?></span>
+				<span class=troy-server-package-plugin-option-desc><?= \esc_html__( 'Required for connecting your Troy Server plugins and themes to this repo.', 'troy-server' ) ?></span>
 			</span>
 		</label>
 	</div>
@@ -96,12 +96,12 @@ $plugins = $wpdb->get_results(
 		];
 
 		?>
-			<div class=troy-package-plugin-item data-plugin-id="<?= \esc_attr( $plugin->id ) ?>">
-				<label class=troy-package-plugin-main>
+			<div class=troy-server-package-plugin-item data-plugin-id="<?= \esc_attr( $plugin->id ) ?>">
+				<label class=troy-server-package-plugin-main>
 					<input
 						type=checkbox
-						class=troy-package-plugin-checkbox
-						name="troy_package[plugins][<?= \esc_attr( $plugin->id ) ?>][selected]"
+						class=troy-server-package-plugin-checkbox
+						name="troy-server-package[plugins][<?= \esc_attr( $plugin->id ) ?>][selected]"
 						value=1
 						data-plugin-id="<?= \esc_attr( $plugin->id ) ?>"
 						<?php \checked( $is_selected ); ?>
@@ -109,61 +109,61 @@ $plugins = $wpdb->get_results(
 					<?= \esc_html( $plugin->name ?: $plugin->slug ) ?>
 					<code>(<?= \esc_html( $plugin->slug ) ?>)</code>
 				</label>
-				<div class=troy-package-plugin-options style="<?= $is_selected ? '' : 'display:none;' ?>">
-					<label class=troy-package-plugin-option>
-						<span class=troy-package-plugin-option-box>
+				<div class=troy-server-package-plugin-options style="<?= $is_selected ? '' : 'display:none;' ?>">
+					<label class=troy-server-package-plugin-option>
+						<span class=troy-server-package-plugin-option-box>
 							<input
 								type=checkbox
-								name="troy_package[plugins][<?= \esc_attr( $plugin->id ) ?>][activate]"
+								name="troy-server-package[plugins][<?= \esc_attr( $plugin->id ) ?>][activate]"
 								value=1
 								<?php \checked( $options['activate'] ); ?>
 								>
 						</span>
-							<span class=troy-package-plugin-option-content>
-								<span class=troy-package-plugin-option-title><?= \esc_html__( 'Activate', 'troy-server' ) ?></span>
-								<span class=troy-package-plugin-option-desc><?= \esc_html__( 'Activate the plugin after installation.', 'troy-server' ) ?></span>
+							<span class=troy-server-package-plugin-option-content>
+								<span class=troy-server-package-plugin-option-title><?= \esc_html__( 'Activate', 'troy-server' ) ?></span>
+								<span class=troy-server-package-plugin-option-desc><?= \esc_html__( 'Activate the plugin after installation.', 'troy-server' ) ?></span>
 							</span>
 						</label>
-						<label class=troy-package-plugin-option>
-						<span class=troy-package-plugin-option-box>
+						<label class=troy-server-package-plugin-option>
+						<span class=troy-server-package-plugin-option-box>
 							<input
 								type=checkbox
-								name="troy_package[plugins][<?= \esc_attr( $plugin->id ) ?>][network]"
+								name="troy-server-package[plugins][<?= \esc_attr( $plugin->id ) ?>][network]"
 								value=1
 								<?php \checked( $options['network'] ); ?>
 								>
 						</span>
-							<span class=troy-package-plugin-option-content>
-								<span class=troy-package-plugin-option-title><?= \esc_html__( 'Network', 'troy-server' ) ?></span>
-								<span class=troy-package-plugin-option-desc><?= \esc_html__( 'Network-activate the plugin in multisite installations.', 'troy-server' ) ?></span>
+							<span class=troy-server-package-plugin-option-content>
+								<span class=troy-server-package-plugin-option-title><?= \esc_html__( 'Network', 'troy-server' ) ?></span>
+								<span class=troy-server-package-plugin-option-desc><?= \esc_html__( 'Network-activate the plugin in multisite installations.', 'troy-server' ) ?></span>
 							</span>
 						</label>
-						<label class=troy-package-plugin-option>
-						<span class=troy-package-plugin-option-box>
+						<label class=troy-server-package-plugin-option>
+						<span class=troy-server-package-plugin-option-box>
 							<input
 								type=checkbox
-								name="troy_package[plugins][<?= \esc_attr( $plugin->id ) ?>][overwrite]"
+								name="troy-server-package[plugins][<?= \esc_attr( $plugin->id ) ?>][overwrite]"
 								value=1
 								<?php \checked( $options['overwrite'] ); ?>
 								>
 						</span>
-							<span class=troy-package-plugin-option-content>
-								<span class=troy-package-plugin-option-title><?= \esc_html__( 'Overwrite', 'troy-server' ) ?></span>
-								<span class=troy-package-plugin-option-desc><?= \esc_html__( 'Overwrite existing plugin files if already installed.', 'troy-server' ) ?></span>
+							<span class=troy-server-package-plugin-option-content>
+								<span class=troy-server-package-plugin-option-title><?= \esc_html__( 'Overwrite', 'troy-server' ) ?></span>
+								<span class=troy-server-package-plugin-option-desc><?= \esc_html__( 'Overwrite existing plugin files if already installed.', 'troy-server' ) ?></span>
 							</span>
 						</label>
-						<label class=troy-package-plugin-option>
-						<span class=troy-package-plugin-option-box>
+						<label class=troy-server-package-plugin-option>
+						<span class=troy-server-package-plugin-option-box>
 							<input
 								type=checkbox
-								name="troy_package[plugins][<?= \esc_attr( $plugin->id ) ?>][overwrite_troy]"
+								name="troy-server-package[plugins][<?= \esc_attr( $plugin->id ) ?>][overwrite_troy]"
 								value=1
 								<?php \checked( $options['overwrite_troy'] ); ?>
 								>
 						</span>
-							<span class=troy-package-plugin-option-content>
-								<span class=troy-package-plugin-option-title><?= \esc_html__( 'Overwrite Troy Plugin', 'troy-server' ) ?></span>
-								<span class=troy-package-plugin-option-desc><?= \esc_html__( 'Overwrite existing plugin with Troy header if already installed.', 'troy-server' ) ?></span>
+							<span class=troy-server-package-plugin-option-content>
+								<span class=troy-server-package-plugin-option-title><?= \esc_html__( 'Overwrite Troy Plugin', 'troy-server' ) ?></span>
+								<span class=troy-server-package-plugin-option-desc><?= \esc_html__( 'Overwrite existing plugin with Troy header if already installed.', 'troy-server' ) ?></span>
 							</span>
 						</label>
 				</div>

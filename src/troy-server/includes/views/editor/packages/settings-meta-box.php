@@ -66,12 +66,12 @@ if ( ! $meta ) {
 ?>
 <table class=form-table>
 	<tr>
-		<th><label for=troy_package_slug><?= \esc_html__( 'Slug', 'troy-server' ) ?></label></th>
+		<th><label for=troy-server-package-slug><?= \esc_html__( 'Slug', 'troy-server' ) ?></label></th>
 		<td>
 			<input
 				type=text
-				id=troy_package_slug
-				name="troy_package[slug]"
+				id=troy-server-package-slug
+				name="troy-server-package[slug]"
 				pattern="[a-z1-9][a-z0-9\-]*"
 				maxlength=191
 				value="<?= \esc_attr( $package->slug ?? '' ) ?>"
@@ -89,12 +89,12 @@ if ( ! $meta ) {
 		</td>
 	</tr>
 	<tr>
-		<th><label for=troy_package_version><?= \esc_html__( 'Version', 'troy-server' ) ?></label></th>
+		<th><label for=troy-server-package-version><?= \esc_html__( 'Version', 'troy-server' ) ?></label></th>
 		<td>
 			<input
 				type=text
-				id=troy_package_version
-				name=troy_package[version]
+				id=troy-server-package-version
+				name=troy-server-package[version]
 				value="<?= \esc_attr( $meta->version ) ?>"
 				class=regular-text
 				required
@@ -104,14 +104,14 @@ if ( ! $meta ) {
 	</tr>
 	<tr>
 		<th>
-			<label for=troy_package_description><?= \esc_html__( 'Description', 'troy-server' ) ?></label>
+			<label for=troy-server-package-description><?= \esc_html__( 'Description', 'troy-server' ) ?></label>
 			<br>
-			<small id=troy_package_description__counter class=form-input-tip></small>
+			<small id=troy-server-package-description__counter class=form-input-tip></small>
 		</th>
 		<td>
 			<textarea
-				id=troy_package_description
-				name=troy_package[description]
+				id=troy-server-package-description
+				name=troy-server-package[description]
 				class=large-text
 				maxlength=191
 				rows=2
@@ -122,12 +122,12 @@ if ( ! $meta ) {
 		</td>
 	</tr>
 	<tr>
-		<th><label for=troy_package_plugin_uri><?= \esc_html__( 'Plugin URI', 'troy-server' ) ?></label></th>
+		<th><label for=troy-server-package-plugin-uri><?= \esc_html__( 'Plugin URI', 'troy-server' ) ?></label></th>
 		<td>
 			<input
 				type=url
-				id=troy_package_plugin_uri
-				name="troy_package[plugin_uri]"
+				id=troy-server-package-plugin-uri
+				name="troy-server-package[plugin_uri]"
 				value="<?= \esc_attr( $meta->plugin_uri ) ?>"
 				class=regular-text
 				maxlength=250
@@ -136,12 +136,12 @@ if ( ! $meta ) {
 		</td>
 	</tr>
 	<tr>
-		<th><label for=troy_package_author><?= \esc_html__( 'Author', 'troy-server' ) ?></label></th>
+		<th><label for=troy-server-package-author><?= \esc_html__( 'Author', 'troy-server' ) ?></label></th>
 		<td>
 			<input
 				type=text
-				id=troy_package_author
-				name=troy_package[author]
+				id=troy-server-package-author
+				name=troy-server-package[author]
 				value="<?= \esc_attr( $meta->author ) ?>"
 				class=regular-text
 			>
@@ -149,12 +149,12 @@ if ( ! $meta ) {
 		</td>
 	</tr>
 	<tr>
-		<th><label for=troy_package_author_uri><?= \esc_html__( 'Author URI', 'troy-server' ) ?></label></th>
+		<th><label for=troy-server-package-author-uri><?= \esc_html__( 'Author URI', 'troy-server' ) ?></label></th>
 		<td>
 			<input
 				type=url
-				id=troy_package_author_uri
-				name="troy_package[author_uri]"
+				id=troy-server-package-author-uri
+				name="troy-server-package[author_uri]"
 				value="<?= \esc_attr( $meta->author_uri ) ?>"
 				class=regular-text
 			>
@@ -162,12 +162,12 @@ if ( ! $meta ) {
 		</td>
 	</tr>
 	<tr>
-		<th><label for=troy_package_requires_wp><?= \esc_html__( 'Requires WordPress', 'troy-server' ) ?></label></th>
+		<th><label for=troy-server-package-requires-wp><?= \esc_html__( 'Requires WordPress', 'troy-server' ) ?></label></th>
 		<td>
 			<input
 				type=text
-				id=troy_package_requires_wp
-				name=troy_package[requires_wp]
+				id=troy-server-package-requires-wp
+				name=troy-server-package[requires_wp]
 				value="<?= \esc_attr( $meta->requires_wp ) ?>"
 				class=small-text
 			>
@@ -175,12 +175,12 @@ if ( ! $meta ) {
 		</td>
 	</tr>
 	<tr>
-		<th><label for=troy_package_requires_php><?= \esc_html__( 'Requires PHP', 'troy-server' ) ?></label></th>
+		<th><label for=troy-server-package-requires-php><?= \esc_html__( 'Requires PHP', 'troy-server' ) ?></label></th>
 		<td>
 			<input
 				type=text
-				id=troy_package_requires_php
-				name=troy_package[requires_php]
+				id=troy-server-package-requires-php
+				name=troy-server-package[requires_php]
 				value="<?= \esc_attr( $meta->requires_php ) ?>"
 				class=small-text
 			>
@@ -188,13 +188,13 @@ if ( ! $meta ) {
 		</td>
 	</tr>
 	<tr>
-		<th><label for=troy_package_network><?= \esc_html__( 'Network Activation', 'troy-server' ) ?></label></th>
+		<th><label for=troy-server-package-network><?= \esc_html__( 'Network Activation', 'troy-server' ) ?></label></th>
 		<td>
 			<label>
 				<input
 					type=checkbox
-					id=troy_package_network
-					name=troy_package[network]
+					id=troy-server-package-network
+					name=troy-server-package[network]
 					value=1
 					<?php \checked( $meta->network, 1 ); ?>
 				>

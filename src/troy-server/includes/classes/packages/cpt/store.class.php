@@ -291,7 +291,7 @@ final class Store {
 			   \wp_is_post_autosave( $post_id )
 			|| \wp_is_post_revision( $post_id )
 			|| ! \current_user_can( 'edit_post', $post_id )
-			|| empty( $_POST['troy_package'] )
+			|| empty( $_POST['troy-server-package'] )
 			|| ! isset( $_POST[ self::SAVE_NONCE['name'] ] )
 			|| ! \wp_verify_nonce( $_POST[ self::SAVE_NONCE['name'] ], self::SAVE_NONCE['action'] )
 		)
@@ -312,7 +312,7 @@ final class Store {
 
 		$notices = [];
 
-		$input = \wp_unslash( $_POST['troy_package'] ); // phpcs:ignore WordPress.Security.NonceVerification -- WordPress does this.
+		$input = \wp_unslash( $_POST['troy-server-package'] ); // phpcs:ignore WordPress.Security.NonceVerification -- WordPress does this.
 
 		$post_title = \get_post( $post_id )->post_title;
 

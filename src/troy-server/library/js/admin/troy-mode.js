@@ -32,10 +32,10 @@
 window.troyServerMode = ( () => {
 
 	const _storageKey = 'troyServerModeActive';
-	const _bodyClass  = 'troy-mode-active';
-	const _buttonId   = 'troy-mode-toggle';
+	const _bodyClass  = 'troy-server-mode-active';
+	const _buttonId   = 'troy-server-mode-toggle';
 
-	// Match this with CSS visibility rules in troy-mode.css "troy-mode-active #adminmenu :is..."
+	// Match this with CSS visibility rules in troy-mode.css "troy-server-mode-active #adminmenu :is..."
 	const visibleIds = new Set( [
 		'menu-dashboard',
 		'collapse-menu',
@@ -79,7 +79,7 @@ window.troyServerMode = ( () => {
 		document.body.classList.toggle( _bodyClass, active );
 
 		document.getElementById( _buttonId )
-			?.querySelector( '.troy-mode-switch' )
+			?.querySelector( '.troy-server-mode-switch' )
 			?.classList.toggle( 'on', active );
 
 		_updateSeparators();
@@ -102,8 +102,8 @@ window.troyServerMode = ( () => {
 			return;
 
 		if ( ! isActive() ) {
-			adminMenu.querySelectorAll( '.troy-mode-hidden' )
-				.forEach( el => el.classList.remove( 'troy-mode-hidden' ) );
+			adminMenu.querySelectorAll( '.troy-server-mode-hidden' )
+				.forEach( el => el.classList.remove( 'troy-server-mode-hidden' ) );
 
 			return;
 		}
@@ -112,7 +112,7 @@ window.troyServerMode = ( () => {
 
 		for ( const item of adminMenu.children ) {
 			if ( item.classList.contains( 'wp-menu-separator' ) ) {
-				item.classList.toggle( 'troy-mode-hidden', ! allowNextSeparator );
+				item.classList.toggle( 'troy-server-mode-hidden', ! allowNextSeparator );
 				allowNextSeparator = false;
 				continue;
 			}
@@ -149,9 +149,9 @@ window.troyServerMode = ( () => {
 
 		li.id        = _buttonId;
 		li.role      = 'group';
-		li.innerHTML = `<a class="ab-item" role="menuitem" href="#troy-mode">
+		li.innerHTML = `<a class="ab-item" role="menuitem" href="#troy-server-mode">
 			<span class="ab-icon dashicons dashicons-desktop" aria-hidden="true"></span>
-			<span class="ab-label">Troy Mode<span class="troy-mode-switch${onClass}"><span class="troy-mode-switch-indicator"></span></span></span>
+			<span class="ab-label">Troy Mode<span class="troy-server-mode-switch${onClass}"><span class="troy-server-mode-switch-indicator"></span></span></span>
 		</a>`;
 
 		li.querySelector( 'a' ).addEventListener(

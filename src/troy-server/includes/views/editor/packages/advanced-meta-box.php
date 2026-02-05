@@ -55,12 +55,12 @@ if ( ! $meta ) {
 ?>
 <table class=form-table>
 	<tr>
-		<th><label for=troy_package_install_timeout><?= \esc_html__( 'Install Timeout', 'troy-server' ) ?></label></th>
+		<th><label for=troy-server-package-install-timeout><?= \esc_html__( 'Install Timeout', 'troy-server' ) ?></label></th>
 		<td>
 			<input
 				type=number
-				id=troy_package_install_timeout
-				name="troy_package[install_timeout]"
+				id=troy-server-package-install-timeout
+				name="troy-server-package[install_timeout]"
 				value="<?= \esc_attr( $meta->install_timeout ) ?>"
 				class="small-text"
 				min="7"
@@ -69,13 +69,13 @@ if ( ! $meta ) {
 		</td>
 	</tr>
 	<tr>
-		<th><label for=troy_package_deactivate_on_completion><?= \esc_html__( 'Deactivate on Completion', 'troy-server' ) ?></label></th>
+		<th><label for=troy-server-package-deactivate-on-completion><?= \esc_html__( 'Deactivate on Completion', 'troy-server' ) ?></label></th>
 		<td>
 			<label>
 				<input
 					type=checkbox
-					id=troy_package_deactivate_on_completion
-					name="troy_package[deactivate_on_completion]"
+					id=troy-server-package-deactivate-on-completion
+					name="troy-server-package[deactivate_on_completion]"
 					value="1"
 					<?php \checked( $meta->deactivate_on_completion, 1 ); ?>
 				/>
@@ -84,13 +84,13 @@ if ( ! $meta ) {
 		</td>
 	</tr>
 	<tr>
-		<th><label for=troy_package_delete_on_completion><?= \esc_html__( 'Delete on Completion', 'troy-server' ) ?></label></th>
+		<th><label for=troy-server-package-delete-on-completion><?= \esc_html__( 'Delete on Completion', 'troy-server' ) ?></label></th>
 		<td>
 			<label>
 				<input
 					type=checkbox
-					id=troy_package_delete_on_completion
-					name="troy_package[delete_on_completion]"
+					id=troy-server-package-delete-on-completion
+					name="troy-server-package[delete_on_completion]"
 					value="1"
 					<?php \checked( $meta->delete_on_completion, 1 ); ?>
 				/>
@@ -99,11 +99,11 @@ if ( ! $meta ) {
 		</td>
 	</tr>
 	<tr>
-		<th><label for=troy_package_notice_severity><?= \esc_html__( 'Notice Severity', 'troy-server' ) ?></label></th>
+		<th><label for=troy-server-package-notice-severity><?= \esc_html__( 'Notice Severity', 'troy-server' ) ?></label></th>
 		<td>
 			<select
-				id=troy_package_notice_severity
-				name="troy_package[notice_severity]"
+				id=troy-server-package-notice-severity
+				name="troy-server-package[notice_severity]"
 			>
 				<option value=detailed <?php \selected( $meta->notice_severity, 'detailed' ); ?>><?= \esc_html__( 'Detailed', 'troy-server' ) ?></option>
 				<option value=verbose <?php \selected( $meta->notice_severity, 'verbose' ); ?>><?= \esc_html__( 'Verbose', 'troy-server' ) ?></option>

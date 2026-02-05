@@ -26,7 +26,7 @@
 	max-width: 1200px;
 }
 
-.troy-package-metabox-plugin-list {
+.troy-server-package-metabox-plugin-list {
 	max-height: 600px;
 	overflow-y: auto;
 	padding: 1em;
@@ -36,7 +36,7 @@
 	margin-top: 1em;
 }
 
-.troy-package-plugin-options {
+.troy-server-package-plugin-options {
 	display: flex;
 	flex-direction: column;
 	margin-inline-start: 3em;
@@ -44,25 +44,25 @@
 	gap: 1ch;
 }
 
-.troy-package-plugin-option {
+.troy-server-package-plugin-option {
 	display: grid;
 	grid-template-columns: auto 1fr;
 	gap: .5em;
 	align-items: center;
 }
 
-.troy-package-plugin-option-box {
+.troy-server-package-plugin-option-box {
 	display: flex;
 	align-items: center;
 }
 
-.troy-package-plugin-option-content {
+.troy-server-package-plugin-option-content {
 	display: flex;
 	flex-direction: column;
 	gap: .5ch;
 }
 
-.troy-package-plugin-main,
-.troy-package-plugin-option-title {
+.troy-server-package-plugin-main,
+.troy-server-package-plugin-option-title {
 	font-weight: 600;
 }

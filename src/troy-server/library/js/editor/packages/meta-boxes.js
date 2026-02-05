@@ -37,12 +37,12 @@
 	 */
 	const initPluginCheckboxes = () => {
 
-		const pluginItems = document.querySelectorAll( '.troy-package-plugin-item' );
+		const pluginItems = document.querySelectorAll( '.troy-server-package-plugin-item' );
 
 		pluginItems.forEach( item => {
 
-			const checkbox     = item.querySelector( '.troy-package-plugin-checkbox' );
-			const optionsPanel = item.querySelector( '.troy-package-plugin-options' );
+			const checkbox     = item.querySelector( '.troy-server-package-plugin-checkbox' );
+			const optionsPanel = item.querySelector( '.troy-server-package-plugin-options' );
 
 			if ( ! checkbox || ! optionsPanel )
 				return;
@@ -64,7 +64,7 @@
 	 */
 	const initSlugAutoFill = () => {
 
-		const slugInput  = document.getElementById( 'troy_package_slug' );
+		const slugInput  = document.getElementById( 'troy-server-package-slug' );
 		const titleInput = document.getElementById( 'title' );
 		// const postNameInput = document.getElementById( 'post_name' ); // We do not support post_name (Core slug) -- maybe later.
 
@@ -101,8 +101,8 @@
 	 */
 	const initDescriptionCharCounter = () => {
 
-		const descInput = document.getElementById( 'troy_package_description' );
-		const counter   = document.getElementById( 'troy_package_description__counter' );
+		const descInput = document.getElementById( 'troy-server-package-description' );
+		const counter   = document.getElementById( 'troy-server-package-description__counter' );
 
 		if ( ! descInput || ! counter )
 			return;
@@ -127,8 +127,8 @@
 	 */
 	const initCompletionCheckboxDependencies = () => {
 
-		const deactivateCheckbox = document.getElementById( 'troy_package_deactivate_on_completion' );
-		const deleteCheckbox     = document.getElementById( 'troy_package_delete_on_completion' );
+		const deactivateCheckbox = document.getElementById( 'troy-server-package-deactivate-on-completion' );
+		const deleteCheckbox     = document.getElementById( 'troy-server-package-delete-on-completion' );
 
 		if ( ! deactivateCheckbox || ! deleteCheckbox )
 			return;
@@ -159,7 +159,7 @@
 	 */
 	const initSlugValidation = () => {
 
-		const slugInput = document.getElementById( 'troy_package_slug' );
+		const slugInput = document.getElementById( 'troy-server-package-slug' );
 
 		if ( ! slugInput || 'undefined' === typeof troyPackageEditorData )
 			return;
@@ -167,7 +167,7 @@
 
 		// Create warning element
 		const warningEl       = document.createElement( 'p' );
-		warningEl.className   = 'troy-package-slug-warning';
+		warningEl.className   = 'troy-server-package-slug-warning';
 		warningEl.style.color = '#d63638';
 
 		slugInput.parentNode.insertBefore( warningEl, slugInput.nextSibling );

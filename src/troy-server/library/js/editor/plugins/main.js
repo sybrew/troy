@@ -137,7 +137,7 @@
 			storeData && JSX(
 				PluginDocumentSettingPanel,
 				{
-					name:        'troy-plugin-settings-panel',
+					name:        'troy-server-plugin-settings-panel',
 					title:       __( 'Plugin Settings', 'troy-server' ),
 					icon:        'admin-plugins',
 					initialOpen: ! slugSet,
@@ -245,7 +245,7 @@
 			slugSet && JSX(
 				PluginDocumentSettingPanel,
 				{
-					name:        'troy-plugin-integrations-panel',
+					name:        'troy-server-plugin-integrations-panel',
 					title:       __( 'Integrations', 'troy-server' ),
 					initialOpen: false,
 					icon:        'admin-plugins',
@@ -286,7 +286,7 @@
 						].map( integration => JSX(
 							IntegrationControl,
 							{
-								key:                   `troy-plugin-integration-control--${integration.mode}`,
+								key:                   `troy-server-plugin-integration-control--${integration.mode}`,
 								mode:                  integration.mode,
 								label:                 integration.label,
 								pluginId:              storeData.plugin_id,
@@ -326,7 +326,7 @@
 			slugSet && JSX(
 				PluginDocumentSettingPanel,
 				{
-					name:         'troy-plugin-versions-panel',
+					name:         'troy-server-plugin-versions-panel',
 					title:        __( 'Plugin Versions', 'troy-server' ),
 					initialOpen:  true,
 					icon:         'media-archive',
@@ -398,7 +398,7 @@
 	}
 
 	registerPlugin(
-		'troy-plugin-settings',
+		'troy-server-plugin-settings',
 		{ render: PluginDocumentSettings },
 	);
 } )( window.wp );

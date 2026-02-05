@@ -37,12 +37,12 @@
  */
 
 /* Hide all menu items when Troy Mode is active */
-.troy-mode-active #adminmenu > li {
+.troy-server-mode-active #adminmenu > li {
 	display: none;
 }
 
 /* Match this with JS visibility rules in troy-mode.js "visibleIds" set */
-.troy-mode-active #adminmenu :is(
+.troy-server-mode-active #adminmenu :is(
 	#menu-dashboard,
 	#collapse-menu,
 	[id*="troy-server"],
@@ -50,16 +50,16 @@
 	display: block;
 }
 
-.troy-mode-active #adminmenu .wp-menu-separator {
+.troy-server-mode-active #adminmenu .wp-menu-separator {
 	display: block;
 }
 
-.troy-mode-active #adminmenu .wp-menu-separator:is(.troy-mode-hidden) {
+.troy-server-mode-active #adminmenu .wp-menu-separator:is(.troy-server-mode-hidden) {
 	display: none;
 }
 
 /* Troy Mode Switch Styling */
-#troy-mode-toggle .troy-mode-switch {
+#troy-server-mode-toggle .troy-server-mode-switch {
 	display: inline-block;
 	position: relative;
 	width: 26px;
@@ -71,7 +71,7 @@
 	transition: background .2s ease-in-out;
 }
 
-#troy-mode-toggle .troy-mode-switch-indicator {
+#troy-server-mode-toggle .troy-server-mode-switch-indicator {
 	position: absolute;
 	top: 2px;
 	left: 2px;
@@ -83,38 +83,38 @@
 	transition: left .2s ease-in-out;
 }
 
-#troy-mode-toggle .troy-mode-switch.on {
+#troy-server-mode-toggle .troy-server-mode-switch.on {
 	background: rgba(255, 255, 255, .5);
 }
 
-#troy-mode-toggle .troy-mode-switch.on .troy-mode-switch-indicator {
+#troy-server-mode-toggle .troy-server-mode-switch.on .troy-server-mode-switch-indicator {
 	left: 14px;
 }
 
 /* Prevent transition on initial render when already on */
 @starting-style {
-	#troy-mode-toggle .troy-mode-switch.on {
+	#troy-server-mode-toggle .troy-server-mode-switch.on {
 		background: rgba(255, 255, 255, .5);
 	}
 
-	#troy-mode-toggle .troy-mode-switch.on .troy-mode-switch-indicator {
+	#troy-server-mode-toggle .troy-server-mode-switch.on .troy-server-mode-switch-indicator {
 		left: 14px;
 	}
 }
 
 /* Hover state for toggle button */
-#troy-mode-toggle:hover .troy-mode-switch,
-#troy-mode-toggle a:focus .troy-mode-switch {
+#troy-server-mode-toggle:hover .troy-server-mode-switch,
+#troy-server-mode-toggle a:focus .troy-server-mode-switch {
 	background: rgba(255, 255, 255, .4);
 }
 
-#troy-mode-toggle:hover .troy-mode-switch.on,
-#troy-mode-toggle a:focus .troy-mode-switch.on {
+#troy-server-mode-toggle:hover .troy-server-mode-switch.on,
+#troy-server-mode-toggle a:focus .troy-server-mode-switch.on {
 	background: #00ba37;
 }
 
 /* Admin bar icon styling */
-#troy-mode-toggle .ab-icon {
+#troy-server-mode-toggle .ab-icon {
 	font-size: 20px;
 	line-height: 1;
 	top: 3px;

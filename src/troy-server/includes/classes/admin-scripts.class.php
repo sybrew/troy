@@ -126,7 +126,7 @@ final class Admin_Scripts {
 				--troy-server-theme-color:{$colors[2]};
 				--troy-server-theme-color-accent:{$colors[3]};
 				--troy-server-green:#00a32a;
-				--troy-server-red:#d63638
+				--troy-server-red:#d63638;
 			}
 			CSS,
 		);
@@ -161,7 +161,7 @@ final class Admin_Scripts {
 			function () {
 				echo '<script>',
 					<<<'JS'
-					'1' === localStorage.getItem( 'troyServerModeActive' ) && document.body.classList.add( 'troy-mode-active' )
+					'1' === localStorage.getItem( 'troyServerModeActive' ) && document.body.classList.add( 'troy-server-mode-active' )
 					JS,
 					'</script>';
 			},
