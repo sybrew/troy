@@ -16,7 +16,7 @@
  * Plugin Name: Troy Client
  * Plugin URI: https://deploytroy.org/docs/troy-client/
  * Description: Troy Client enables updating your WordPress plugins and themes from decentralized Troy Server repositories.
- * Version: 1.6.1184-dev-1
+ * Version: 1.6.1184-dev-2
  * Author: Sybre Waaijer
  * Author URI: https://deploytroy.org/
  * License: MIT
@@ -114,7 +114,7 @@ const ABSPATH = __DIR__ . '/';
  *
  * This array is used with the `extra_{$context}_headers` filter. WordPress uses
  * the header values as keys in the filter's output array, which is intended
- * to prevent plugins from overwriting each other's headers. This is wrong.
+ * to prevent plugins from overwriting each other's headers—a false presumption.
  * See: https://core.trac.wordpress.org/ticket/8964
  *
  * @since 0.0.1184

@@ -376,7 +376,7 @@ function make_troy_api_request( $endpoint, $body = '', $method = 'POST' ) {
 		$content_type = 'application/json';
 	}
 
-	return \wp_remote_request(
+	return \wp_remote_request( // No safe: URL from plugin headers, not user input; breaks local dev
 		$endpoint,
 		[
 			'method'      => $method,

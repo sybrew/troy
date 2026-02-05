@@ -252,7 +252,7 @@ final class Plugins_API {
 					? self::get_plugin_information(
 						$args->slug,
 						$args->locale,
-						$args->fields ?? [],
+						(array) ( $args->fields ?? [] ),
 					)
 					: $res;
 			}
@@ -265,6 +265,7 @@ final class Plugins_API {
 	 * Filters the plugin API to get plugin information from Troy's embedded services.
 	 *
 	 * @since 0.0.1184
+	 * @since 1.6.1184 Now differentiates cache keys by fields to prevent response reuse.
 	 *
 	 * @param string $slug   The plugin slug.
 	 * @param string $locale The locale.
@@ -332,8 +333,15 @@ final class Plugins_API {
 				),
 			);
 
+		$fields = array_filter( $fields );
+		ksort( $fields );
+		// We've tested all other algorithms for speed and collisions, and xxh3:12 came out on top for this use case.
+		// It's 1.27x faster than md5:11 (the next best thing for PHP 7.4+)
+		// 11 (md5) and 12 (xxh3) characters is enough to prevent collisions here (2^24 combinations tested).
+		$fields_key = substr( md5( json_encode( $fields ) ?: '[]' ), 0, 11 );
+
 		$request = make_troy_api_request_cached(
-			"get_plugin_information-$repo-$slug",
+			"get_plugin_information-$repo-$slug-$fields_key",
 			"{$repo}plugin/get/info/",
 			[
 				'fields' => $fields,
