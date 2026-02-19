@@ -417,7 +417,7 @@ final class Site_Health {
 
 		$fields = [];
 		$i18n   = [
-			'communication_blocked'   => \__( 'Communication blocked by plugin settings.', 'troy-client' ),
+			'communication_blocked'   => \__( 'Communication blocked via plugin headers.', 'troy-client' ),
 			/* translators: %l: The plugin slug. */
 			'communication_for_slug'  => \__( 'Communication for plugin slug: %s', 'troy-client' ),
 			/* translators: %l: A list of plugin slugs. */

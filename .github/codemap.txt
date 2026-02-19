@@ -1,0 +1,313 @@
+Troy Codebase Map
+=================
+
+Monorepo containing WordPress plugin suite for private plugin distribution.
+Troy Server hosts plugins; Troy Client fetches updates from Troy Servers.
+
+Each src/* folder is a standalone WordPress plugin.
+Files named index.php are direct-access guards (empty PHP files).
+Files ending in .min.js or .min.css are minified mirrors of their source counterparts.
+
+
+Root
+----
+.gitattributes                  LF line endings, binary markers, export-ignore rules for dev files
+.gitignore                      Ignores archives, logs, OS files, composer.lock, /vendor/, /.github/agents/, /.local/*
+cspell.json                     Spell checker dictionary (custom words for WordPress/Troy terminology)
+license.txt                     MIT license
+phpcs.xml                       Root PHPCS ruleset referencing TSF coding standard, shared across all plugins
+readme.md                       Project overview, component descriptions, requirements, planned features
+
+.github/
+	agents/
+		discuss.agent.md              Copilot agent configuration for discussions
+	codemap.txt                   This file
+	copilot-instructions.md       Repository coding standards and conventions
+	workflows/
+		release.yml                   GitHub Actions: builds release ZIPs on tag push, creates draft GitHub release
+
+.local/                           Git-tracked folder with ignored contents; local workspace storage
+
+assets/
+	logo-github-outline-192.png   Repository logo for GitHub readme
+
+
+Troy Server (src/troy-server/)
+------------------------------
+Hosts plugin repository. Manages plugins via WP admin, Block Editor, and REST API.
+Serves update checks, plugin info, downloads, and stats to Troy Clients.
+Requires PHP 8.4+, MySQL 8.0.19+, WordPress 6.8+.
+
+troy-server.php                 Main plugin file: header, constants (VERSION, DB_VERSION), loads bootstrap
+.gitattributes                  Export-ignore rules for phpcs.xml
+phpcs.xml                       Plugin-specific PHPCS overrides
+
+bootstrap/
+	hook.php                      Front-facing hooks: cron, CPT registration, REST routes, endpoint routing, stats, integrations, packages
+	hook-admin.php                Admin-only hooks: scripts, menu reorder, plugin row meta, settings pages, editor assets, list-view columns
+	load.php                      PSR-4 class autoloader for Troy\Server\, wires activation/deactivation handlers
+	on-plugin-activation.php      Sets options autoload flags on activation
+	on-plugin-deactivation.php    Disables options autoload, removes all cron jobs on deactivation
+
+includes/
+	constants.php                 Plugin constants: PLUGINS_CPT, PACKAGES_CPT, REST_NS, stats batch size, epoch delay
+	upgrade.php                   Database migration system with locking, version tracking, upgrade/downgrade paths, schema management
+
+includes/classes/
+	admin-menu.class.php          Reorders WP admin menu to position Troy CPTs at custom positions (3.1184x)
+	admin-scripts.class.php       Registers global admin CSS/JS and CSS custom properties for Troy theming
+	cron.class.php                Base cron class with schedule registration/removal; child classes override CRON_JOBS
+	file-utils.class.php          WordPress Filesystem initialization and file operation utilities
+	markdown.class.php            Markdown-to-HTML via bundled CommonMark/GFM vendor library
+	plugin-table.class.php        Adds privacy policy link to plugin row meta on WP Plugins page
+	template.class.php            Secure view template loader using secret token to prevent unauthorized inclusion
+	zip-extractor.class.php       Extracts plugin/theme ZIPs to temp storage with timeout and cleanup via cron
+
+includes/classes/api/
+	info.class.php                Static reference data: locales, WP versions, license types, categories
+	package.class.php             Package lookup: get package ID by slug from custom tables
+	plugin.class.php              Plugin lookup: get plugin ID by slug from custom tables
+	sanitize.class.php            Sanitization for SemVer strings, URLs, slugs, plugin/package data
+	server.class.php              Server-level API: DB version retrieval, repository URL formatting
+	slug.class.php                Slug conflict detection and resolution across plugins/packages tables
+	utils.class.php               Epoch calculation for UUIDs, latest version resolution with type priority
+
+includes/classes/endpoints/
+	base-endpoint.class.php       Abstract base for public API endpoints: response helpers, clean headers, CORS
+	router.class.php              URL router: parses REQUEST_URI at init, dispatches to endpoints, bypasses WP query
+	ping.class.php                Health check endpoint for Troy Client connectivity verification
+
+includes/classes/endpoints/plugins/
+	download.class.php            Plugin ZIP download: file streaming, version selection, download stats recording
+	info.class.php                Plugin info: WordPress-compatible thickbox data (description, screenshots, etc.)
+	stats.class.php               Public plugin stats: downloads, active installs, ratings
+	tags.class.php                Available released versions with metadata
+	updates.class.php             WordPress-compatible update check responses
+
+includes/classes/endpoints/packages/
+	download.class.php            Package installer ZIP download with file streaming and stats recording
+
+includes/classes/integrations/plugins/
+	rest.class.php                REST API for integration management (GitHub/WP.org connect/disconnect/sync)
+	store.class.php               Integration data storage; enforces single active integration per plugin, tracks sync history
+	cron.class.php                Periodic integration tag syncing scheduler
+
+includes/classes/integrations/plugins/repos/
+	github.class.php              GitHub API adapter: connects repos, fetches tags, supports PAT for private repos
+	wporg.class.php               WordPress.org API adapter: fetches plugin tags and versions from WP.org directory
+
+includes/classes/packages/
+	data.class.php                Package data accessor (read-only) from custom tables
+	drop.class.php                Deletes package data and removes storage directory (with graveyard recovery)
+	files.class.php               Package file storage management (directory helpers, ZIP paths)
+	meta-boxes.class.php          Registers/renders meta boxes for Packages editor (settings, plugins, themes, download, advanced)
+	rest.class.php                REST API for package CRUD operations
+	zip-builder.class.php         Generates installer ZIPs from troy-installer template, embedding selected plugins/themes
+
+includes/classes/packages/cpt/
+	init.class.php                Registers Packages custom post type (non-public, admin-only)
+	list-view.class.php           Packages list table: disables quick edit, adds columns (slug, plugins, themes, download)
+	store.class.php               Package save/update/trash/delete lifecycle, syncs CPT to custom tables, rebuilds ZIPs
+
+includes/classes/plugins/
+	data.class.php                Plugin data accessor (read-only) from custom tables with version-aware queries
+	drop.class.php                Deletes plugin data and removes ZIP storage (with graveyard recovery)
+	files.class.php               Plugin file storage management (ZIP paths, directory helpers, checksums)
+	readme-parser.class.php       Parses WordPress-style readme.txt from plugin ZIPs, extracts metadata and content
+	rest.class.php                REST API for plugin management (versions, uploads, deletions, slug validation)
+	zip-uploader.class.php        Plugin ZIP uploads: download from URL or process file upload, validate, store
+
+includes/classes/plugins/cpt/
+	block-editor.class.php        Block Editor integration: registers post meta, blocks, editor scripts/styles
+	init.class.php                Registers Plugins custom post type and taxonomies
+	list-view.class.php           Plugins list table: disables quick edit, adds columns (slug, version, status, integration)
+	preview.class.php             Plugin thickbox preview (placeholder, not yet implemented)
+	store.class.php               Plugin save lifecycle: sanitizes editor data, syncs to custom tables, processes ZIPs, parses readmes
+
+includes/classes/settings/
+	logs.class.php                Logs dashboard: enqueues assets, provides integration history/log retrieval
+	main.class.php                Main settings: registers admin menu, handles tab routing and form submission
+	rest.class.php                REST API for settings dashboard (stats data, logs data)
+	stats.class.php               Stats dashboard: enqueues assets, provides overview/top plugins/epoch/PHP/WP/locale statistics
+
+includes/classes/stats/
+	aggregator.class.php          Aggregates live stats into summary tables in batches via cron using SQL GROUP BY
+	cron.class.php                Cron scheduler for stats aggregation and maintenance tasks
+
+includes/classes/themes/
+	(empty, theme support planned)
+
+includes/views/
+	settings/
+		main.php                    Settings page shell: tab navigation (Plugin Stats, Package Stats, Logs, Settings)
+		tab-setup.php               Setup tab: Troy repo header, options form (currently no configurable settings)
+		tab-plugin-stats.php        Plugin stats tab: overview cards, top plugins, epoch comparisons, PHP/WP/locale tables
+		tab-package-stats.php       Package stats tab: package download statistics with auto-refresh
+		tab-logs.php                Logs tab: integration sync history and log entries with refresh controls
+	editor/
+		packages/
+			advanced-meta-box.php   Advanced options: install timeout, deactivate/delete on completion, notice severity, network activation
+			download-meta-box.php   Package download URL display (or prompt to publish first)
+			plugins-meta-box.php    Checkbox list of plugins to include in package with per-plugin options
+			settings-meta-box.php   Package slug, server URL, general configuration
+			themes-meta-box.php     Placeholder: "Theme support is coming soon"
+
+library/js/
+	constants.js                  Shared constants: author queries, block templates for plugin editor
+	icons.js                      SVG icon components for the block editor
+
+library/js/admin/
+	troy-mode.js                  Troy Mode toggle: hides non-essential WP admin menu items, persists via user meta
+
+library/js/settings/
+	main.js                       Settings page: tab switching with smooth navigation
+	stats.js                      Stats dashboard: fetches/renders stats via REST, date ranges, auto-refresh, dynamic tables
+	logs.js                       Logs dashboard: fetches/renders log entries via REST with auto-refresh
+
+library/js/utils/
+	assign.js                     Recursive deep-defaults object merge utility
+	escape.js                     HTML/entity escaping and decoding for safe DOM rendering
+	format.js                     Relative timestamps ("X minutes ago"), date formatting
+	sanitize.js                   Client-side number formatting and string cleanup
+	sort.js                       SemVer-aware sorting for version arrays
+	timing.js                     Debounce and async control utilities
+
+library/js/editor/components/
+	create-popover-props.js       Generates consistent popover positioning props
+	image-upload-control.js       Media library image picker with popover preview (logo/banner uploads)
+	metadata-item.js              Label/value metadata display pairs in editor panels
+	panel-row.js                  Layout wrapper for editor panel content rows
+	styled-help.js                Styled help text renderer for editor panels
+
+library/js/editor/plugins/
+	content.js                    Resets/refills block template from custom table data, syncs content on save
+	main.js                       Registers Gutenberg sidebar panels (slug, status, author, versions, integrations, URLs)
+	notices.js                    Contextual editor notices (warnings, errors) based on plugin store state
+	store.js                      Plugin editor data store: REST data fetching, caching, state management
+
+library/js/editor/plugins/blocks/
+	author.js                     Block: plugin author display with dynamic name from WP users
+	banner.js                     Block: plugin banner image
+	download.js                   Block: download button
+	headergroup.js                Block: header group wrapper
+	heading.js                    Block: section heading with inner blocks
+	logo.js                       Block: plugin logo/icon with media upload
+	tab-content.js                Block: individual tab panel within tabs container
+	tabs.js                       Block: tabbed content container for description sections
+	title-author-wrap.js          Block: title and author wrapper container
+	title.js                      Block: editable plugin title, auto-syncs to post title
+
+library/js/editor/plugins/components/
+	auto-process-tags-control.js  Sidebar: toggle for automatic tag processing on integration sync
+	integration-control.js        Sidebar: GitHub/WP.org integration management (connect, sync, disconnect, history)
+	menu-dropdown.js              Reusable dropdown menu helper
+	plugin-author-control.js      Sidebar: plugin author selector with WP user search
+	plugin-slug-control.js        Sidebar: slug editor with conflict detection
+	plugin-status-control.js      Sidebar: release status toggle (published/hidden/beta)
+	plugin-versions-control.js    Sidebar: version management (upload, delete, set latest, type selection)
+	readme-settings-control.js    Sidebar: readme.txt parsing/generation settings
+	short-description-control.js  Sidebar: short description field with character limit
+	urls-control.js               Sidebar: plugin URLs (homepage, donate, support, etc.)
+
+library/js/editor/packages/
+	meta-boxes.js                 Packages editor: checkbox interactions, slug validation, REST calls for meta boxes
+
+library/css/admin/
+	troy-mode.css                 Troy Mode: hides non-essential admin items, toggle button styling
+
+library/css/editor/components/
+	components.css                Shared editor components: PanelRow, MetadataItem, loading states
+
+library/css/editor/plugins/
+	blocks.css                    Plugin editor blocks: hides default post title, figcaptions, block layout
+	components.css                Plugin editor sidebar: image previews, version lists, integration panels
+
+library/css/editor/packages/
+	meta-boxes.css                Package editor meta boxes: plugin list grid, checkbox items, slug fields
+
+library/css/list-view/
+	packages.css                  Packages list table: column widths, mobile visibility
+
+library/css/settings/
+	logs.css                      Logs dashboard: controls, log entries, history timeline, status badges
+	main.css                      Settings page: layout, tabs, footer, nag suppression, responsive design
+	stats.css                     Stats dashboard: date range controls, stat cards, tables, charts
+
+library/packages/
+	troy-installer.php            Troy Installer template: self-contained plugin that installs Troy Client and vendor plugins
+	readme.txt                    Readme for the auto-generated installer package
+	phpcs.xml                     PHPCS overrides for the installer template
+
+vendor/markdown/
+	Bundled CommonMark/GFM library for Markdown rendering. Third-party packages:
+	dflydev-dflydev-dot-access-data/    Dot-notation data access
+	nette-schema/                       Schema validation
+	nette-utils/                        Nette utility classes
+	php-fig-event-dispatcher/           PSR-14 event dispatcher interface
+	thephpleague-commonmark/            CommonMark Markdown parser (core library)
+	thephpleague-config/                Configuration management
+
+
+Troy Client (src/troy-client/)
+------------------------------
+Connects to Troy Servers to fetch plugin updates, info, and dependencies.
+Replaces WP.org update checks for Troy-managed plugins.
+Requires PHP 7.4+, WordPress 6.7+. Network-activated on multisite.
+
+troy-client.php                 Main plugin file: header, constants (VERSION, DB_VERSION), loads bootstrap
+.gitattributes                  Export-ignore rules
+phpcs.xml                       Plugin-specific PHPCS overrides
+
+bootstrap/
+	hook.php                      Registers all hooks: plugin protection, update API, headers, site health, dependencies
+	load.php                      PSR-4 class autoloader for Troy\Client\, wires activation/deactivation
+	on-plugin-activation.php      Sets flag to recheck Troy dependencies on activation
+	on-plugin-deactivation.php    Deletes all Troy Client caches/options on deactivation
+
+includes/
+	api.php                       Public API functions (e.g., plugin_file_to_slug), ~495 lines of utility helpers
+
+includes/classes/
+	dependencies.class.php        Discovers and auto-installs Troy-declared plugin dependencies
+	headers.class.php             Registers/reads custom plugin headers (Troy Server, Troy Dependencies)
+	http.class.php                Filters HTTP request args and user-agent for Troy Server communication
+	plugin-table.class.php        Adds custom row-meta links on WP Plugins page for Troy-managed plugins
+	plugins-api.class.php         Intercepts plugins_api and update_plugins transient to serve updates from Troy Server
+	protect-client.class.php      Hides Troy Client from plugin lists, blocks deactivation/deletion when daemon present
+	sanitize.class.php            Sanitization/validation methods for Troy Client data
+	site-health.class.php         Site Health status tests and debug info for Troy Server connectivity
+
+includes/classes/skins/
+	background.class.php          Silent WP_Upgrader_Skin: suppresses output, logs errors only (background installs)
+
+
+Troy Client Daemon (src/troy-client-daemon/)
+--------------------------------------------
+Must-use plugin that enforces Troy Client presence.
+Forces install/activation of Troy Client, blocks WP update API if Client is inactive.
+
+troy-client-daemon.php          MU-plugin: forces Troy Client install/activation, blocks update API without Client
+.gitattributes                  Export-ignore rules
+phpcs.xml                       Plugin-specific PHPCS overrides
+
+
+Troy Installer (src/troy-installer/)
+------------------------------------
+Standalone installer plugin that installs Troy Client and vendor plugins.
+Distributed to end-users; self-deactivates after installation completes.
+
+troy-installer.php              Full installer plugin with custom upgrader skin, ~700 lines
+phpcs.xml                       Plugin-specific PHPCS overrides
+
+
+Troy Client Snippets
+--------------------
+
+src/troy-client-channel/
+	snippet.php                   wp-config snippet: defines Troy\Client\CHANNEL = 'beta' for beta release updates
+
+src/troy-client-hide/
+	snippet.php                   wp-config snippet: defines Troy\Client\HIDE = true, hides Troy Client from plugins list
+
+src/troy-embed/
+	snippet.php                   Standalone snippet: auto-installs Troy Client via Plugin_Upgrader on admin_init

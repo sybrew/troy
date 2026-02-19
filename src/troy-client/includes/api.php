@@ -397,9 +397,15 @@ function make_troy_api_request( $endpoint, $body = '', $method = 'POST' ) {
 /**
  * Makes a qualified Troy API call to a Troy Server, with caching.
  *
- * The cache expires every 10 minutes.
- * It is reset when it's expired or containing 20 significant plugins in length.
- * This is to prevent the cache from growing too large.
+ * The cache expires every 10 minutes by default (configurable via the
+ * Troy\Client\API_TIMEOUT constant, minimum 30 seconds).
+ *
+ * It is purged and rebuilt when expired or when serialized size exceeds
+ * 333,000 bytes. How many plugins fit depends on what's cached:
+ * - Update checks (~500-800 bytes each): 400+ plugins.
+ * - Full plugin details with readme (~15-17KB each): ~20 plugins.
+ *
+ * The cache also clears on any plugin, theme, or core upgrade.
  *
  * Errors are not cached long-term, but are memoized to block rapid re-requests.
  *

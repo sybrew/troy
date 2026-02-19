@@ -4,6 +4,11 @@ This repository is responsible for "Troy" plugins for WordPress, which help plug
 
 Follow these rules:
 
+## File Management
+
+- When creating new files or changing a file's purpose, update `.github/codemap.txt` to reflect the change. Do not add `.local/` contents to the codemap, but you may reference them as needed.
+- Refer to `.github/codemap.txt` first to understand the codebase structure and locate files.
+
 ## Repo Specific Guidelines
 
 - Use PHP 8.4+ for src/troy-server/\*, PHP 7.4+ for other folders
@@ -49,6 +54,7 @@ Follow these rules:
 - Always use braces with branching control structures
 - Don't use braces for single-line constructs that lack a conditional follow-up (if/for/foreach/do/while lacking pair else/elseif/do/while)
 - Coalesce two control structures when the first contains only the second, e.g. `} else foreach {`
+- In switch statements, add a newline between each case unless all cases have single-line bodies
 
 ## Corrupted Files
 - Do not try to fix file encoding issues, just notify about them after your changes

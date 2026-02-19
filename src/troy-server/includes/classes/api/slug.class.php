@@ -130,7 +130,7 @@ final class Slug {
 			return $this->unique_slug = substr(
 				$this->slug,
 				0,
-				191 - \strlen( "-$max_suffix" ),
+				191 - \strlen( "-$max_suffix" ), // 191: max char length of slug column.
 			) . "-$max_suffix";
 		}
 	}
