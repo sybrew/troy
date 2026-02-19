@@ -202,6 +202,7 @@ final class Store {
 			'install_timeout'          => 30,
 			'deactivate_on_completion' => 1,
 			'delete_on_completion'     => 0,
+			'network_activation'       => 'block',
 			'notice_severity'          => 'detailed',
 			'plugins'                  => [],
 			'themes'                   => [],
@@ -241,6 +242,13 @@ final class Store {
 			),
 			'deactivate_on_completion' => empty( $data['deactivate_on_completion'] ) ? 0 : 1,
 			'delete_on_completion'     => empty( $data['delete_on_completion'] ) ? 0 : 1,
+			'network_activation'       => \in_array(
+				$data['network_activation'] ?? '',
+				[ 'block', 'activate-all' ],
+				true,
+			)
+				? $data['network_activation']
+				: 'block',
 			'notice_severity'          => \in_array(
 				$data['notice_severity'] ?? '',
 				[ 'detailed', 'verbose', 'silent' ],
@@ -457,12 +465,13 @@ final class Store {
 							'install_timeout'          => $data['install_timeout'],
 							'deactivate_on_completion' => $data['deactivate_on_completion'],
 							'delete_on_completion'     => $data['delete_on_completion'],
+							'network_activation'       => $data['network_activation'],
 							'notice_severity'          => $data['notice_severity'],
 							'plugins'                  => API\Sanitize::json_encode_db( $data['plugins'] ),
 							'themes'                   => API\Sanitize::json_encode_db( $data['themes'] ),
 						],
 						[ 'package_id' => $package_id ],
-						[ '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%d', '%d', '%d', '%s', '%s', '%s' ],
+						[ '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%d', '%d', '%d', '%s', '%s', '%s', '%s' ],
 						[ '%d' ],
 					);
 				} else {
@@ -482,11 +491,12 @@ final class Store {
 							'install_timeout'          => $data['install_timeout'],
 							'deactivate_on_completion' => $data['deactivate_on_completion'],
 							'delete_on_completion'     => $data['delete_on_completion'],
+							'network_activation'       => $data['network_activation'],
 							'notice_severity'          => $data['notice_severity'],
 							'plugins'                  => API\Sanitize::json_encode_db( $data['plugins'] ),
 							'themes'                   => API\Sanitize::json_encode_db( $data['themes'] ),
 						],
-						[ '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%d', '%d', '%d', '%s', '%s', '%s' ],
+						[ '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%d', '%d', '%d', '%s', '%s', '%s', '%s' ],
 					);
 				}
 			}

@@ -247,6 +247,7 @@ final class Zip_Builder {
 								'deactivate_on_completion' => (bool) $meta->deactivate_on_completion,
 								'delete_on_completion'     => (bool) $meta->delete_on_completion,
 								'notice_severity'          => $meta->notice_severity,
+								'network_activation'       => $meta->network_activation,
 							];
 
 							$lines = explode(

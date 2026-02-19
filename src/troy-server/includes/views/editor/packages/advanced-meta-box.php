@@ -48,6 +48,7 @@ if ( ! $meta ) {
 		'install_timeout'          => 30,
 		'deactivate_on_completion' => 1,
 		'delete_on_completion'     => 0,
+		'network_activation'       => 'block',
 		'notice_severity'          => 'detailed',
 	];
 }
@@ -96,6 +97,21 @@ if ( ! $meta ) {
 				/>
 				<?= \esc_html__( 'Delete installer after successful installation (requires deactivation).', 'troy-server' ) ?>
 			</label>
+		</td>
+	</tr>
+	<tr>
+		<th><label for=troy-server-package-network-activation><?= \esc_html__( 'Network Activation', 'troy-server' ) ?></label></th>
+		<td>
+			<select
+				id=troy-server-package-network-activation
+				name="troy-server-package[network_activation]"
+			>
+				<option value=block <?php \selected( $meta->network_activation, 'block' ); ?>><?= \esc_html__( 'Block', 'troy-server' ) ?></option>
+				<option value=activate-all <?php \selected( $meta->network_activation, 'activate-all' ); ?>><?= \esc_html__( 'Activate All', 'troy-server' ) ?></option>
+			</select>
+			<p class=description>
+				<?= \esc_html__( 'Controls behavior when the installer is network-activated on a multisite. Block prevents network activation entirely. Activate All network-activates all plugins.', 'troy-server' ) ?>
+			</p>
 		</td>
 	</tr>
 	<tr>

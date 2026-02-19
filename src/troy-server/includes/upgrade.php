@@ -162,7 +162,22 @@ function upgrade_from( $version ) {
 			// Register the initial settings.
 			\add_option( 'troy_server_settings', [], '', true );
 
-			\update_option( 'troy_server_db_version', 1_1184, true );
+			\update_option( 'troy_server_db_version', 1_1184, true ); // Always update to prevent re-running on crash.
+
+			$fresh_install = true;
+			// Fall through.
+		case $version < 1_6_1184:
+			if ( ! $fresh_install ) {
+				global $wpdb;
+
+				$wpdb->query(
+					"ALTER TABLE `{$wpdb->prefix}troy_package_metas`
+						ADD COLUMN `network_activation` varchar(20) NOT null DEFAULT 'block'
+							AFTER `notice_severity`",
+				);
+			}
+
+			\update_option( 'troy_server_db_version', 1_6_1184, true ); // Always update to prevent re-running on crash.
 			// Fall through.
 	}
 }
@@ -715,6 +730,7 @@ function get_initial_db_schema_queries() {
 			`install_timeout` int unsigned NOT null DEFAULT 30,
 			`deactivate_on_completion` boolean NOT null DEFAULT 1,
 			`delete_on_completion` boolean NOT null DEFAULT 0,
+			`network_activation` varchar(20) NOT null DEFAULT 'block',
 			`notice_severity` varchar(20) NOT null DEFAULT 'detailed',
 			`plugins` longtext NOT null,
 			`themes` longtext NOT null,

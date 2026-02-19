@@ -11,6 +11,13 @@
  * @troy-repo
  * Troy: disable-all-communications
  *
+ * DISCLAIMER: This installer package may have been generated and distributed
+ * by a third party. The @author of this file refers to the original code
+ * author, not the package distributor. The plugin header fields (such as
+ * "Author") and the list of plugins to install are configured by the package
+ * distributor. The original code author does not endorse or guarantee the
+ * contents of any plugins configured in this installer.
+ *
  * @troy-package * plugin-header
  * @wordpress-plugin
  * Plugin Name: Troy Installer
@@ -71,14 +78,17 @@ const PLUGIN_NAME = 'Troy Installer'; // @troy-package plugin-name
  * The options for the installer.
  *
  * @since 0.0.1184
+ * @since 1.6.1184 Added 'network_activation' option for multisite network activation behaviors.
  *
  * @var array $options {
  *    An array of options for the installer.
  *
- *    @type int  $install_timeout          The timeout for the installer.
- *    @type bool $deactivate_on_completion Whether to deactivate the installer plugin after completion.
- *    @type bool $delete_on_completion     Whether to delete the installer plugin after completion.
- *    @type bool $notice_severity          The severity of the notice. Accepts 'detailed', 'verbose', and 'silent'.
+ *    @type int    $install_timeout          The timeout for the installer.
+ *    @type bool   $deactivate_on_completion Whether to deactivate the installer plugin after completion.
+ *    @type bool   $delete_on_completion     Whether to delete the installer plugin after completion.
+ *    @type string $network_activation       The network activation behavior on multisite of this installer.
+ *                                           Accepts 'block' and 'activate-all'. Default 'block'.
+ *    @type string $notice_severity          The severity of the notice. Accepts 'detailed', 'verbose', and 'silent'.
  * }
  */
 // @troy-package | plugin-options
@@ -86,6 +96,7 @@ const OPTIONS = [
 	'install_timeout'          => 30,
 	'deactivate_on_completion' => true,
 	'delete_on_completion'     => false,
+	'network_activation'       => 'block',
 	'notice_severity'          => 'detailed',
 ];
 // @troy-package | plugin-options
@@ -144,11 +155,15 @@ register_admin_message(
 	'info',
 );
 
-// phpcs:ignore WordPress.Security.NonceVerification -- no data is being handled.
-if ( isset( $_GET['activate'] ) && ( OPTIONS['deactivate_on_completion'] || OPTIONS['delete_on_completion'] ) )
+if (
+	// phpcs:ignore WordPress.Security.NonceVerification -- no data is being acted upon
+	   ( isset( $_GET['activate'] ) || isset( $_GET['activate-multi'] ) )
+	&& ( OPTIONS['deactivate_on_completion'] || OPTIONS['delete_on_completion'] )
+) {
 	\add_filter( 'wp_admin_notice_markup', __NAMESPACE__ . '\suppress_activation_notice' );
+}
 
-\add_action( 'admin_notices', __NAMESPACE__ . '\output_registered_install_notices' );
+\add_action( 'all_admin_notices', __NAMESPACE__ . '\output_registered_install_notices' );
 \add_action( 'admin_init', __NAMESPACE__ . '\install_plugins' );
 
 /**
@@ -159,11 +174,15 @@ if ( isset( $_GET['activate'] ) && ( OPTIONS['deactivate_on_completion'] || OPTI
  * without referencing the plugin activated.
  *
  * @since 0.0.1184
+ * @since 1.6.1184 Added multisite activation notice suppression.
  *
  * @param string $markup The HTML markup for the admin notice.
  */
 function suppress_activation_notice( $markup ) {
-	return str_contains( $markup, \__( 'Plugin activated.', 'default' ) ) ? '' : $markup;
+	return str_contains( $markup, \__( 'Plugin activated.', 'default' ) )
+		|| str_contains( $markup, \__( 'Selected plugins activated.', 'default' ) )
+			? ''
+			: $markup;
 }
 
 /**
@@ -244,6 +263,7 @@ function output_registered_install_notices() {
  * will be used to fetch plugin information. This is not desired and can lead to a supply chain attack.
  *
  * @since 0.0.1184
+ * @since 1.6.1184 Added network activation behaviors: 'block' and 'activate-all'.
  */
 function install_plugins() {
 
@@ -255,10 +275,28 @@ function install_plugins() {
 		return;
 	}
 
-	$plugins   = \get_plugins();
 	$installer = \plugin_basename( __FILE__ );
-	$installed = [];
-	$activated = [];
+
+	$is_network_active = \is_multisite() && \is_plugin_active_for_network( $installer );
+
+	if ( $is_network_active && 'block' === OPTIONS['network_activation'] ) {
+		\deactivate_plugins( $installer, true, true );
+		register_admin_message(
+			\sprintf(
+				'<strong>Plugin "%s" has been deactivated and no plugins were installed.</strong> Please activate this installer on a site where its plugins are needed. Once the plugins are installed, you can activate them on each site individually.',
+				PLUGIN_NAME,
+			),
+			'error',
+		);
+		return;
+	}
+
+	$plugins = \get_plugins();
+
+	$installed     = [];
+	$activated     = [];
+	$not_installed = [];
+	$not_activated = [];
 
 	\wp_raise_memory_limit( 'troy-installer' );
 
@@ -293,7 +331,7 @@ function install_plugins() {
 	if ( true !== $result ) {
 		$notice_args = [
 			'before' => \sprintf(
-				'Plugin "Troy Client" could not be installed. This will be retried until you deactivate plugin "%s."',
+				'<strong>Plugin "Troy Client" could not be installed.</strong> This will be retried until you deactivate plugin "%s."',
 				$plugins[ $installer ]['Name'],
 			),
 			'type'   => 'error',
@@ -312,7 +350,7 @@ function install_plugins() {
 	if ( ! \function_exists( 'Troy\Client\get_troy_plugin_repos_per_slug' ) ) {
 		register_admin_message(
 			\sprintf(
-				'Plugin "Troy Client" could not be activated. This will be retried until you deactivate plugin "%s."',
+				'<strong>Plugin "Troy Client" could not be activated.</strong> This will be retried until you deactivate plugin "%s."',
 				$plugins[ $installer ]['Name'],
 			),
 			'error',
@@ -339,13 +377,12 @@ function install_plugins() {
 		'overwrite_troy' => false,
 	];
 
-	$not_installed = [];
-	$not_activated = [];
-
 	foreach ( $install as $slug => &$conf ) {
 		$conf = array_merge( $install_defaults, $conf );
 
-		$conf['network'] = $is_multisite ? $conf['network'] : false;
+		$conf['network'] = $is_multisite
+			? $conf['network'] || 'activate-all' === OPTIONS['network_activation']
+			: false;
 
 		if ( isset( $slug_repos[ $slug ] ) && empty( $conf['overwrite_troy'] ) )
 			continue;
@@ -383,7 +420,7 @@ function install_plugins() {
 			$not_installed[] = $conf['name'];
 			$notice_args     = [
 				'before' => \sprintf(
-					'Plugin "%s" could not be installed. This will be retried until you deactivate plugin "%s."',
+					'<strong>Plugin "%s" could not be installed.</strong> This will be retried until you deactivate plugin "%s."',
 					$conf['name'],
 					$plugins[ $installer ]['Name'],
 				),
@@ -397,8 +434,8 @@ function install_plugins() {
 		register_admin_message(
 			\sprintf(
 				\count( $installed ) > 1
-					? 'The following plugins were installed: %s'
-					: 'The following plugin was installed: %s',
+					? '<strong>The following plugins were installed:</strong> %s'
+					: '<strong>The following plugin was installed:</strong> %s',
 				list_items( $installed ),
 			),
 			'success',
@@ -410,8 +447,8 @@ function install_plugins() {
 		register_admin_message(
 			\sprintf(
 				\count( $not_installed ) > 1
-					? 'The following plugins were not installed: %s'
-					: 'The following plugin was not installed: %s',
+					? '<strong>The following plugins were not installed:</strong> %s'
+					: '<strong>The following plugin was not installed:</strong> %s',
 				list_items( $not_installed ),
 			),
 			'warning',
@@ -443,8 +480,8 @@ function install_plugins() {
 		register_admin_message(
 			\sprintf(
 				\count( $activated ) > 1
-					? 'The following plugins were activated: %s'
-					: 'The following plugin was activated: %s',
+					? '<strong>The following plugins were activated:</strong> %s'
+					: '<strong>The following plugin was activated:</strong> %s',
 				list_items( $activated ),
 			),
 			'success',
@@ -454,8 +491,8 @@ function install_plugins() {
 		register_admin_message(
 			\sprintf(
 				\count( $not_activated ) > 1
-					? 'The following plugins failed activating: %s'
-					: 'The following plugin failed activating: %s',
+					? '<strong>The following plugins failed activating:</strong> %s'
+					: '<strong>The following plugin failed activating:</strong> %s',
 				list_items( $not_activated ),
 			),
 			'warning',
@@ -464,20 +501,20 @@ function install_plugins() {
 
 	if ( empty( $not_installed ) && empty( $not_activated ) ) {
 		if ( OPTIONS['delete_on_completion'] ) {
-			\deactivate_plugins( $installer, true, \is_plugin_active_for_network( $installer ) );
+			\deactivate_plugins( $installer, true, $is_network_active );
 			\delete_plugins( [ $installer ] );
 			register_admin_message(
 				\sprintf(
-					'Installation has completed successfully. Plugin "%s" was deactivated and deleted automatically. Refresh to see the changes.',
+					'<strong>Installation has completed successfully.</strong> Plugin "%s" was deactivated and deleted automatically. Refresh to see the changes.',
 					PLUGIN_NAME,
 				),
 				'info',
 			);
 		} elseif ( OPTIONS['deactivate_on_completion'] ) {
-			\deactivate_plugins( $installer, true, \is_plugin_active_for_network( $installer ) );
+			\deactivate_plugins( $installer, true, $is_network_active );
 			register_admin_message(
 				\sprintf(
-					'Installation has completed successfully. Plugin "%s" has been deactivated automatically.',
+					'<strong>Installation has completed successfully.</strong> Plugin "%s" has been deactivated automatically.',
 					PLUGIN_NAME,
 				),
 				'info',

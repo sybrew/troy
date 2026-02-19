@@ -40,6 +40,8 @@ You can either install the plugin via your WordPress dashboard or via FTP.
 
 = 1.6.1184 =
 
+* Added full multisite activation support.
+* Improved styling of notices.
 * Fixed typos.
 
 = 0.0.1184 =

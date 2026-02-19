@@ -154,6 +154,7 @@ final class Data {
 	 *     @type int    deactivate_on_completion Whether to deactivate installer after completion.
 	 *     @type int    delete_on_completion     Whether to delete installer after completion.
 	 *     @type string notice_severity          The notice severity level.
+	 *     @type string network_activation       The network activation behavior. Accepts 'block' and 'activate-all'.
 	 *     @type string plugins                  The plugins JSON.
 	 *     @type string themes                   The themes JSON.
 	 *     @type string created_at               The row creation timestamp.
