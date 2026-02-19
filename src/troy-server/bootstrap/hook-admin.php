@@ -60,12 +60,11 @@ admin: {
 	\add_filter( 'plugin_row_meta', [ Plugin_Table::class, 'add_row_meta' ], 10, 2 );
 }
 
-// We couldn't think of any useful settings yet, so we're disabling settings for now.
 settings: {
 	// Register the admin settings menu.
 	\add_action( 'admin_menu', [ Settings\Main::class, 'register_admin_menu' ] );
 
-	// Register the settings save action. TODO: Later, we don't have any settings yet.
+	// Register the settings save action.
 	\add_action( 'admin_post_' . Settings\Main::SAVE_ACTION, [ Settings\Main::class, 'process_settings_submission' ] );
 }
 

@@ -112,6 +112,7 @@ It's best to run Troy Server on a standalone WordPress instance. This can also b
 * Added privacy policy link to the plugin row meta.
 * Added character counter to package descriptions.
 * Added network activation options for packages. Update your packages to engage this feature.
+* Added Setup tab to the settings page to help with onboarding (and future settings).
 * Updated download stat detection to recognize Troy Client 1.6.1184's user agent for tracking.
 * Improved default package description to clarify Troy Client's role.
 * Improved ID and class names for troy-mode and troy-packages by prefixing them with "troy-server" to avoid conflicts with other plugins.

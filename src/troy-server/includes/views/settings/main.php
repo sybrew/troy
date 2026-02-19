@@ -57,10 +57,10 @@ $tabs = \apply_filters(
 			'title' => \_x( 'Logs', 'Tab title', 'troy-server' ),
 			'link'  => \admin_url( 'admin.php?page=' . Settings\Main::SETTINGS_PAGE_SLUG . '&tab=logs' ),
 		],
-		// 'settings'      => [
-		// 	'title' => \_x( 'Settings', 'Tab title', 'troy-server' ),
-		// 	'link'  => \admin_url( 'admin.php?page=' . Settings\Main::SETTINGS_PAGE_SLUG ),
-		// ],
+		'setup'         => [
+			'title' => \_x( 'Setup', 'Tab title', 'troy-server' ),
+			'link'  => \admin_url( 'admin.php?page=' . Settings\Main::SETTINGS_PAGE_SLUG . '&tab=setup' ),
+		],
 	],
 );
 

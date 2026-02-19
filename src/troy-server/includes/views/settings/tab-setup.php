@@ -7,7 +7,10 @@ namespace Troy\Server\Views\Settings;
 
 ( \defined( 'Troy\Server\ABSPATH' ) and \Troy\Server\Template::verify_secret( $secret ) ) or die;
 
-use Troy\Server\Settings;
+use Troy\Server\{
+	API,
+	Settings,
+};
 
 /**
  * Troy Server
@@ -35,12 +38,46 @@ use Troy\Server\Settings;
 
 // phpcs:disable WordPress.WP.GlobalVariablesOverride -- We're not in the global space.
 
+$repo_url = API\Server::get_repo_url();
 ?>
-<h2><?= \esc_html__( 'Troy Server Options', 'troy-server' ) ?></h2>
+<h2><?= \esc_html__( 'Troy Server Setup', 'troy-server' ) ?></h2>
 
-<p><?= \esc_html__( 'Troy Server allows you to manage your bespoke repository.', 'troy-server' ) ?></p>
+<p><?= \esc_html__( 'Inspect and modify your Troy Server setup.', 'troy-server' ) ?></p>
 
 <hr class=hr-separator>
+
+<div class=troy-server-settings-accordion>
+	<h3 class=troy-server-settings-accordion-heading>
+		<button aria-expanded=true class=troy-server-settings-accordion-trigger aria-controls=troy-server-settings-accordion-block-server-info type=button>
+			<span class=title><?= \esc_html__( 'Server Info', 'troy-server' ) ?></span>
+			<span class=icon></span>
+		</button>
+	</h3>
+	<div id=troy-server-settings-accordion-block-server-info class=troy-server-settings-accordion-panel>
+		<table class="widefat striped form-table troy-server-settings-form">
+			<tr>
+				<th scope=col><?= \esc_html__( 'Property', 'troy-server' ) ?></th>
+				<th scope=col><?= \esc_html__( 'Value', 'troy-server' ) ?></th>
+			</tr>
+			<tr>
+				<td data-colname="<?= \esc_attr__( 'Troy plugin header', 'troy-server' ) ?>">
+					<?= \esc_html__( 'Troy plugin header', 'troy-server' ) ?>
+				</td>
+				<td data-colname="<?= \esc_attr( "Troy: $repo_url" ) ?>">
+					<p class=description><?= \esc_html__( 'Add this header to your main plugin file to connect it to this Troy Server.', 'troy-server' ) ?></p>
+					<pre class="troy-server-pre troy-server-copyable"><code><?= \esc_html( "Troy: $repo_url" ) ?></code></pre>
+					<p class=description><?= \esc_html__( 'Example plugin header:', 'troy-server' ) ?></p>
+					<pre class=troy-server-pre><code><?= \esc_html( "<?php\n/**\n * Plugin Name: Example Plugin\n * Troy: $repo_url\n * Version: 1.0.0\n */" ) ?></code></pre>
+				</td>
+			</tr>
+		</table>
+	</div>
+</div>
+
+<?php
+// TODO: Add more setup options.
+return;
+?>
 
 <form method=post action="<?= \esc_url( \admin_url( 'admin-post.php' ) ) ?>">
 	<?php
@@ -50,10 +87,10 @@ use Troy\Server\Settings;
 	<input type=hidden name=action value="<?= \esc_attr( Settings\Main::SAVE_ACTION ) ?>">
 	<?php
 	$sections = [
-		'no_settings_yet' => [
-			\__( 'No settings yet (you can configure your plugins and packages in-place)', 'troy-server' ),
-			[],
-		],
+		// 'no_settings_yet' => [
+		// 	\__( 'No settings yet (you can configure your plugins and packages in-place)', 'troy-server' ),
+		// 	[],
+		// ],
 		// 'general' => [
 		// 	\__( 'General Settings', 'troy-server' ),
 		// 	[
@@ -147,7 +184,8 @@ use Troy\Server\Settings;
 	?>
 
 	<hr class=hr-separator>
-
-	<?php \submit_button(); ?>
+	<?php
+	\submit_button();
+	?>
 </form>
 <?php
