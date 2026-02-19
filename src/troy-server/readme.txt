@@ -114,6 +114,7 @@ It's best to run Troy Server on a standalone WordPress instance. This can also b
 * Improved default package description to clarify Troy Client's role.
 * Improved ID and class names for troy-mode and troy-packages by prefixing them with "troy-server" to avoid conflicts with other plugins.
 * Normalized the use of hyphens in input names and IDs across the plugin for consistency.
+* Limited the number of tags fetched from WordPress.org to 30 to match our GitHub's tag limit.
 
 = 1.5.1184 =
 

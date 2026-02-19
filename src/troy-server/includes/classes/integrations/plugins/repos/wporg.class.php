@@ -102,8 +102,10 @@ final class WPOrg {
 	 *
 	 * Tag types are automatically determined based on version naming patterns.
 	 * WordPress.org tags never require authentication.
+	 * Returns at most 30 latest tags, matching GitHub's tag limit.
 	 *
 	 * @since 0.0.1184
+	 * @since 1.6.1184 Added limit of 30 tags to match GitHub's tag limit and prevent overwhelming the server with too many versions.
 	 *
 	 * @param string $slug Plugin slug.
 	 * @return object|\WP_Error Object of tags on success, WP_Error on failure. {
@@ -139,6 +141,11 @@ final class WPOrg {
 		// $versions is in format [ 'version' => 'download_url' ].
 		// Unset 'trunk' if present, as it's not a valid version.
 		unset( $versions['trunk'] );
+
+		// WordPress.org returns versions sorted lexicographically; sort by semver descending.
+		// e.g. "1.10" is newer than "1.9", but would be sorted before "1.9" in lexicographical order.
+		uksort( $versions, fn( $a, $b ) => version_compare( $b, $a ) );
+		$versions = \array_slice( $versions, 0, 30, true );
 
 		// WordPress doesn't provide commit IDs; use last updated timestamp.
 		$revision_id = sha1( $response['last_updated'] ?? '' );

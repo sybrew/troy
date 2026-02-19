@@ -401,7 +401,7 @@ final class REST {
 	 */
 	public static function process_tag( $request ) {
 
-		$plugin_id    = (int) $request->get_param( 'plugin_id' );
+		$plugin_id       = (int) $request->get_param( 'plugin_id' );
 		$package_version = \sanitize_text_field( $request->get_param( 'package_version' ) );
 
 		if ( ! $plugin_id )
