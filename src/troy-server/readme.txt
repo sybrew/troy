@@ -107,6 +107,8 @@ It's best to run Troy Server on a standalone WordPress instance. This can also b
 
 = 1.6.1184 =
 
+* Added multi-plugin stats endpoint via POST to retrieve stats for up to 69 plugins in a single request.
+* Added CORS support to all API endpoints to allow cross-origin requests from other sites (e.g., for a public stats dashboard).
 * Added privacy policy link to the plugin row meta.
 * Added character counter to package descriptions.
 * Added network activation options for packages. Update your packages to engage this feature.

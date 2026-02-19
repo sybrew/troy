@@ -85,6 +85,10 @@ final class Router {
 				new Plugins\Info()->handle_request();
 				break;
 
+			case 'plugin/get/stats' === $request_path:
+				new Plugins\Stats()->handle_request();
+				break;
+
 			case str_starts_with( $request_path, 'plugin/get/stats/' ):
 				// Filter duplicated slashes and reset indexes.
 				$path_parts = array_values( array_filter( explode( '/', $request_path ) ) );

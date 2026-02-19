@@ -67,6 +67,7 @@ abstract class Base_Endpoint {
 	 * Send a JSON response with proper headers.
 	 *
 	 * @since 0.0.1184
+	 * @since 1.6.1184 Added Access-Control-Allow-Origin header for CORS support.
 	 *
 	 * @param mixed $data   The data to send.
 	 * @param int   $status HTTP status code.
@@ -79,6 +80,7 @@ abstract class Base_Endpoint {
 		header( 'Content-Type: application/json; charset=utf-8' );
 		header( 'Cache-Control: no-cache, must-revalidate' );
 		header( 'Expires: Mon, 26 Jul 1997 05:00:00 GMT' );
+		header( 'Access-Control-Allow-Origin: *' );
 
 		echo json_encode( $data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
 		exit;
@@ -94,6 +96,29 @@ abstract class Base_Endpoint {
 	 */
 	protected function send_error( $message, $status = 400 ) {
 		$this->send_json_response( [ 'error' => $message ], $status );
+	}
+
+	/**
+	 * Send a CORS preflight response for an OPTIONS request.
+	 *
+	 * Responds with 204 No Content and the appropriate CORS headers,
+	 * then exits. Call this from handle_request() when the request
+	 * method is OPTIONS.
+	 *
+	 * @since 1.6.1184
+	 *
+	 * @param string $allowed_methods Comma-separated HTTP methods allowed for this endpoint.
+	 */
+	protected function send_preflight_response( $allowed_methods ) {
+
+		$this->clean_response_header();
+
+		http_response_code( 204 );
+		header( 'Access-Control-Allow-Origin: *' );
+		header( "Access-Control-Allow-Methods: $allowed_methods" );
+		header( 'Access-Control-Allow-Headers: *' );
+		header( 'Access-Control-Max-Age: 86400' );
+		exit;
 	}
 
 	/**

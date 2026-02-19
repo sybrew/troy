@@ -69,8 +69,15 @@ final class Download extends Base_Endpoint {
 	 */
 	public function handle_request() {
 
-		if ( 'GET' !== $_SERVER['REQUEST_METHOD'] )
-			$this->send_error( 'Method not allowed', 405 );
+		switch ( $_SERVER['REQUEST_METHOD'] ) {
+			case 'GET':
+				break;
+			case 'OPTIONS':
+				$this->send_preflight_response( 'GET, OPTIONS' );
+				// No break. send_preflight_response() exits.
+			default:
+				$this->send_error( 'Method not allowed', 405 );
+		}
 
 		$slug = $this->slug;
 

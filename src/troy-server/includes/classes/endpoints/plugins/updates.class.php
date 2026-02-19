@@ -57,9 +57,15 @@ final class Updates extends Base_Endpoint {
 	 */
 	public function handle_request() {
 
-		// Validate that this is a POST request
-		if ( 'POST' !== $_SERVER['REQUEST_METHOD'] )
-			$this->send_error( 'Method not allowed', 405 );
+		switch ( $_SERVER['REQUEST_METHOD'] ) {
+			case 'POST':
+				break;
+			case 'OPTIONS':
+				$this->send_preflight_response( 'POST, OPTIONS' );
+				// No break. send_preflight_response() exits.
+			default:
+				$this->send_error( 'Method not allowed', 405 );
+		}
 
 		// phpcs:ignore TSF.Performance -- This read a stream, not a file.
 		$input = json_decode( file_get_contents( 'php://input' ), true );

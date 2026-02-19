@@ -52,65 +52,147 @@ final class Stats extends Base_Endpoint {
 	 *
 	 * @since 1.5.1184
 	 *
-	 * @param string $slug The plugin slug.
+	 * @param ?string $slug The plugin slug. Null for multi-slug POST requests.
 	 */
 	public function __construct(
-		public readonly string $slug,
+		public readonly ?string $slug = null,
 	) {}
 
 	/**
 	 * Handle the stats request.
 	 *
+	 * Supports GET for a single plugin (slug via constructor) and POST for
+	 * multiple plugins (slugs via JSON body). Invalid, missing, or unavailable
+	 * slugs are silently omitted from the POST response.
+	 *
 	 * @rest plugin/get/stats/plugin-name GET
+	 * @rest plugin/get/stats            POST {"slugs":["plugin-name",...]}
 	 * @since 1.5.1184
+	 * @since 1.6.1184 Now supports POST for multi-plugin stats.
 	 */
 	public function handle_request() {
 
-		if ( 'GET' !== $_SERVER['REQUEST_METHOD'] )
-			$this->send_error( 'Method not allowed', 405 );
+		switch ( $_SERVER['REQUEST_METHOD'] ) {
+			case 'GET':
+				$slug = API\Sanitize::slug( $this->slug ?? '' );
 
-		$slug = API\Sanitize::slug( $this->slug );
+				if ( ! $slug )
+					$this->send_error( 'Invalid slug', 400 );
 
-		if ( ! $slug )
-			$this->send_error( 'Invalid slug', 400 );
+				$plugin_id = API\Plugin::get_plugin_id_by_slug( $slug );
 
-		$plugin_id = API\Plugin::get_plugin_id_by_slug( $slug );
+				if ( ! $plugin_id )
+					$this->send_error( 'Plugin not found', 404 );
 
-		if ( ! $plugin_id )
-			$this->send_error( 'Plugin not found', 404 );
+				$data = new Plugins\Data( $plugin_id );
 
-		$data = new Plugins\Data( $plugin_id );
+				// Check plugin status - only serve stats for public/unlisted plugins
+				switch ( $data->get_plugins_row()->status ) {
+					case 'public':
+					case 'unlisted':
+						// Allowed statuses. Break to continue processing.
+						break;
+					case 'protected':
+					case 'pending':
+					case 'disabled':
+					default:
+						$this->send_error( 'Plugin not available', 403 );
+				}
 
-		// Check plugin status - only serve stats for public/unlisted plugins
-		switch ( $data->get_plugins_row()->status ) {
-			case 'public':
-			case 'unlisted':
-				// Allowed statuses. Break to continue processing.
+				$stats_totals = $data->get_stats_totals_row();
+				$data_cache   = $data->get_data_caches_row();
+
+				$this->send_json_response( [
+					'slug'            => $slug,
+					'downloads'       => (int) ( $stats_totals->downloads ?? 0 ),
+					'active_installs' => (int) ( $data_cache->active_install_count ?? 0 ),
+					'_comment'        => 'Ratings are not yet implemented, so they return zero values.',
+					'rating'          => 0,
+					'num_ratings'     => 0,
+					'ratings'         => [
+						5 => 0,
+						4 => 0,
+						3 => 0,
+						2 => 0,
+						1 => 0,
+					],
+				] );
 				break;
-			case 'protected':
-			case 'pending':
-			case 'disabled':
+
+			case 'POST':
+				// phpcs:ignore TSF.Performance -- This reads a stream, not a file.
+				$input = json_decode( file_get_contents( 'php://input' ), true );
+
+				if ( ! \is_array( $input ) )
+					$this->send_error( 'Invalid JSON input', 400 );
+
+				$slugs = $input['slugs'] ?? [];
+
+				if ( ! \is_array( $slugs ) )
+					$this->send_error( 'Invalid slugs parameter', 400 );
+
+				if ( \count( $slugs ) > 69 )
+					$this->send_error( 'Too many slugs, maximum is 69', 400 );
+
+				$response = [];
+
+				foreach ( $slugs as $raw_slug ) {
+
+					if ( ! \is_string( $raw_slug ) )
+						continue;
+
+					$slug = API\Sanitize::slug( $raw_slug );
+
+					if ( ! $slug )
+						continue;
+
+					$plugin_id = API\Plugin::get_plugin_id_by_slug( $slug );
+
+					if ( ! $plugin_id )
+						continue;
+
+					$data = new Plugins\Data( $plugin_id );
+
+					switch ( $data->get_plugins_row()->status ) {
+						case 'public':
+						case 'unlisted':
+							break;
+						case 'protected':
+						case 'pending':
+						case 'disabled':
+						default:
+							continue 2;
+					}
+
+					$stats_totals = $data->get_stats_totals_row();
+					$data_cache   = $data->get_data_caches_row();
+
+					$response[] = [
+						'slug'            => $slug,
+						'downloads'       => (int) ( $stats_totals->downloads ?? 0 ),
+						'active_installs' => (int) ( $data_cache->active_install_count ?? 0 ),
+						'_comment'        => 'Ratings are not yet implemented, so they return zero values.',
+						'rating'          => 0,
+						'num_ratings'     => 0,
+						'ratings'         => [
+							5 => 0,
+							4 => 0,
+							3 => 0,
+							2 => 0,
+							1 => 0,
+						],
+					];
+				}
+
+				$this->send_json_response( $response );
+				break;
+
+			case 'OPTIONS':
+				$this->send_preflight_response( 'GET, POST, OPTIONS' );
+				// No break. send_preflight_response() exits.
+
 			default:
-				$this->send_error( 'Plugin not available', 403 );
+				$this->send_error( 'Method not allowed', 405 );
 		}
-
-		$stats_totals = $data->get_stats_totals_row();
-		$data_cache   = $data->get_data_caches_row();
-
-		$this->send_json_response( [
-			'slug'            => $slug,
-			'downloads'       => (int) ( $stats_totals->downloads ?? 0 ),
-			'active_installs' => (int) ( $data_cache->active_install_count ?? 0 ),
-			'_comment'        => 'Ratings are not yet implemented, so they return zero values.',
-			'rating'          => 0,
-			'num_ratings'     => 0,
-			'ratings'         => [
-				5 => 0,
-				4 => 0,
-				3 => 0,
-				2 => 0,
-				1 => 0,
-			],
-		] );
 	}
 }
