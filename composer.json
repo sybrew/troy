@@ -1,0 +1,49 @@
+{
+	"name": "sybrew/troy",
+	"description": "A set of plugins to help WordPress developers host their own repositories.",
+	"keywords": [
+		"wordpress",
+		"plugin",
+		"distribution",
+		"updates"
+	],
+	"type": "project",
+	"license": "MIT",
+	"homepage": "https://deploytroy.org/",
+	"authors": [
+		{
+			"name": "Sybre Waaijer",
+			"email": "sybrew@users.noreply.github.com",
+			"homepage": "https://cyberwire.nl/",
+			"role": "Developer"
+		}
+	],
+	"require-dev": {
+		"dealerdirect/phpcodesniffer-composer-installer": "1.0.0",
+		"theseoframework/wpcs-tsf": "1.2.0",
+		"sirbrillig/phpcs-variable-analysis": "2.11.16",
+		"phpcompatibility/phpcompatibility-wp": "2.1.4"
+	},
+	"replace": {
+		"sybrew/troy-server": "self.version",
+		"sybrew/troy-client": "self.version",
+		"sybrew/troy-client-daemon": "self.version"
+	},
+	"scripts": {
+		"php:lint": "composer install && vendor/bin/phpcs -p -s",
+		"php:autofix": "composer install && vendor/bin/phpcbf",
+		"php:lint:errors": "composer install && vendor/bin/phpcs -p -s --runtime-set ignore_warnings_on_exit 1"
+	},
+	"support": {
+		"docs": "https://deploytroy.org/docs/",
+		"forum": "https://github.com/sybrew/troy/discussions",
+		"source": "https://github.com/sybrew/troy/"
+	},
+	"minimum-stability": "dev",
+	"prefer-stable": true,
+	"config": {
+		"allow-plugins": {
+			"dealerdirect/phpcodesniffer-composer-installer": true
+		}
+	}
+}

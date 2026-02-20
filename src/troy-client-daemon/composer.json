@@ -1,0 +1,35 @@
+{
+	"name": "sybrew/troy-client-daemon",
+	"description": "This daemon forces installation and activation of Troy Client. It blocks the WordPress update API if Troy Client is not active.",
+	"keywords": [
+		"wordpress",
+		"plugin",
+		"must-use",
+		"daemon"
+	],
+	"type": "wordpress-muplugin",
+	"license": "MIT",
+	"homepage": "https://deploytroy.org/",
+	"authors": [
+		{
+			"name": "Sybre Waaijer",
+			"email": "sybrew@users.noreply.github.com",
+			"homepage": "https://cyberwire.nl/",
+			"role": "Developer"
+		}
+	],
+	"require": {
+		"php": "~7.4 || ^8.0",
+		"composer/installers": "^1.0 || ^2.0"
+	},
+	"support": {
+		"docs": "https://deploytroy.org/docs/",
+		"forum": "https://github.com/sybrew/troy/discussions",
+		"source": "https://github.com/sybrew/troy/"
+	},
+	"config": {
+		"allow-plugins": {
+			"composer/installers": true
+		}
+	}
+}

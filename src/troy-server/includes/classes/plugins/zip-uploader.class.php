@@ -8,7 +8,10 @@ namespace Troy\Server\Plugins;
 
 \defined( 'Troy\Server\ABSPATH' ) or die;
 
-use const Troy\Server\TROY_PLUGIN_HEADERS;
+use const Troy\Server\{
+	VERSION,
+	TROY_PLUGIN_HEADERS,
+};
 
 use Troy\Server\{
 	API,

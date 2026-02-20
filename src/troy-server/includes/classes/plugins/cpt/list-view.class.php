@@ -516,15 +516,19 @@ final class List_View {
 
 			// Get the foreign key value first
 			$fc_ptr ??= $wpdb->get_var( $wpdb->prepare(
-				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Strings defined at self::get_columns().
-				"SELECT `$f_key` FROM `{$wpdb->prefix}$f_table` WHERE `$f_postfind` = %d",
+				'SELECT %i FROM %i WHERE %i = %d',
+				$f_key,
+				"{$wpdb->prefix}{$f_table}",
+				$f_postfind,
 				$post_id,
 			) ) ?: false; // Set to false to avoid querying again if not found.
 
 			if ( $fc_ptr ) {
 				$value = $wpdb->get_var( $wpdb->prepare(
-					// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Strings defined at self::get_columns().
-					"SELECT `$key` FROM `{$wpdb->prefix}$table` WHERE `$local_key` = %d",
+					'SELECT %i FROM %i WHERE %i = %d',
+					$key,
+					"{$wpdb->prefix}{$table}",
+					$local_key,
 					$fc_ptr,
 				) );
 			} else {
@@ -533,8 +537,10 @@ final class List_View {
 		} else {
 			// $postfind is a string.
 			$value = $wpdb->get_var( $wpdb->prepare(
-				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Strings defined at self::get_columns().
-				"SELECT `$key` FROM `{$wpdb->prefix}$table` WHERE `$postfind` = %d",
+				'SELECT %i FROM %i WHERE %i = %d',
+				$key,
+				"{$wpdb->prefix}{$table}",
+				$postfind,
 				$post_id,
 			) );
 		}

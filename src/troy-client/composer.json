@@ -1,0 +1,35 @@
+{
+	"name": "sybrew/troy-client",
+	"description": "Updates WordPress plugins and themes from decentralized Troy Server repositories.",
+	"keywords": [
+		"wordpress",
+		"plugin",
+		"updates",
+		"client"
+	],
+	"type": "wordpress-plugin",
+	"license": "MIT",
+	"homepage": "https://deploytroy.org/docs/troy-client/",
+	"authors": [
+		{
+			"name": "Sybre Waaijer",
+			"email": "sybrew@users.noreply.github.com",
+			"homepage": "https://cyberwire.nl/",
+			"role": "Developer"
+		}
+	],
+	"require": {
+		"php": "~7.4 || ^8.0",
+		"composer/installers": "^1.0 || ^2.0"
+	},
+	"support": {
+		"docs": "https://deploytroy.org/docs/troy-client/",
+		"forum": "https://github.com/sybrew/troy/discussions",
+		"source": "https://github.com/sybrew/troy/"
+	},
+	"config": {
+		"allow-plugins": {
+			"composer/installers": true
+		}
+	}
+}

@@ -13,6 +13,7 @@ Root
 ----
 .gitattributes                  LF line endings, binary markers, export-ignore rules for dev files
 .gitignore                      Ignores archives, logs, OS files, composer.lock, /vendor/, /.github/agents/, /.local/*
+composer.json                   Monorepo Composer config: dev deps (PHPCS), scripts, replace entries for sub-packages
 cspell.json                     Spell checker dictionary (custom words for WordPress/Troy terminology)
 license.txt                     MIT license
 phpcs.xml                       Root PHPCS ruleset referencing TSF coding standard, shared across all plugins
@@ -40,6 +41,7 @@ Requires PHP 8.4+, MySQL 8.0.19+, WordPress 6.8+.
 
 troy-server.php                 Main plugin file: header, constants (VERSION, DB_VERSION), loads bootstrap
 .gitattributes                  Export-ignore rules for phpcs.xml
+composer.json                   Composer config: wordpress-plugin type, PHP ^8.4, MIT
 phpcs.xml                       Plugin-specific PHPCS overrides
 
 bootstrap/
@@ -256,6 +258,7 @@ Requires PHP 7.4+, WordPress 6.7+. Network-activated on multisite.
 
 troy-client.php                 Main plugin file: header, constants (VERSION, DB_VERSION), loads bootstrap
 .gitattributes                  Export-ignore rules
+composer.json                   Composer config: wordpress-plugin type, PHP ~7.4 || ^8.0, MIT
 phpcs.xml                       Plugin-specific PHPCS overrides
 
 bootstrap/
@@ -288,6 +291,7 @@ Forces install/activation of Troy Client, blocks WP update API if Client is inac
 
 troy-client-daemon.php          MU-plugin: forces Troy Client install/activation, blocks update API without Client
 .gitattributes                  Export-ignore rules
+composer.json                   Composer config: wordpress-muplugin type, PHP ~7.4 || ^8.0, MIT
 phpcs.xml                       Plugin-specific PHPCS overrides
 
 
