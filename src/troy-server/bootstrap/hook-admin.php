@@ -96,6 +96,9 @@ packages: {
 	// Register package editor assets.
 	\add_action( 'admin_enqueue_scripts', [ Packages\Meta_Boxes::class, 'enqueue_editor_assets' ] );
 
+	// Render the publish checklist in the submit box.
+	\add_action( 'post_submitbox_misc_actions', [ Packages\Meta_Boxes::class, 'render_publish_checklist' ] );
+
 	// Register package save nonce.
 	\add_action( 'edit_form_top', [ Packages\CPT\Store::class, 'output_save_nonce' ] );
 

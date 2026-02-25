@@ -152,6 +152,7 @@ includes/views/
 			download-meta-box.php   Package download URL display (or prompt to publish first)
 			plugins-meta-box.php    Checkbox list of plugins to include in package with per-plugin options
 			settings-meta-box.php   Package slug, server URL, general configuration
+			publish-checklist.php   Checklist in submit box: validates slug and plugin selection before publishing
 			themes-meta-box.php     Placeholder: "Theme support is coming soon"
 
 library/js/
@@ -212,7 +213,7 @@ library/js/editor/plugins/components/
 	urls-control.js               Sidebar: plugin URLs (homepage, donate, support, etc.)
 
 library/js/editor/packages/
-	meta-boxes.js                 Packages editor: checkbox interactions, slug validation, REST calls for meta boxes
+	meta-boxes.js                 Packages editor: checkbox interactions, slug validation, REST calls, publish checklist updates
 
 library/css/admin/
 	troy-mode.css                 Troy Mode: hides non-essential admin items, toggle button styling
@@ -225,7 +226,7 @@ library/css/editor/plugins/
 	components.css                Plugin editor sidebar: image previews, version lists, integration panels
 
 library/css/editor/packages/
-	meta-boxes.css                Package editor meta boxes: plugin list grid, checkbox items, slug fields
+	meta-boxes.css                Package editor meta boxes: plugin list grid, checkbox items, slug fields, publish checklist
 
 library/css/list-view/
 	packages.css                  Packages list table: column widths, mobile visibility

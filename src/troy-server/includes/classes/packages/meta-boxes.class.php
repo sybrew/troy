@@ -204,4 +204,14 @@ final class Meta_Boxes {
 	public static function render_download_metabox( $post ) {
 		Template::output_view( 'editor/packages/download-meta-box', $post );
 	}
+
+	/**
+	 * Renders the publish checklist in the submit box.
+	 *
+	 * @hook post_submitbox_misc_actions 10
+	 * @since 1.6.1184
+	 */
+	public static function render_publish_checklist() {
+		Template::output_view( 'editor/packages/publish-checklist' );
+	}
 }

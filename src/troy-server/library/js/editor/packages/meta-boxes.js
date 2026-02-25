@@ -151,6 +151,65 @@
 	};
 
 	/**
+	 * Initializes the publish checklist.
+	 *
+	 * Updates checklist items based on current form state.
+	 *
+	 * @since 1.6.1184
+	 */
+	const initPublishChecklist = () => {
+
+		const checklist = document.querySelector( '.troy-server-publish-checklist' );
+
+		if ( ! checklist )
+			return;
+
+		const slugItem    = checklist.querySelector( '[data-checklist="slug"]' );
+		const pluginsItem = checklist.querySelector( '[data-checklist="plugins"]' );
+		const slugInput   = document.getElementById( 'troy-server-package-slug' );
+		const titleInput  = document.getElementById( 'title' );
+		const slugWarning = document.querySelector( '.troy-server-package-slug-warning' );
+
+		const updateSlugCheck = () => {
+
+			if ( ! slugItem )
+				return;
+
+			const hasSlug  = !! ( slugInput?.value.trim() || titleInput?.value.trim() );
+			const approved = hasSlug && ! slugWarning?.textContent;
+
+			slugItem.classList.toggle( 'is-ok', approved );
+			slugItem.classList.toggle( 'is-missing', ! approved );
+		};
+
+		const updatePluginsCheck = () => {
+
+			if ( ! pluginsItem )
+				return;
+
+			const hasPlugins = !! document.querySelectorAll( '.troy-server-package-plugin-checkbox:checked' ).length;
+
+			pluginsItem.classList.toggle( 'is-ok', hasPlugins );
+			pluginsItem.classList.toggle( 'is-missing', ! hasPlugins );
+		};
+
+		slugInput?.addEventListener( 'input', updateSlugCheck );
+		titleInput?.addEventListener( 'input', updateSlugCheck );
+
+		// Observe slug warning changes from initSlugValidation.
+		if ( slugWarning ) {
+			new MutationObserver( updateSlugCheck )
+				.observe( slugWarning, { childList: true } );
+		}
+
+		document.querySelectorAll( '.troy-server-package-plugin-checkbox' )
+			.forEach( cb => cb.addEventListener( 'change', updatePluginsCheck ) );
+
+		updateSlugCheck();
+		updatePluginsCheck();
+	};
+
+	/**
 	 * Initializes slug conflict validation.
 	 *
 	 * Validates the slug against existing plugins and packages on input change.
@@ -214,6 +273,7 @@
 		initSlugValidation();
 		initDescriptionCharCounter();
 		initCompletionCheckboxDependencies();
+		initPublishChecklist();
 	} else {
 		document.addEventListener( 'DOMContentLoaded', () => {
 			initPluginCheckboxes();
@@ -221,6 +281,7 @@
 			initSlugValidation();
 			initDescriptionCharCounter();
 			initCompletionCheckboxDependencies();
+			initPublishChecklist();
 		} );
 	}
 } )();

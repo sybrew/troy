@@ -66,3 +66,41 @@
 .troy-server-package-plugin-option-title {
 	font-weight: 600;
 }
+
+.troy-server-publish-checklist {
+	padding: 6px 10px 8px;
+}
+
+.troy-server-publish-checklist-title {
+	margin-bottom: 8px;
+}
+
+.troy-server-publish-checklist ul {
+	margin: 4px 0 0;
+	padding: 0;
+	list-style: none;
+}
+
+.troy-server-publish-checklist li {
+	padding: 2px 0;
+}
+
+.troy-server-publish-checklist li::before {
+	font: normal 20px/1 dashicons;
+	display: inline-block;
+	margin-left: -1px;
+	padding-right: 3px;
+	vertical-align: top;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+.troy-server-publish-checklist li.is-ok::before {
+	content: "\f147" / '';
+	color: #00a32a;
+}
+
+.troy-server-publish-checklist li.is-missing::before {
+	content: "\f158" / '';
+	color: #d63638;
+}
