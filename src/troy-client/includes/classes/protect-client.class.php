@@ -42,7 +42,7 @@ final class Protect_Client {
 	/**
 	 * Filters the primitive capabilities required of the user to deactivate the plugin.
 	 *
-	 * @hook map_meta_cap 10 4
+	 * @hook map_meta_cap 10
 	 * @since 0.0.1184
 	 * @ignore Unused. Triggers too often. Maybe later.
 	 *

@@ -22,15 +22,6 @@
  * SOFTWARE.
  */
 
-/* Column widths */
-.wp-list-table .column-troy_server_slug {
-	width: 15%;
-}
-
-.wp-list-table :where(.column-troy_server_plugins, .column-troy_server_themes) {
-	width: 25%;
-}
-
 /* Mobile visibility */
 @media (max-width: 782px) {
 	.wp-list-table :where(.column-troy_server_slug, .column-troy_server_plugins, .column-troy_server_themes),

@@ -1153,9 +1153,6 @@ final class REST {
 		\imagepng( $image, null, 6 );
 		$image_data = ob_get_clean();
 
-		// Destroy the image resource
-		\imagedestroy( $image );
-
 		// Return raw image data for JS to handle as blob
 		return new \WP_REST_Response(
 			[

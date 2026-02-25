@@ -149,6 +149,8 @@ function downgrade_from( $version ) {
  */
 function upgrade_from( $version ) {
 
+	$fresh_install = false;
+
 	switch ( true ) {
 		case $version < 1_1184:
 			global $wpdb;

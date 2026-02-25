@@ -508,7 +508,7 @@ function install_plugins() {
 					'<strong>Installation has completed successfully.</strong> Plugin "%s" was deactivated and deleted automatically. Refresh to see the changes.',
 					PLUGIN_NAME,
 				),
-				'info',
+				'success',
 			);
 		} elseif ( OPTIONS['deactivate_on_completion'] ) {
 			\deactivate_plugins( $installer, true, $is_network_active );
@@ -517,7 +517,7 @@ function install_plugins() {
 					'<strong>Installation has completed successfully.</strong> Plugin "%s" has been deactivated automatically.',
 					PLUGIN_NAME,
 				),
-				'info',
+				'success',
 			);
 		}
 	}
