@@ -582,7 +582,7 @@ final class List_View {
 				array_map(
 					fn( $col ) => ".wp-list-table .column-{$col}",
 					$cols,
-				)
+				),
 			);
 
 			$css .= <<<CSS

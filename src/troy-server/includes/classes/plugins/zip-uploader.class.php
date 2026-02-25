@@ -458,7 +458,7 @@ final class Zip_Uploader {
 			// Fail silently if Readme parsing fails, but log the error, for now.
 			// In the editor, we can automatically show there's no (valid) readme data.
 			// Still, we may want to use the error message in the future.
-			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- your mom is an error log.
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 			error_log(
 				\sprintf(
 					'Failed to parse readme.txt file for plugin ID %d: %s.',

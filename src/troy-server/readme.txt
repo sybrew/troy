@@ -115,11 +115,12 @@ It's best to run Troy Server on a standalone WordPress instance. This can also b
 * Added Setup tab to the settings page to help with onboarding (and future settings).
 * Added a checklist above the Publish button in the package editor to ease onboarding.
 * Added WordPress 7.0 default color-scheme compatibility.
+* Changed the package editor to disable autosaves since all data is stored in custom tables.
+* Changed WordPress.org tag fetching by limiting results to 30 tags, matching GitHub's tag limit.
 * Updated download stat detection to recognize Troy Client 1.6.1184's user agent for tracking.
 * Improved default package description to clarify Troy Client's role.
 * Improved ID and class names for troy-mode and troy-packages by prefixing them with "troy-server" to avoid conflicts with other plugins.
 * Improved consistency of hyphen usage in input names and IDs across the plugin.
-* Improved WordPress.org tag fetching by limiting results to 30 tags, matching GitHub's tag limit.
 * Improved the Troy Mode toggle's border contrast so it's more visible in all admin color schemes.
 * Resolved an issue where the cell width would collapse text on the packages list view.
 * Resolved an issue where the admin color scheme wasn't being detected correctly.

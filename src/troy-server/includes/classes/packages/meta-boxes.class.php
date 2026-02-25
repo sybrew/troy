@@ -59,6 +59,7 @@ final class Meta_Boxes {
 	 *
 	 * @hook admin_enqueue_scripts 10
 	 * @since 0.0.1184
+	 * @since 1.6.1184 Now disables autosave.
 	 */
 	public static function enqueue_editor_assets() {
 
@@ -96,6 +97,9 @@ final class Meta_Boxes {
 				'restUrls'  => [ 'validateSlug' => \rest_url( "$rest_packages_manage/validateSlug" ) ],
 			],
 		);
+
+		// Disable autosave for the packages CPT. It causes confusion and distrupts save flow.
+		\wp_dequeue_script( 'autosave' );
 	}
 
 	/**

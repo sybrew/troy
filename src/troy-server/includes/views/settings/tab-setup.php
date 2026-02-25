@@ -110,7 +110,7 @@ return;
 	];
 
 	$opened_section = false;
-	$expand_at_load = false; // TEMP, should be true.
+	$expand_at_load = true;
 
 	foreach ( $sections as $section => [ $title, $settings ] ) {
 		if ( $opened_section ) {
