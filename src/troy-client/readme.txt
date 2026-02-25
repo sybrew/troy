@@ -68,7 +68,7 @@ Troy Client requires network activation on WordPress multisite installations.
 
 * Added user agent filtering for all HTTP requests to Troy Servers to prevent site URL leakage.
 * Added privacy policy link to the plugin row meta.
-* Fixed image validation to explicitly set anonymous user agent.
+* Fixed image validation to explicitly set an anonymous user agent.
 * Fixed plugin data caching ignoring field requirements, causing sporadic empty fields in plugin info.
 
 = 1.4.1184 =
