@@ -8,6 +8,8 @@ namespace Troy\Server\API;
 
 \defined( 'Troy\Server\ABSPATH' ) or die;
 
+use const Troy\Server\VERSION;
+
 use Troy\Server\API; // We explicitly prefix API methods, possibly easing adoption.
 
 /**
