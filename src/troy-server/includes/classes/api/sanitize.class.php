@@ -437,7 +437,6 @@ final class Sanitize {
 	 * @return string The sanitized upgrade notice, truncated to 191 characters.
 	 */
 	public static function upgrade_notice( $notice ) {
-
 		return preg_replace(
 			'/^(.{0,191}).*$/u',
 			'$1',

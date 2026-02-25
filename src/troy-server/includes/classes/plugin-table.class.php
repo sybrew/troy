@@ -41,7 +41,7 @@ final class Plugin_Table {
 	/**
 	 * Adds a privacy policy link to the plugin row meta.
 	 *
-	 * @hook plugin_row_meta 10 2
+	 * @hook plugin_row_meta 10
 	 * @since 1.6.1184
 	 *
 	 * @param string[] $plugin_meta An array of the plugin's metadata.

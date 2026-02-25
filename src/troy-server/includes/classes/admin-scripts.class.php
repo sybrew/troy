@@ -42,6 +42,25 @@ namespace Troy\Server;
 final class Admin_Scripts {
 
 	/**
+	 * Returns the current user's effective admin color scheme.
+	 *
+	 * Falls back to 'modern' for WP 7.0+ and 'fresh' for older versions
+	 * when the user has no explicit color preference.
+	 *
+	 * @since 1.6.1184
+	 *
+	 * @return string The admin color scheme slug.
+	 */
+	public static function get_admin_color_scheme() {
+		return \get_user_option( 'admin_color' ) ?: (
+			// WP 7.0+ 'modern', fallback to 'fresh' for older versions
+			\version_compare( \get_bloginfo( 'version' ), '7.0', '<' )
+				? 'fresh'
+				: 'modern'
+		);
+	}
+
+	/**
 	 * Registers global admin main scripts and styles.
 	 *
 	 * These scripts are registered early and unconditionally in admin so they
@@ -55,7 +74,7 @@ final class Admin_Scripts {
 	 * - --troy-server-green
 	 * - --troy-server-red
 	 *
-	 * @hook admin_init 1
+	 * @hook admin_init 10
 	 * @since 0.0.1184
 	 */
 	public static function register_main_scripts() {
@@ -111,11 +130,12 @@ final class Admin_Scripts {
 			true,
 		);
 
-		$scheme = \get_user_option( 'admin_color' ) ?: 'fresh';
-		$colors = $GLOBALS['_wp_admin_css_colors'][ $scheme ]->colors ?? null;
+		$colors = $GLOBALS['_wp_admin_css_colors'][ self::get_admin_color_scheme() ]->colors ?? null;
 
-		if ( ! \is_array( $colors ) || \count( $colors ) < 4 )
+		if ( ! \is_array( $colors ) || \count( $colors ) < 3 )
 			$colors = [ '#222', '#333', '#0073aa', '#00a0d2' ];
+
+		$colors[3] ??= $colors[2]; // Some schemes don't have an accent color, so we fallback to the regular color.
 
 		\wp_add_inline_style(
 			'common',

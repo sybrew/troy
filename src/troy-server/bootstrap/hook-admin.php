@@ -49,8 +49,8 @@ use Troy\Server\{
 // phpcs:disable Generic.WhiteSpace.ScopeIndent.IncorrectExact -- no love for goto.
 
 admin: {
-	// Register admin scripts and styles.
-	\add_action( 'admin_init', [ Admin_Scripts::class, 'register_main_scripts' ], 1 );
+	// Register admin scripts and styles. Loaded at 10 to ensure _wp_admin_css_colors is populated for color scheme detection.
+	\add_action( 'admin_init', [ Admin_Scripts::class, 'register_main_scripts' ] );
 	\add_action( 'admin_enqueue_scripts', [ Admin_Scripts::class, 'register_troy_mode' ], 1 );
 
 	// Fix admin menu ordering for settings and custom post types.

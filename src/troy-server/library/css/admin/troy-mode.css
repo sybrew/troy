@@ -68,6 +68,7 @@
 	vertical-align: text-bottom;
 	border-radius: 7px;
 	background: rgba(255, 255, 255, .25);
+	box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .3);
 	transition: background .2s ease-in-out;
 }
 
@@ -79,12 +80,12 @@
 	height: 10px;
 	border-radius: 50%;
 	background: #fff;
-	box-shadow: 0 0 0 1px rgba(0, 0, 0, .1);
+	box-shadow: 0 0 0 1px rgba(0, 0, 0, .15);
 	transition: left .2s ease-in-out;
 }
 
 #troy-server-mode-toggle .troy-server-mode-switch.on {
-	background: rgba(255, 255, 255, .5);
+	background: rgba(255, 255, 255, .3);
 }
 
 #troy-server-mode-toggle .troy-server-mode-switch.on .troy-server-mode-switch-indicator {
@@ -94,7 +95,7 @@
 /* Prevent transition on initial render when already on */
 @starting-style {
 	#troy-server-mode-toggle .troy-server-mode-switch.on {
-		background: rgba(255, 255, 255, .5);
+		background: rgba(255, 255, 255, .3);
 	}
 
 	#troy-server-mode-toggle .troy-server-mode-switch.on .troy-server-mode-switch-indicator {

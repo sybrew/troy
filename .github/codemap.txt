@@ -57,7 +57,7 @@ includes/
 
 includes/classes/
 	admin-menu.class.php          Reorders WP admin menu to position Troy CPTs at custom positions (3.1184x)
-	admin-scripts.class.php       Registers global admin CSS/JS and CSS custom properties for Troy theming
+	admin-scripts.class.php       Registers global admin CSS/JS and CSS custom properties for Troy theming; provides admin color scheme detection
 	cron.class.php                Base cron class with schedule registration/removal; child classes override CRON_JOBS
 	file-utils.class.php          WordPress Filesystem initialization and file operation utilities
 	markdown.class.php            Markdown-to-HTML via bundled CommonMark/GFM vendor library

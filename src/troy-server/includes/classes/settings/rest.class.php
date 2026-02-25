@@ -207,7 +207,6 @@ final class REST {
 	 * @return \WP_REST_Response
 	 */
 	public static function get_package_overview() {
-
 		return new \WP_REST_Response(
 			Stats::get_package_overview(),
 			200,
@@ -223,7 +222,6 @@ final class REST {
 	 * @return \WP_REST_Response
 	 */
 	public static function get_epoch_comparison() {
-
 		return new \WP_REST_Response(
 			Stats::get_epoch_comparison(),
 			200,
