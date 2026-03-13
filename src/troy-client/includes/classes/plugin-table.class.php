@@ -60,4 +60,35 @@ final class Plugin_Table {
 
 		return $plugin_meta;
 	}
+
+	/**
+	 * Adds a link explaining why Troy Client cannot be deactivated.
+	 * Hidden when the daemon is visible, the user lacks the deactivate_plugins capability,
+	 * or the user is not a network admin in a multisite environment.
+	 *
+	 * @hook plugin_action_links_{\Troy\Client\PLUGIN_BASENAME} 10
+	 * @hook network_admin_plugin_action_links_{\Troy\Client\PLUGIN_BASENAME} 10
+	 * @since 1.7.1184
+	 *
+	 * @param string[] $actions An array of plugin action links.
+	 * @return string[] The modified plugin action links.
+	 */
+	public static function show_deactivation_explanation( $actions ) {
+
+		if (
+			   \defined( 'Troy\Client\Daemon\ACTIVE' )
+			|| ! \current_user_can( 'deactivate_plugins' )
+			|| ( \is_multisite() && ! \is_network_admin() )
+			|| ! has_troy_plugins()
+		)
+			return $actions;
+
+		$actions['troy-deactivation-info'] = \sprintf(
+			'<a href="%s" target="_blank" rel="noopener">%s</a>',
+			'https://deploytroy.org/docs/troy-client/deactivation/',
+			\esc_html__( 'Deactivation protected', 'troy-client' ),
+		);
+
+		return $actions;
+	}
 }

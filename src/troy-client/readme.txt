@@ -64,6 +64,10 @@ Troy Client requires network activation on WordPress multisite installations.
 
 == Changelog ==
 
+= 1.7.1184 =
+
+* Added deactivation explanation link to plugin action links when Troy Client is protected from deactivation.
+
 = 1.6.1184 =
 
 * Added user agent filtering for all HTTP requests to Troy Servers to prevent site URL leakage.

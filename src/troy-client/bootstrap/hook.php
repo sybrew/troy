@@ -56,10 +56,12 @@ use Troy\Client\{
 // Conditionally block Troy Client deactivation.
 \add_action( 'pre_update_option_active_plugins', [ Protect_Client::class, 'block_plugin_deactivation' ], \PHP_INT_MIN, 2 );
 \add_filter( 'plugin_action_links_' . PLUGIN_BASENAME, [ Protect_Client::class, 'remove_deactivate_link' ] );
+\add_filter( 'plugin_action_links_' . PLUGIN_BASENAME, [ Plugin_Table::class, 'show_deactivation_explanation' ] );
 
 // Conditionally block Troy Client network deactivation.
 \add_action( 'pre_update_site_option_active_sitewide_plugins', [ Protect_Client::class, 'block_plugin_deactivation' ], \PHP_INT_MIN, 2 );
 \add_filter( 'network_admin_plugin_action_links_' . PLUGIN_BASENAME, [ Protect_Client::class, 'remove_deactivate_link' ] );
+\add_filter( 'network_admin_plugin_action_links_' . PLUGIN_BASENAME, [ Plugin_Table::class, 'show_deactivation_explanation' ] );
 
 // Add links to plugin row meta.
 \add_filter( 'plugin_row_meta', [ Plugin_Table::class, 'add_row_meta' ], 10, 2 );

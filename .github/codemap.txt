@@ -275,7 +275,7 @@ includes/classes/
 	dependencies.class.php        Discovers and auto-installs Troy-declared plugin dependencies
 	headers.class.php             Registers/reads custom plugin headers (Troy Server, Troy Dependencies)
 	http.class.php                Filters HTTP request args and user-agent for Troy Server communication
-	plugin-table.class.php        Adds custom row-meta links on WP Plugins page for Troy-managed plugins
+	plugin-table.class.php        Adds custom row-meta links and deactivation explanation on WP Plugins page for Troy-managed plugins
 	plugins-api.class.php         Intercepts plugins_api and update_plugins transient to serve updates from Troy Server
 	protect-client.class.php      Hides Troy Client from plugin lists, blocks deactivation/deletion when daemon present
 	sanitize.class.php            Sanitization/validation methods for Troy Client data
