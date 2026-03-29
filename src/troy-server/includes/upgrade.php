@@ -181,6 +181,34 @@ function upgrade_from( $version ) {
 
 			\update_option( 'troy_server_db_version', 1_6_1184, true ); // Always update to prevent re-running on crash.
 			// Fall through.
+		case $version < 1_7_1184:
+			if ( ! $fresh_install ) {
+				global $wpdb;
+
+				// Migrate checksum columns to a single JSON checksums column.
+				foreach ( [ 'troy_plugin_zips', 'troy_plugin_translations' ] as $table ) {
+
+					$wpdb->query(
+						"ALTER TABLE `{$wpdb->prefix}{$table}`
+							ADD COLUMN `checksums` longtext NOT null DEFAULT ''
+								AFTER `origin_url`",
+					);
+					$wpdb->query(
+						"UPDATE `{$wpdb->prefix}{$table}`
+						SET `checksums` = JSON_OBJECT( `checksum_version`, `checksum` )
+						WHERE `checksum` != ''",
+					);
+					$wpdb->query(
+						"ALTER TABLE `{$wpdb->prefix}{$table}`
+							DROP COLUMN `checksum`,
+							DROP COLUMN `checksum_version`,
+							DROP COLUMN `checksum_origin`",
+					);
+				}
+			}
+
+			\update_option( 'troy_server_db_version', 1_7_1184, true ); // Always update to prevent re-running on crash.
+			// Fall through.
 	}
 }
 
@@ -229,6 +257,7 @@ function upgrade_from( $version ) {
  *
  * Default values are set only for direct database queries. These may differ from the defaults we use in the plugin.
  * Still, we fully rely on the created_at and updated_at fields to be set automatically.
+ *
  *
  * | Table Name                                  | Purpose                                                             |
  * |---------------------------------------------|---------------------------------------------------------------------|
@@ -435,9 +464,7 @@ function get_initial_db_schema_queries() {
 			`dependencies` varchar(191) NOT null,
 			`upgrade_notice` varchar(191) NOT null,
 			`origin_url` varchar(191) NOT null,
-			`checksum` varchar(191) NOT null,
-			`checksum_version` varchar(20) NOT null,
-			`checksum_origin` varchar(191) NOT null,
+			`checksums` longtext NOT null,
 			`created_at` datetime DEFAULT current_timestamp,
 			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
 			primary key (`id`),
@@ -452,9 +479,7 @@ function get_initial_db_schema_queries() {
 			`locale` varchar(15) NOT null,
 			`file_size` bigint unsigned NOT null,
 			`origin_url` varchar(191) NOT null,
-			`checksum` varchar(191) NOT null,
-			`checksum_version` varchar(20) NOT null,
-			`checksum_origin` varchar(191) NOT null,
+			`checksums` longtext NOT null,
 			`created_at` datetime DEFAULT current_timestamp,
 			`updated_at` datetime DEFAULT current_timestamp on update current_timestamp,
 			primary key (`id`),

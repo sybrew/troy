@@ -172,9 +172,7 @@ final class Files {
 	 *     @type string dependencies     The plugin dependencies.
 	 *     @type string upgrade_notice   The upgrade notice.
 	 *     @type string origin_url       The origin URL.
-	 *     @type string checksum         The zip checksum.
-	 *     @type string checksum_version The checksum version.
-	 *     @type string checksum_origin  The checksum origin.
+	 *     @type string checksums        JSON-encoded checksums keyed by algorithm (e.g., {"sha256":"...","sha1":"..."}).
 	 *     @type string created_at       The row creation timestamp.
 	 *     @type string updated_at       The row last updated timestamp.
 	 * }

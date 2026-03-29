@@ -132,9 +132,7 @@ final class Tags extends Base_Endpoint {
 				'tested_wp'        => $zip->tested_wp,
 				'requires_wp'      => $zip->requires_wp,
 				'requires_php'     => $zip->requires_php,
-				'checksum'         => $zip->checksum,
-				'checksum_version' => $zip->checksum_version,
-				'checksum_origin'  => $zip->checksum_origin,
+				'checksums'        => json_decode( $zip->checksums, true ),
 				'updated_at'       => $zip->updated_at,
 			];
 		}

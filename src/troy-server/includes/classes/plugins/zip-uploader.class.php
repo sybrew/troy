@@ -541,22 +541,23 @@ final class Zip_Uploader {
 
 		write_db: {
 			$zip_db_data = [
-				'plugin_id'        => $this->plugin_id,
-				'version'          => $version, // Already sanitized.
-				'type'             => 'unreleased',
-				'file_size'        => filesize( $plugin_zip_file_path ),
+				'plugin_id'      => $this->plugin_id,
+				'version'        => $version, // Already sanitized.
+				'type'           => 'unreleased',
+				'file_size'      => filesize( $plugin_zip_file_path ),
 				// We're storing the latest version we know about when the plugin misses the header.
 				// This is a safe assumption for the author shouldn't release an unstable version.
-				'tested_wp'        => API\Sanitize::tested_version( $tested_wp ?: API\Utils::get_latest_public_wordpress_version() ),
-				'requires_wp'      => API\Sanitize::tested_version( $plugin_headers['RequiresWP'] ?? '' ),
-				'requires_php'     => API\Sanitize::tested_version( $plugin_headers['RequiresPHP'] ?? '' ),
-				'repo'             => $repo,
-				'dependencies'     => $dependencies,
-				'upgrade_notice'   => $readme_contents['upgrade_notice'] ?? '', // Already sanitized in Readme_Parser.
-				'origin_url'       => $this->origin_url,
-				'checksum'         => hash_file( 'sha256', $plugin_zip_file_path ),
-				'checksum_version' => 'sha256',
-				'checksum_origin'  => $this->origin_url,
+				'tested_wp'      => API\Sanitize::tested_version( $tested_wp ?: API\Utils::get_latest_public_wordpress_version() ),
+				'requires_wp'    => API\Sanitize::tested_version( $plugin_headers['RequiresWP'] ?? '' ),
+				'requires_php'   => API\Sanitize::tested_version( $plugin_headers['RequiresPHP'] ?? '' ),
+				'repo'           => $repo,
+				'dependencies'   => $dependencies,
+				'upgrade_notice' => $readme_contents['upgrade_notice'] ?? '', // Already sanitized in Readme_Parser.
+				'origin_url'     => $this->origin_url,
+				'checksums'      => json_encode( [
+					'sha256' => hash_file( 'sha256', $plugin_zip_file_path ),
+					'sha1'   => hash_file( 'sha1', $plugin_zip_file_path ),
+				] ),
 			];
 
 			global $wpdb;
@@ -579,18 +580,16 @@ final class Zip_Uploader {
 					$updated = $wpdb->update(
 						"{$wpdb->prefix}troy_plugin_zips",
 						[
-							'type'             => $zip_db_data['type'],
-							'file_size'        => $zip_db_data['file_size'],
-							'tested_wp'        => $zip_db_data['tested_wp'],
-							'requires_wp'      => $zip_db_data['requires_wp'],
-							'requires_php'     => $zip_db_data['requires_php'],
-							'repo'             => $zip_db_data['repo'],
-							'dependencies'     => $zip_db_data['dependencies'],
-							'upgrade_notice'   => $zip_db_data['upgrade_notice'],
-							'origin_url'       => $zip_db_data['origin_url'],
-							'checksum'         => $zip_db_data['checksum'],
-							'checksum_version' => $zip_db_data['checksum_version'],
-							'checksum_origin'  => $zip_db_data['checksum_origin'],
+							'type'           => $zip_db_data['type'],
+							'file_size'      => $zip_db_data['file_size'],
+							'tested_wp'      => $zip_db_data['tested_wp'],
+							'requires_wp'    => $zip_db_data['requires_wp'],
+							'requires_php'   => $zip_db_data['requires_php'],
+							'repo'           => $zip_db_data['repo'],
+							'dependencies'   => $zip_db_data['dependencies'],
+							'upgrade_notice' => $zip_db_data['upgrade_notice'],
+							'origin_url'     => $zip_db_data['origin_url'],
+							'checksums'      => $zip_db_data['checksums'],
 						],
 						[
 							'id' => $existing_zip,
@@ -598,8 +597,6 @@ final class Zip_Uploader {
 						[
 							'%s',
 							'%d',
-							'%s',
-							'%s',
 							'%s',
 							'%s',
 							'%s',
@@ -621,28 +618,24 @@ final class Zip_Uploader {
 					$wpdb->insert(
 						"{$wpdb->prefix}troy_plugin_zips",
 						[
-							'plugin_id'        => $this->plugin_id,
-							'version'          => $zip_db_data['version'],
-							'type'             => $zip_db_data['type'],
-							'file_size'        => $zip_db_data['file_size'],
-							'tested_wp'        => $zip_db_data['tested_wp'],
-							'requires_wp'      => $zip_db_data['requires_wp'],
-							'requires_php'     => $zip_db_data['requires_php'],
-							'repo'             => $zip_db_data['repo'],
-							'dependencies'     => $zip_db_data['dependencies'],
-							'upgrade_notice'   => $zip_db_data['upgrade_notice'],
-							'origin_url'       => $zip_db_data['origin_url'],
-							'checksum'         => $zip_db_data['checksum'],
-							'checksum_version' => $zip_db_data['checksum_version'],
-							'checksum_origin'  => $zip_db_data['checksum_origin'],
+							'plugin_id'      => $this->plugin_id,
+							'version'        => $zip_db_data['version'],
+							'type'           => $zip_db_data['type'],
+							'file_size'      => $zip_db_data['file_size'],
+							'tested_wp'      => $zip_db_data['tested_wp'],
+							'requires_wp'    => $zip_db_data['requires_wp'],
+							'requires_php'   => $zip_db_data['requires_php'],
+							'repo'           => $zip_db_data['repo'],
+							'dependencies'   => $zip_db_data['dependencies'],
+							'upgrade_notice' => $zip_db_data['upgrade_notice'],
+							'origin_url'     => $zip_db_data['origin_url'],
+							'checksums'      => $zip_db_data['checksums'],
 						],
 						[
 							'%d',
 							'%s',
 							'%s',
 							'%d',
-							'%s',
-							'%s',
 							'%s',
 							'%s',
 							'%s',
