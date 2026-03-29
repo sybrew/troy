@@ -117,6 +117,7 @@ It's best to run Troy Server on a standalone WordPress instance. This can also b
 * Changed the tags endpoint:
 	- Added the `checksums` field, it's an object keyed by algorithm (e.g., `{"sha256": "...", "sha1": "..."}`).
 	- Removed the `checksum`, `checksum_version`, and `checksum_origin` fields from the tags endpoint response. This is a breaking change for tags endpoint consumers.
+* Resolved an issue where abandoned plugin versions with zero active installs would retain their last known install counts indefinitely instead of dropping to 0. This fix works retroactively.
 
 = 1.6.1184 =
 

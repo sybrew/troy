@@ -232,6 +232,32 @@ final class Aggregator {
 				}
 			}
 
+			// Reset install counts for this batch so abandoned versions
+			// (no requests in either epoch) correctly drop to 0.
+			$wpdb->query(
+				"UPDATE {$wpdb->prefix}troy_plugin_stats_versions
+				SET
+					total_installs  = 0,
+					active_installs = 0
+				WHERE plugin_id IN ($plugin_ids_str)",
+			);
+
+			$wpdb->query(
+				"UPDATE {$wpdb->prefix}troy_plugin_stats_totals
+				SET
+					total_installs_this_epoch  = 0,
+					total_installs_last_epoch  = 0,
+					active_installs_this_epoch = 0,
+					active_installs_last_epoch = 0
+				WHERE plugin_id IN ($plugin_ids_str)",
+			);
+
+			$wpdb->query(
+				"UPDATE {$wpdb->prefix}troy_plugin_data_caches
+				SET active_install_count = 0
+				WHERE plugin_id IN ($plugin_ids_str)",
+			);
+
 			foreach ( $plugin_totals as $plugin_id => $totals ) {
 
 				$wpdb->query( $wpdb->prepare(
