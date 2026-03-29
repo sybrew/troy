@@ -124,11 +124,18 @@ final class Data {
 	 * Prioritizes 'tag' type versions, then falls back to the highest version of any type.
 	 *
 	 * @since 0.0.1184
+	 * @since 1.7.1184 Added $args parameter.
 	 * @global \wpdb $wpdb
 	 *
+	 * @param array $args {
+	 *     Optional. Additional arguments.
+	 *
+	 *     @type string[] $types Version types to consider, in priority order.
+	 *                           Default [ 'tag', 'beta', 'unreleased' ].
+	 * }
 	 * @return ?string The plugin version. Null if no versions are found.
 	 */
-	public function get_latest_version() {
+	public function get_latest_version( $args = [] ) {
 
 		$zips = $this->get_zips();
 
@@ -144,7 +151,10 @@ final class Data {
 			$zips,
 		);
 
-		return API\Utils::extract_latest_version( $versions );
+		return API\Utils::extract_latest_version(
+			$versions,
+			...( $args['types'] ?? [] ) ? [ $args['types'] ] : [],
+		);
 	}
 
 	/**

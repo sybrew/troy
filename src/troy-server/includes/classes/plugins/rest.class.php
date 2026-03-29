@@ -709,7 +709,7 @@ final class REST {
 			// Update latest_version in infos table if the deleted version was the latest.
 			$wpdb->update(
 				"{$wpdb->prefix}troy_plugin_infos",
-				[ 'latest_version' => new Data( $plugin_id )->get_latest_version() ?? '' ],
+				[ 'latest_version' => new Data( $plugin_id )->get_latest_version( [ 'types' => [ 'tag', 'beta' ] ] ) ?? '' ],
 				[ 'plugin_id' => $plugin_id ],
 				[ '%s' ],
 				[ '%d' ],

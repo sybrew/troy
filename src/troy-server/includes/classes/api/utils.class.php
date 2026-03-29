@@ -59,30 +59,35 @@ final class Utils {
 	 * Prioritizes 'tag' type versions, then 'beta', and finally 'unreleased'.
 	 *
 	 * @since 0.0.1184
+	 * @since 1.7.1184 Added $types parameter.
 	 *
-	 * @param array $versions Array of version objects with 'version' and optional 'type' keys.
+	 * @param array    $versions Array of version objects with 'version' and optional 'type' keys.
+	 * @param string[] $types    Optional. Version types to consider, in priority order.
+	 *                           Default [ 'tag', 'beta', 'unreleased' ].
 	 * @return ?string The latest version string, or null if no versions found.
 	 */
-	public static function extract_latest_version( $versions ) {
+	public static function extract_latest_version( $versions, $types = [ 'tag', 'beta', 'unreleased' ] ) {
 
 		if ( empty( $versions ) )
 			return null;
 
-		$filtered_versions = array_column(
-			array_filter(
-				$versions,
-				fn( $version ) => 'tag' === ( $version['type'] ?? null ),
-			)
-				?: array_filter(
+		// Force canonical priority order regardless of input order.
+		$types = array_intersect( [ 'tag', 'beta', 'unreleased' ], $types );
+
+		$filtered_versions = null;
+
+		foreach ( $types as $type ) {
+			$filtered_versions = array_column(
+				array_filter(
 					$versions,
-					fn( $version ) => 'beta' === ( $version['type'] ?? null ),
-				)
-				?: array_filter(
-					$versions,
-					fn( $version ) => 'unreleased' === ( $version['type'] ?? null ),
+					fn( $version ) => ( $version['type'] ?? null ) === $type,
 				),
-			'version',
-		);
+				'version',
+			);
+
+			if ( $filtered_versions )
+				break;
+		}
 
 		if ( empty( $filtered_versions ) )
 			return null;

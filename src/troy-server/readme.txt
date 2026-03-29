@@ -105,6 +105,11 @@ It's best to run Troy Server on a standalone WordPress instance. This can also b
 
 == Changelog ==
 
+= 1.7.1184 =
+
+* Added "Latest version" column to the plugin list view.
+* Added a status guard that prevents plugins from being set to public, unlisted, or protected without at least one tagged or beta version. The pending-to-public auto-conversion now also requires a released version.
+	* This was necessary to ensure that Package overview tables correctly state a plugin is not available.
 = 1.6.1184 =
 
 * Added multi-plugin stats endpoint via POST to retrieve stats for up to 69 plugins in a single request.

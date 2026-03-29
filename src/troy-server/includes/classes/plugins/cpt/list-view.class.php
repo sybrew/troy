@@ -187,6 +187,18 @@ final class List_View {
 				'search'   => false,
 				'after'    => [ 'troy_server_slug' ],
 			],
+			'troy_server_latest_version'  => [
+				'label'    => \__( 'Latest version', 'troy-server' ),
+				'where'    => [ 'troy_plugin_infos', 'latest_version' ],
+				'postfind' => [
+					'local_key'        => 'plugin_id',
+					'foreign'          => [ 'troy_plugins', 'id' ],
+					'foreign_postfind' => 'post_id',
+				],
+				'orderby'  => false,
+				'search'   => false,
+				'after'    => [ 'troy_server_plugin_status' ],
+			],
 			'troy_server_integration'     => [
 				'label'    => \__( 'Integration', 'troy-server' ),
 				'where'    => [ 'troy_plugin_integrations', 'mode' ],
@@ -197,7 +209,7 @@ final class List_View {
 				],
 				'orderby'  => true,
 				'search'   => true,
-				'after'    => [ 'troy_server_plugin_status' ],
+				'after'    => [ 'troy_server_latest_version' ],
 			],
 			'troy_server_downloads'       => [
 				'label'    => \__( 'Downloads', 'troy-server' ),

@@ -986,7 +986,7 @@ final class Block_Editor {
 					[
 						'value'       => 'pending',
 						'label'       => \__( 'Pending', 'troy-server' ),
-						'description' => \__( 'Automatically convert to public when published.', 'troy-server' ),
+						'description' => \__( 'Converts to public when published with a tagged or beta version.', 'troy-server' ),
 					],
 					[
 						'value'       => 'disabled',

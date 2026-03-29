@@ -129,6 +129,7 @@ Follow these rules:
 
 ## CSS
 
+- When debugging CSS spacing or layout issues, always read the full HTML template structure first to understand nesting, flex/grid contexts, and how gap/margin/padding compound across parent-child relationships
 - Use lowercase hex colors
 - Remove zero before decimal points
 - Close last property with a semicolon

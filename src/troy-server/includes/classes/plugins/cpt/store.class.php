@@ -361,12 +361,29 @@ final class Store {
 		// This MUST be done here. We do not want scripts and on-* attributes sent to the Troy Client.
 		$data['contents'] = \wp_kses_post_deep( $data['contents'] );
 
-		// Auto-convert pending → public when WordPress post is published
-		if (
-			   'pending' === $data['status']
-			&& 'publish' === $post->post_status
-		) {
-			$data['status'] = 'public';
+		$warnings = [];
+
+		if ( 'disabled' !== $data['status'] ) {
+			// Test if status may be 'public', 'unlisted', or 'protected' based on the existence of a released version.
+			// If not, set to 'pending' and add a warning.
+			$has_released_version = array_any(
+				$data['versions'] ?? [],
+				fn( $v ) => \in_array( $v['type'] ?? '', [ 'tag', 'beta' ], true ),
+			);
+
+			if ( 'pending' === $data['status'] ) {
+				// Auto-convert pending -> public when WordPress post is published and a released version exists.
+				if ( 'publish' === $post->post_status && $has_released_version )
+					$data['status'] = 'public';
+			} elseif ( ! $has_released_version ) {
+				// Block distributable statuses unless at least one version is tagged or beta.
+				$data['status'] = 'pending';
+
+				$warnings[] = [
+					\__( 'Plugin status was set to pending. At least one version must be tagged or beta before the plugin can be distributed.', 'troy-server' ),
+					'warning',
+				];
+			}
 		}
 
 		global $wpdb;
@@ -644,7 +661,10 @@ final class Store {
 			\update_post_meta(
 				$post_id,
 				'_troy_server_plugin_update_status',
-				[ 'type' => 'updated' ],
+				array_filter( [
+					'type'     => 'updated',
+					'warnings' => $warnings,
+				] ),
 			);
 		} catch ( \Exception $e ) {
 			$wpdb->query( 'ROLLBACK' );

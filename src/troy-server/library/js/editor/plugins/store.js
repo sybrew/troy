@@ -319,6 +319,7 @@ const TroyServerPluginEditorStore = new class {
 		const { setIsLoading, setEditorData } = dispatch( this.storeName );
 
 		const {
+			createNotice,
 			createSuccessNotice,
 			createInfoNotice,
 			createErrorNotice,
@@ -515,6 +516,18 @@ const TroyServerPluginEditorStore = new class {
 						__( 'Plugin data successfully synchronized with the server.', 'troy-server' ),
 						noticeOps,
 					);
+
+					if ( response.warnings?.length )
+						for ( const [ i, [ message, type ] ] of response.warnings.entries() )
+							createNotice(
+								type || 'info',
+								message,
+								{
+									id:            `troy-server-post-save-warning-${i}`,
+									isDismissible: true,
+									speak:         0 === i,
+								},
+							);
 				} else {
 					createErrorNotice(
 						__( 'Failed to synchronize plugin data. Please reload the editor.', 'troy-server' ) + ( error?.message ? ` Error: ${error.message}` : '' ),
