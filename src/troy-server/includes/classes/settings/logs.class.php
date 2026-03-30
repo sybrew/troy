@@ -82,7 +82,6 @@ final class Logs {
 			'troyServerLogs',
 			[
 				'restBase' => \rest_url( REST_NS['logs_dashboard']['namespace'] . '/' . REST_NS['logs_dashboard']['base'] ),
-				'nonce'    => \wp_create_nonce( 'wp_rest' ),
 				'i18n'     => [
 					'loading'        => \__( 'Loading...', 'troy-server' ),
 					'error'          => \__( 'Failed to load logs.', 'troy-server' ),

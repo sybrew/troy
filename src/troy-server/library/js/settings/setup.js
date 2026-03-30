@@ -26,7 +26,8 @@
 
 ( () => {
 
-	const { __ } = wp.i18n;
+	const { __ }   = wp.i18n;
+	const apiFetch = wp.apiFetch;
 
 	const config   = window.troyServerSetup || {};
 	const restBase = config.restBase || '';
@@ -124,7 +125,7 @@
 
 			saveButton.disabled = true;
 
-			wp.apiFetch( {
+			apiFetch( {
 				url:    restBase,
 				method: 'POST',
 				data,

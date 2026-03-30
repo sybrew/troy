@@ -85,7 +85,6 @@ final class Stats {
 			'troyServerStats',
 			[
 				'restBase'  => \rest_url( REST_NS['stats_dashboard']['namespace'] . '/' . REST_NS['stats_dashboard']['base'] ),
-				'nonce'     => \wp_create_nonce( 'wp_rest' ),
 				'thisEpoch' => API\Utils::get_epoch(),
 				'i18n'      => [
 					'loading'            => \__( 'Loading...', 'troy-server' ),

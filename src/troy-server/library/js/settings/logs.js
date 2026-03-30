@@ -28,10 +28,10 @@
 
 	const escape   = window.troyServerEscape;
 	const sanitize = window.troyServerSanitize;
+	const apiFetch = wp.apiFetch;
 
 	const config   = window.troyServerLogs || {};
 	const restBase = config.restBase || '';
-	const nonce    = config.nonce || '';
 	const i18n     = config.i18n || {};
 
 	const elements = new Map();
@@ -66,33 +66,17 @@
 	 * Makes a REST API request.
 	 *
 	 * @since 0.0.1184
+	 * @since 1.7.1184 Now uses wp.apiFetch.
 	 *
 	 * @param {string} endpoint The endpoint path.
 	 * @param {Object} options  Fetch options.
 	 * @return {Promise<Object>} The fetch promise resolving to JSON data.
 	 */
-	const fetchLogs = async ( endpoint, options = {} ) => {
-
-		const url = new URL( `${ restBase }/${ endpoint }` );
-
-		const response = await fetch(
-			url,
-			{
-				method: 'GET',
-				...options,
-				headers: {
-					'X-WP-Nonce':   nonce,
-					'Content-Type': 'application/json',
-					...( options.headers || {} ),
-				},
-			},
-		);
-
-		if ( ! response.ok )
-			throw new Error( `HTTP ${ response.status }` );
-
-		return response.json();
-	};
+	const fetchLogs = ( endpoint, options = {} ) => apiFetch( {
+		url: `${ restBase }/${ endpoint }`,
+		method: 'GET',
+		...options,
+	} );
 
 	/**
 	 * Builds a table row for a history entry.
