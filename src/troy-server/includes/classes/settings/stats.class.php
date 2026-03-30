@@ -318,7 +318,7 @@ final class Stats {
 				ON p.id = s.plugin_id
 			WHERE p.status IN ('public', 'unlisted', 'protected')
 			GROUP BY p.id, p.slug, pm.name
-			ORDER BY downloads DESC
+			ORDER BY active_installs DESC
 			LIMIT %d",
 			$limit,
 		) );
@@ -689,7 +689,7 @@ final class Stats {
 				FROM {$wpdb->prefix}troy_plugin_stats_versions
 				WHERE plugin_id = %d
 				GROUP BY version
-				ORDER BY downloads DESC
+				ORDER BY active_installs DESC
 				LIMIT 7",
 				$plugin_id,
 			),

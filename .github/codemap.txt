@@ -70,7 +70,7 @@ includes/classes/api/
 	package.class.php             Package lookup: get package ID by slug from custom tables
 	plugin.class.php              Plugin lookup: get plugin ID by slug from custom tables
 	sanitize.class.php            Sanitization for SemVer strings, URLs, slugs, plugin/package data
-	server.class.php              Server-level API: DB version retrieval, repository URL formatting
+	server.class.php              Server-level API: DB version retrieval, repository URL formatting, site slug, Composer vendor (delegates to Settings\Data)
 	slug.class.php                Slug conflict detection and resolution across plugins/packages tables
 	utils.class.php               Epoch calculation for UUIDs, latest version resolution with type priority
 
@@ -78,6 +78,11 @@ includes/classes/endpoints/
 	base-endpoint.class.php       Abstract base for public API endpoints: response helpers, clean headers, CORS
 	router.class.php              URL router: parses REQUEST_URI at init, dispatches to endpoints, bypasses WP query
 	ping.class.php                Health check endpoint for Troy Client connectivity verification
+
+includes/classes/endpoints/composer/
+	composer.class.php            Composer repository index: serves packages.json with metadata-url and available-package-patterns for Composer 2
+	package.class.php             Per-package Composer repository: serves inline packages.json with all plugins in a package bundle
+	plugin.class.php              Per-plugin Composer metadata: serves individual plugin versions for metadata-url resolution
 
 includes/classes/endpoints/plugins/
 	download.class.php            Plugin ZIP download: file streaming, version selection, download stats recording
@@ -102,13 +107,13 @@ includes/classes/packages/
 	data.class.php                Package data accessor (read-only) from custom tables
 	drop.class.php                Deletes package data and removes storage directory (with graveyard recovery)
 	files.class.php               Package file storage management (directory helpers, ZIP paths)
-	meta-boxes.class.php          Registers/renders meta boxes for Packages editor (settings, plugins, themes, download, advanced)
-	rest.class.php                REST API for package CRUD operations
+	meta-boxes.class.php          Registers/renders meta boxes for Packages editor; enqueues Composer modal on editor screen
+	rest.class.php                REST API for package management (slug validation, Composer snippet data)
 	zip-builder.class.php         Generates installer ZIPs from troy-installer template, embedding selected plugins/themes
 
 includes/classes/packages/cpt/
 	init.class.php                Registers Packages custom post type (non-public, admin-only)
-	list-view.class.php           Packages list table: disables quick edit, adds columns (slug, plugins, themes, download)
+	list-view.class.php           Packages list table: disables quick edit, adds columns (slug, plugins, themes, download, composer); enqueues Composer modal on list screen
 	store.class.php               Package save/update/trash/delete lifecycle, syncs CPT to custom tables, rebuilds ZIPs
 
 includes/classes/plugins/
@@ -127,9 +132,12 @@ includes/classes/plugins/cpt/
 	store.class.php               Plugin save lifecycle: sanitizes editor data, syncs to custom tables, processes ZIPs, parses readmes
 
 includes/classes/settings/
+	data.class.php                Settings and cache data access: defaults, get/update settings and cache, flush memo
 	logs.class.php                Logs dashboard: enqueues assets, provides integration history/log retrieval
 	main.class.php                Main settings: registers admin menu, handles tab routing and form submission
-	rest.class.php                REST API for settings dashboard (stats data, logs data)
+	rest.class.php                REST API for settings dashboard (stats data, logs data, settings save)
+	sanitize.class.php            Settings sanitizer registry: per-field callbacks, whitelist approach, JIT registration
+	setup.class.php               Setup tab: enqueues assets for the setup/configuration settings tab
 	stats.class.php               Stats dashboard: enqueues assets, provides overview/top plugins/epoch/PHP/WP/locale statistics
 
 includes/classes/stats/
@@ -140,6 +148,8 @@ includes/classes/themes/
 	(empty, theme support planned)
 
 includes/views/
+	packages/
+		composer-modal.php      Shared Composer setup modal HTML (used on both list view and editor screens)
 	settings/
 		main.php                    Settings page shell: tab navigation (Plugin Stats, Package Stats, Logs, Settings)
 		tab-setup.php               Setup tab: Troy repo header, options form (currently no configurable settings)
@@ -149,6 +159,7 @@ includes/views/
 	editor/
 		packages/
 			advanced-meta-box.php   Advanced options: install timeout, deactivate/delete on completion, notice severity, network activation
+			composer-meta-box.php    Composer repository URL and setup guide button for the package editor sidebar
 			download-meta-box.php   Package download URL display (or prompt to publish first)
 			plugins-meta-box.php    Checkbox list of plugins to include in package with per-plugin options
 			settings-meta-box.php   Package slug, server URL, general configuration
@@ -159,11 +170,15 @@ library/js/
 	constants.js                  Shared constants: author queries, block templates for plugin editor
 	icons.js                      SVG icon components for the block editor
 
+library/js/packages/
+	composer-modal.js             Composer setup modal: fetches snippet data via REST, renders step-by-step guide with copyable blocks
+
 library/js/admin/
 	troy-mode.js                  Troy Mode toggle: hides non-essential WP admin menu items, persists via user meta
 
 library/js/settings/
 	main.js                       Settings page: tab switching with smooth navigation
+	setup.js                      Setup tab: Composer vendor inline editing via REST
 	stats.js                      Stats dashboard: fetches/renders stats via REST, date ranges, auto-refresh, dynamic tables
 	logs.js                       Logs dashboard: fetches/renders log entries via REST with auto-refresh
 
@@ -220,6 +235,9 @@ library/css/admin/
 
 library/css/editor/components/
 	components.css                Shared editor components: PanelRow, MetadataItem, loading states
+
+library/css/packages/
+	composer-modal.css            Composer setup modal: overlay, content box, sections, loading/error states, pre/copyable blocks
 
 library/css/editor/plugins/
 	blocks.css                    Plugin editor blocks: hides default post title, figcaptions, block layout

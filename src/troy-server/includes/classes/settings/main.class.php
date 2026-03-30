@@ -64,30 +64,6 @@ final class Main {
 	public const REQUIRED_CAPABILITY = 'manage_options';
 
 	/**
-	 * The settings save action.
-	 *
-	 * @since 0.0.1184
-	 */
-	public const SAVE_ACTION = 'troy_server_settings_save';
-
-	/**
-	 * The settings save action.
-	 *
-	 * @since 0.0.1184
-	 */
-	public const SAVED_RESPONSE = 'troy_server_settings_updated';
-
-	/**
-	 * The settings save nonce.
-	 *
-	 * @since 0.0.1184
-	 */
-	public const SAVE_NONCE = [
-		'name'   => '_troy_server_settings_save_nonce',
-		'action' => '_troy_server_settings_save',
-	];
-
-	/**
 	 * Returns the menu icon SVG with a given fill color.
 	 *
 	 * @since 1.6.1184
@@ -134,7 +110,6 @@ final class Main {
 		);
 
 		\add_action( "load-$page", [ __CLASS__, 'init_admin_page' ] );
-		\add_action( 'troy_server_settings_notices', [ __CLASS__, 'output_saved_notice' ] );
 	}
 
 	/**
@@ -174,19 +149,6 @@ final class Main {
 			fn( $body_class ) => "$body_class troy-server-settings ",
 		);
 
-		\add_filter(
-			'removable_query_args',
-			/**
-			 * Adds the saved response query arg to the list of removable query args.
-			 *
-			 * @since 0.0.1184
-			 *
-			 * @param array $args The list of removable query args.
-			 * @return array The modified list of removable query args.
-			 */
-			fn( $args ) => array_merge( $args, [ self::SAVED_RESPONSE ] ),
-		);
-
 		\add_action(
 			'admin_enqueue_scripts',
 			/**
@@ -222,6 +184,10 @@ final class Main {
 				// Enqueue logs assets on logs tab.
 				if ( 'logs' === $tab )
 					Logs::enqueue_assets();
+
+				// Enqueue setup assets on setup tab.
+				if ( 'setup' === $tab )
+					Setup::enqueue_assets();
 			}
 		);
 
@@ -238,67 +204,5 @@ final class Main {
 				Template::output_view( "settings/tab-$current_tab" );
 			},
 		);
-	}
-
-	/**
-	 * Outputs the saved response notice.
-	 *
-	 * @hook troy_server_settings_notices 10
-	 * @since 0.0.1184
-	 */
-	public static function output_saved_notice() {
-
-		// phpcs:ignore WordPress.Security.NonceVerification -- Affects output view only.
-		[ $notice_type, $message ] = match ( (int) ( $_GET[ self::SAVED_RESPONSE ] ?? -1 ) ) {
-			0 => [
-				'error',
-				\__( 'Settings failed to save.', 'troy-server' ),
-			],
-			1 => [
-				'success',
-				\__( 'Settings saved.', 'troy-server' ),
-			],
-			2 => [
-				'info',
-				\__( 'No settings were changed.', 'troy-server' ),
-			],
-			default => [ '', '' ],
-		};
-
-		if ( $notice_type )
-			printf(
-				'<div id=message class="notice notice-%s is-dismissible inline"><p>%s</p></div>',
-				\esc_attr( $notice_type ),
-				\esc_html( $message ),
-			);
-	}
-
-	/**
-	 * Processes the settings submission.
-	 *
-	 * @hook admin_post_{self::SAVE_ACTION} 10
-	 * @since 0.0.1184
-	 */
-	public static function process_settings_submission() {
-
-		\check_admin_referer( self::SAVE_NONCE['action'], self::SAVE_NONCE['name'] );
-
-		if ( ! \current_user_can( self::REQUIRED_CAPABILITY ) )
-			\wp_die(
-				\esc_html__( 'You do not have sufficient permissions to modify the settings.', 'troy-server' ),
-				403,
-			);
-
-		$settings = $_POST['troy_server_settings'] ?? [];
-
-		// TODO: Sanitize.
-
-		$result = \get_option( 'troy_server_settings', $settings ) !== $settings
-			? (int) \update_option( 'troy_server_settings', $settings, true )
-			: 2;
-
-		// Using safe: referer header is user-controlled
-		\wp_safe_redirect( \add_query_arg( self::SAVED_RESPONSE, $result, \wp_get_referer() ) );
-		exit;
 	}
 }

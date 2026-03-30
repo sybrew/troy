@@ -55,6 +55,7 @@ final class REST {
 
 		self::register_stats_routes();
 		self::register_logs_routes();
+		self::register_settings_routes();
 	}
 
 	/**
@@ -132,6 +133,27 @@ final class REST {
 				],
 			);
 		}
+	}
+
+	/**
+	 * Register settings management REST routes.
+	 *
+	 * @since 1.7.1184
+	 */
+	private static function register_settings_routes() {
+
+		$namespace = REST_NS['settings']['namespace'];
+		$base      = REST_NS['settings']['base'];
+
+		\register_rest_route(
+			$namespace,
+			$base,
+			[
+				'methods'             => \WP_REST_Server::CREATABLE,
+				'callback'            => [ self::class, 'save_settings' ],
+				'permission_callback' => fn() => \current_user_can( REST_NS['settings']['access_cap'] ),
+			],
+		);
 	}
 
 	/**
@@ -401,6 +423,52 @@ final class REST {
 
 		return new \WP_REST_Response(
 			[ 'success' => true ],
+			200,
+		);
+	}
+
+	/**
+	 * Saves settings via REST.
+	 *
+	 * Merges the submitted key-value pairs into the current settings and
+	 * delegates to update_option(), which triggers the sanitize_option_
+	 * filter for sanitization. Change detection uses the preemptive
+	 * unchanged/updated cache pattern from TSF.
+	 *
+	 * @rest troy-server/v1/settings POST
+	 * @since 1.7.1184
+	 *
+	 * @param \WP_REST_Request $request The request object.
+	 * @return \WP_REST_Response
+	 */
+	public static function save_settings( $request ) {
+
+		$input = $request->get_json_params();
+
+		if ( empty( $input ) || ! \is_array( $input ) )
+			return new \WP_REST_Response(
+				[ 'error' => \__( 'No settings provided.', 'troy-server' ) ],
+				400,
+			);
+
+		// Sets that the options are unchanged, preemptively.
+		Data::update_server_cache( 'settings_notice', 'unchanged' );
+
+		// But, if this action fires, we can assure that the settings have been changed (according to WP).
+		\add_action(
+			'update_option_troy_server_settings',
+			[ Data::class, 'set_settings_updated_state' ],
+		);
+
+		// Sanitization happens via sanitize_option_troy_server_settings filter.
+		Data::update_server_settings( $input );
+
+		return new \WP_REST_Response(
+			[
+				'success'  => true,
+				'changed'  => 'updated' === Data::get_server_cache( 'settings_notice' ),
+				'settings' => Data::get_server_settings(),
+			],
 			200,
 		);
 	}

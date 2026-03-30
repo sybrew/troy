@@ -11,6 +11,7 @@ namespace Troy\Server\Packages\CPT;
 use const Troy\Server\{
 	MAIN_FILE,
 	PACKAGES_CPT,
+	REST_NS,
 	VERSION,
 };
 
@@ -198,6 +199,17 @@ final class List_View {
 				'after'    => [ 'troy_server_downloads' ],
 				'render'   => [ self::class, 'render_download_column' ],
 			],
+			'troy_server_composer'  => [
+				'label'    => \__( 'Composer', 'troy-server' ),
+				'where'    => [ 'troy_packages', 'slug' ],
+				'postfind' => 'post_id',
+				'orderby'  => false,
+				'search'   => false,
+				'width'    => '100px',
+				'mobile'   => false,
+				'after'    => [ 'troy_server_download' ],
+				'render'   => [ self::class, 'render_composer_column' ],
+			],
 		];
 		// phpcs:enable VariableAnalysis.CodeAnalysis.VariableAnalysis
 	}
@@ -299,6 +311,35 @@ final class List_View {
 			'<a href="%s" class="button button-small" target="_blank">%s</a>',
 			\esc_url( API\Server::get_full_repo_url() . "package/get/zip/$slug" ),
 			\esc_html__( 'Download', 'troy-server' ),
+		);
+	}
+
+	/**
+	 * Renders the Composer column for a package.
+	 *
+	 * @since 1.7.1184
+	 *
+	 * @param ?string $slug    The package slug.
+	 * @param int     $post_id The post ID.
+	 */
+	private static function render_composer_column( $slug, $post_id ) {
+
+		if ( ! $slug || 'publish' !== \get_post_status( $post_id ) ) {
+			echo '—';
+			return;
+		}
+
+		$package_id = API\Package::get_package_id_by_post_id( $post_id );
+
+		if ( ! $package_id ) {
+			echo '—';
+			return;
+		}
+
+		printf(
+			'<button type="button" class="button button-small" data-composer-package-id="%d">%s</button>',
+			$package_id,
+			\esc_html__( 'Composer', 'troy-server' ),
 		);
 	}
 
@@ -635,5 +676,41 @@ final class List_View {
 			[],
 			VERSION,
 		);
+
+		\wp_enqueue_style(
+			'troy-server-composer-modal',
+			"{$dir_url}library/css/packages/composer-modal{$min}.css",
+			[],
+			VERSION,
+		);
+
+		\wp_enqueue_script(
+			'troy-server-composer-modal',
+			"{$dir_url}library/js/packages/composer-modal{$min}.js",
+			[ 'wp-api-fetch', 'wp-url', 'wp-i18n' ],
+			VERSION,
+			true,
+		);
+
+		$rest_packages_manage = REST_NS['packages_manage']['namespace'] . '/' . REST_NS['packages_manage']['base'];
+
+		\wp_localize_script(
+			'troy-server-composer-modal',
+			'troyComposerModalData',
+			[ 'restUrl' => \rest_url( "$rest_packages_manage/composerSnippet" ) ],
+		);
+
+		\add_action( 'admin_footer', [ self::class, 'render_composer_modal' ] );
+	}
+
+	/**
+	 * Renders the Composer modal HTML in the admin footer.
+	 *
+	 * @hook admin_footer 10
+	 * @since 1.7.1184
+	 */
+	public static function render_composer_modal() {
+
+		\Troy\Server\Template::output_view( 'packages/composer-modal' );
 	}
 }

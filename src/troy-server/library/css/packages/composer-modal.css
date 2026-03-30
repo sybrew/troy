@@ -1,0 +1,201 @@
+/**
+ * Troy Server
+ *
+ * Copyright (c) 2026 Sybre Waaijer, CyberWire B.V.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+/* Composer Modal Overlay */
+.troy-server-composer-modal {
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, .6);
+	z-index: 100100;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 2em;
+}
+
+.troy-server-composer-modal[hidden] {
+	display: none;
+}
+
+/* Modal Content Box */
+.troy-server-composer-modal-content {
+	background: #fff;
+	border-radius: 4px;
+	max-width: 720px;
+	width: 100%;
+	max-height: 80vh;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+	box-shadow: 0 5px 20px rgba(0, 0, 0, .3);
+}
+
+/* Modal Header */
+.troy-server-composer-modal-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 1em 1.5em;
+	border-bottom: 1px solid #c3c4c7;
+	background: #f6f7f7;
+}
+
+.troy-server-composer-modal-header h3 {
+	margin: 0;
+	font-size: 1.1em;
+}
+
+.troy-server-composer-modal-close {
+	background: none;
+	border: none;
+	font-size: 1.5em;
+	cursor: pointer;
+	padding: 0;
+	width: 30px;
+	height: 30px;
+	line-height: 28px;
+	text-align: center;
+	color: #646970;
+	border-radius: 4px;
+	transition: background .15s ease;
+}
+
+.troy-server-composer-modal-close:hover {
+	background: #dcdcde;
+	color: #1d2327;
+}
+
+/* Modal Body */
+.troy-server-composer-modal-body {
+	padding: 1.5em;
+	overflow-y: auto;
+}
+
+/* Sections */
+.troy-server-composer-modal-section {
+	margin-bottom: 1.5em;
+}
+
+.troy-server-composer-modal-section:last-child {
+	margin-bottom: 0;
+}
+
+.troy-server-composer-modal-section h4 {
+	margin: 0 0 .75em;
+	font-size: .95em;
+	color: #1d2327;
+	border-bottom: 1px solid #dcdcde;
+	padding-bottom: .5em;
+}
+
+.troy-server-composer-modal-section ul {
+	list-style: disc;
+	margin-inline-start: 1.5em;
+}
+
+.troy-server-composer-modal-section .troy-server-pre {
+	overflow-x: auto;
+}
+
+/* Loading State */
+.troy-server-composer-modal-loading {
+	text-align: center;
+	padding: 2em;
+	color: #646970;
+}
+
+.troy-server-composer-modal-loading::before {
+	content: "";
+	display: inline-block;
+	width: 20px;
+	height: 20px;
+	border: 2px solid #c3c4c7;
+	border-top-color: var(--troy-server-theme-color);
+	border-radius: 50%;
+	animation: troy-composer-spin .8s linear infinite;
+	margin-inline-end: .5em;
+	vertical-align: middle;
+}
+
+@keyframes troy-composer-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+/* Error State */
+.troy-server-composer-modal-error {
+	background: #fcf0f1;
+	border-inline-start: 4px solid #d63638;
+	padding: 1em;
+	margin: 1em 0;
+}
+
+/* Hint */
+.troy-server-composer-modal-hint {
+	color: #646970;
+	font-style: italic;
+	margin-block-start: 0;
+}
+.troy-server-composer-modal-hint.is-warning {
+	color: #d63638;
+}
+
+/* Responsive */
+@media screen and (max-width: 782px) {
+	.troy-server-composer-modal {
+		padding: 1em;
+	}
+
+	.troy-server-composer-modal-content {
+		max-height: 90vh;
+	}
+}
+
+/* Pre-formatted code blocks (scoped to modal) */
+.troy-server-composer-modal .troy-server-pre,
+.troy-server-composer-modal .troy-server-pre code {
+	background: 0 0;
+	border: none;
+	padding: .35em;
+	display: block;
+	text-align: left;
+	white-space: pre;
+	word-spacing: normal;
+	word-break: normal;
+	word-wrap: normal;
+	line-height: 1.5;
+	tab-size: 4;
+	hyphens: none;
+}
+
+.troy-server-composer-modal .troy-server-pre {
+	background: #f0f0f1;
+	border: 1px solid #c3c4c7;
+}
+
+.troy-server-composer-modal .troy-server-copyable {
+	cursor: text;
+	user-select: all;
+}

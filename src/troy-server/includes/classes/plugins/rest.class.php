@@ -226,8 +226,8 @@ final class REST {
 			return new \WP_REST_Response(
 				[
 					'message' => 'plugin' === $conflict_type
-						? \__( 'This slug is already registered as a plugin. Try another one.', 'troy-server' )
-						: \__( 'This slug is already registered as a package. Try another one.', 'troy-server' ),
+						? \__( 'This slug is already taken by a plugin. Try another one.', 'troy-server' )
+						: \__( 'This slug is already taken by a package. Try another one.', 'troy-server' ),
 				],
 				400,
 			);
@@ -242,7 +242,7 @@ final class REST {
 			// TODO Create handler to update the existing plugin.
 			return new \WP_REST_Response(
 				[
-					'message'     => \__( 'Plugin Post ID is already registered. Cannot change slug now.', 'troy-server' ),
+					'message'     => \__( 'This plugin post ID is already registered. Cannot change slug now.', 'troy-server' ),
 					'plugin_id'   => (int) $existing_data->id,
 					'plugin_slug' => $existing_data->slug,
 					'post_id'     => (int) $existing_data->post_id,

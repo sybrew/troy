@@ -8,7 +8,10 @@ namespace Troy\Server\API;
 
 \defined( 'Troy\Server\ABSPATH' ) or die;
 
-use Troy\Server\API; // We explicitly prefix API methods, possibly easing adoption.
+use Troy\Server\{
+	API, // We explicitly prefix API methods, possibly easing adoption -- hence the redundant import.
+	Settings,
+};
 
 /**
  * Troy Server
@@ -66,7 +69,7 @@ final class Server {
 
 		static $memo;
 
-		return $memo ??= Sanitize::bare_repo_url(
+		return $memo ??= API\Sanitize::bare_repo_url(
 			\home_url( '', 'https' ),
 		);
 	}
@@ -75,24 +78,45 @@ final class Server {
 	 * Returns this server's fully qualified repository URL.
 	 *
 	 * @since 0.0.1184
+	 * @since 1.7.1184 Now memoized for performance, as it's used in multiple endpoints and views.
 	 *
 	 * @return string The fully qualified repository URL (e.g., 'https://example.com/repo').
 	 */
 	public static function get_full_repo_url() {
-		return API\Sanitize::fully_qualified_repo_url( self::get_repo_url() );
-	}
-
-	/**
-	 * Returns the plugin settings array.
-	 *
-	 * @since 0.0.1184
-	 *
-	 * @return array The plugin settings.
-	 */
-	public static function get_server_settings() {
 
 		static $memo;
 
-		return $memo ??= \get_option( 'troy_server_settings' );
+		return $memo ??= API\Sanitize::fully_qualified_repo_url( self::get_repo_url() );
+	}
+
+	/**
+	 * Returns the site slug used as a Composer vendor base.
+	 *
+	 * Derived from the WordPress site name, lowercased and hyphenated.
+	 * Combine with a type suffix (e.g., `-plugin`, `-theme`) to form
+	 * the full Composer vendor name.
+	 *
+	 * @since 1.7.1184
+	 *
+	 * @return string The slugified site name (e.g., 'my-site').
+	 */
+	public static function get_site_slug() {
+
+		static $memo;
+
+		return $memo ??= API\Sanitize::slug( \get_bloginfo( 'name' ) ) ?: 'example';
+	}
+
+	/**
+	 * Returns the stored Composer vendor base slug.
+	 *
+	 * Always populated: defaults are prefilled from the site slug.
+	 *
+	 * @since 1.7.1184
+	 *
+	 * @return string The Composer vendor base (e.g., 'my-site').
+	 */
+	public static function get_composer_vendor() {
+		return Settings\Data::get_server_settings()['composer_vendor'];
 	}
 }

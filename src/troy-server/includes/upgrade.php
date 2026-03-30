@@ -12,7 +12,10 @@ namespace Troy\Server\Upgrade;
 
 use const Troy\Server\DB_VERSION;
 
-use Troy\Server\API;
+use Troy\Server\{
+	API,
+	Settings,
+};
 
 /**
  * Troy Server
@@ -161,8 +164,8 @@ function upgrade_from( $version ) {
 				$wpdb->query( $query );
 			}
 
-			// Register the initial settings.
-			\add_option( 'troy_server_settings', [], '', true );
+			// Register the initial settings, prefilled with defaults.
+			\add_option( 'troy_server_settings', Settings\Data::get_default_settings(), '', true );
 
 			\update_option( 'troy_server_db_version', 1_1184, true ); // Always update to prevent re-running on crash.
 
@@ -188,24 +191,37 @@ function upgrade_from( $version ) {
 				// Migrate checksum columns to a single JSON checksums column.
 				foreach ( [ 'troy_plugin_zips', 'troy_plugin_translations' ] as $table ) {
 
-					$wpdb->query(
-						"ALTER TABLE `{$wpdb->prefix}{$table}`
+					$wpdb->query( $wpdb->prepare(
+						"ALTER TABLE %i
 							ADD COLUMN `checksums` longtext NOT null DEFAULT ''
 								AFTER `origin_url`",
-					);
-					$wpdb->query(
-						"UPDATE `{$wpdb->prefix}{$table}`
-						SET `checksums` = JSON_OBJECT( `checksum_version`, `checksum` )
-						WHERE `checksum` != ''",
-					);
-					$wpdb->query(
-						"ALTER TABLE `{$wpdb->prefix}{$table}`
+						"{$wpdb->prefix}{$table}",
+					) );
+					$wpdb->query( $wpdb->prepare(
+						"UPDATE %i
+							SET `checksums` = JSON_OBJECT( `checksum_version`, `checksum` )
+							WHERE `checksum` != ''",
+						"{$wpdb->prefix}{$table}",
+					) );
+					$wpdb->query( $wpdb->prepare(
+						'ALTER TABLE %i
 							DROP COLUMN `checksum`,
 							DROP COLUMN `checksum_version`,
-							DROP COLUMN `checksum_origin`",
-					);
+							DROP COLUMN `checksum_origin`',
+						"{$wpdb->prefix}{$table}",
+					) );
 				}
 			}
+
+			// Register the server cache option.
+			\add_option( 'troy_server_cache', [], '', true );
+
+			// Backfill composer_vendor for existing sites so it's locked in.
+			if ( ! $fresh_install )
+				Settings\Data::update_server_settings(
+					'composer_vendor',
+					API\Server::get_site_slug(),
+				);
 
 			\update_option( 'troy_server_db_version', 1_7_1184, true ); // Always update to prevent re-running on crash.
 			// Fall through.

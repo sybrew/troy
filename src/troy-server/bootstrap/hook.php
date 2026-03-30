@@ -47,6 +47,14 @@ use Troy\Server\{
  * SOFTWARE.
  */
 
+// Sanitize settings whenever updated, regardless of caller.
+\add_filter(
+	'sanitize_option_troy_server_settings',
+	[ Settings\Sanitize::class, 'filter_settings_update' ],
+	10,
+	3,
+);
+
 // Register general cron tasks.
 \add_action( 'init', [ Cron::class, 'register' ] );
 

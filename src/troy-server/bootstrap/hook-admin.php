@@ -63,9 +63,6 @@ admin: {
 settings: {
 	// Register the admin settings menu.
 	\add_action( 'admin_menu', [ Settings\Main::class, 'register_admin_menu' ] );
-
-	// Register the settings save action.
-	\add_action( 'admin_post_' . Settings\Main::SAVE_ACTION, [ Settings\Main::class, 'process_settings_submission' ] );
 }
 
 plugins: {

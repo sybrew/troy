@@ -10,7 +10,10 @@ namespace Troy\Server\Packages;
 
 use const Troy\Server\REST_NS;
 
-use Troy\Server\API;
+use Troy\Server\{
+	API,
+	Plugins\Data as Plugin_Data,
+};
 
 /**
  * Troy Server
@@ -67,6 +70,16 @@ final class REST {
 				'permission_callback' => $permission_cb,
 			],
 		);
+
+		\register_rest_route(
+			$namespace,
+			"$base/composerSnippet",
+			[
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => [ self::class, 'composer_snippet' ],
+				'permission_callback' => $permission_cb,
+			],
+		);
 	}
 
 	/**
@@ -115,6 +128,100 @@ final class REST {
 			[
 				'valid'   => true,
 				'message' => \__( 'Slug is available.', 'troy-server' ),
+			],
+			200,
+		);
+	}
+
+	/**
+	 * Returns Composer setup data for a package.
+	 *
+	 * Builds the repository URLs, package name, and require map
+	 * needed to generate user-facing Composer setup instructions.
+	 *
+	 * @rest troy-server/v1/packages/manage/composerSnippet GET
+	 * @since 1.7.1184
+	 *
+	 * @param \WP_REST_Request $request The request object.
+	 * @return \WP_REST_Response
+	 */
+	public static function composer_snippet( $request ) {
+
+		$package_id = (int) ( $request->get_param( 'package_id' ) ?? 0 );
+
+		if ( ! $package_id )
+			return new \WP_REST_Response(
+				[ 'error' => \__( 'Missing package ID.', 'troy-server' ) ],
+				400,
+			);
+
+		$package_data = new Data( $package_id );
+		$package      = $package_data->get_packages_row();
+
+		if ( ! $package || 'active' !== $package->status )
+			return new \WP_REST_Response(
+				[ 'error' => \__( 'Package not found or inactive.', 'troy-server' ) ],
+				404,
+			);
+
+		$metas = $package_data->get_metas_row();
+
+		if ( ! $metas || empty( $metas->plugins ) )
+			return new \WP_REST_Response(
+				[ 'error' => \__( 'Package has no plugins.', 'troy-server' ) ],
+				404,
+			);
+
+		$vendor_base   = API\Server::get_composer_vendor();
+		$vendor        = "$vendor_base-package";
+		$plugin_vendor = "$vendor_base-plugin";
+		$package_name  = "$vendor/{$package->slug}";
+		$repo_url      = API\Server::get_full_repo_url() . 'composer/get';
+
+		$require = [ 'deploytroy-plugin/troy-client' => '>=1.0' ];
+
+		foreach ( $metas->plugins as $entry ) {
+			$plugin_id = $entry['id'] ?? null;
+
+			if ( ! $plugin_id )
+				continue;
+
+			$plugin_data = new Plugin_Data( $plugin_id );
+			$plugin_row  = $plugin_data->get_plugins_row();
+
+			if ( ! $plugin_row )
+				continue;
+
+			switch ( $plugin_row->status ) {
+				case 'public':
+				case 'unlisted':
+					break;
+				default:
+					continue 2;
+			}
+
+			$latest = $plugin_data->get_latest_version();
+
+			if ( $latest ) {
+				$parts = explode( '.', $latest );
+
+				$require[ "$plugin_vendor/{$plugin_row->slug}" ] = ">={$parts[0]}." . ( $parts[1] ?? '0' );
+			} else {
+				$require[ "$plugin_vendor/{$plugin_row->slug}" ] = '*';
+			}
+		}
+
+		if ( \count( $require ) <= 1 )
+			return new \WP_REST_Response(
+				[ 'error' => \__( 'No resolvable plugins in this package.', 'troy-server' ) ],
+				404,
+			);
+
+		return new \WP_REST_Response(
+			[
+				'packageName' => $package_name,
+				'repoUrl'     => $repo_url,
+				'require'     => $require,
 			],
 			200,
 		);

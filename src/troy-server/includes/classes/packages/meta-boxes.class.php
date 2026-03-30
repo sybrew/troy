@@ -86,8 +86,29 @@ final class Meta_Boxes {
 			true,
 		);
 
+		\wp_enqueue_style(
+			'troy-server-composer-modal',
+			"{$dir_url}library/css/packages/composer-modal{$min}.css",
+			[],
+			VERSION,
+		);
+
+		\wp_enqueue_script(
+			'troy-server-composer-modal',
+			"{$dir_url}library/js/packages/composer-modal{$min}.js",
+			[ 'wp-api-fetch', 'wp-url', 'wp-i18n' ],
+			VERSION,
+			true,
+		);
+
 		$post_id              = \get_the_ID();
 		$rest_packages_manage = REST_NS['packages_manage']['namespace'] . '/' . REST_NS['packages_manage']['base'];
+
+		\wp_localize_script(
+			'troy-server-composer-modal',
+			'troyComposerModalData',
+			[ 'restUrl' => \rest_url( "$rest_packages_manage/composerSnippet" ) ],
+		);
 
 		\wp_localize_script(
 			'troy-server-editor-package-meta-boxes',
@@ -100,6 +121,19 @@ final class Meta_Boxes {
 
 		// Disable autosave for the packages CPT. It causes confusion and distrupts save flow.
 		\wp_dequeue_script( 'autosave' );
+
+		\add_action( 'admin_footer', [ self::class, 'render_composer_modal' ] );
+	}
+
+	/**
+	 * Renders the Composer modal HTML in the admin footer.
+	 *
+	 * @hook admin_footer 10
+	 * @since 1.7.1184
+	 */
+	public static function render_composer_modal() {
+
+		Template::output_view( 'packages/composer-modal' );
 	}
 
 	/**
@@ -150,6 +184,15 @@ final class Meta_Boxes {
 			'troy_server_package_download',
 			\__( 'Package Download', 'troy-server' ),
 			[ self::class, 'render_download_metabox' ],
+			PACKAGES_CPT,
+			'side',
+			'high',
+		);
+
+		\add_meta_box(
+			'troy_server_package_composer',
+			\__( 'Composer', 'troy-server' ),
+			[ self::class, 'render_composer_metabox' ],
 			PACKAGES_CPT,
 			'side',
 			'high',
@@ -207,6 +250,17 @@ final class Meta_Boxes {
 	 */
 	public static function render_download_metabox( $post ) {
 		Template::output_view( 'editor/packages/download-meta-box', $post );
+	}
+
+	/**
+	 * Renders the Composer snippet meta box.
+	 *
+	 * @since 1.7.1184
+	 *
+	 * @param \WP_Post $post The post object.
+	 */
+	public static function render_composer_metabox( $post ) {
+		Template::output_view( 'editor/packages/composer-meta-box', $post );
 	}
 
 	/**

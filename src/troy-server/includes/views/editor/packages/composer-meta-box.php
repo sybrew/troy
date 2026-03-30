@@ -1,0 +1,56 @@
+<?php
+/**
+ * @package Troy\Server\Views\Editor\Packages
+ */
+
+namespace Troy\Server\Views\Editor\Packages;
+
+( \defined( 'Troy\Server\ABSPATH' ) and \Troy\Server\Template::verify_secret( $secret ) ) or die;
+
+use Troy\Server\API;
+
+/**
+ * Troy Server
+ *
+ * Copyright (c) 2026 Sybre Waaijer, CyberWire B.V.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+// phpcs:disable WordPress.WP.GlobalVariablesOverride -- We're not in the global space.
+
+[ $post ] = $view_args;
+
+if ( 'publish' !== $post->post_status ) {
+	?>
+	<p><?= \esc_html__( 'Publish the package to see Composer details.', 'troy-server' ) ?></p>
+	<?php
+	return;
+}
+
+$package_id = API\Package::get_package_id_by_post_id( $post->ID );
+?>
+<p>
+	<button
+		type=button
+		class=button
+		data-composer-package-id="<?= (int) $package_id ?>"
+	><?= \esc_html__( 'View Setup Guide', 'troy-server' ) ?></button>
+</p>
+<?php

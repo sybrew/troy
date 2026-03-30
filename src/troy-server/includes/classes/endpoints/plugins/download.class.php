@@ -181,7 +181,20 @@ final class Download extends Base_Endpoint {
 	/**
 	 * Record download statistics to the live stats table.
 	 *
+	 * Determines the download type from the User-Agent header (varchar(20)):
+	 * - 'update':     Troy Client (contains 'Troy Client') or WordPress core
+	 *                 updater (contains 'WordPress'; kept for backward compat
+	 *                 with clients older than 1.6.1184).
+	 * - 'composer':   Composer (starts with 'Composer/'). UA format:
+	 *                 "Composer/{ver} ({OS}; {release}; PHP {x.y.z}; {transport}
+	 *                 [; Platform-PHP {x.y.z}][; CI])".
+	 *                 Bedrock uses vanilla Composer; no special handling needed.
+	 * - 'cli':        WP-CLI (contains 'WP-CLI').
+	 * - 'webbrowser': Common browsers (Mozilla, Chrome, Safari, Firefox, etc.).
+	 * - 'api':        Default fallback for unrecognized or missing User-Agents.
+	 *
 	 * @since 0.0.1184
+	 * @since 1.7.1184 Added 'composer' and 'webbrowser' type detection.
 	 * @global \wpdb $wpdb
 	 *
 	 * @param int    $plugin_id The plugin ID.
@@ -191,10 +204,8 @@ final class Download extends Base_Endpoint {
 
 		global $wpdb;
 
-		// Determine download type based on context (20 chars max)
-		$type = 'api'; // Default for API downloads
+		$type = 'api';
 
-		// Check if this is an update download
 		if ( isset( $_SERVER['HTTP_USER_AGENT'] ) ) {
 			$user_agent = $_SERVER['HTTP_USER_AGENT'];
 
@@ -206,12 +217,16 @@ final class Download extends Base_Endpoint {
 				|| str_contains( $user_agent, 'WordPress' )
 			) {
 				$type = 'update';
+			} elseif ( str_starts_with( $user_agent, 'Composer/' ) ) {
+				$type = 'composer';
 			} elseif ( str_contains( $user_agent, 'WP-CLI' ) ) {
 				$type = 'cli';
+			} elseif (
+				preg_match( '/(?:Mozilla|AppleWebKit|Chrome|Safari|Firefox|Edge|Opera)\//', $user_agent )
+			) {
+				$type = 'webbrowser';
 			}
 		}
-
-		// TODO, check for referrers?
 
 		// Record live download stat
 		$wpdb->insert(

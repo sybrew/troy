@@ -533,7 +533,7 @@ final class Store {
 			update_infos: {
 				// TODO... locale is a big endeavor. We must add a toggle to the interface, or add a new interface
 				$locale       = \get_locale() ?: 'en_US';
-				$info_version = $working_version ?: 'ò.ó'; // 'ò.ó' is a placeholder for "no version" (it may not be empty).
+				$info_version = $working_version ?: 'ò.ó'; // 'ò.ó' is a placeholder for "no version", failing semver lookups intentionally.
 
 				// JSON decode is significantly inefficient, but we can cache the outputs later.
 				// It takes about 0.0028s to decode TSF's readme.txt, allowing 357 info requests per second.

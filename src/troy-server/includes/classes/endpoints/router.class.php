@@ -11,7 +11,7 @@ namespace Troy\Server\Endpoints;
 /**
  * Troy Server
  *
- * Copyright (c) 2025 Sybre Waaijer, CyberWire B.V.
+ * Copyright (c) 2026 Sybre Waaijer, CyberWire B.V.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -134,6 +134,41 @@ final class Router {
 					new Packages\Download(
 						$path_parts[3], // slug
 					)->handle_request();
+				}
+				break;
+
+			case 'composer/get/packages.json' === $request_path:
+				new Composer\Composer()->handle_request();
+				break;
+
+			case str_starts_with( $request_path, 'composer/get/' ) && str_ends_with( $request_path, '.json' ):
+				// URL: composer/get/{vendor}-{type}/{slug}.json
+				// Composer's %package% places the full name in the URL. The vendor
+				// prefix is irrelevant (the domain identifies the server); only the
+				// type suffix (after last dash) and slug matter.
+				$path_parts = array_values( array_filter( explode(
+					'/',
+					substr( $request_path, 13, -5 ),
+				) ) );
+
+				if ( \count( $path_parts ) >= 2 ) {
+					$type = substr( strrchr( $path_parts[0], '-' ), 1 );
+
+					switch ( $type ) {
+						case 'plugin':
+							new Composer\Plugin(
+								$path_parts[0], // vendor-type
+								$path_parts[1], // slug
+							)->handle_request();
+							break;
+						case 'package':
+							new Composer\Package(
+								$path_parts[0], // vendor-type
+								$path_parts[1], // slug
+							)->handle_request();
+							break;
+						// TODO case 'theme': add Composer\Theme endpoint.
+					}
 				}
 				break;
 
