@@ -61,25 +61,18 @@
 	 * Auto-fills the slug field from the post title if slug is empty.
 	 *
 	 * @since 0.0.1184
+	 * @since 1.7.1184 Now always updates the slug placeholder to reflect the title, even if the slug field is not empty.
 	 */
 	const initSlugAutoFill = () => {
 
 		const slugInput  = document.getElementById( 'troy-server-package-slug' );
 		const titleInput = document.getElementById( 'title' );
-		// const postNameInput = document.getElementById( 'post_name' ); // We do not support post_name (Core slug) -- maybe later.
 
 		if ( ! slugInput || ! titleInput )
 			return;
 
-		const updateSlugFromTitle = () => {
-
-			if ( slugInput.value )
-				return;
-
-			const postTitle = titleInput?.value ?? '';
-			// const postSlug  = postNameInput?.value ?? document.getElementById( 'editable-post-name-full' )?.innerText ?? '';
-
-			slugInput.placeholder = postTitle
+		const updateSlugPlaceholder = () => {
+			slugInput.placeholder = ( titleInput?.value ?? '' )
 				.toLowerCase()
 				.replace( /\s+/g, '-' )
 				.replace( /[^a-z0-9-]/g, '' )
@@ -88,10 +81,9 @@
 				.slice( 0, 191 );
 		};
 
-		titleInput?.addEventListener( 'input', updateSlugFromTitle );
-		// postNameInput?.addEventListener( 'input', updateSlugFromTitle );
+		titleInput?.addEventListener( 'input', updateSlugPlaceholder );
 
-		updateSlugFromTitle();
+		updateSlugPlaceholder();
 	};
 
 	/**
@@ -210,6 +202,41 @@
 	};
 
 	/**
+	 * Keeps slug example URLs in sync with the slug input value.
+	 *
+	 * Falls back to the input placeholder, then '<slug>'.
+	 *
+	 * @since 1.7.1184
+	 */
+	const initSlugExamples = () => {
+
+		const slugInput = document.getElementById( 'troy-server-package-slug' );
+		const examples  = document.querySelectorAll( '.troy-server-slug-example' );
+
+		if ( ! slugInput || ! examples.length )
+			return;
+
+		const update = () => {
+			const text = slugInput.value.trim() || slugInput.placeholder || '<slug>';
+
+			examples.forEach( el => {
+				el.textContent = text;
+			} );
+		};
+
+		slugInput.addEventListener( 'input', update );
+
+		// Also observe placeholder changes driven by initSlugAutoFill.
+		new MutationObserver( update )
+			.observe(
+				slugInput,
+				{ attributeFilter: [ 'placeholder' ] },
+			);
+
+		update();
+	};
+
+	/**
 	 * Initializes slug conflict validation.
 	 *
 	 * Validates the slug against existing plugins and packages on input change.
@@ -270,6 +297,7 @@
 	if ( 'complete' === document.readyState ) {
 		initPluginCheckboxes();
 		initSlugAutoFill();
+		initSlugExamples();
 		initSlugValidation();
 		initDescriptionCharCounter();
 		initCompletionCheckboxDependencies();
@@ -278,6 +306,7 @@
 		document.addEventListener( 'DOMContentLoaded', () => {
 			initPluginCheckboxes();
 			initSlugAutoFill();
+			initSlugExamples();
 			initSlugValidation();
 			initDescriptionCharCounter();
 			initCompletionCheckboxDependencies();

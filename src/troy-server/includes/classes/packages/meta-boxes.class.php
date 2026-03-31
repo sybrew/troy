@@ -132,8 +132,26 @@ final class Meta_Boxes {
 	 * @since 1.7.1184
 	 */
 	public static function render_composer_modal() {
-
 		Template::output_view( 'packages/composer-modal' );
+	}
+
+	/**
+	 * Renders a description below the title field explaining its usage.
+	 *
+	 * @hook edit_form_before_permalink 10
+	 * @since 1.7.1184
+	 *
+	 * @param \WP_Post $post The post object.
+	 */
+	public static function render_title_description( $post ) {
+
+		if ( PACKAGES_CPT !== $post->post_type )
+			return;
+
+		printf(
+			'<p class=description>%s</p>',
+			\esc_html__( 'The title determines the installer plugin name, PHP namespace, and suggested slug for this package.', 'troy-server' ),
+		);
 	}
 
 	/**

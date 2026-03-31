@@ -109,15 +109,6 @@
 	padding-bottom: .5em;
 }
 
-.troy-server-composer-modal-section ul {
-	list-style: disc;
-	margin-inline-start: 1.5em;
-}
-
-.troy-server-composer-modal-section .troy-server-pre {
-	overflow-x: auto;
-}
-
 /* Loading State */
 .troy-server-composer-modal-loading {
 	text-align: center;
@@ -193,6 +184,7 @@
 .troy-server-composer-modal .troy-server-pre {
 	background: #f0f0f1;
 	border: 1px solid #c3c4c7;
+	overflow-x: auto;
 }
 
 .troy-server-composer-modal .troy-server-copyable {

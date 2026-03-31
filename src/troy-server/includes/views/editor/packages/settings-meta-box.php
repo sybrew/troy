@@ -78,14 +78,12 @@ if ( ! $meta ) {
 				class=regular-text
 			>
 			<p class=description>
-				<?php
-				printf(
-					/* translators: %s: Full download URL example */
-					\esc_html__( 'The slug used in the download URL (e.g., %s).', 'troy-server' ),
-					'<code>' . \esc_html( API\Server::get_full_repo_url() ) . 'package/get/zip/&lt;slug&gt;</code>'
-				);
-				?>
+				<?= \esc_html__( 'The slug used in the download URL or Composer package name:', 'troy-server' ) ?>
 			</p>
+			<ul class="description troy-server-slug-examples">
+				<li><code class=troy-server-copyable><?= \esc_html( API\Server::get_full_repo_url() ) ?>package/get/zip/<span class=troy-server-slug-example>&lt;slug&gt;</span></code></li>
+				<li><code class=troy-server-copyable><?= \esc_html( API\Server::get_full_repo_url() ) ?>composer/get/<?= \esc_html( API\Server::get_composer_vendor() ) ?>-package/<span class=troy-server-slug-example>&lt;slug&gt;</span></code></li>
+			</ul>
 		</td>
 	</tr>
 	<tr>

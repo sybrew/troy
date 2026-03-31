@@ -63,9 +63,3 @@ $download_url = API\Server::get_full_repo_url() . "package/get/zip/{$package->sl
 		<?= \esc_html__( 'Download Package', 'troy-server' ) ?>
 	</a>
 </p>
-<input
-	type=text
-	value=<?= \esc_attr( $download_url ) ?>
-	readonly
-	style=width:100%
->

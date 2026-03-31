@@ -93,6 +93,9 @@ packages: {
 	// Register package editor assets.
 	\add_action( 'admin_enqueue_scripts', [ Packages\Meta_Boxes::class, 'enqueue_editor_assets' ] );
 
+	// Render title description for the packages CPT.
+	\add_action( 'edit_form_before_permalink', [ Packages\Meta_Boxes::class, 'render_title_description' ] );
+
 	// Render the publish checklist in the submit box.
 	\add_action( 'post_submitbox_misc_actions', [ Packages\Meta_Boxes::class, 'render_publish_checklist' ] );
 

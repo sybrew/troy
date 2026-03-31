@@ -104,3 +104,18 @@
 	content: "\f158" / '';
 	color: #d63638;
 }
+
+/* Slug URL examples */
+.troy-server-slug-examples {
+	margin-block: 1em 0;
+}
+
+.troy-server-slug-examples code {
+	word-break: break-all;
+}
+
+/* Copyable block */
+.troy-server-copyable {
+	cursor: text;
+	user-select: all;
+}

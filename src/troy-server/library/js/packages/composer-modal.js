@@ -132,16 +132,33 @@
 			</div>
 			<div class="troy-server-composer-modal-section">
 				<h4>${ __( 'Composer responses', 'troy-server' ) }</h4>
-				<ul>
-					<li><a href="${ data.repoUrl }/packages.json" target="_blank" rel="noopener noreferrer">${ __( 'Composer discovery endpoint', 'troy-server' ) }</a></li>
-					<li><a href="${ data.repoUrl }/${ data.packageName }.json" target="_blank" rel="noopener noreferrer">${ data.packageName }</a></li>
-					${ Object.keys( data.require ).map( pkg => {
-						const url = pkg.startsWith( 'deploytroy-' )
-							? `${ deployTroyRepoUrl }/${ pkg }.json`
-							: `${ data.repoUrl }/${ pkg }.json`;
-						return `<li><a href="${ url }" target="_blank" rel="noopener noreferrer">${ pkg }</a></li>`;
-					} ).join( '\n\t\t\t\t\t' ) }
-				</ul>
+				<table class="widefat striped">
+					<thead>
+						<tr>
+							<th scope="col">${ __( 'Endpoint', 'troy-server' ) }</th>
+							<th scope="col">${ __( 'Response', 'troy-server' ) }</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>${ __( 'Composer discovery', 'troy-server' ) }</td>
+							<td><a href="${ data.repoUrl }/packages.json" target="_blank" rel="noopener noreferrer">packages.json</a></td>
+						</tr>
+						<tr>
+							<td>${ __( 'Package', 'troy-server' ) }</td>
+							<td><a href="${ data.repoUrl }/${ data.packageName }.json" target="_blank" rel="noopener noreferrer">${ data.packageName }.json</a></td>
+						</tr>
+						${ Object.keys( data.require ).map( pkg => {
+							const url = pkg.startsWith( 'deploytroy-' )
+								? `${ deployTroyRepoUrl }/${ pkg }.json`
+								: `${ data.repoUrl }/${ pkg }.json`;
+							return `<tr>
+							<td>${ __( 'Dependency', 'troy-server' ) }</td>
+							<td><a href="${ url }" target="_blank" rel="noopener noreferrer">${ pkg }.json</a></td>
+						</tr>`;
+						} ).join( '' ) }
+					</tbody>
+				</table>
 			</div>
 			<div class="troy-server-composer-modal-section">
 				<h4>${ __( 'Existing composer.json (e.g. Bedrock)', 'troy-server' ) }</h4>

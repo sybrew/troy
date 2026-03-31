@@ -338,7 +338,7 @@ final class List_View {
 
 		printf(
 			'<button type="button" class="button button-small" data-composer-package-id="%d">%s</button>',
-			$package_id,
+			$package_id, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped as integer
 			\esc_html__( 'Composer', 'troy-server' ),
 		);
 	}
