@@ -125,6 +125,7 @@ It's best to run Troy Server on a standalone WordPress instance. This can also b
 * Added a Composer setup guide modal to the package list view and editor. The modal fetches live package data and shows copyable CLI commands, JSON snippets, and links to the Composer endpoint responses. It warns when the package slug is changed without saving.
 * Added settings save to the Setup tab via REST, with change detection feedback ("Settings saved" or "No settings were changed").
 * Added live slug preview to the package editor's slug description, showing the download URL and Composer package URL with the current slug value filled in.
+* Added X-Robots-Tag header to all public API endpoint responses.
 * Improved package editor layout by adding title hints, removing up the download URL, and instead show two links beneath the slug editor.
 * Improved download stat detection to categorize requests by User-Agent (Composer, web browser, CLI, update check, API).
 * Improved the Setup tab's mobile layout by replacing inaccessible CSS-generated content labels with real DOM elements styled as header blocks.

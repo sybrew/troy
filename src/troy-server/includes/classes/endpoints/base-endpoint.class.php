@@ -68,6 +68,7 @@ abstract class Base_Endpoint {
 	 *
 	 * @since 0.0.1184
 	 * @since 1.6.1184 Added Access-Control-Allow-Origin header for CORS support.
+	 * @since 1.7.1184 Added X-Robots-Tag header.
 	 *
 	 * @param mixed $data   The data to send.
 	 * @param int   $status HTTP status code.
@@ -81,6 +82,7 @@ abstract class Base_Endpoint {
 		header( 'Cache-Control: no-cache, must-revalidate' );
 		header( 'Expires: Mon, 26 Jul 1997 05:00:00 GMT' );
 		header( 'Access-Control-Allow-Origin: *' );
+		header( 'X-Robots-Tag: noindex, nofollow' );
 
 		echo json_encode( $data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
 		exit;
@@ -106,6 +108,7 @@ abstract class Base_Endpoint {
 	 * method is OPTIONS.
 	 *
 	 * @since 1.6.1184
+	 * @since 1.7.1184 Added X-Robots-Tag header.
 	 *
 	 * @param string $allowed_methods Comma-separated HTTP methods allowed for this endpoint.
 	 */
@@ -118,6 +121,7 @@ abstract class Base_Endpoint {
 		header( "Access-Control-Allow-Methods: $allowed_methods" );
 		header( 'Access-Control-Allow-Headers: *' );
 		header( 'Access-Control-Max-Age: 86400' );
+		header( 'X-Robots-Tag: noindex, nofollow' );
 		exit;
 	}
 
