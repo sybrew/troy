@@ -3,4 +3,10 @@
 	<description>The coding standard used for the Troy Client Daemon must-use plugin for WordPress.</description>
 
 	<rule ref="../../phpcs.xml"/>
+
+	<rule ref="TSF.Performance.Opcodes">
+		<properties>
+			<property name="userNoopChecks" type="array" value="set_install_lock,release_install_lock"/>
+		</properties>
+	</rule>
 </ruleset>

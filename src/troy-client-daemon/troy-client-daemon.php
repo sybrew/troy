@@ -15,7 +15,7 @@
  * Plugin Name: Troy Client Daemon - Must Use only
  * Plugin URI: https://deploytroy.org/
  * Description: This daemon forces installation and activation of Troy Client. It blocks the WordPress update API if Troy Client is not active.
- * Version: 1.6.1184
+ * Version: 1.7.1184
  * Author: Sybre Waaijer
  * Author URI: https://deploytroy.org/
  * License: MIT
@@ -128,6 +128,10 @@ function install_and_activate_troy_client() {
 	$troy_plugin = \get_plugins()[ $plugin_file ] ?? '';
 
 	if ( ! $troy_plugin ) {
+
+		if ( ! set_install_lock( 15 ) )
+			return;
+
 		\wp_raise_memory_limit( 'troy-client-daemon-init-fs' );
 
 		// Let's not fully rely on globals to check if the filesystem is initialized.
@@ -135,8 +139,10 @@ function install_and_activate_troy_client() {
 			// Ensure WP_Filesystem() is declared
 			require_once \ABSPATH . 'wp-admin/includes/file.php';
 
-			if ( ! \WP_Filesystem() )
+			if ( ! \WP_Filesystem() ) {
+				release_install_lock();
 				return;
+			}
 		}
 
 		require_once \ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
@@ -163,6 +169,8 @@ function install_and_activate_troy_client() {
 			$client_url,
 			[ 'overwrite_package' => true ],
 		);
+
+		release_install_lock();
 
 		if ( true !== $result )
 			return;
@@ -274,4 +282,58 @@ function hide_action_checkbox() {
 			.forEach( e => e.remove() );
 	</script>
 	HTML;
+}
+
+/**
+ * Creates the install lock to prevent concurrent install attempts.
+ *
+ * The lock is released on all exit paths. It serves as a concurrency guard,
+ * not a retry throttle. The timeout handles stale locks from crashed requests.
+ *
+ * @since 1.7.1184
+ * @global \wpdb $wpdb
+ *
+ * @param int $release_timeout The timeout of the lock in seconds.
+ * @return bool False if a lock couldn't be created or if the lock is still valid. True otherwise.
+ */
+function set_install_lock( $release_timeout ) {
+
+	global $wpdb;
+
+	if ( \is_multisite() ) {
+		$lock = $wpdb->query( $wpdb->prepare(
+			"INSERT ignore INTO `$wpdb->sitemeta` ( `site_id`, `meta_key`, `meta_value` ) VALUES (%d, %s, %s) /* LOCK */",
+			\get_current_network_id(),
+			'troy_client_daemon_install.lock',
+			time(),
+		) );
+	} else {
+		$lock = $wpdb->query( $wpdb->prepare(
+			"INSERT ignore INTO `$wpdb->options` ( `option_name`, `option_value`, `autoload` ) VALUES (%s, %s, 'off') /* LOCK */",
+			'troy_client_daemon_install.lock',
+			time(),
+		) );
+	}
+
+	if ( ! $lock ) {
+		$lock_time = (int) \get_site_option( 'troy_client_daemon_install.lock' );
+
+		if ( $lock_time > ( time() - $release_timeout ) )
+			return false;
+
+		release_install_lock();
+
+		return set_install_lock( $release_timeout );
+	}
+
+	return true;
+}
+
+/**
+ * Releases the install lock.
+ *
+ * @since 1.7.1184
+ */
+function release_install_lock() {
+	\delete_site_option( 'troy_client_daemon_install.lock' );
 }
