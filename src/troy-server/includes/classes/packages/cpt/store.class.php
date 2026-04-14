@@ -198,7 +198,6 @@ final class Store {
 			'author_uri'               => '',
 			'requires_wp'              => '6.7',
 			'requires_php'             => '7.4',
-			'network'                  => 0,
 			'install_timeout'          => 30,
 			'deactivate_on_completion' => 1,
 			'delete_on_completion'     => 0,
@@ -232,7 +231,6 @@ final class Store {
 			'author_uri'               => API\Sanitize::url_qualified( $data['author_uri'] ?? '' ),
 			'requires_wp'              => API\Sanitize::tested_version( $data['requires_wp'] ?? '' ),
 			'requires_php'             => API\Sanitize::tested_version( $data['requires_php'] ?? '' ),
-			'network'                  => ! empty( $data['network'] ) ? 1 : 0,
 			'install_timeout'          => min(
 				60,
 				max(
@@ -244,7 +242,7 @@ final class Store {
 			'delete_on_completion'     => empty( $data['delete_on_completion'] ) ? 0 : 1,
 			'network_activation'       => \in_array(
 				$data['network_activation'] ?? '',
-				[ 'block', 'activate-all' ],
+				[ 'block', 'activate-all', 'require' ],
 				true,
 			)
 				? $data['network_activation']
@@ -461,7 +459,6 @@ final class Store {
 							'author_uri'               => $data['author_uri'],
 							'requires_wp'              => $data['requires_wp'],
 							'requires_php'             => $data['requires_php'],
-							'network'                  => $data['network'],
 							'install_timeout'          => $data['install_timeout'],
 							'deactivate_on_completion' => $data['deactivate_on_completion'],
 							'delete_on_completion'     => $data['delete_on_completion'],
@@ -471,7 +468,7 @@ final class Store {
 							'themes'                   => API\Sanitize::json_encode_db( $data['themes'] ),
 						],
 						[ 'package_id' => $package_id ],
-						[ '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%d', '%d', '%d', '%s', '%s', '%s', '%s' ],
+						[ '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%d', '%d', '%s', '%s', '%s', '%s' ],
 						[ '%d' ],
 					);
 				} else {
@@ -487,7 +484,6 @@ final class Store {
 							'author_uri'               => $data['author_uri'],
 							'requires_wp'              => $data['requires_wp'],
 							'requires_php'             => $data['requires_php'],
-							'network'                  => $data['network'],
 							'install_timeout'          => $data['install_timeout'],
 							'deactivate_on_completion' => $data['deactivate_on_completion'],
 							'delete_on_completion'     => $data['delete_on_completion'],
@@ -496,7 +492,7 @@ final class Store {
 							'plugins'                  => API\Sanitize::json_encode_db( $data['plugins'] ),
 							'themes'                   => API\Sanitize::json_encode_db( $data['themes'] ),
 						],
-						[ '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%d', '%d', '%d', '%s', '%s', '%s', '%s' ],
+						[ '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%d', '%d', '%s', '%s', '%s', '%s' ],
 					);
 				}
 			}

@@ -87,7 +87,7 @@ const PLUGIN_NAME = 'Troy Installer'; // @troy-package plugin-name
  *    @type bool   $deactivate_on_completion Whether to deactivate the installer plugin after completion.
  *    @type bool   $delete_on_completion     Whether to delete the installer plugin after completion.
  *    @type string $network_activation       The network activation behavior on multisite of this installer.
- *                                           Accepts 'block' and 'activate-all'. Default 'block'.
+ *                                           Accepts 'block', 'activate-all', and 'require'. Default 'block'.
  *    @type string $notice_severity          The severity of the notice. Accepts 'detailed', 'verbose', and 'silent'.
  * }
  */
@@ -381,7 +381,7 @@ function install_plugins() {
 		$conf = array_merge( $install_defaults, $conf );
 
 		$conf['network'] = $is_multisite
-			? $conf['network'] || 'activate-all' === OPTIONS['network_activation']
+			? $conf['network'] || \in_array( OPTIONS['network_activation'], [ 'activate-all', 'require' ], true )
 			: false;
 
 		if ( isset( $slug_repos[ $slug ] ) && empty( $conf['overwrite_troy'] ) )

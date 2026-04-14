@@ -16,7 +16,7 @@
  * Plugin Name: Troy Client
  * Plugin URI: https://deploytroy.org/docs/troy-client/
  * Description: Updates WordPress plugins and themes from decentralized Troy Server repositories.
- * Version: 1.7.1184-dev2
+ * Version: 1.7.1184
  * Author: Sybre Waaijer
  * Author URI: https://deploytroy.org/
  * License: MIT

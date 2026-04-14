@@ -173,6 +173,31 @@ final class List_View {
 					echo '<span class="package-coming-soon">' . \esc_html__( 'Coming soon', 'troy-server' ) . '</span>';
 				},
 			],
+			'troy_server_network'   => [
+				'label'    => \__( 'Network', 'troy-server' ),
+				'where'    => [ 'troy_package_metas', 'network_activation' ],
+				'postfind' => [
+					'local_key'        => 'package_id',
+					'foreign'          => [ 'troy_packages', 'id' ],
+					'foreign_postfind' => 'post_id',
+				],
+				'orderby'  => false,
+				'search'   => false,
+				'after'    => [ 'troy_server_themes' ],
+				'render'   => [ self::class, 'render_network_column' ],
+			],
+			'troy_server_version'   => [
+				'label'    => \__( 'Version', 'troy-server' ),
+				'where'    => [ 'troy_package_metas', 'version' ],
+				'postfind' => [
+					'local_key'        => 'package_id',
+					'foreign'          => [ 'troy_packages', 'id' ],
+					'foreign_postfind' => 'post_id',
+				],
+				'orderby'  => true,
+				'search'   => false,
+				'after'    => [ 'troy_server_network' ],
+			],
 			'troy_server_downloads' => [
 				'label'    => \__( 'Downloads', 'troy-server' ),
 				'where'    => [ 'troy_package_stats_totals', 'downloads' ],
@@ -183,7 +208,7 @@ final class List_View {
 				],
 				'orderby'  => true,
 				'search'   => false,
-				'after'    => [ 'troy_server_themes' ],
+				'after'    => [ 'troy_server_version' ],
 				'render'   => function ( $value ) {
 					echo \esc_html( \number_format_i18n( (int) $value ) );
 				},
@@ -290,6 +315,24 @@ final class List_View {
 
 		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above
 		echo implode( ', ', $links );
+	}
+
+	/**
+	 * Renders the network activation column for a package.
+	 *
+	 * @since 1.7.1184
+	 *
+	 * @param ?string $value The network_activation value.
+	 */
+	private static function render_network_column( $value ) {
+
+		$labels = [
+			'block'        => \__( 'Block', 'troy-server' ),
+			'activate-all' => \__( 'Activate All', 'troy-server' ),
+			'require'      => \__( 'Require', 'troy-server' ),
+		];
+
+		echo \esc_html( $labels[ $value ] ?? $value ?? '—' );
 	}
 
 	/**

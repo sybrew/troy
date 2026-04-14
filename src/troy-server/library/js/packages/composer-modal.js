@@ -96,12 +96,15 @@
 
 		const fullSnippet = JSON.stringify(
 			{
+				name:        `${ siteSlug }/my-project`,
+				description: __( 'My project description', 'troy-server' ),
+				license:     'proprietary',
 				repositories: [
 					{ type: 'composer', url: data.repoUrl },
 					{ type: 'composer', url: deployTroyRepoUrl },
 				],
-				require: fullRequire,
-				extra: {
+				require:      fullRequire,
+				extra:        {
 					'installer-paths': {
 						'wp-content/plugins/{$name}/': [ 'type:wordpress-plugin' ],
 						'wp-content/mu-plugins/{$name}/': [ 'type:wordpress-muplugin' ],
@@ -166,7 +169,7 @@
 				<pre class="troy-server-pre troy-server-copyable"><code>composer config repositories.${ siteSlug } composer ${ data.repoUrl }\ncomposer config repositories.deploytroy composer ${ deployTroyRepoUrl }</code></pre>
 				<p>${ __( 'Then require this package:', 'troy-server' ) }</p>
 				<pre class="troy-server-pre troy-server-copyable"><code>composer require ${ data.packageName }</code></pre>
-				<p>${ __( 'Or merge the entries into your <code>composer.json</code> manually:', 'troy-server' ) }</p>
+				<p>${ __( 'Or merge the following entries into your <code>composer.json</code> manually:', 'troy-server' ) }</p>
 				<pre class="troy-server-pre"><code>"repositories": ${ repositories }</code></pre>
 				<pre class="troy-server-pre"><code>"require": ${ requireJson }</code></pre>
 				<p>${ __( 'Then run <code>composer update</code> from a terminal in your project root.', 'troy-server' ) }</p>

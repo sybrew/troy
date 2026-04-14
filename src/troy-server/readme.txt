@@ -105,38 +105,26 @@ It's best to run Troy Server on a standalone WordPress instance. This can also b
 
 == Changelog ==
 
+For full release notes, see [deploytroy.org/changelogs](https://deploytroy.org/changelogs/#troy-server).
+
 = 1.7.1184 =
 
 * Added "Latest version" column to the plugin list view.
-* Added a status guard that prevents plugins from being set to public, unlisted, or protected without at least one tagged or beta version. The pending-to-public auto-conversion now also requires a released version.
-	* This was necessary to ensure that Package overview tables correctly state a plugin is not available.
-* Added Composer 2 repository support so Bedrock and other Composer-managed WordPress sites can install plugins from this server. Troy Server implements the Composer repository protocol -- the repository must be added to the project's `composer.json` before packages can be resolved.
-	- The Composer repository uses the `metadata-url` protocol, serving only the packages Composer requests instead of exposing the full catalog.
-	- Packages are served as Composer metapackages that resolve their plugin dependencies transitively, including Troy Client for active install reporting and update request filtering -- we found that plain Bedrock sites still ping WordPress.org for updates, even with `DISALLOW_FILE_MODS` enabled.
-	- Package names follow the `{vendor}-{type}/{slug}` convention (e.g., `tsf-plugin/autodescription`), where the vendor is arbitrary, the type is "plugin" (or "theme" when theme support lands), and the slug is the plugin slug.
-		- The arbitrary vendor name must match regex `[a-z1-9](-?[a-z0-9])*`.
-			- Good: `troy`
-			- Good: `42-example-01`
-			- Bad: `0tr.oy_01-`, where leading `0`, periods, underscores, and trailing hyphens are not allowed.
-			- Bad: `troy--01`, where consecutive hyphens are not allowed.
-* Added a configurable Composer vendor slug to the Setup tab. The vendor prefix is stored as a persistent setting, pre-filled from the site name at install time so it remains stable even if the site is renamed later.
-	- A live preview updates as you type, showing the resulting package name format.
-	- A warning is shown because changing the vendor breaks Composer resolution for existing consumers.
-* Added a Composer setup guide modal to the package list view and editor. The modal fetches live package data and shows copyable CLI commands, JSON snippets, and links to the Composer endpoint responses. It warns when the package slug is changed without saving.
-* Added settings save to the Setup tab via REST, with change detection feedback ("Settings saved" or "No settings were changed").
-* Added live slug preview to the package editor's slug description, showing the download URL and Composer package URL with the current slug value filled in.
+* Added a plugin status guard that requires at least one released version before a plugin can be set to public, unlisted, or protected.
+* Added [Composer 2 repository support](https://deploytroy.org/docs/troy-server/composer/) for Bedrock and other Composer-managed WordPress sites.
+* Added a configurable [Composer vendor slug](https://deploytroy.org/docs/troy-server/composer/#vendor-slug) to the Setup tab, pre-filled from the site name at install time.
+* Added a Composer setup guide modal to the package list view and editor.
+* Added settings save to the Setup tab via REST with change detection.
+* Added live slug preview to the package editor showing the download URL and Composer package URL.
+* Added "Require" network activation option for packages. The legacy `network` column is migrated and dropped on upgrade.
 * Added X-Robots-Tag header to all public API endpoint responses.
-* Improved package editor layout by adding title hints, removing up the download URL, and instead show two links beneath the slug editor.
+* Improved package editor layout by adding title hints and showing two links beneath the slug editor.
 * Improved download stat detection to categorize requests by User-Agent (Composer, web browser, CLI, update check, API).
-* Improved the Setup tab's mobile layout by replacing inaccessible CSS-generated content labels with real DOM elements styled as header blocks.
-* Changed checksum storage from a single algorithm to a multi-algorithm JSON field, adding sha1 support alongside sha256.
-	- Reprocess your ZIP to register a sha1 hash. If you used a WordPress.org or GitHub connection, you can simply hit "import" on the ZIP to reprocess it. Alternatively, you can upload your plugin ZIP manually. It will reparse everything accordingly.
-	- The existing sha256 hashes are migrated on upgrade.
-	- This enables Composer's `dist.shasum` integrity verification.
-* Changed the tags endpoint:
-	- Added the `checksums` field, it's an object keyed by algorithm (e.g., `{"sha256": "...", "sha1": "..."}`).
-	- Removed the `checksum`, `checksum_version`, and `checksum_origin` fields from the tags endpoint response. This is a breaking change for tags endpoint consumers.
-* Resolved an issue where abandoned plugin versions with zero active installs would retain their last known install counts indefinitely instead of dropping to 0. This fix works retroactively.
+* Improved the Setup tab's mobile layout by replacing inaccessible CSS-generated content labels with real DOM elements.
+* Changed checksum storage to a multi-algorithm JSON field, adding sha1 alongside sha256. Existing hashes are migrated on upgrade. Reprocess your ZIPs to register sha1.
+* Changed the tags endpoint: replaced `checksum`, `checksum_version`, and `checksum_origin` fields with a single `checksums` object. This is a breaking change.
+* Resolved abandoned plugin versions retaining stale active install counts instead of dropping to 0.
+* Removed the `network` boolean column from `troy_package_metas`. Existing rows with `network = 1` are migrated to `network_activation = 'require'` on upgrade.
 
 = 1.6.1184 =
 

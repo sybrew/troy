@@ -211,6 +211,17 @@ function upgrade_from( $version ) {
 						"{$wpdb->prefix}{$table}",
 					) );
 				}
+
+				// Merge `network` boolean into `network_activation` dropdown.
+				$wpdb->query(
+					"UPDATE `{$wpdb->prefix}troy_package_metas`
+						SET `network_activation` = 'require'
+						WHERE `network` = 1",
+				);
+				$wpdb->query(
+					"ALTER TABLE `{$wpdb->prefix}troy_package_metas`
+						DROP COLUMN `network`",
+				);
 			}
 
 			// Register the server cache option.
@@ -769,7 +780,6 @@ function get_initial_db_schema_queries() {
 			`author_uri` varchar(191) NOT null,
 			`requires_wp` varchar(20) NOT null,
 			`requires_php` varchar(20) NOT null,
-			`network` boolean NOT null DEFAULT 0,
 			`install_timeout` int unsigned NOT null DEFAULT 30,
 			`deactivate_on_completion` boolean NOT null DEFAULT 1,
 			`delete_on_completion` boolean NOT null DEFAULT 0,

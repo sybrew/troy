@@ -149,12 +149,11 @@ final class Data {
 	 *     @type string author_uri               The author URI.
 	 *     @type string requires_wp              The required WordPress version.
 	 *     @type string requires_php             The required PHP version.
-	 *     @type int    network                  Whether network-wide activation.
 	 *     @type int    install_timeout          The installer timeout in seconds.
 	 *     @type int    deactivate_on_completion Whether to deactivate installer after completion.
 	 *     @type int    delete_on_completion     Whether to delete installer after completion.
 	 *     @type string notice_severity          The notice severity level.
-	 *     @type string network_activation       The network activation behavior. Accepts 'block' and 'activate-all'.
+	 *     @type string network_activation       The network activation behavior. Accepts 'block', 'activate-all', and 'require'.
 	 *     @type string plugins                  The plugins JSON.
 	 *     @type string themes                   The themes JSON.
 	 *     @type string created_at               The row creation timestamp.

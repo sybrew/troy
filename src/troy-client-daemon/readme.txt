@@ -14,6 +14,8 @@ To use it, place `troy-client-daemon.php` directly in `/wp-content/mu-plugins/` 
 
 == Changelog ==
 
+For full release notes, see [deploytroy.org/changelogs](https://deploytroy.org/changelogs/#troy-client-daemon).
+
 = 1.7.1184 =
 
 * Added an install lock to prevent concurrent or rapid-fire install attempts when Troy Client installation fails.

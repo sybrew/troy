@@ -215,6 +215,9 @@ final class Zip_Builder {
 
 							if ( $meta->requires_php )
 								$lines[] = 'Requires PHP: ' . API\Sanitize::docblock_content( $meta->requires_php );
+
+							if ( 'require' === $meta->network_activation )
+								$lines[] = 'Network: true';
 							break;
 
 						default:

@@ -123,17 +123,17 @@ final class Tags extends Base_Endpoint {
 				continue;
 
 			$tags[] = [
-				'version'          => $zip->version,
-				'zip_url'          => Plugins\Files::get_plugin_zip_url_by_slug(
+				'version'      => $zip->version,
+				'zip_url'      => Plugins\Files::get_plugin_zip_url_by_slug(
 					$slug,
 					$zip->version,
 				),
-				'file_size'        => (int) $zip->file_size,
-				'tested_wp'        => $zip->tested_wp,
-				'requires_wp'      => $zip->requires_wp,
-				'requires_php'     => $zip->requires_php,
-				'checksums'        => json_decode( $zip->checksums, true ),
-				'updated_at'       => $zip->updated_at,
+				'file_size'    => (int) $zip->file_size,
+				'tested_wp'    => $zip->tested_wp,
+				'requires_wp'  => $zip->requires_wp,
+				'requires_php' => $zip->requires_php,
+				'checksums'    => json_decode( $zip->checksums, true ),
+				'updated_at'   => $zip->updated_at,
 			];
 		}
 

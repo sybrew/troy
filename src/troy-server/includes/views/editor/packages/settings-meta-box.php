@@ -186,18 +186,19 @@ if ( ! $meta ) {
 		</td>
 	</tr>
 	<tr>
-		<th><label for=troy-server-package-network><?= \esc_html__( 'Network Activation', 'troy-server' ) ?></label></th>
+		<th><label for=troy-server-package-network-activation><?= \esc_html__( 'Network Activation', 'troy-server' ) ?></label></th>
 		<td>
-			<label>
-				<input
-					type=checkbox
-					id=troy-server-package-network
-					name=troy-server-package[network]
-					value=1
-					<?php \checked( $meta->network, 1 ); ?>
-				>
-				<?= \esc_html__( 'Force network-wide activation for multisite.', 'troy-server' ) ?>
-			</label>
+			<select
+				id=troy-server-package-network-activation
+				name="troy-server-package[network_activation]"
+			>
+				<option value=block <?php \selected( $meta->network_activation, 'block' ); ?>><?= \esc_html__( 'Block', 'troy-server' ) ?></option>
+				<option value=activate-all <?php \selected( $meta->network_activation, 'activate-all' ); ?>><?= \esc_html__( 'Activate All', 'troy-server' ) ?></option>
+				<option value=require <?php \selected( $meta->network_activation, 'require' ); ?>><?= \esc_html__( 'Require', 'troy-server' ) ?></option>
+			</select>
+			<p class=description>
+				<?= \esc_html__( 'Controls multisite behavior. Block prevents network activation. Activate All allows network activation, by then activating all plugins. Require makes network activation mandatory.', 'troy-server' ) ?>
+			</p>
 		</td>
 	</tr>
 </table>

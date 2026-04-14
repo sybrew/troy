@@ -113,7 +113,7 @@ includes/classes/packages/
 
 includes/classes/packages/cpt/
 	init.class.php                Registers Packages custom post type (non-public, admin-only)
-	list-view.class.php           Packages list table: disables quick edit, adds columns (slug, plugins, themes, download, composer); enqueues Composer modal on list screen
+	list-view.class.php           Packages list table: disables quick edit, adds columns (slug, network, version, plugins, themes, download, composer); enqueues Composer modal on list screen
 	store.class.php               Package save/update/trash/delete lifecycle, syncs CPT to custom tables, rebuilds ZIPs
 
 includes/classes/plugins/
@@ -158,11 +158,11 @@ includes/views/
 		tab-logs.php                Logs tab: integration sync history and log entries with refresh controls
 	editor/
 		packages/
-			advanced-meta-box.php   Advanced options: install timeout, deactivate/delete on completion, notice severity, network activation
-			composer-meta-box.php    Composer repository URL and setup guide button for the package editor sidebar
+			advanced-meta-box.php   Advanced options: install timeout, deactivate/delete on completion, notice severity
+			composer-meta-box.php   Composer repository URL and setup guide button for the package editor sidebar
 			download-meta-box.php   Package download URL display (or prompt to publish first)
 			plugins-meta-box.php    Checkbox list of plugins to include in package with per-plugin options
-			settings-meta-box.php   Package slug, server URL, general configuration
+			settings-meta-box.php   Package slug, server URL, network activation, general configuration
 			publish-checklist.php   Checklist in submit box: validates slug and plugin selection before publishing
 			themes-meta-box.php     Placeholder: "Theme support is coming soon"
 

@@ -64,6 +64,8 @@ Troy Client requires network activation on WordPress multisite installations.
 
 == Changelog ==
 
+For full release notes, see [deploytroy.org/changelogs](https://deploytroy.org/changelogs/#troy-client).
+
 = 1.7.1184 =
 
 * Added deactivation explanation link to plugin action links when Troy Client is protected from deactivation.

@@ -123,7 +123,7 @@ final class Package extends Base_Endpoint {
 				$package_name => [
 					[
 						'name'    => $package_name,
-						'version' => $package->version ?? '1.0.0',
+						'version' => $metas->version ?? '1.0.0',
 						'type'    => 'metapackage',
 						'require' => $require,
 					],
