@@ -87,7 +87,7 @@ final class Dependencies {
 
 		\add_filter(
 			'http_headers_useragent',
-			function ( $user_agent, $url ) use ( &$plugin_url, &$slug ) {
+			function ( $user_agent, $url = null ) use ( &$plugin_url, &$slug ) {
 				return $url === $plugin_url ? "Troy Dependencies/$slug" : $user_agent;
 			},
 			\PHP_INT_MAX,

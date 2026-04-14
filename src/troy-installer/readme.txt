@@ -38,6 +38,10 @@ You can either install the plugin via your WordPress dashboard or via FTP.
 
 == Changelog ==
 
+= 1.7.1184 =
+
+* Fixed `http_headers_useragent` callbacks crashing when third-party plugins apply the filter without the URL parameter.
+
 = 1.6.1184 =
 
 * Added full multisite activation support.

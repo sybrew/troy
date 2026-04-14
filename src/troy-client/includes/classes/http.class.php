@@ -63,49 +63,50 @@ final class HTTP {
 	public static function filter_request_args( $parsed_args, $url ) {
 
 		if (
-			   isset( $parsed_args['body'] )
-			&& false !== stripos( $url, 'api.wordpress.org/plugins/update-check' )
-		) {
-			$troy_plugins = get_troy_plugins();
+			   ! isset( $parsed_args['body'] )
+			|| false === stripos( $url, 'api.wordpress.org/plugins/update-check' )
+		)
+			return $parsed_args;
 
-			if ( ! empty( $parsed_args['body']['plugins'] ) ) {
-				$troy_plugin_files = array_keys( $troy_plugins );
+		$troy_plugins = get_troy_plugins();
 
-				// This list is obtained via \get_plugins().
-				$plugins = json_decode( $parsed_args['body']['plugins'], true );
+		if ( ! empty( $parsed_args['body']['plugins'] ) ) {
+			$troy_plugin_files = array_keys( $troy_plugins );
 
-				if ( isset( $plugins['plugins'] ) ) {
-					$plugins['plugins'] = array_diff_key( $plugins['plugins'], array_flip( $troy_plugin_files ) );
+			// This list is obtained via \get_plugins().
+			$plugins = json_decode( $parsed_args['body']['plugins'], true );
 
-					$troy_headers_keyed = array_flip( array_merge(
-						TROY_PLUGIN_HEADERS['repo'],
-						TROY_PLUGIN_HEADERS['dependencies'],
-					) );
+			if ( isset( $plugins['plugins'] ) ) {
+				$plugins['plugins'] = array_diff_key( $plugins['plugins'], array_flip( $troy_plugin_files ) );
 
-					foreach ( $plugins['plugins'] as &$header )
-						$header = array_diff_key( $header, $troy_headers_keyed );
-				}
+				$troy_headers_keyed = array_flip( array_merge(
+					TROY_PLUGIN_HEADERS['repo'],
+					TROY_PLUGIN_HEADERS['dependencies'],
+				) );
 
-				if ( isset( $plugins['active'] ) )
-					$plugins['active'] = array_diff( $plugins['active'], $troy_plugin_files );
-
-				// Let's not relegate to wp_json_encode().
-				$parsed_args['body']['plugins'] = json_encode( $plugins );
+				foreach ( $plugins['plugins'] as &$header )
+					$header = array_diff_key( $header, $troy_headers_keyed );
 			}
 
-			if ( ! empty( $parsed_args['body']['translations'] ) ) {
-				// This list is obtained via \wp_get_installed_translations(), which globbed a directory.
-				// Those files are only populated via the plugin update check, relying only on text-domains.
-				$translations = json_decode( $parsed_args['body']['translations'], true );
+			if ( isset( $plugins['active'] ) )
+				$plugins['active'] = array_diff( $plugins['active'], $troy_plugin_files );
 
-				$translations = array_diff_key(
-					$translations,
-					array_flip( array_column( $troy_plugins, 'textdomain' ) ),
-				);
+			// Let's not relegate to wp_json_encode().
+			$parsed_args['body']['plugins'] = json_encode( $plugins );
+		}
 
-				// Let's not relegate to wp_json_encode().
-				$parsed_args['body']['translations'] = json_encode( $translations );
-			}
+		if ( ! empty( $parsed_args['body']['translations'] ) ) {
+			// This list is obtained via \wp_get_installed_translations(), which globbed a directory.
+			// Those files are only populated via the plugin update check, relying only on text-domains.
+			$translations = json_decode( $parsed_args['body']['translations'], true );
+
+			$translations = array_diff_key(
+				$translations,
+				array_flip( array_column( $troy_plugins, 'textdomain' ) ),
+			);
+
+			// Let's not relegate to wp_json_encode().
+			$parsed_args['body']['translations'] = json_encode( $translations );
 		}
 
 		return $parsed_args;
@@ -117,14 +118,22 @@ final class HTTP {
 	 * This prevents WordPress from leaking the site URL in the User-Agent header
 	 * when communicating with Troy Servers.
 	 *
+	 * Note: The second parameter is required since WordPress 5.1. However, some
+	 * plugins apply this filter in their code without the second parameter, so
+	 * we need to make it optional for backward compatibility.
+	 *
 	 * @since 1.6.1184
+	 * @since 1.7.1184 The `$url` parameter is now optional and sends a deprecation notice to the provider.
 	 * @hook http_headers_useragent at \PHP_INT_MAX
 	 *
-	 * @param string $user_agent The default WordPress user agent.
-	 * @param string $url        The URL of the HTTP request.
+	 * @param string  $user_agent The default WordPress user agent.
+	 * @param ?string $url        The URL of the HTTP request.
 	 * @return string The filtered user agent.
 	 */
-	public static function filter_user_agent( $user_agent, $url ) {
+	public static function filter_user_agent( $user_agent, $url = null ) {
+
+		if ( empty( $url ) )
+			return 'DEPRECATION NOTICE / Your plugin is using the http_headers_useragent filter without the second parameter. This is required since WordPress 5.1. Fix it and this notice will go away and you will get a real user agent again. See GitHub issue Automattic/wordpress-activitypub/issues/3177. This notice is sent from Troy Client by Sybre Waaijer.';
 
 		$troy_user_agent = 'Troy Client/' . VERSION;
 

@@ -184,7 +184,7 @@ final class Protect_Client {
 		if ( \defined( 'Troy\Client\Daemon\ACTIVE' ) ) {
 			printf(
 				'<p><span class="dashicons dashicons-lock"></span> <strong>%s</strong></p>',
-				\esc_html( \__( 'Troy Client can not be deactivated.', 'troy-client' ) ),
+				\esc_html( \__( 'Troy Client cannot be deactivated.', 'troy-client' ) ),
 			);
 		} else {
 			$plugins = get_troy_plugins();
@@ -194,7 +194,7 @@ final class Protect_Client {
 				'<p><span class="dashicons dashicons-lock"></span> <strong>%s</strong></p>',
 				\esc_html( \wp_sprintf(
 					/* translators: %l = list of plugins */
-					\__( 'Troy Client can not be deactivated because the following plugins depend on Troy: %l.', 'troy-client' ),
+					\__( 'Troy Client cannot be deactivated because the following plugins depend on Troy: %l.', 'troy-client' ),
 					array_column( $plugins, 'name' ),
 				) ),
 			);

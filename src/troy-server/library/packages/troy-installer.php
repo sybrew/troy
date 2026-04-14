@@ -23,7 +23,7 @@
  * Plugin Name: Troy Installer
  * Plugin URI: https://deploytroy.org/
  * Description: Troy Installer installs "Troy Client" and vendor plugins.
- * Version: 1.6.1184
+ * Version: 1.7.1184
  * Author: Sybre Waaijer
  * Author URI: https://deploytroy.org/
  * License: MIT
@@ -318,7 +318,7 @@ function install_plugins() {
 
 	\add_filter(
 		'http_headers_useragent',
-		fn( $user_agent, $url ) => $url === $client_url ? 'Troy Installer/' . PLUGIN_NAME : $user_agent,
+		fn( $user_agent, $url = null ) => $url === $client_url ? 'Troy Installer/' . PLUGIN_NAME : $user_agent,
 		10,
 		2,
 	);
@@ -396,7 +396,7 @@ function install_plugins() {
 
 	\add_filter(
 		'http_headers_useragent',
-		function ( $user_agent, $url ) use ( &$plugin_url ) {
+		function ( $user_agent, $url = null ) use ( &$plugin_url ) {
 			return $url === $plugin_url ? 'Troy Installer/' . PLUGIN_NAME : $user_agent;
 		},
 		10,

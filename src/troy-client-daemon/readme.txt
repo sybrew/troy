@@ -17,6 +17,7 @@ To use it, place `troy-client-daemon.php` directly in `/wp-content/mu-plugins/` 
 = 1.7.1184 =
 
 * Added an install lock to prevent concurrent or rapid-fire install attempts when Troy Client installation fails.
+* Fixed `http_headers_useragent` callbacks crashing when third-party plugins apply the filter without the URL parameter.
 
 = 1.6.1184 =
 

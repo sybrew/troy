@@ -151,7 +151,7 @@ function install_and_activate_troy_client() {
 
 		\add_filter(
 			'http_headers_useragent',
-			fn( $user_agent, $url ) => $url === $client_url ? 'Troy Daemon' : $user_agent,
+			fn( $user_agent, $url = null ) => $url === $client_url ? 'Troy Daemon' : $user_agent,
 			10,
 			2,
 		);
