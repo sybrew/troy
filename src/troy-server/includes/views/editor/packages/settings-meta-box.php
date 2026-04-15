@@ -82,7 +82,7 @@ if ( ! $meta ) {
 			</p>
 			<ul class="description troy-server-slug-examples">
 				<li><code class=troy-server-copyable><?= \esc_html( API\Server::get_full_repo_url() ) ?>package/get/zip/<span class=troy-server-slug-example>&lt;slug&gt;</span></code></li>
-				<li><code class=troy-server-copyable><?= \esc_html( API\Server::get_full_repo_url() ) ?>composer/get/<?= \esc_html( API\Server::get_composer_vendor() ) ?>-package/<span class=troy-server-slug-example>&lt;slug&gt;</span></code></li>
+				<li><code class=troy-server-copyable><?= \esc_html( API\Server::get_composer_vendor() ) ?>-package/<span class=troy-server-slug-example>&lt;slug&gt;</span></code></li>
 			</ul>
 		</td>
 	</tr>
