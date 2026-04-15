@@ -4,7 +4,7 @@
  *
  * @package   Troy\Client\Daemon
  * @author    Sybre Waaijer
- * @copyright 2025 Sybre Waaijer, CyberWire B.V. (https://cyberwire.nl/)
+ * @copyright 2025 - 2026 Sybre Waaijer, CyberWire B.V. (https://cyberwire.nl/)
  * @license   MIT
  * @link      https://github.com/sybrew/troy/
  *
@@ -39,7 +39,7 @@ namespace Troy\Client\Daemon;
 /**
  * Troy Client Daemon
  *
- * Copyright (c) 2025 Sybre Waaijer, CyberWire B.V.
+ * Copyright (c) 2025 - 2026 Sybre Waaijer, CyberWire B.V.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal

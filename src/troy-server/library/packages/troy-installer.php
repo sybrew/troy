@@ -4,7 +4,7 @@
  *
  * @package   Troy\Installer
  * @author    Sybre Waaijer
- * @copyright 2025 Sybre Waaijer, CyberWire B.V. (https://cyberwire.nl/)
+ * @copyright 2025 - 2026 Sybre Waaijer, CyberWire B.V. (https://cyberwire.nl/)
  * @license   MIT
  * @link      https://github.com/sybrew/troy/
  *
@@ -47,7 +47,7 @@ namespace Troy\Installer; // @troy-package plugin-namespace
 /**
  * Troy Installer
  *
- * Copyright (c) 2025 Sybre Waaijer, CyberWire B.V.
+ * Copyright (c) 2025 - 2026 Sybre Waaijer, CyberWire B.V.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal

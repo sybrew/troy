@@ -24,7 +24,7 @@ use Troy\Server\Packages\{
 /**
  * Troy Server
  *
- * Copyright (c) 2025 Sybre Waaijer, CyberWire B.V.
+ * Copyright (c) 2025 - 2026 Sybre Waaijer, CyberWire B.V.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
