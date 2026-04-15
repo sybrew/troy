@@ -125,7 +125,7 @@ final class Utils {
 			// Limit this to 100 versions to avoid performance issues.
 			// At the moment of writing, this went back to 1617 days of releases.
 			$body = \wp_remote_retrieve_body( \wp_remote_get( // No safe: hardcoded github.com URL
-				'https://api.github.com/repos/WordPress/wordpress-develop/tags?per_page=100',
+				'https://api.github.com/repos/WordPress/WordPress/tags?per_page=100',
 				[
 					'timeout'    => 3,
 					'headers'    => [
@@ -147,7 +147,7 @@ final class Utils {
 				// This is for https://api.wordpress.org/core/stable-check/1.0/
 				// $versions_array = array_keys( json_decode( $body, true ) ?? [] );
 
-				// This is for https://api.github.com/repos/WordPress/wordpress-develop/tags
+				// This is for https://api.github.com/repos/WordPress/WordPress/tags
 				$versions_array = array_map(
 					fn( $tag ) => $tag['name'] ?? '',
 					json_decode( $body, true ) ?: [],

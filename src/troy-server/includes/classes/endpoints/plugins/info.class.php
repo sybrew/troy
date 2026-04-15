@@ -129,8 +129,9 @@ final class Info extends Base_Endpoint {
 				'author'          => $this->get_author_string( $meta_row->author_id ),
 				'contributors'    => $this->get_contributors_array( $contributors ),
 				'requires'        => $latest_zip->requires_wp ?? '',
-				'tested'          => $latest_zip->tested_wp
-					?? API\Utils::get_latest_public_wordpress_version( $latest_zip->requires_wp ?? '' ),
+				'tested'          => API\Utils::get_latest_public_wordpress_version(
+					$latest_zip->tested_wp ?? $latest_zip->requires_wp ?? '',
+				),
 				'requires_php'    => $latest_zip->requires_php ?? '',
 				'downloaded'      => (int) ( $stats_totals->downloads ?? 0 ),
 				'active_installs' => (int) ( $data_cache->active_install_count ?? 0 ),

@@ -123,6 +123,7 @@ For full release notes, see [deploytroy.org/changelogs](https://deploytroy.org/c
 * Improved the Setup tab's mobile layout by replacing inaccessible CSS-generated content labels with real DOM elements.
 * Changed checksum storage to a multi-algorithm JSON field, adding sha1 alongside sha256. Existing hashes are migrated on upgrade. Reprocess your ZIPs to register sha1.
 * Changed the tags endpoint: replaced `checksum`, `checksum_version`, and `checksum_origin` fields with a single `checksums` object. This is a breaking change.
+* Resolved the plugin info endpoint returning unresolved `tested` versions instead of the latest patch release.
 * Resolved abandoned plugin versions retaining stale active install counts instead of dropping to 0.
 * Removed the `network` boolean column from `troy_package_metas`. Existing rows with `network = 1` are migrated to `network_activation = 'require'` on upgrade.
 

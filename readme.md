@@ -33,6 +33,8 @@ To upload a plugin, simply create a new plugin post, fill in the required fields
 
 To automate plugin uploads, you can connect your GitHub repository or WordPress.org repository. Once connected, it will automatically fetch and process the latest release ZIP files for redistribution. You can configure it to fetch tags automatically by type (based on version affixes), or process them manually.
 
+Troy Server also serves as a Composer repository, so developers can manage plugins as Composer packages.
+
 Statistics are collected about the plugins registered on the server, such as the number of downloads, active installs, and more. The data is anonymized via rotating unique identifiers to protect user privacy. You'll be able to view the statistics via the admin interface.</small>
 
 The server provides an interface to generate a Troy Package, which is a ZIP file that contains a tiny installer plugin. It installs Troy Client and your selection of plugins and themes. This package can be distributed to your clients via a simple download link, allowing them to easily install and activate the Troy Client and its dependencies.
