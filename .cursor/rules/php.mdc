@@ -1,0 +1,7 @@
+---
+description: Troy PHP style, namespace rules, SQL formatting, and template formatting
+globs: **/*.php
+alwaysApply: false
+---
+
+Follow the PHP and WordPress rules in @.github/instructions/php.instructions.md when editing PHP, WordPress PHP, SQL-in-PHP, or mixed PHP and HTML template files.

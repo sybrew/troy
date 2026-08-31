@@ -1,0 +1,7 @@
+---
+description: Readme wording constraints, WordPress readme format, changelog prose style, and monorepo package-specificity requirements
+globs: README.md,readme.md,readme.txt
+alwaysApply: false
+---
+
+Follow the documentation rules in @.github/instructions/docs.instructions.md when editing README.md, readme.md, readme.txt, or other user-facing documentation.
