@@ -40,21 +40,33 @@ namespace Troy\Client;
 final class Headers {
 
 	/**
-	 * Whether the extra_plugin_headers filter has been applied.
+	 * Returns whether the default get_plugins() cache includes Troy headers.
 	 *
 	 * @since 0.0.1184
-	 * @var bool
-	 */
-	private static $filtered = false;
-
-	/**
-	 * Returns whether the extra_plugin_headers filter has been applied.
+	 * @since 1.8.1184 Now inspects the get_plugins() cache, not whether extra_plugin_headers has run.
+	 *                 See: https://core.trac.wordpress.org/ticket/66057.
 	 *
-	 * @since 0.0.1184
-	 * @return bool True if the filter has been applied, false otherwise.
+	 * @return bool True if the cached plugin data includes Troy headers.
 	 */
 	public static function is_filtered() {
-		return self::$filtered;
+
+		$cache = \wp_cache_get( 'plugins', 'plugins' );
+
+		// get_plugins( $plugin_folder = '' ) keys this by folder. '' is "all plugins".
+		// A non-empty $plugin_folder is a separate cold scan; it never reads from this entry.
+		if ( empty( $cache[''] ) )
+			return false;
+
+		return \array_key_exists( TROY_PLUGIN_HEADERS['repo'][0], reset( $cache[''] ) );
+	}
+
+	/**
+	 * Flushes the get_plugins() cache when it lacks Troy headers.
+	 *
+	 * @since 1.8.1184
+	 */
+	public static function flush_plugin_cache() {
+		self::is_filtered() or \wp_cache_delete( 'plugins', 'plugins' );
 	}
 
 	/**
@@ -70,10 +82,7 @@ final class Headers {
 	 * @return array The extra plugin headers.
 	 */
 	public static function register_plugin_headers( $headers ) {
-
-		self::$filtered = true;
-
-		// In PHP 8.1+ we can unpack string-keyed arrays.
+		// In PHP 8.1+, we can unpack string-keyed arrays.
 		return array_merge(
 			$headers,
 			TROY_PLUGIN_HEADERS['repo'],

@@ -12,7 +12,7 @@ Troy Client works by reading special plugin headers (`Troy:` and `Troy Dependenc
 
 With Troy Client, you can:
 
-* Receive automatic plugin updates from any Troy Server repository
+* Receive (automatic) plugin updates from any Troy Server repository
 * Automatically install and update plugin dependencies declared via Troy headers
 * Monitor repository communication status via the Site Health page
 * Filter Troy-enabled plugins from WordPress.org update requests
@@ -65,6 +65,10 @@ Troy Client requires network activation on WordPress multisite installations.
 == Changelog ==
 
 For full release notes, see [deploytroy.org/changelogs](https://deploytroy.org/changelogs/#troy-client).
+
+= 1.8.1184 =
+
+* Fixed Troy header detection when another plugin called `get_plugins()` too early ([WordPress #66057](https://core.trac.wordpress.org/ticket/66057)). Updates were skipped and requests went to WordPress.org instead.
 
 = 1.7.1184 =
 
