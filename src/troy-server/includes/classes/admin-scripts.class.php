@@ -47,14 +47,18 @@ final class Admin_Scripts {
 	 * Falls back to 'modern' for WP 7.0+ and 'fresh' for older versions
 	 * when the user has no explicit color preference.
 	 *
+	 * Version compares use wp_get_wp_version() for a faster, cached, unaltered
+	 * version when comparing against features.
+	 *
 	 * @since 1.6.1184
+	 * @since 1.8.1184 Uses wp_get_wp_version() for version comparison.
 	 *
 	 * @return string The admin color scheme slug.
 	 */
 	public static function get_admin_color_scheme() {
 		return \get_user_option( 'admin_color' ) ?: (
 			// WP 7.0+ 'modern', fallback to 'fresh' for older versions
-			\version_compare( \get_bloginfo( 'version' ), '7.0', '<' )
+			version_compare( \wp_get_wp_version(), '7.0', '<' )
 				? 'fresh'
 				: 'modern'
 		);
@@ -76,6 +80,9 @@ final class Admin_Scripts {
 	 *
 	 * @hook admin_init 10
 	 * @since 0.0.1184
+	 * @since 1.8.1184 Falls back to the modern scheme palette for WordPress 7.0+
+	 *                 compatibility, and duplicates the background into the accent
+	 *                 slot when a scheme lacks a fourth color.
 	 */
 	public static function register_main_scripts() {
 
@@ -133,9 +140,10 @@ final class Admin_Scripts {
 		$colors = $GLOBALS['_wp_admin_css_colors'][ self::get_admin_color_scheme() ]->colors ?? null;
 
 		if ( ! \is_array( $colors ) || \count( $colors ) < 3 )
-			$colors = [ '#222', '#333', '#0073aa', '#00a0d2' ];
+			$colors = [ '#1e1e1e', '#3858e9', '#7b90ff' ]; // Default to 'modern' scheme colors if something's wrong.
 
-		$colors[3] ??= $colors[2]; // Some schemes don't have an accent color, so we fallback to the regular color.
+		// When the scheme lacks a 4th color, duplicate the background into the accent slot, shifting the rest down by one.
+		isset( $colors[3] ) or array_unshift( $colors, $colors[0] );
 
 		\wp_add_inline_style(
 			'common',

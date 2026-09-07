@@ -111,6 +111,10 @@ For full release notes, see [deploytroy.org/changelogs](https://deploytroy.org/c
 = 1.8.1184 =
 
 * Added stack-trace redaction for GitHub personal access tokens and integration auth parameters.
+* Changed WordPress version checks to use `wp_get_wp_version()` for a faster, cached, and unaltered version when comparing against features.
+* Changed the admin theme color fallback to the modern scheme palette for WordPress 7.0+ compatibility.
+* Fixed admin color schemes lacking a fourth color for WordPress 7.0+ compatibility.
+
 = 1.7.1184 =
 
 * Added [Composer 2 repository support](https://deploytroy.org/docs/troy-server/composer/) for Bedrock and other Composer-managed WordPress sites.
