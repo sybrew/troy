@@ -113,6 +113,7 @@ For full release notes, see [deploytroy.org/changelogs](https://deploytroy.org/c
 * Added stack-trace redaction for GitHub personal access tokens and integration auth parameters.
 * Changed WordPress version checks to use `wp_get_wp_version()` for a faster, cached, and unaltered version when comparing against features.
 * Changed the admin theme color fallback to the modern scheme palette for WordPress 7.0+ compatibility.
+* Fixed plugin and package deletion moving storage to the graveyard inside the database transaction.
 * Fixed admin color schemes lacking a fourth color for WordPress 7.0+ compatibility.
 
 = 1.7.1184 =

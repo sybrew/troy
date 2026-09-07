@@ -75,6 +75,7 @@ final class Drop {
 	 * Removes a plugin from the server.
 	 *
 	 * @since 0.0.1184
+	 * @since 1.8.1184 Moves ZIP storage to the graveyard after the transaction commits.
 	 * @global \wpdb $wpdb
 	 *
 	 * @return bool Success status.
@@ -133,13 +134,13 @@ final class Drop {
 			);
 
 			$wpdb->query( 'COMMIT' );
-
-			Files::move_to_graveyard( $plugin_id );
-
-			return true;
 		} catch ( \Exception $e ) {
 			$wpdb->query( 'ROLLBACK' );
 			return false;
 		}
+
+		Files::move_to_graveyard( $plugin_id );
+
+		return true;
 	}
 }
