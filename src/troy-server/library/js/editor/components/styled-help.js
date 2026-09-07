@@ -27,7 +27,7 @@
 /**
  * @module troyServerEditorComponents
  * @description StyledHelp component for the Troy Server editor.
- * @since 0.6.1184
+ * @since 0.0.1184
  * @param {Object} wp The WordPress global wp object.
  */
 ( wp => {

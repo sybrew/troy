@@ -158,7 +158,7 @@
 	 *
 	 * @since 0.0.1184
 	 *
-	 * @param {Object}   props {
+	 * @param {Object} props {
 	 *     Component properties.
 	 *
 	 *     @param {string}   props.permalink        The current plugin permalink.

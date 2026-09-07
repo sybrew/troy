@@ -143,12 +143,11 @@ final class Router {
 
 			case str_starts_with( $request_path, 'composer/get/' ) && str_ends_with( $request_path, '.json' ):
 				// URL: composer/get/{vendor}-{type}/{slug}.json
-				// Composer's %package% places the full name in the URL. The vendor
-				// prefix is irrelevant (the domain identifies the server); only the
-				// type suffix (after last dash) and slug matter.
+				// Composer's %package% places the full name in the URL. The vendor prefix is irrelevant
+				// (the domain identifies the server); only the type suffix (after last dash) and slug matter.
 				$path_parts = array_values( array_filter( explode(
 					'/',
-					substr( $request_path, 13, -5 ),
+					substr( $request_path, 13, -5 ), // Remove 'composer/get/' prefix and '.json' suffix
 				) ) );
 
 				if ( \count( $path_parts ) >= 2 ) {

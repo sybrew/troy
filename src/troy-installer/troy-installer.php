@@ -3,6 +3,7 @@
  * Troy Installer
  *
  * @package   Troy\Installer
+ * @version   1.7.1184
  * @author    Sybre Waaijer
  * @copyright 2025 - 2026 Sybre Waaijer, CyberWire B.V. (https://cyberwire.nl/)
  * @license   MIT

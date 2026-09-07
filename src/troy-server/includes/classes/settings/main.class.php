@@ -105,7 +105,7 @@ final class Main {
 			self::SETTINGS_PAGE_SLUG,
 			[ __CLASS__, 'render_admin_menu' ],
 			// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions -- We want inline SVG here.
-			'data:image/svg+xml;base64,' . \base64_encode( self::get_icon_svg( $fill ) ),
+			'data:image/svg+xml;base64,' . base64_encode( self::get_icon_svg( $fill ) ),
 			3.1184,
 		);
 

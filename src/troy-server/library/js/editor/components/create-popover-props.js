@@ -27,7 +27,7 @@
 /**
  * @module troyServerEditorComponents
  * @description createPopoverProps utility for the Troy Server editor.
- * @since 0.6.1184
+ * @since 0.0.1184
  */
 ( () => {
 

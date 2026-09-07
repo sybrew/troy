@@ -27,7 +27,7 @@
 /**
  * @module troyServerEditorComponents
  * @description ImageUploadPopover and ImageUploadControl components for the Troy Server editor.
- * @since 0.6.1184
+ * @since 0.0.1184
  * @param {Object} wp The WordPress global wp object.
  */
 ( wp => {
@@ -71,7 +71,7 @@
 	 *
 	 * @since 0.0.1184
 	 *
-	 * @param {Object}   props {
+	 * @param {Object} props {
 	 *     Component properties.
 	 *
 	 *     @param {Function} props.onClose       Callback function to close the popover.
@@ -181,7 +181,7 @@
 	 *
 	 * @since 0.0.1184
 	 *
-	 * @param {Object}   props {
+	 * @param {Object} props {
 	 *     Component properties.
 	 *
 	 *     @param {string}   props.aspectRatio   The aspect ratio for the image preview.
