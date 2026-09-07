@@ -170,7 +170,7 @@ final class Utils {
 			}
 
 			if ( ! $api_versions ) {
-				// Fallback to the current WordPress version
+				// Fallback to the current (filterable) WordPress version.
 				$blog_version = \get_bloginfo( 'version' );
 				$api_versions = [
 					preg_replace( '/(\d+\.\d+).*/', '$1', $blog_version )

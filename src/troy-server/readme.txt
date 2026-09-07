@@ -95,7 +95,8 @@ Troy Server is not yet available on WordPress.org.
 
 * WordPress 6.8 or higher
 * PHP 8.4 or higher
-* MySQL 8.0.19 or higher
+* MySQL 8.0.19 or higher, or MariaDB 10.5 or higher
+* InnoDB storage engine for Troy Server tables
 * PHP extensions: `mbstring`, `ZipArchive`
 * HTTPS enabled
 
@@ -107,13 +108,16 @@ It's best to run Troy Server on a standalone WordPress instance. This can also b
 
 For full release notes, see [deploytroy.org/changelogs](https://deploytroy.org/changelogs/#troy-server).
 
+= 1.8.1184 =
+
+* Added stack-trace redaction for GitHub personal access tokens and integration auth parameters.
 = 1.7.1184 =
 
-* Added "Latest version" column to the plugin list view.
-* Added a plugin status guard that requires at least one released version before a plugin can be set to public, unlisted, or protected.
 * Added [Composer 2 repository support](https://deploytroy.org/docs/troy-server/composer/) for Bedrock and other Composer-managed WordPress sites.
 * Added a configurable [Composer vendor slug](https://deploytroy.org/docs/troy-server/composer/#vendor-slug) to the Setup tab, pre-filled from the site name at install time.
 * Added a Composer setup guide modal to the package list view and editor.
+* Added "Latest version" column to the plugin list view.
+* Added a plugin status guard that requires at least one released version before a plugin can be set to public, unlisted, or protected.
 * Added settings save to the Setup tab via REST with change detection.
 * Added live slug preview to the package editor showing the download URL and Composer package URL.
 * Added "Require" network activation option for packages. The legacy `network` column is migrated and dropped on upgrade.

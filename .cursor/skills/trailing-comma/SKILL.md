@@ -22,12 +22,12 @@ Put a trailing comma on multiline:
 
 Do **not** put a trailing comma on:
 
-- Function, method, closure, or `fn()` **parameter lists** (PHP 8.0)
+- Function, method, closure, or `fn()` **parameter lists** in PHP 7.4 packages (PHP 8.0 syntax)
 - Closure `use ( … )` lists (PHP 8.0)
 - `if (` / `elseif (` / `for (` / `foreach (` / `while (` / `switch (` / `catch (` conditions
 - Single-line calls or arrays
 
-`src/troy-server/**` is PHP 8.4+, but phpcs still uses the TSF 7.4 standard. Do not put trailing commas on parameter lists anywhere in this repo.
+`src/troy-server/**` is PHP 8.4+. Put a trailing comma on multiline parameter lists there, matching existing constructors. PHP 7.4 packages must not.
 
 ## JavaScript
 
@@ -55,7 +55,11 @@ bar(
 	'a' => 1,
 	'b' => 2,            // yes
 ];
-function f( $a, $b ) {}  // no — parameters (PHP 8.0)
+function f( $a, $b ) {}  // no — one line; PHP 7.4 packages: never on params
+function f(             // troy-server (PHP 8.4) multiline params: yes
+	$a,
+	$b,
+) {}
 use ( $c )               // no — closure use (PHP 8.0)
 if ( $a && $b ) {}       // no — condition
 ```

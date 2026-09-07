@@ -6,6 +6,7 @@ applyTo: "**/*.php"
 # PHP and WordPress Rules
 
 - Use PHP 8.4+ for `src/troy-server/**`. Use PHP 7.4+ for PHP files elsewhere in the repository.
+- Write PHP attributes inline on the symbol they annotate, for example `function foo( #[\SensitiveParameter] $x )`. Do not put attributes on their own line.
 - Use WordPress coding standards, except where this file narrows them.
 - Never add phpcs comments. That includes `phpcs:disable`, `phpcs:enable`, `phpcs:ignore`, `phpcs:set`, and any `-- phpcs:` annotation. Do not copy them from existing files into new or edited code.
 - Avoid functions `wp_sprintf`, except with `%l` lists, `wp_parse_url`, `wp_json_encode`, and `status_header`.

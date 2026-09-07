@@ -77,6 +77,7 @@ final class Store {
 	 * Tags must be updated separately using update_tags().
 	 *
 	 * @since 0.0.1184
+	 * @since 1.8.1184 Redacts $auth from PHP stack traces.
 	 *
 	 * @param int    $plugin_id    The plugin post ID.
 	 * @param string $mode         The integration mode.
@@ -104,7 +105,13 @@ final class Store {
 	 *    @type string $error   An error message if the connection failed.
 	 * }
 	 */
-	public static function connect( $plugin_id, $mode, $settings, $auth = null, $auto_process = 'all' ) {
+	public static function connect(
+		$plugin_id,
+		$mode,
+		$settings,
+		#[\SensitiveParameter] $auth = null,
+		$auto_process = 'all',
+	) {
 
 		if ( ! $plugin_id )
 			return [

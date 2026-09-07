@@ -126,6 +126,7 @@ final class GitHub {
 	 * - 'tag' otherwise
 	 *
 	 * @since 0.0.1184
+	 * @since 1.8.1184 Redacts $pat from PHP stack traces.
 	 *
 	 * @param string $owner_repo Repository in owner/repo format.
 	 * @param string $pat        Optional GitHub PAT (personal access token) for private repos.
@@ -137,7 +138,7 @@ final class GitHub {
 	 *     @type string $revision_id  The revision ID for the tag.
 	 * }
 	 */
-	public static function find_tags( $owner_repo, $pat = '' ) {
+	public static function find_tags( $owner_repo, #[\SensitiveParameter] $pat = '' ) {
 
 		if ( ! preg_match( '/^([\w\.\-]+)\/([\w\.\-]+)$/', $owner_repo ) )
 			return new \WP_Error(
@@ -175,12 +176,13 @@ final class GitHub {
 	 * use find_tags() for sanitized tags.
 	 *
 	 * @since 0.0.1184
+	 * @since 1.8.1184 Redacts $pat from PHP stack traces.
 	 *
 	 * @param string $owner_repo Repository in owner/repo format.
 	 * @param string $pat        Optional GitHub PAT (personal access token) for private repos.
 	 * @return array|\WP_Error Response data or error.
 	 */
-	public static function get_repo_tags( $owner_repo, $pat = '' ) {
+	public static function get_repo_tags( $owner_repo, #[\SensitiveParameter] $pat = '' ) {
 
 		$response = \wp_remote_get( // No safe: hardcoded github.com URL
 			"https://api.github.com/repos/$owner_repo/tags?per_page=30&page=1",
