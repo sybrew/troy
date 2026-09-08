@@ -56,6 +56,17 @@ final class Server {
 	}
 
 	/**
+	 * Determines whether the database is blocked.
+	 *
+	 * @since 1.8.1184
+	 *
+	 * @return bool True when a database failure is recorded.
+	 */
+	public static function is_database_blocked() {
+		return (bool) \get_option( 'troy_server_database_block' );
+	}
+
+	/**
 	 * Returns this server's repository URL in bare format.
 	 *
 	 * Returns a stripped format (domain/path only) for consistent storage and comparison.

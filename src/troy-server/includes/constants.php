@@ -82,6 +82,11 @@ const REST_NS = [
 		'base'       => 'settings',
 		'access_cap' => 'manage_options',
 	],
+	'notices'              => [
+		'namespace'  => 'troy-server/v1',
+		'base'       => 'notices',
+		'access_cap' => 'manage_options',
+	],
 ];
 
 /**

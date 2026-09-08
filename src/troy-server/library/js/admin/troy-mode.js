@@ -159,7 +159,7 @@ window.troyServerMode = ( () => {
 			e => {
 				e.preventDefault();
 				toggle();
-			}
+			},
 		);
 
 		toolbar.append( li );

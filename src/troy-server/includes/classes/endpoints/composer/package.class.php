@@ -84,41 +84,41 @@ final class Package extends Base_Endpoint {
 			case 'GET':
 				break;
 			case 'OPTIONS':
-				$this->send_preflight_response( 'GET, OPTIONS' );
+				API\Response::send_preflight_response( 'GET, OPTIONS' );
 				// No break. send_preflight_response() exits.
 			default:
-				$this->send_error( 'Method not allowed', 405 );
+				API\Response::send_error( 'Method not allowed', 405 );
 		}
 
 		$slug = API\Sanitize::slug( $this->slug );
 
 		if ( ! $slug )
-			$this->send_error( 'Package not found', 404 );
+			API\Response::send_error( 'Package not found', 404 );
 
 		$package_id = Package_Data::get_package_id_by_slug( $slug );
 
 		if ( ! $package_id )
-			$this->send_error( 'Package not found', 404 );
+			API\Response::send_error( 'Package not found', 404 );
 
 		$package_data = new Package_Data( $package_id );
 		$package      = $package_data->get_packages_row();
 
 		if ( ! $package || 'active' !== $package->status )
-			$this->send_error( 'Package not found', 404 );
+			API\Response::send_error( 'Package not found', 404 );
 
 		$metas = $package_data->get_metas_row();
 
 		if ( ! $metas || empty( $metas->plugins ) )
-			$this->send_error( 'Package not found', 404 );
+			API\Response::send_error( 'Package not found', 404 );
 
 		$vendor       = API\Sanitize::slug( $this->vendor );
 		$package_name = "$vendor/$slug";
 		$require      = $this->build_require( $metas->plugins );
 
 		if ( empty( $require ) )
-			$this->send_error( 'Package not found', 404 );
+			API\Response::send_error( 'Package not found', 404 );
 
-		$this->send_json_response( [
+		API\Response::send_response( [
 			'packages' => [
 				$package_name => [
 					[

@@ -8,6 +8,8 @@ namespace Troy\Server\Endpoints;
 
 \defined( 'Troy\Server\ABSPATH' ) or die;
 
+use Troy\Server\API;
+
 /**
  * Troy Server
  *
@@ -53,6 +55,7 @@ final class Router {
 	 *
 	 * @hook init 10
 	 * @since 0.0.1184
+	 * @since 1.8.1184 Sends HTTP 503 when database install or update is blocked.
 	 */
 	public static function handle_api_requests() {
 
@@ -74,55 +77,55 @@ final class Router {
 		// phpcs:disable WordPress.Security.NonceVerification -- Public API, no nonce needed.
 		switch ( true ) {
 			case 'ping' === $request_path:
-				new Ping()->handle_request();
+				self::serve( new Ping() );
 				break;
 
 			case 'plugin/get/updates' === $request_path:
-				new Plugins\Updates()->handle_request();
+				self::serve( new Plugins\Updates() );
 				break;
 
 			case 'plugin/get/info' === $request_path:
-				new Plugins\Info()->handle_request();
+				self::serve( new Plugins\Info() );
 				break;
 
 			case 'plugin/get/stats' === $request_path:
-				new Plugins\Stats()->handle_request();
+				self::serve( new Plugins\Stats() );
 				break;
 
 			case str_starts_with( $request_path, 'plugin/get/stats/' ):
 				// Filter duplicated slashes and reset indexes.
 				$path_parts = array_values( array_filter( explode( '/', $request_path ) ) );
 
-				if ( \count( $path_parts ) >= 4 ) {
-					new Plugins\Stats(
+				if ( \count( $path_parts ) >= 4 )
+					self::serve( new Plugins\Stats(
 						$path_parts[3], // slug
-					)->handle_request();
-				}
+					) );
+
 				break;
 
 			case str_starts_with( $request_path, 'plugin/get/tags/' ):
 				// Filter duplicated slashes and reset indexes.
 				$path_parts = array_values( array_filter( explode( '/', $request_path ) ) );
 
-				if ( \count( $path_parts ) >= 4 ) {
-					new Plugins\Tags(
+				if ( \count( $path_parts ) >= 4 )
+					self::serve( new Plugins\Tags(
 						$path_parts[3], // slug
 						! empty( $_GET['include_beta'] ),
 						$_GET['limit'] ?? 100,
-					)->handle_request();
-				}
+					) );
+
 				break;
 
 			case str_starts_with( $request_path, 'plugin/get/zip/' ):
 				// Filter duplicated slashes and reset indexes.
 				$path_parts = array_values( array_filter( explode( '/', $request_path ) ) );
 
-				if ( \count( $path_parts ) >= 4 ) {
-					new Plugins\Download(
+				if ( \count( $path_parts ) >= 4 )
+					self::serve( new Plugins\Download(
 						$path_parts[3], // slug
 						( $path_parts[4] ?? null ) ?: 'latest', // version
-					)->handle_request();
-				}
+					) );
+
 				break;
 
 			case str_starts_with( $request_path, 'package/get/zip/' ):
@@ -130,15 +133,15 @@ final class Router {
 				// Filter duplicated slashes and reset indexes.
 				$path_parts = array_values( array_filter( explode( '/', $request_path ) ) );
 
-				if ( \count( $path_parts ) >= 4 ) {
-					new Packages\Download(
+				if ( \count( $path_parts ) >= 4 )
+					self::serve( new Packages\Download(
 						$path_parts[3], // slug
-					)->handle_request();
-				}
+					) );
+
 				break;
 
 			case 'composer/get/packages.json' === $request_path:
-				new Composer\Composer()->handle_request();
+				self::serve( new Composer\Composer() );
 				break;
 
 			case str_starts_with( $request_path, 'composer/get/' ) && str_ends_with( $request_path, '.json' ):
@@ -155,16 +158,16 @@ final class Router {
 
 					switch ( $type ) {
 						case 'plugin':
-							new Composer\Plugin(
+							self::serve( new Composer\Plugin(
 								$path_parts[0], // vendor-type
 								$path_parts[1], // slug
-							)->handle_request();
+							) );
 							break;
 						case 'package':
-							new Composer\Package(
+							self::serve( new Composer\Package(
 								$path_parts[0], // vendor-type
 								$path_parts[1], // slug
-							)->handle_request();
+							) );
 							break;
 						// TODO case 'theme': add Composer\Theme endpoint.
 					}
@@ -175,5 +178,20 @@ final class Router {
 				// Not a Troy API endpoint, let WordPress handle it
 		}
 		// phpcs:enable WordPress.Security.NonceVerification
+	}
+
+	/**
+	 * Dispatches an endpoint, or sends HTTP 503 when the database is blocked.
+	 *
+	 * @since 1.8.1184
+	 *
+	 * @param Base_Endpoint $endpoint The matched endpoint.
+	 */
+	private static function serve( $endpoint ) {
+
+		if ( API\Server::is_database_blocked() )
+			API\Response::send_error( 'Service Unavailable', 503 );
+
+		$endpoint->handle_request();
 	}
 }

@@ -84,21 +84,21 @@ final class Plugin extends Base_Endpoint {
 			case 'GET':
 				break;
 			case 'OPTIONS':
-				$this->send_preflight_response( 'GET, OPTIONS' );
+				API\Response::send_preflight_response( 'GET, OPTIONS' );
 				// No break. send_preflight_response() exits.
 			default:
-				$this->send_error( 'Method not allowed', 405 );
+				API\Response::send_error( 'Method not allowed', 405 );
 		}
 
 		$slug = API\Sanitize::slug( $this->slug );
 
 		if ( ! $slug )
-			$this->send_error( 'Plugin not found', 404 );
+			API\Response::send_error( 'Plugin not found', 404 );
 
 		$plugin_id = API\Plugin::get_plugin_id_by_slug( $slug );
 
 		if ( ! $plugin_id )
-			$this->send_error( 'Plugin not found', 404 );
+			API\Response::send_error( 'Plugin not found', 404 );
 
 		$data = new Data( $plugin_id );
 
@@ -107,18 +107,18 @@ final class Plugin extends Base_Endpoint {
 			case 'unlisted':
 				break;
 			default:
-				$this->send_error( 'Plugin not found', 404 );
+				API\Response::send_error( 'Plugin not found', 404 );
 		}
 
 		$vendor   = API\Sanitize::slug( $this->vendor );
 		$versions = $this->build_versions( $slug, $data, $vendor );
 
 		if ( empty( $versions ) )
-			$this->send_error( 'Plugin not found', 404 );
+			API\Response::send_error( 'Plugin not found', 404 );
 
 		$package_name = "$vendor/$slug";
 
-		$this->send_json_response( [
+		API\Response::send_response( [
 			'packages' => [ $package_name => $versions ],
 		] );
 	}

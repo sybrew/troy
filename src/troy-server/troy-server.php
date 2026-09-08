@@ -16,7 +16,7 @@
  * Plugin Name: Troy Server
  * Plugin URI: https://deploytroy.org/docs/troy-server/
  * Description: Troy Server allows you to distribute WordPress plugins from your independent update repository.
- * Version: 1.8.1184-dev-3
+ * Version: 1.8.1184-dev-4
  *
  * Author: Sybre Waaijer
  * Author URI: https://deploytroy.org/
@@ -137,7 +137,7 @@ require ABSPATH . 'bootstrap/load.php';
 API\Server::get_db_version() !== DB_VERSION
 	and require ABSPATH . 'includes/upgrade.php';
 
-if ( \is_admin() )
-	require ABSPATH . 'bootstrap/hook-admin.php';
+\is_admin()
+	and require ABSPATH . 'bootstrap/hook-admin.php';
 
 require ABSPATH . 'bootstrap/hook.php';

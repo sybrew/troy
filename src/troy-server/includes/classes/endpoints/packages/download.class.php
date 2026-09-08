@@ -73,44 +73,44 @@ final class Download extends Base_Endpoint {
 			case 'GET':
 				break;
 			case 'OPTIONS':
-				$this->send_preflight_response( 'GET, OPTIONS' );
+				API\Response::send_preflight_response( 'GET, OPTIONS' );
 				// No break. send_preflight_response() exits.
 			default:
-				$this->send_error( 'Method not allowed', 405 );
+				API\Response::send_error( 'Method not allowed', 405 );
 		}
 
 		$slug = $this->slug;
 
 		// Validate required parameter
 		if ( ! $slug )
-			$this->send_error( 'Missing required parameter: slug', 400 );
+			API\Response::send_error( 'Missing required parameter: slug', 400 );
 
 		// Sanitize slug parameter
 		$slug = API\Sanitize::slug( $slug );
 
 		if ( ! $slug )
-			$this->send_error( 'Invalid slug', 400 );
+			API\Response::send_error( 'Invalid slug', 400 );
 
 		$package_id = Data::get_package_id_by_slug( $slug );
 
 		if ( ! $package_id )
-			$this->send_error( 'Package not found', 404 );
+			API\Response::send_error( 'Package not found', 404 );
 
 		$package = new Data( $package_id )->get_packages_row();
 
 		if ( ! $package )
-			$this->send_error( 'Package not found', 404 );
+			API\Response::send_error( 'Package not found', 404 );
 
 		// Check package status
 		if ( 'active' !== $package->status )
-			$this->send_error( 'Package not available', 403 );
+			API\Response::send_error( 'Package not available', 403 );
 
 		// Get ZIP file path
 		$zip_file = Files::get_package_zip_file_path( $package_id, $slug );
 
 		// phpcs:ignore TSF.Performance -- file must be loaded from disk to stream
 		if ( ! \file_exists( $zip_file ) )
-			$this->send_error( 'Package file not found', 404 );
+			API\Response::send_error( 'Package file not found', 404 );
 
 		// Record download stats
 		$this->record_download_stats(
@@ -164,9 +164,7 @@ final class Download extends Base_Endpoint {
 		// phpcs:ignore WordPress.WP.AlternativeFunctions -- file streaming requires native functions
 		$file_size = \filesize( $file_path );
 
-		// Clear any existing output buffers
-		while ( \ob_get_level() )
-			\ob_end_clean();
+		API\Response::clean_response_header();
 
 		// Set headers
 		\header( 'Content-Type: application/zip' );

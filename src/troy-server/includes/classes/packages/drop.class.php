@@ -75,7 +75,7 @@ final class Drop {
 	 * Removes a package from the server.
 	 *
 	 * @since 0.0.1184
-	 * @since 1.8.1184 Moves storage to the graveyard after the transaction commits.
+	 * @since 1.8.1184 Moves package to the graveyard after the transaction commits.
 	 * @global \wpdb $wpdb
 	 *
 	 * @return bool Success status.

@@ -86,10 +86,10 @@ final class Download extends Base_Endpoint {
 			case 'GET':
 				break;
 			case 'OPTIONS':
-				$this->send_preflight_response( 'GET, OPTIONS' );
+				API\Response::send_preflight_response( 'GET, OPTIONS' );
 				// No break. send_preflight_response() exits.
 			default:
-				$this->send_error( 'Method not allowed', 405 );
+				API\Response::send_error( 'Method not allowed', 405 );
 		}
 
 		$slug    = $this->slug;
@@ -97,18 +97,18 @@ final class Download extends Base_Endpoint {
 
 		// Validate required parameter (consistent with other endpoints)
 		if ( ! $slug )
-			$this->send_error( 'Missing required parameter: slug', 400 );
+			API\Response::send_error( 'Missing required parameter: slug', 400 );
 
 		// Sanitize slug parameter
 		$slug = API\Sanitize::slug( $slug );
 
 		if ( ! $slug )
-			$this->send_error( 'Invalid slug', 400 );
+			API\Response::send_error( 'Invalid slug', 400 );
 
 		$plugin_id = API\Plugin::get_plugin_id_by_slug( $slug );
 
 		if ( ! $plugin_id )
-			$this->send_error( 'Plugin not found', 404 );
+			API\Response::send_error( 'Plugin not found', 404 );
 
 		try {
 			$data = new Data(
@@ -128,29 +128,29 @@ final class Download extends Base_Endpoint {
 				case 'pending':
 				case 'disabled':
 				default:
-					$this->send_error( 'Plugin not available for download', 403 );
+					API\Response::send_error( 'Plugin not available for download', 403 );
 			}
 
 			// This is sanitized with the database; overwrite if needed.
 			$version = $data->plugin_version;
 
 			if ( ! $version )
-				$this->send_error( 'No compatible version found', 404 );
+				API\Response::send_error( 'No compatible version found', 404 );
 
 			$zip_data = $data->get_zips_row();
 
 			if ( ! $zip_data )
-				$this->send_error( 'Plugin data not found', 404 );
+				API\Response::send_error( 'Plugin data not found', 404 );
 
 			$zip_file_path = Files::get_plugin_zip_file_path( $plugin_id, $version );
 
 			// phpcs:ignore TSF.Performance.Functions.PHP -- Required for file validation
 			if ( ! file_exists( $zip_file_path ) )
-				$this->send_error( 'Plugin file not found', 404 );
+				API\Response::send_error( 'Plugin file not found', 404 );
 
 			$this->record_download_stats( $plugin_id, $version );
 
-			$this->clean_response_header();
+			API\Response::clean_response_header();
 
 			$filename = \sanitize_file_name( "{$slug}-{$version}.zip" );
 
@@ -160,7 +160,7 @@ final class Download extends Base_Endpoint {
 			header( "Content-Disposition: attachment; filename=\"{$filename}\"" );
 			header( "Content-Length: {$zip_data->file_size}" );
 			header( 'Cache-Control: no-cache, must-revalidate' );
-			header( 'Expires: Mon, 26 Jul 1997 05:00:00 GMT' );
+			header( 'Expires: Mon, 13 Jan 2025 00:29:21 GMT' );
 
 			// phpcs:ignore WordPress.WP.AlternativeFunctions, TSF.Performance.Functions.PHP -- Required for file streaming
 			readfile( $zip_file_path );
@@ -174,7 +174,7 @@ final class Download extends Base_Endpoint {
 				$e->getMessage(),
 			) );
 
-			$this->send_error( 'Internal server error', 500 );
+			API\Response::send_error( 'Internal server error', 500 );
 		}
 	}
 

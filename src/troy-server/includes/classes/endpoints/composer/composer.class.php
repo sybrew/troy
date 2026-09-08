@@ -72,16 +72,16 @@ final class Composer extends Base_Endpoint {
 			case 'GET':
 				break;
 			case 'OPTIONS':
-				$this->send_preflight_response( 'GET, OPTIONS' );
+				API\Response::send_preflight_response( 'GET, OPTIONS' );
 				// No break. send_preflight_response() exits.
 			default:
-				$this->send_error( 'Method not allowed', 405 );
+				API\Response::send_error( 'Method not allowed', 405 );
 		}
 
 		$vendor = API\Server::get_composer_vendor();
 
 		// TODO: Add "$vendor-theme/*" pattern when theme endpoints are implemented.
-		$this->send_json_response( [
+		API\Response::send_response( [
 			'packages'                   => (object) [],
 			'metadata-url'               => '/composer/get/%package%.json',
 			'available-package-patterns' => [

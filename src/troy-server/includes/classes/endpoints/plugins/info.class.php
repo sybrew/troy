@@ -60,20 +60,20 @@ final class Info extends Base_Endpoint {
 			case 'POST':
 				break;
 			case 'OPTIONS':
-				$this->send_preflight_response( 'POST, OPTIONS' );
+				API\Response::send_preflight_response( 'POST, OPTIONS' );
 				// No break. send_preflight_response() exits.
 			default:
-				$this->send_error( 'Method not allowed', 405 );
+				API\Response::send_error( 'Method not allowed', 405 );
 		}
 
 		// phpcs:ignore TSF.Performance -- This read a stream, not a file.
 		$input = json_decode( file_get_contents( 'php://input' ), true );
 
 		if ( ! \is_array( $input ) )
-			$this->send_error( 'Invalid JSON input', 400 );
+			API\Response::send_error( 'Invalid JSON input', 400 );
 
 		if ( empty( $input['slug'] ) )
-			$this->send_error( 'Missing required parameter: slug', 400 );
+			API\Response::send_error( 'Missing required parameter: slug', 400 );
 
 		$slug   = API\Sanitize::slug( $input['slug'] );
 		$fields = (array) ( $input['fields'] ?? [] );
@@ -82,12 +82,12 @@ final class Info extends Base_Endpoint {
 
 		// Additional validation for slug format
 		if ( ! $slug )
-			$this->send_error( 'Invalid slug', 400 );
+			API\Response::send_error( 'Invalid slug', 400 );
 
 		$plugin_id = API\Plugin::get_plugin_id_by_slug( $slug );
 
 		if ( ! $plugin_id )
-			$this->send_error( 'Plugin not found', 404 );
+			API\Response::send_error( 'Plugin not found', 404 );
 
 		try {
 			$data = new Data( $plugin_id, locale: $locale );
@@ -96,7 +96,7 @@ final class Info extends Base_Endpoint {
 			$meta_row   = $data->get_metas_row();
 
 			if ( ! $plugin_row || ! $meta_row )
-				$this->send_error( 'Plugin data not available', 404 );
+				API\Response::send_error( 'Plugin data not available', 404 );
 
 			// Check plugin status - only serve info for public/unlisted plugins
 			switch ( $plugin_row->status ) {
@@ -106,12 +106,12 @@ final class Info extends Base_Endpoint {
 					break;
 				// TODO: Implement conditional listing.
 				// case 'protected':
-				// 	$this->send_error( 'Plugin is protected', 401 );
+				// 	API\Response::send_error( 'Plugin is protected', 401 );
 				// 	break;
 				case 'pending':
 				case 'disabled':
 				default:
-					$this->send_error( 'Plugin not available', 403 );
+					API\Response::send_error( 'Plugin not available', 403 );
 			}
 
 			$info_row     = $data->get_infos_row();
@@ -170,10 +170,10 @@ final class Info extends Base_Endpoint {
 			// Record plugin info request stats
 			$this->record_info_request_stats( $plugin_id, $version, $locale, $screen );
 
-			$this->send_json_response( $response );
+			API\Response::send_response( $response );
 
 		} catch ( \Exception $e ) {
-			$this->send_error(
+			API\Response::send_error(
 				\sprintf(
 					/* translators: %s: Error message */
 					\__( 'Failed to get plugin information: %s', 'troy-server' ),

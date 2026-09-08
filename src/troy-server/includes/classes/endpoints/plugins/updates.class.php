@@ -61,17 +61,17 @@ final class Updates extends Base_Endpoint {
 			case 'POST':
 				break;
 			case 'OPTIONS':
-				$this->send_preflight_response( 'POST, OPTIONS' );
+				API\Response::send_preflight_response( 'POST, OPTIONS' );
 				// No break. send_preflight_response() exits.
 			default:
-				$this->send_error( 'Method not allowed', 405 );
+				API\Response::send_error( 'Method not allowed', 405 );
 		}
 
 		// phpcs:ignore TSF.Performance -- This read a stream, not a file.
 		$input = json_decode( file_get_contents( 'php://input' ), true );
 
 		if ( ! \is_array( $input ) )
-			$this->send_error( 'Invalid JSON input', 400 );
+			API\Response::send_error( 'Invalid JSON input', 400 );
 
 		$active_plugins   = (array) ( $input['active_plugins'] ?? [] );
 		$inactive_plugins = (array) ( $input['inactive_plugins'] ?? [] );
@@ -208,7 +208,7 @@ final class Updates extends Base_Endpoint {
 			}
 		}
 
-		$this->send_json_response( $response );
+		API\Response::send_response( $response );
 	}
 
 	/**

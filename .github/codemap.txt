@@ -75,15 +75,15 @@ composer.json                   Composer config: wordpress-plugin type, PHP ^8.4
 phpcs.xml                       Plugin-specific PHPCS overrides
 
 bootstrap/
-	hook.php                      Front-facing hooks: cron, CPT registration, REST routes, endpoint routing, stats, integrations, packages
-	hook-admin.php                Admin-only hooks: scripts, menu reorder, plugin row meta, settings pages, editor assets, list-view columns
+	hook.php                      Front-facing hooks: cron, CPT registration, REST routes, endpoint routing, stats, integrations, packages; public API and notice-dismiss REST stay registered when the database is blocked
+	hook-admin.php                Admin-only hooks: persistent notices, notice-dismiss script, scripts, menu reorder, plugin row meta, settings pages, editor assets, list-view columns; skips non-notice hooks when the database is blocked
 	load.php                      PSR-4 class autoloader for Troy\Server\, wires activation/deactivation handlers
 	on-plugin-activation.php      Sets options autoload flags on activation
 	on-plugin-deactivation.php    Disables options autoload, removes all cron jobs on deactivation
 
 includes/
 	constants.php                 Plugin constants: PLUGINS_CPT, PACKAGES_CPT, REST_NS, stats batch size, epoch delay
-	upgrade.php                   Database migration system with locking, version tracking, upgrade/downgrade paths, schema management
+	upgrade.php                   Database migration system with locking, version tracking, upgrade/downgrade paths, schema management, database block on failed DDL
 
 includes/classes/
 	admin-menu.class.php          Reorders WP admin menu to position Troy CPTs at custom positions (3.1184x)
@@ -95,18 +95,22 @@ includes/classes/
 	template.class.php            Secure view template loader using secret token to prevent unauthorized inclusion
 	zip-extractor.class.php       Extracts plugin/theme ZIPs to temp storage with timeout and cleanup via cron
 
+includes/classes/admin/notice/
+	persistent.class.php          Persistent dismissible admin notices stored in server cache; REST DELETE troy-server/v1/notices/{key}
+
 includes/classes/api/
 	info.class.php                Static reference data: locales, WP versions, license types, categories
 	package.class.php             Package lookup: get package ID by slug from custom tables
 	plugin.class.php              Plugin lookup: get plugin ID by slug from custom tables
+	response.class.php            Public API HTTP responses: JSON send_response/send_error, CORS preflight, output-buffer cleanup
 	sanitize.class.php            Sanitization for SemVer strings, URLs, slugs, plugin/package data
-	server.class.php              Server-level API: DB version retrieval, repository URL formatting, site slug, Composer vendor (delegates to Settings\Data)
+	server.class.php              Server-level API: DB version retrieval, database-block state, repository URL formatting, site slug, Composer vendor (delegates to Settings\Data)
 	slug.class.php                Slug conflict detection and resolution across plugins/packages tables
 	utils.class.php               Epoch calculation for UUIDs, latest version resolution with type priority
 
 includes/classes/endpoints/
-	base-endpoint.class.php       Abstract base for public API endpoints: response helpers, clean headers, CORS
-	router.class.php              URL router: parses REQUEST_URI at init, dispatches to endpoints, bypasses WP query
+	base-endpoint.class.php       Abstract base for public API endpoints: request handler contract, client UUID parsing; deprecated response wrappers
+	router.class.php              URL router: parses REQUEST_URI at init, dispatches to endpoints, bypasses WP query; HTTP 503 JSON when the database is blocked
 	ping.class.php                Health check endpoint for Troy Client connectivity verification
 
 includes/classes/endpoints/composer/
@@ -178,6 +182,8 @@ includes/classes/themes/
 	(empty, theme support planned)
 
 includes/views/
+	notice/
+		persistent.php            Persistent admin notice markup
 	packages/
 		composer-modal.php      Shared Composer setup modal HTML (used on both list view and editor screens)
 	settings/
@@ -204,7 +210,8 @@ library/js/packages/
 	composer-modal.js             Composer setup modal: fetches snippet data via REST, renders step-by-step guide with copyable blocks
 
 library/js/admin/
-	troy-mode.js                  Troy Mode toggle: hides non-essential WP admin menu items, persists via user meta
+	troy-mode.js                  Troy Mode toggle: hides non-essential WP admin menu items, persists via localStorage
+	notice-dismiss.js             Persistent notice dismiss: animates out and DELETE via REST; troyServerNotices.dismiss API
 
 library/js/settings/
 	main.js                       Settings page: tab switching with smooth navigation

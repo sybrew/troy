@@ -77,12 +77,12 @@ final class Stats extends Base_Endpoint {
 				$slug = API\Sanitize::slug( $this->slug ?? '' );
 
 				if ( ! $slug )
-					$this->send_error( 'Invalid slug', 400 );
+					API\Response::send_error( 'Invalid slug', 400 );
 
 				$plugin_id = API\Plugin::get_plugin_id_by_slug( $slug );
 
 				if ( ! $plugin_id )
-					$this->send_error( 'Plugin not found', 404 );
+					API\Response::send_error( 'Plugin not found', 404 );
 
 				$data = new Plugins\Data( $plugin_id );
 
@@ -96,13 +96,13 @@ final class Stats extends Base_Endpoint {
 					case 'pending':
 					case 'disabled':
 					default:
-						$this->send_error( 'Plugin not available', 403 );
+						API\Response::send_error( 'Plugin not available', 403 );
 				}
 
 				$stats_totals = $data->get_stats_totals_row();
 				$data_cache   = $data->get_data_caches_row();
 
-				$this->send_json_response( [
+				API\Response::send_response( [
 					'slug'            => $slug,
 					'downloads'       => (int) ( $stats_totals->downloads ?? 0 ),
 					'active_installs' => (int) ( $data_cache->active_install_count ?? 0 ),
@@ -124,15 +124,15 @@ final class Stats extends Base_Endpoint {
 				$input = json_decode( file_get_contents( 'php://input' ), true );
 
 				if ( ! \is_array( $input ) )
-					$this->send_error( 'Invalid JSON input', 400 );
+					API\Response::send_error( 'Invalid JSON input', 400 );
 
 				$slugs = $input['slugs'] ?? [];
 
 				if ( ! \is_array( $slugs ) )
-					$this->send_error( 'Invalid slugs parameter', 400 );
+					API\Response::send_error( 'Invalid slugs parameter', 400 );
 
 				if ( \count( $slugs ) > 69 )
-					$this->send_error( 'Too many slugs, maximum is 69', 400 );
+					API\Response::send_error( 'Too many slugs, maximum is 69', 400 );
 
 				$response = [];
 
@@ -184,15 +184,15 @@ final class Stats extends Base_Endpoint {
 					];
 				}
 
-				$this->send_json_response( $response );
+				API\Response::send_response( $response );
 				break;
 
 			case 'OPTIONS':
-				$this->send_preflight_response( 'GET, POST, OPTIONS' );
+				API\Response::send_preflight_response( 'GET, POST, OPTIONS' );
 				// No break. send_preflight_response() exits.
 
 			default:
-				$this->send_error( 'Method not allowed', 405 );
+				API\Response::send_error( 'Method not allowed', 405 );
 		}
 	}
 }

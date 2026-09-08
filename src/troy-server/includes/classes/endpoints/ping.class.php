@@ -8,6 +8,8 @@ namespace Troy\Server\Endpoints;
 
 \defined( 'Troy\Server\ABSPATH' ) or die;
 
+use Troy\Server\API;
+
 /**
  * Troy Server
  *
@@ -54,14 +56,14 @@ final class Ping extends Base_Endpoint {
 			case 'GET':
 				break;
 			case 'OPTIONS':
-				$this->send_preflight_response( 'GET, OPTIONS' );
+				API\Response::send_preflight_response( 'GET, OPTIONS' );
 				// No break. send_preflight_response() exits.
 			default:
-				$this->send_error( 'Method not allowed', 405 );
+				API\Response::send_error( 'Method not allowed', 405 );
 		}
 
 		// Simple pong response
-		$this->send_json_response( [
+		API\Response::send_response( [
 			'status'  => 'ok',
 			'message' => 'pong',
 			'time'    => \current_time( 'mysql', true ), // UTC datetime

@@ -8,17 +8,21 @@ namespace Troy\Server\Bootstrap\Hook;
 
 \defined( 'Troy\Server\ABSPATH' ) or die;
 
+// phpcs:disable Generic.WhiteSpace.ScopeIndent.Incorrect -- no love for goto.
+
 use const Troy\Server\{
-	PLUGINS_CPT,
 	PACKAGES_CPT,
+	PLUGINS_CPT,
 };
 
 use Troy\Server\{
+	Admin,
+	API,
 	Cron,
 	Endpoints,
 	Integrations,
-	Plugins,
 	Packages,
+	Plugins,
 	Settings,
 	Stats,
 };
@@ -47,16 +51,34 @@ use Troy\Server\{
  * SOFTWARE.
  */
 
-// Sanitize settings whenever updated, regardless of caller.
-\add_filter(
-	'sanitize_option_troy_server_settings',
-	[ Settings\Sanitize::class, 'filter_settings_update' ],
-	10,
-	3,
-);
+endpoints: {
+	// Handle repo API requests. Sends 503 when database install or update is blocked.
+	\add_action( 'init', [ Endpoints\Router::class, 'handle_api_requests' ] );
+}
 
-// Register general cron tasks.
-\add_action( 'init', [ Cron::class, 'register' ] );
+notices: {
+	// Notice dismiss stays available when database install or update is blocked.
+	// REST requests are not is_admin(); this cannot live in hook-admin.php.
+	\add_action( 'rest_api_init', [ Admin\Notice\Persistent::class, 'register_rest_routes' ] );
+}
+
+// If the database is blocked, halt here.
+if ( API\Server::is_database_blocked() ) return;
+
+settings: {
+	// Sanitize settings whenever updated, regardless of caller.
+	\add_filter(
+		'sanitize_option_troy_server_settings',
+		[ Settings\Sanitize::class, 'filter_settings_update' ],
+		10,
+		3,
+	);
+}
+
+cron: {
+	// Register general cron tasks.
+	\add_action( 'init', [ Cron::class, 'register' ] );
+}
 
 stats: {
 	// Register stats aggregation cron tasks.
@@ -113,9 +135,4 @@ packages: {
 	\add_filter( 'manage_' . PACKAGES_CPT . '_posts_columns', [ Packages\CPT\List_View::class, 'register_columns' ] );
 	\add_filter( 'manage_edit-' . PACKAGES_CPT . '_sortable_columns', [ Packages\CPT\List_View::class, 'register_sortable_columns' ] );
 	\add_action( 'manage_' . PACKAGES_CPT . '_posts_custom_column', [ Packages\CPT\List_View::class, 'render_columns' ], 10, 2 );
-}
-
-endpoints: {
-	// Handle repo API requests.
-	\add_action( 'init', [ Endpoints\Router::class, 'handle_api_requests' ] );
 }

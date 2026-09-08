@@ -8,17 +8,21 @@ namespace Troy\Server\Bootstrap\Hook;
 
 \defined( 'Troy\Server\ABSPATH' ) or die;
 
+// phpcs:disable Generic.WhiteSpace.ScopeIndent.IncorrectExact -- no love for goto.
+
 use const Troy\Server\{
-	PLUGINS_CPT,
 	PACKAGES_CPT,
+	PLUGINS_CPT,
 };
 
 use Troy\Server\{
 	Admin_Menu,
 	Admin_Scripts,
+	Admin,
+	API,
 	Packages,
-	Plugins,
 	Plugin_Table,
+	Plugins,
 	Settings,
 };
 
@@ -46,7 +50,13 @@ use Troy\Server\{
  * SOFTWARE.
  */
 
-// phpcs:disable Generic.WhiteSpace.ScopeIndent.IncorrectExact -- no love for goto.
+notice: {
+	\add_action( 'admin_notices', [ Admin\Notice\Persistent::class, 'output_notices' ] );
+	\add_action( 'admin_enqueue_scripts', [ Admin\Notice\Persistent::class, 'enqueue_dismiss_script' ] );
+}
+
+// If the database is blocked, do not load the admin hooks. Persistent notices will still be shown.
+if ( API\Server::is_database_blocked() ) return;
 
 admin: {
 	// Register admin scripts and styles. Loaded at 10 to ensure _wp_admin_css_colors is populated for color scheme detection.

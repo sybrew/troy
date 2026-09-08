@@ -74,21 +74,21 @@ final class Tags extends Base_Endpoint {
 			case 'GET':
 				break;
 			case 'OPTIONS':
-				$this->send_preflight_response( 'GET, OPTIONS' );
+				API\Response::send_preflight_response( 'GET, OPTIONS' );
 				// No break. send_preflight_response() exits.
 			default:
-				$this->send_error( 'Method not allowed', 405 );
+				API\Response::send_error( 'Method not allowed', 405 );
 		}
 
 		$slug = API\Sanitize::slug( $this->slug );
 
 		if ( ! $slug )
-			$this->send_error( 'Invalid slug', 400 );
+			API\Response::send_error( 'Invalid slug', 400 );
 
 		$plugin_id = API\Plugin::get_plugin_id_by_slug( $slug );
 
 		if ( ! $plugin_id )
-			$this->send_error( 'Plugin not found', 404 );
+			API\Response::send_error( 'Plugin not found', 404 );
 
 		$data = new Plugins\Data( $plugin_id );
 
@@ -102,7 +102,7 @@ final class Tags extends Base_Endpoint {
 			case 'pending':
 			case 'disabled':
 			default:
-				$this->send_error( 'Plugin not available', 403 );
+				API\Response::send_error( 'Plugin not available', 403 );
 		}
 
 		$zips = $data->get_zips( min( $this->limit, 100 ) );
@@ -137,6 +137,6 @@ final class Tags extends Base_Endpoint {
 			];
 		}
 
-		$this->send_json_response( $tags );
+		API\Response::send_response( $tags );
 	}
 }

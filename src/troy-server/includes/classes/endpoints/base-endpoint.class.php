@@ -50,79 +50,74 @@ abstract class Base_Endpoint {
 	abstract public function handle_request();
 
 	/**
-	 * Clean the response header by clearing the output buffer.
-	 *
-	 * This is useful to ensure no previous output interferes with the response.
+	 * Cleans the response by clearing all output buffers.
 	 *
 	 * @since 0.0.1184
+	 * @since 1.8.1184 Deprecated. Use API\Response::clean_response_header().
+	 * @deprecated 1.8.1184 Use API\Response::clean_response_header().
 	 */
+	#[\Deprecated(
+		message: 'Use API\Response::clean_response_header().',
+		since:   '1.8.1184',
+	)]
 	protected function clean_response_header() {
-
-		$level = ob_get_level();
-
-		if ( $level ) while ( $level-- ) ob_end_clean();
+		API\Response::clean_response_header();
 	}
 
 	/**
-	 * Send a JSON response with proper headers.
+	 * Sends a JSON response with cache, CORS, and robots headers, then exits.
 	 *
 	 * @since 0.0.1184
 	 * @since 1.6.1184 Added Access-Control-Allow-Origin header for CORS support.
 	 * @since 1.7.1184 Added X-Robots-Tag header.
+	 * @since 1.8.1184 Deprecated. Use API\Response::send_response().
+	 * @deprecated 1.8.1184 Use API\Response::send_response().
 	 *
 	 * @param mixed $data   The data to send.
 	 * @param int   $status HTTP status code.
 	 */
+	#[\Deprecated(
+		message: 'Use API\Response::send_response().',
+		since:   '1.8.1184',
+	)]
 	protected function send_json_response( $data, $status = 200 ) {
-
-		$this->clean_response_header();
-
-		http_response_code( $status );
-		header( 'Content-Type: application/json; charset=utf-8' );
-		header( 'Cache-Control: no-cache, must-revalidate' );
-		header( 'Expires: Mon, 26 Jul 1997 05:00:00 GMT' );
-		header( 'Access-Control-Allow-Origin: *' );
-		header( 'X-Robots-Tag: noindex, nofollow' );
-
-		echo json_encode( $data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
-		exit;
+		API\Response::send_response( $data, $status );
 	}
 
 	/**
-	 * Send an error response.
+	 * Sends a JSON error response, then exits.
 	 *
 	 * @since 0.0.1184
+	 * @since 1.8.1184 Deprecated. Use API\Response::send_error().
+	 * @deprecated 1.8.1184 Use API\Response::send_error().
 	 *
 	 * @param string $message The error message.
 	 * @param int    $status  HTTP status code.
 	 */
+	#[\Deprecated(
+		message: 'Use API\Response::send_error().',
+		since:   '1.8.1184',
+	)]
 	protected function send_error( $message, $status = 400 ) {
-		$this->send_json_response( [ 'error' => $message ], $status );
+		API\Response::send_error( $message, $status );
 	}
 
 	/**
-	 * Send a CORS preflight response for an OPTIONS request.
-	 *
-	 * Responds with 204 No Content and the appropriate CORS headers,
-	 * then exits. Call this from handle_request() when the request
-	 * method is OPTIONS.
+	 * Sends a CORS preflight response for an OPTIONS request, then exits.
 	 *
 	 * @since 1.6.1184
 	 * @since 1.7.1184 Added X-Robots-Tag header.
+	 * @since 1.8.1184 Deprecated. Use API\Response::send_preflight_response().
+	 * @deprecated 1.8.1184 Use API\Response::send_preflight_response().
 	 *
 	 * @param string $allowed_methods Comma-separated HTTP methods allowed for this endpoint.
 	 */
+	#[\Deprecated(
+		message: 'Use API\Response::send_preflight_response().',
+		since:   '1.8.1184',
+	)]
 	protected function send_preflight_response( $allowed_methods ) {
-
-		$this->clean_response_header();
-
-		http_response_code( 204 );
-		header( 'Access-Control-Allow-Origin: *' );
-		header( "Access-Control-Allow-Methods: $allowed_methods" );
-		header( 'Access-Control-Allow-Headers: *' );
-		header( 'Access-Control-Max-Age: 86400' );
-		header( 'X-Robots-Tag: noindex, nofollow' );
-		exit;
+		API\Response::send_preflight_response( $allowed_methods );
 	}
 
 	/**

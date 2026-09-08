@@ -44,7 +44,7 @@ use Troy\Server\API;
  * Unlike API\Sanitize, these sanitizers are not meant to be generally reusable
  * and focus on sanitizing settings values specifically, often with dynamic fallbacks.
  *
- * @source Taken from The SEO Framework by Sybre Waaijer, CyberWire B.V.
+ * @source Modeled after The SEO Framework by Sybre Waaijer, CyberWire B.V.
  * @since 1.7.1184
  */
 final class Sanitize {
