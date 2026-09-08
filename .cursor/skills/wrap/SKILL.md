@@ -42,11 +42,16 @@ PHP 7.4+ on `PATH`. If `php` is missing, say so and do not invent a width.
 
 ## Hold
 
-Do not run a repo-wide wrap scan, and do not apply `do_action` / `return` blanks across the repo, until the user says **go**.
+Do not apply these across the repo until the user says **go**:
+
+- Repo-wide wrap scan
+- `do_action` / `return` blanks
+- Blanks after labeled `{` (`label: {`); same as `if` / loop / `try`
+- First-order-only and alphabetically sorted `use` lists
 
 ## Decision tree
 
-**80 visual columns apply only to a compact void `if` / `elseif` that keeps `return;`, `continue;`, or `break;` on the same line.** Measure that whole line.
+**80 visual columns apply to compact void `if` / `elseif` that keep `return;`, `continue;`, or `break;` on the same line, and to PHP attributes kept on the same line as the annotated symbol.** Measure that whole line.
 
 | Case | 80? | What to do |
 |---|---|---|
@@ -59,7 +64,8 @@ Do not run a repo-wide wrap scan, and do not apply `do_action` / `return` blanks
 | Call arguments > 30 characters **total** | no (30) | Wrap those arguments |
 | Array/object/closure among several arguments | no | Every argument of that call on its own line |
 | SQL over 80 | SQL 80 | SQL clause rules, not compact-if |
-| Function `{` blank | n/a | Functions/closures only, 2+ statements. Never after `if` / loop / `try` |
+| PHP attribute + symbol vis > 80 | yes | Attribute on the line above. If the attribute itself vis > 80, wrap its arguments like a call |
+| Function `{` blank | n/a | Functions/closures only, 2+ statements. Never after `if` / loop / `try` / labeled `{` |
 | Blank before `return` / `yield` | n/a | Interior has 2+ statements. Not before `continue` / `break` |
 | `do_action()` then `return` | n/a | Blank before `return` (the return rule). Tight before `Template::output_view()`. Repo apply is on Hold until **go**. |
 
@@ -69,7 +75,7 @@ Do not run a repo-wide wrap scan, and do not apply `do_action` / `return` blanks
 - Wrap a single-expression condition to make room for `return;`.
 - Break `$a = $cond ? $b : $c;` only because vis > 80.
 - Pad a `return` that is not an assignment.
-- Insert a function-body blank after `if` / `elseif` / `else` / loop / `try`.
+- Insert a function-body blank after `if` / `elseif` / `else` / loop / `try` / labeled `{`.
 
 ## Misreads
 
