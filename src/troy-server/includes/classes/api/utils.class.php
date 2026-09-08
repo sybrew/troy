@@ -212,15 +212,26 @@ final class Utils {
 
 	/**
 	 * Increments the PHP time limit by the given number of seconds.
-	 * It starts with the default of max_execution_time (30 seconds).
+	 *
+	 * Does nothing when `set_time_limit()` is unavailable, or when the current
+	 * limit is 0 (unlimited). Accumulates on a static initialized from
+	 * `max_execution_time`.
 	 *
 	 * @since 0.0.1184
+	 * @since 1.8.1184 No-ops when `set_time_limit()` is disabled or the time
+	 *                 limit is unlimited. Adds to a static initialized from the
+	 *                 current limit instead of counting from 30 seconds.
 	 *
 	 * @param int $seconds The number of seconds to increment the time limit by.
 	 */
 	public static function increase_time_limit_by( $seconds ) {
 
-		static $total_seconds = 30;
+		static $total_seconds;
+
+		$total_seconds ??= (int) ini_get( 'max_execution_time' );
+
+		if ( 0 === $total_seconds || ! \function_exists( 'set_time_limit' ) )
+			return;
 
 		set_time_limit( $total_seconds += $seconds );
 	}

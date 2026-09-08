@@ -117,6 +117,7 @@ For full release notes, see [deploytroy.org/changelogs](https://deploytroy.org/c
 * Changed Troy Server tables to use InnoDB for transaction-safe package generation and stats aggregation.
 * Changed WordPress version checks to use `wp_get_wp_version()` for a faster, cached, and unaltered version when comparing against features.
 * Changed the admin theme color fallback to the modern scheme palette for WordPress 7.0+ compatibility.
+* Fixed ZIP processing, package generation, and storage moves affecting PHP time limit when it's blocked, unlimited, or lowering it below the current value.
 * Fixed package ZIP downloads hanging when an output buffer could not be closed.
 * Fixed admin color schemes lacking a fourth color for WordPress 7.0+ compatibility.
 
