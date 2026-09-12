@@ -42,6 +42,16 @@ readme.md                       Project overview, component descriptions, requir
 			SKILL.md                PHP 7.4 call/array commas; no commas on parameter lists
 			scripts/
 				find-missing.php    Reports missing trailing commas in PHP files
+		playground/                 Local WordPress Playground regression via wp-plugin-regression
+			SKILL.md                Permission, engine clone, home persist, packages, official faux API, Playwright
+			packages.json           Monorepo package catalog (client, server, daemon, installer)
+			playwright.mcp.json     Playwright MCP: drop AutomationControlled flag; send admin header
+			scripts/
+				playground.js       Builds plugin.runtime.json and runs wp-plugin-regression
+			mu-plugin/
+				0-troy-playground-official.php  Blocks repo.deploytroy.org; faux ping/updates/info/zip
+				1-troy-playground-daemon.php    Loads Daemon after WP install; skips wp_installing()
+				troy-playwright-admin.php       Logs in admin when Playwright sends X-Troy-Playground-Admin
 
 .github/
 	agents/

@@ -1,0 +1,53 @@
+{
+	"packages": {
+		"troy-client": {
+			"kind": "plugin",
+			"slug": "troy-client",
+			"dir": "src/troy-client",
+			"mainFile": "troy-client.php",
+			"activate": true,
+			"mounts": [
+				"troy-client.php",
+				"index.php",
+				"bootstrap",
+				"includes",
+				"readme.txt",
+				"license.txt"
+			]
+		},
+		"troy-server": {
+			"kind": "plugin",
+			"slug": "troy-server",
+			"dir": "src/troy-server",
+			"mainFile": "troy-server.php",
+			"activate": true,
+			"mounts": [
+				"troy-server.php",
+				"index.php",
+				"bootstrap",
+				"includes",
+				"library",
+				"vendor",
+				"readme.txt",
+				"license.txt"
+			]
+		},
+		"troy-client-daemon": {
+			"kind": "mu-plugin",
+			"file": "src/troy-client-daemon/troy-client-daemon.php"
+		},
+		"troy-installer": {
+			"kind": "plugin",
+			"slug": "troy-installer",
+			"dir": "src/troy-installer",
+			"mainFile": "troy-installer.php",
+			"activate": true,
+			"mounts": [
+				"troy-installer.php",
+				"index.php",
+				"readme.txt",
+				"license.txt"
+			]
+		}
+	}
+}

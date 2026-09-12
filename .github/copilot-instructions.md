@@ -136,3 +136,5 @@ After you are done working on your code:
 3. Make a checklist of all changes you made in accordance with the request. If you could not do something, mark it with X and explain the issue.
 
 After adding a new feature, review the code 20 lines above and below where you added it. Reevaluate your code with this context in mind: is it still the best solution, or should it be refactored?
+
+If Client, Server, Daemon, or Installer admin UI, update API, endpoints, headers, or install behavior changed, follow the playground skill before finishing. If the regression plumbing is at fault, highlight that. Do not change plugin code to satisfy a broken harness.

@@ -1,0 +1,14 @@
+{
+	"browser": {
+		"launchOptions": {
+			"ignoreDefaultArgs": [
+				"--disable-blink-features=AutomationControlled"
+			]
+		},
+		"contextOptions": {
+			"extraHTTPHeaders": {
+				"X-Troy-Playground-Admin": "1"
+			}
+		}
+	}
+}
