@@ -45,7 +45,7 @@ add_action(
 					public function footer() {
 						ob_end_clean();
 					}
-				}
+				},
 			) )->install(
 				$client_url,
 				[ 'overwrite_package' => true ],
@@ -56,5 +56,5 @@ add_action(
 				activate_plugin( $plugin_file, '', is_multisite(), true );
 			}
 		}
-	}
+	},
 );

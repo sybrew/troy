@@ -9,9 +9,9 @@ namespace Troy\Server\Settings;
 \defined( 'Troy\Server\ABSPATH' ) or die;
 
 use const Troy\Server\{
+	MAIN_FILE,
 	REST_NS,
 	VERSION,
-	MAIN_FILE,
 };
 
 /**

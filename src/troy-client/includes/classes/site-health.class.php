@@ -137,7 +137,7 @@ final class Site_Health {
 			'status'      => 'good',
 			'description' => \sprintf(
 				'<p>%s</p>',
-				\__( 'Troy Client communicates with the Troy repositories to check for new plugin versions.', 'troy-client' )
+				\__( 'Troy Client communicates with the Troy repositories to check for new plugin versions.', 'troy-client' ),
 			),
 			'test'        => 'troy_client_repo_communications',
 		];

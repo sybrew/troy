@@ -10,9 +10,8 @@ namespace Troy\Server\Endpoints\Plugins;
 
 use Troy\Server\{
 	API,
-	Endpoints\Base_Endpoint,
-	Plugins\Data,
-	Plugins\Files,
+	Endpoints,
+	Plugins,
 };
 
 /**
@@ -46,7 +45,7 @@ use Troy\Server\{
  *
  * @since 0.0.1184
  */
-final class Info extends Base_Endpoint {
+final class Info extends Endpoints\Base_Endpoint {
 
 	/**
 	 * Handle the plugin information request.
@@ -90,7 +89,7 @@ final class Info extends Base_Endpoint {
 			API\Response::send_error( 'Plugin not found', 404 );
 
 		try {
-			$data = new Data( $plugin_id, locale: $locale );
+			$data = new Plugins\Data( $plugin_id, locale: $locale );
 
 			$plugin_row = $data->get_plugins_row();
 			$meta_row   = $data->get_metas_row();
@@ -334,7 +333,7 @@ final class Info extends Base_Endpoint {
 		if ( ! $latest_zip?->version )
 			return '';
 
-		return Files::get_plugin_zip_url_by_slug( $slug, $latest_zip->version );
+		return Plugins\Files::get_plugin_zip_url_by_slug( $slug, $latest_zip->version );
 	}
 
 	/**
@@ -405,7 +404,7 @@ final class Info extends Base_Endpoint {
 
 		foreach ( $zips as $zip )
 			if ( $zip->version )
-				$versions[ $zip->version ] = Files::get_plugin_zip_url_by_slug( $slug, $zip->version );
+				$versions[ $zip->version ] = Plugins\Files::get_plugin_zip_url_by_slug( $slug, $zip->version );
 
 		// Sort versions in descending order
 		uksort(

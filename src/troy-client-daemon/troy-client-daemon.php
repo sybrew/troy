@@ -15,7 +15,7 @@
  * Plugin Name: Troy Client Daemon - Must Use only
  * Plugin URI: https://deploytroy.org/
  * Description: This daemon forces installation and activation of Troy Client. It blocks the WordPress update API if Troy Client is not active.
- * Version: 1.7.1184
+ * Version: 1.8.1184
  * Author: Sybre Waaijer
  * Author URI: https://deploytroy.org/
  * License: MIT
@@ -129,8 +129,7 @@ function install_and_activate_troy_client() {
 
 	if ( ! $troy_plugin ) {
 
-		if ( ! set_install_lock( 15 ) )
-			return;
+		if ( ! set_install_lock( 15 ) ) return;
 
 		\wp_raise_memory_limit( 'troy-client-daemon-init-fs' );
 
@@ -164,7 +163,7 @@ function install_and_activate_troy_client() {
 				public function footer() {
 					ob_end_clean();
 				}
-			}
+			},
 		) )->install(
 			$client_url,
 			[ 'overwrite_package' => true ],
@@ -172,8 +171,7 @@ function install_and_activate_troy_client() {
 
 		release_install_lock();
 
-		if ( true !== $result )
-			return;
+		if ( true !== $result ) return;
 
 		\wp_clean_plugins_cache();
 

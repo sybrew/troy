@@ -71,8 +71,7 @@ final class Router {
 		$request_path = trim( $request_uri, '/' );
 
 		// Check if this is a Troy API endpoint
-		if ( ! $request_path )
-			return;
+		if ( ! $request_path ) return;
 
 		// phpcs:disable WordPress.Security.NonceVerification -- Public API, no nonce needed.
 		switch ( true ) {

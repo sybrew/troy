@@ -17,7 +17,7 @@ use const Troy\Server\{
 
 use Troy\Server\{
 	API,
-	Packages\Data,
+	Packages,
 	Plugins,
 };
 
@@ -255,7 +255,7 @@ final class List_View {
 
 		// Can packages exist without meta?
 		$plugin_ids = array_column(
-			new Data( $package_id )->get_metas_row()?->plugins ?? [],
+			new Packages\Data( $package_id )->get_metas_row()?->plugins ?? [],
 			'id',
 		);
 
@@ -395,8 +395,7 @@ final class List_View {
 	public static function register_list_edit_hooks() {
 
 		// Only add the filter if the current screen is the packages list table.
-		if ( \get_current_screen()->post_type !== PACKAGES_CPT )
-			return;
+		if ( \get_current_screen()->post_type !== PACKAGES_CPT ) return;
 
 		// Remit FETCH_CLASS_NAME opcode, which performs a function call to check if it's valid.
 		$class = self::class;
@@ -428,8 +427,7 @@ final class List_View {
 
 			// Find first valid position
 			foreach ( [ 'before', 'after' ] as $type ) {
-				if ( empty( $conf[ $type ] ) )
-					continue;
+				if ( empty( $conf[ $type ] ) ) continue;
 
 				foreach ( $conf[ $type ] as $key ) {
 					// This offset is also used for 'before'; don't move it down.
@@ -470,8 +468,7 @@ final class List_View {
 	public static function register_sortable_columns( $columns ) {
 
 		foreach ( self::get_columns() as $index => $conf ) {
-			if ( empty( $conf['orderby'] ) )
-				continue;
+			if ( empty( $conf['orderby'] ) ) continue;
 
 			$columns[ $index ] = $index;
 		}
@@ -607,8 +604,7 @@ final class List_View {
 		$clauses   = [];
 
 		foreach ( $sortables as $sortable ) {
-			if ( empty( $sortable['search'] ) )
-				continue;
+			if ( empty( $sortable['search'] ) ) continue;
 
 			[ $table, $key ] = $sortable['where'];
 
@@ -646,8 +642,7 @@ final class List_View {
 
 		$sortables = self::get_columns();
 
-		if ( ! isset( $sortables[ $column ] ) )
-			return;
+		if ( ! isset( $sortables[ $column ] ) ) return;
 
 		global $wpdb;
 

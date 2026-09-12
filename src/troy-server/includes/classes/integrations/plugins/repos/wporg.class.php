@@ -12,7 +12,7 @@ use const Troy\Server\VERSION;
 
 use Troy\Server\{
 	API,
-	Integrations\Plugins\Store,
+	Integrations,
 };
 
 /**
@@ -51,7 +51,7 @@ final class WPOrg {
 	/**
 	 * Connects WordPress.org integration for a plugin.
 	 *
-	 * Tags must be updated separately using Store::update_tags().
+	 * Tags must be updated separately using Integrations\Plugins\Store::update_tags().
 	 *
 	 * @since 0.0.1184
 	 *
@@ -94,7 +94,7 @@ final class WPOrg {
 				'error'   => $response['error'],
 			];
 
-		return Store::connect( $plugin_id, 'wporg', $settings, null, $auto_process );
+		return Integrations\Plugins\Store::connect( $plugin_id, 'wporg', $settings, null, $auto_process );
 	}
 
 	/**
@@ -207,7 +207,7 @@ final class WPOrg {
 					/* translators: %d is the HTTP status code. */
 					\__( 'WordPress.org API request failed with status %d.', 'troy-server' ),
 					$response_code,
-				)
+				),
 			);
 		}
 

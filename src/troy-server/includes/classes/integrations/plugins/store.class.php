@@ -10,7 +10,7 @@ namespace Troy\Server\Integrations\Plugins;
 
 use Troy\Server\{
 	API,
-	Plugins, // A namesake import is valid; we're relative to \, not \Plugins.
+	Plugins,
 };
 
 /**

@@ -9,8 +9,7 @@ namespace Troy\Server\Views\Editor\Packages;
 
 use Troy\Server\{
 	API,
-	Packages\CPT\Store,
-	Packages\Data,
+	Packages,
 };
 
 /**
@@ -42,7 +41,7 @@ use Troy\Server\{
 [ $post ] = $view_args;
 
 if ( $post ) {
-	$data = new Data( post_id: $post->ID );
+	$data = new Packages\Data( post_id: $post->ID );
 
 	$package = $data->get_packages_row();
 	$meta    = $data->get_metas_row(); // can be empty if post is never saved.
@@ -56,7 +55,7 @@ if ( ! $meta ) {
 	$current_user = \wp_get_current_user();
 
 	$meta = (object) array_merge(
-		Store::get_default_package_data(),
+		Packages\CPT\Store::get_default_package_data(),
 		[
 			'author'     => $current_user->display_name ?: '',
 			'author_uri' => $current_user->user_url ?: '',

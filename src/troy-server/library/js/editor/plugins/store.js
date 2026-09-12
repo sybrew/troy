@@ -397,7 +397,7 @@ const TroyServerPluginEditorStore = new class {
 				{
 					...noticeOps,
 					isDismissible: false,
-				}
+				},
 			);
 
 			// Use a simple polling approach to check save completion

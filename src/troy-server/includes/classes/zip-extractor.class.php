@@ -126,8 +126,7 @@ final class Zip_Extractor {
 
 		$temp_dir = $this->temp_zip_extraction_dir;
 
-		if ( ! is_dir( $temp_dir ) )
-			return;
+		if ( ! is_dir( $temp_dir ) ) return;
 
 		File_Utils::clean_dir_recursively( $temp_dir );
 	}

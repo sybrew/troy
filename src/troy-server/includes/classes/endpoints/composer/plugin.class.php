@@ -10,9 +10,8 @@ namespace Troy\Server\Endpoints\Composer;
 
 use Troy\Server\{
 	API,
-	Endpoints\Base_Endpoint,
-	Plugins\Data,
-	Plugins\Files,
+	Endpoints,
+	Plugins,
 };
 
 /**
@@ -54,7 +53,7 @@ use Troy\Server\{
  * @since 1.7.1184
  * @link https://getcomposer.org/doc/05-repositories.md#composer
  */
-final class Plugin extends Base_Endpoint {
+final class Plugin extends Endpoints\Base_Endpoint {
 
 	/**
 	 * Constructor.
@@ -100,7 +99,7 @@ final class Plugin extends Base_Endpoint {
 		if ( ! $plugin_id )
 			API\Response::send_error( 'Plugin not found', 404 );
 
-		$data = new Data( $plugin_id );
+		$data = new Plugins\Data( $plugin_id );
 
 		switch ( $data->get_plugins_row()->status ) {
 			case 'public':
@@ -149,15 +148,14 @@ final class Plugin extends Base_Endpoint {
 		$versions     = [];
 
 		foreach ( $zips as $zip ) {
-			if ( 'tag' !== $zip->type )
-				continue;
+			if ( 'tag' !== $zip->type ) continue;
 
 			$version_entry = [
 				'name'    => $package_name,
 				'version' => $zip->version,
 				'type'    => 'wordpress-plugin',
 				'dist'    => [
-					'url'  => Files::get_plugin_zip_url_by_slug(
+					'url'  => Plugins\Files::get_plugin_zip_url_by_slug(
 						$slug,
 						$zip->version,
 					),

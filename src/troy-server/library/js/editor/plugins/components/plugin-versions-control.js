@@ -732,7 +732,7 @@
 							'troy-server',
 						),
 						removedCount,
-					)
+					),
 				);
 			}
 		}

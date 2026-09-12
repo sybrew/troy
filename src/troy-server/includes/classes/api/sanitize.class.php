@@ -755,8 +755,7 @@ final class Sanitize {
 			$version      = self::semver( $package_version );
 			$download_url = \sanitize_url( $data->download_url );
 
-			if ( ! $version || ! $download_url )
-				continue;
+			if ( ! $version || ! $download_url ) continue;
 
 			$sanitized[ $version ] = (object) [
 				'download_url' => $download_url,

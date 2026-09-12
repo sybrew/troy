@@ -99,8 +99,7 @@ final class Dependencies {
 				$slug = $dependency['slug'];
 
 				// Don't install the dependency if the plugin is already installed.
-				if ( \in_array( $slug, $plugin_slugs, true ) )
-					continue;
+				if ( \in_array( $slug, $plugin_slugs, true ) ) continue;
 
 				$repo = make_fully_qualified_repo_url( $dependency['repo'] );
 
@@ -203,7 +202,7 @@ final class Dependencies {
 					\esc_attr( $type ),
 					\esc_html( $message ),
 				);
-			}
+			},
 		);
 	}
 }

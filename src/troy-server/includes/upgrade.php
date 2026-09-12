@@ -13,8 +13,8 @@ namespace Troy\Server\Upgrade;
 use const Troy\Server\DB_VERSION;
 
 use Troy\Server\{
-	Admin,
 	API,
+	Admin,
 	Settings,
 };
 
@@ -53,15 +53,13 @@ upgrade();
  */
 function upgrade() {
 
-	if ( \wp_doing_ajax() )
-		return;
+	if ( \wp_doing_ajax() ) return;
 
 	$timeout = \MINUTE_IN_SECONDS; // Stale lock after a crashed run; not WP core's 5-minute update_core() window.
 
 	$lock = set_upgrade_lock( $timeout );
 	// Lock failed to create--probably because it was already locked (or the database failed us).
-	if ( ! $lock )
-		return;
+	if ( ! $lock ) return;
 
 	register_shutdown_function( 'Troy\Server\Upgrade\on_upgrade_shutdown' );
 
@@ -457,11 +455,9 @@ function upgrade_from( $previous_version ) {
 						\ARRAY_A,
 					);
 
-					if ( ! $status )
-						continue;
+					if ( ! $status ) continue;
 
-					if ( 'InnoDB' === $status['Engine'] )
-						continue;
+					if ( 'InnoDB' === $status['Engine'] ) continue;
 
 					$wpdb->query( $wpdb->prepare(
 						'ALTER TABLE %i ENGINE=InnoDB',

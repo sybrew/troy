@@ -16,10 +16,10 @@ use const Troy\Server\{
 };
 
 use Troy\Server\{
+	API,
+	Admin,
 	Admin_Menu,
 	Admin_Scripts,
-	Admin,
-	API,
 	Packages,
 	Plugin_Table,
 	Plugins,

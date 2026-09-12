@@ -85,8 +85,7 @@ final class Utils {
 				'version',
 			);
 
-			if ( $filtered_versions )
-				break;
+			if ( $filtered_versions ) break;
 		}
 
 		if ( empty( $filtered_versions ) )

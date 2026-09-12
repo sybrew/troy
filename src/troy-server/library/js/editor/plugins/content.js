@@ -85,7 +85,9 @@
 					   ! hasInitialized
 					|| ! storeData.plugin_id
 					|| 'readme' !== storeData.builder_type
-				) return;
+				) {
+					return;
+				}
 
 				if ( ! latestVersion ) {
 					// Empty all content tabs if no latest version is set (e.g., all versions are marked for removal)
@@ -162,7 +164,9 @@
 				if (
 					   ! hasInitialized
 					|| ! storeData.plugin_id
-				) return;
+				) {
+					return;
+				}
 
 				// When switching away from readme mode, convert content to editable blocks
 				if ( 'readme' !== storeData.builder_type ) {
@@ -225,7 +229,7 @@
 									);
 								}
 							}
-						}
+						},
 					);
 			},
 			[ hasInitialized, storeData.builder_type, storeData.plugin_id, storeData.contents ],

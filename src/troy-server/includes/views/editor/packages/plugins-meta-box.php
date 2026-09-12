@@ -7,7 +7,7 @@ namespace Troy\Server\Views\Editor\Packages;
 
 ( \defined( 'Troy\Server\ABSPATH' ) and \Troy\Server\Template::verify_secret( $secret ) ) or die;
 
-use Troy\Server\Packages\Data;
+use Troy\Server\Packages;
 
 /**
  * Troy Server
@@ -37,7 +37,7 @@ use Troy\Server\Packages\Data;
 
 [ $post ] = $view_args;
 
-$meta = new Data( post_id: $post->ID )->get_metas_row();
+$meta = new Packages\Data( post_id: $post->ID )->get_metas_row();
 
 $selected_plugins = $meta ? $meta->plugins : [];
 $selected_plugins = \is_array( $selected_plugins ) ? $selected_plugins : [];

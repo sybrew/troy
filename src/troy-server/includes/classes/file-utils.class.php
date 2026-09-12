@@ -58,8 +58,7 @@ final class File_Utils {
 	 */
 	public static function init_wpfs() {
 
-		if ( self::$wpfs_initialized )
-			return;
+		if ( self::$wpfs_initialized ) return;
 
 		\wp_raise_memory_limit( 'troy-server-init-fs' );
 
@@ -97,8 +96,7 @@ final class File_Utils {
 
 		$dir = \trailingslashit( $dir );
 
-		if ( is_dir( $dir ) )
-			return;
+		if ( is_dir( $dir ) ) return;
 
 		if ( ! \wp_mkdir_p( $dir ) )
 			throw new \Exception( 'Failed to create zip directory.' );
@@ -122,7 +120,7 @@ final class File_Utils {
 		$files = new \RecursiveIteratorIterator(
 			new \RecursiveDirectoryIterator(
 				$dir,
-				\RecursiveDirectoryIterator::SKIP_DOTS
+				\RecursiveDirectoryIterator::SKIP_DOTS,
 			),
 			\RecursiveIteratorIterator::CHILD_FIRST,
 		);

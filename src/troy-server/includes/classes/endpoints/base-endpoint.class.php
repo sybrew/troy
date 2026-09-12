@@ -54,7 +54,7 @@ abstract class Base_Endpoint {
 	 *
 	 * @since 0.0.1184
 	 * @since 1.8.1184 Deprecated. Use API\Response::clean_response_header().
-	 * @deprecated 1.8.1184 Use API\Response::clean_response_header().
+	 * @deprecated 1.8.1184
 	 */
 	#[\Deprecated(
 		message: 'Use API\Response::clean_response_header().',
@@ -71,7 +71,7 @@ abstract class Base_Endpoint {
 	 * @since 1.6.1184 Added Access-Control-Allow-Origin header for CORS support.
 	 * @since 1.7.1184 Added X-Robots-Tag header.
 	 * @since 1.8.1184 Deprecated. Use API\Response::send_response().
-	 * @deprecated 1.8.1184 Use API\Response::send_response().
+	 * @deprecated 1.8.1184
 	 *
 	 * @param mixed $data   The data to send.
 	 * @param int   $status HTTP status code.
@@ -89,7 +89,7 @@ abstract class Base_Endpoint {
 	 *
 	 * @since 0.0.1184
 	 * @since 1.8.1184 Deprecated. Use API\Response::send_error().
-	 * @deprecated 1.8.1184 Use API\Response::send_error().
+	 * @deprecated 1.8.1184
 	 *
 	 * @param string $message The error message.
 	 * @param int    $status  HTTP status code.
@@ -108,7 +108,7 @@ abstract class Base_Endpoint {
 	 * @since 1.6.1184
 	 * @since 1.7.1184 Added X-Robots-Tag header.
 	 * @since 1.8.1184 Deprecated. Use API\Response::send_preflight_response().
-	 * @deprecated 1.8.1184 Use API\Response::send_preflight_response().
+	 * @deprecated 1.8.1184
 	 *
 	 * @param string $allowed_methods Comma-separated HTTP methods allowed for this endpoint.
 	 */

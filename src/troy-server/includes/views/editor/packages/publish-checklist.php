@@ -9,7 +9,7 @@ namespace Troy\Server\Views\Editor\Packages;
 
 use const Troy\Server\PACKAGES_CPT;
 
-use Troy\Server\Packages\Data;
+use Troy\Server\Packages;
 
 /**
  * Troy Server
@@ -39,10 +39,9 @@ use Troy\Server\Packages\Data;
 
 $post = \get_post();
 
-if ( ! $post || PACKAGES_CPT !== $post->post_type )
-	return;
+if ( ! $post || PACKAGES_CPT !== $post->post_type ) return;
 
-$data = new Data( post_id: $post->ID );
+$data = new Packages\Data( post_id: $post->ID );
 
 $has_slug    = ! empty( $data->get_packages_row()?->slug );
 $has_plugins = ! empty( $data->get_metas_row()?->plugins );

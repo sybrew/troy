@@ -10,9 +10,8 @@ namespace Troy\Server\Endpoints\Packages;
 
 use Troy\Server\{
 	API,
-	Endpoints\Base_Endpoint,
-	Packages\Data,
-	Packages\Files,
+	Endpoints,
+	Packages,
 };
 
 /**
@@ -47,7 +46,7 @@ use Troy\Server\{
  *
  * @since 0.0.1184
  */
-final class Download extends Base_Endpoint {
+final class Download extends Endpoints\Base_Endpoint {
 
 	/**
 	 * Handle a package download request with slug provided directly.
@@ -91,12 +90,12 @@ final class Download extends Base_Endpoint {
 		if ( ! $slug )
 			API\Response::send_error( 'Invalid slug', 400 );
 
-		$package_id = Data::get_package_id_by_slug( $slug );
+		$package_id = Packages\Data::get_package_id_by_slug( $slug );
 
 		if ( ! $package_id )
 			API\Response::send_error( 'Package not found', 404 );
 
-		$package = new Data( $package_id )->get_packages_row();
+		$package = new Packages\Data( $package_id )->get_packages_row();
 
 		if ( ! $package )
 			API\Response::send_error( 'Package not found', 404 );
@@ -106,7 +105,7 @@ final class Download extends Base_Endpoint {
 			API\Response::send_error( 'Package not available', 403 );
 
 		// Get ZIP file path
-		$zip_file = Files::get_package_zip_file_path( $package_id, $slug );
+		$zip_file = Packages\Files::get_package_zip_file_path( $package_id, $slug );
 
 		// phpcs:ignore TSF.Performance -- file must be loaded from disk to stream
 		if ( ! \file_exists( $zip_file ) )
@@ -115,7 +114,7 @@ final class Download extends Base_Endpoint {
 		// Record download stats
 		$this->record_download_stats(
 			$package_id,
-			new Data( $package_id )->get_metas_row()->version ?? '0.0.0',
+			new Packages\Data( $package_id )->get_metas_row()->version ?? '0.0.0',
 			$package->origin_url,
 		);
 

@@ -193,13 +193,11 @@ function suppress_activation_notice( $markup ) {
  */
 function output_registered_install_notices() {
 
-	if ( ! \current_user_can( 'install_plugins' ) )
-		return;
+	if ( ! \current_user_can( 'install_plugins' ) ) return;
 
 	$messages = register_admin_message( '', '', true );
 
-	if ( ! $messages )
-		return;
+	if ( ! $messages ) return;
 
 	$dashicons    = [
 		'info'    => [ 'editor-help', '#2271b1' ],
@@ -459,8 +457,7 @@ function install_plugins() {
 	foreach ( \get_plugins() as $file => $plugin ) {
 		$install_args = $install[ \dirname( $file ) ] ?? null;
 
-		if ( empty( $install_args['activate'] ) )
-			continue;
+		if ( empty( $install_args['activate'] ) ) continue;
 
 		if ( \is_plugin_active( $file ) ) {
 			// If we had to overwrite, it'll remain activated. Tell it's "been" activated.
@@ -588,8 +585,7 @@ function list_items( $items ) {
  */
 function register_admin_message( $message, $type = 'info', $get = false ) {
 
-	if ( 'silent' === OPTIONS['notice_severity'] )
-		return;
+	if ( 'silent' === OPTIONS['notice_severity'] ) return;
 
 	static $messages = [];
 

@@ -12,7 +12,7 @@ use const Troy\Server\VERSION;
 
 use Troy\Server\{
 	API,
-	Integrations\Plugins\Store,
+	Integrations,
 };
 
 /**
@@ -53,7 +53,7 @@ final class GitHub {
 	 * Connects GitHub integration for a plugin.
 	 *
 	 * PAT is optional - only required for private repositories.
-	 * Tags must be updated separately using Store::update_tags().
+	 * Tags must be updated separately using Integrations\Plugins\Store::update_tags().
 	 *
 	 * @since 0.0.1184
 	 *
@@ -115,7 +115,7 @@ final class GitHub {
 				'error'   => $response['message'],
 			];
 
-		return Store::connect( $plugin_id, 'github', $settings, $auth, $auto_process );
+		return Integrations\Plugins\Store::connect( $plugin_id, 'github', $settings, $auth, $auto_process );
 	}
 
 	/**

@@ -7,10 +7,7 @@ namespace Troy\Server\Views\Settings;
 
 ( \defined( 'Troy\Server\ABSPATH' ) and \Troy\Server\Template::verify_secret( $secret ) ) or die;
 
-use Troy\Server\{
-	Settings,
-	Template,
-};
+use Troy\Server\Settings;
 
 /**
  * Troy Server
@@ -84,7 +81,7 @@ $current_tab = isset( $_GET['tab'], $tabs[ $_GET['tab'] ] ) ? $_GET['tab'] : 'pl
 				\esc_url( $tab['link'] ),
 				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- String literals.
 				$tab_attributes[ $tab_key === $current_tab ? 'active' : 'inactive' ],
-				\esc_html( $tab['title'] )
+				\esc_html( $tab['title'] ),
 			);
 		}
 		?>

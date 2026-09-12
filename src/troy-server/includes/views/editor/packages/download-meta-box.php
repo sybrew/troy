@@ -9,7 +9,7 @@ namespace Troy\Server\Views\Editor\Packages;
 
 use Troy\Server\{
 	API,
-	Packages\Data,
+	Packages,
 };
 
 /**
@@ -47,7 +47,7 @@ if ( 'publish' !== $post->post_status ) {
 	return;
 }
 
-$package = new Data( post_id: $post->ID )->get_packages_row();
+$package = new Packages\Data( post_id: $post->ID )->get_packages_row();
 
 if ( ! $package || ! $package->slug ) {
 	?>

@@ -307,8 +307,7 @@ final class Readme_Parser {
 
 						// If the field is a valid header, skip and try next line.
 						// We allow "plugin name" as a special case below.
-						if ( isset( self::HEADERS[ $field ] ) )
-							continue;
+						if ( isset( self::HEADERS[ $field ] ) ) continue;
 
 						// If the field is "plugin name", we take the value as the candidate.
 						// Otherwise, we keep the candidate as-is, including the : colon.
@@ -345,8 +344,7 @@ final class Readme_Parser {
 						break;
 
 					// Skip lines that don't look like headers. "Header: value"
-					if ( ! str_contains( $raw, ':' ) )
-						continue;
+					if ( ! str_contains( $raw, ':' ) ) continue;
 
 					[ $field, $value ] = explode( ':', $raw, 2 );
 
@@ -383,12 +381,10 @@ final class Readme_Parser {
 					$raw = trim( $line );
 
 					// Skip empty lines.
-					if ( '' === $raw )
-						continue;
+					if ( '' === $raw ) continue;
 
 					// The section headers start with ## or ==, so we can stop at the first one.
-					if ( preg_match( '/^(?:##+|==+)\s/', $raw ) )
-						break;
+					if ( preg_match( '/^(?:##+|==+)\s/', $raw ) ) break;
 
 					// If we don't have a short description header yet, use this line.
 					// Otherwise, discard it.

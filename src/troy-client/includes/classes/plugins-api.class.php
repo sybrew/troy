@@ -143,13 +143,11 @@ final class Plugins_API {
 			$repo_translations     = [];
 
 			// Skip communications for disabled repos.
-			if ( 'disable-all-communications' === $repo )
-				continue;
+			if ( 'disable-all-communications' === $repo ) continue;
 
 			foreach ( $slugs as $slug ) {
 				// The slug might be of a dependency that isn't a Troy plugin or isn't a installed -- either way, don't leak.
-				if ( ! isset( $troy_plugins_by_slug[ $slug ] ) )
-					continue;
+				if ( ! isset( $troy_plugins_by_slug[ $slug ] ) ) continue;
 
 				$plugin_data = $troy_plugins_by_slug[ $slug ];
 				$textdomain  = $plugin_data['textdomain'];
@@ -183,8 +181,7 @@ final class Plugins_API {
 			);
 
 			// Skip failed requests. It won't fall back to WordPress's API.
-			if ( \is_wp_error( $request ) )
-				continue;
+			if ( \is_wp_error( $request ) ) continue;
 
 			$res = json_decode( \wp_remote_retrieve_body( $request ), true );
 
@@ -200,8 +197,7 @@ final class Plugins_API {
 
 			foreach ( [ 'no_update', 'update' ] as $key ) {
 				foreach ( $res->$key ?? [] as $slug => $plugin_data ) {
-					if ( empty( $filename_by_slug[ $slug ] ) )
-						continue;
+					if ( empty( $filename_by_slug[ $slug ] ) ) continue;
 
 					if ( isset( $plugin_data['icons'] ) )
 						$plugin_data['icons'] = array_map( [ Sanitize::class, 'static_image_url' ], $plugin_data['icons'] );
@@ -379,8 +375,7 @@ final class Plugins_API {
 
 				// Even though we sanitize our Troy Server data, people can modify their servers. Let's never trust remote URLs, sanitize their data.
 				foreach ( [ 'banners', 'icons' ] as $field ) {
-					if ( empty( $res->$field ) )
-						continue;
+					if ( empty( $res->$field ) ) continue;
 
 					$res->$field = array_map( [ Sanitize::class, 'static_image_url' ], (array) $res->$field );
 				}
@@ -439,8 +434,7 @@ final class Plugins_API {
 	 */
 	public static function add_plugin_info_styles() {
 
-		if ( ! \defined( 'IFRAME_REQUEST' ) )
-			return;
+		if ( ! \defined( 'IFRAME_REQUEST' ) ) return;
 
 		echo <<<'CSS'
 		<style>

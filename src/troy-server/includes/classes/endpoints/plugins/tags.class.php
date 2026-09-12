@@ -10,7 +10,7 @@ namespace Troy\Server\Endpoints\Plugins;
 
 use Troy\Server\{
 	API,
-	Endpoints\Base_Endpoint,
+	Endpoints,
 	Plugins,
 };
 
@@ -45,7 +45,7 @@ use Troy\Server\{
  *
  * @since 0.0.1184
  */
-final class Tags extends Base_Endpoint {
+final class Tags extends Endpoints\Base_Endpoint {
 
 	/**
 	 * Constructor.
@@ -119,8 +119,7 @@ final class Tags extends Base_Endpoint {
 		$tags = [];
 
 		foreach ( $zips as $zip ) {
-			if ( ! \in_array( $zip->type, $allowed_types, true ) )
-				continue;
+			if ( ! \in_array( $zip->type, $allowed_types, true ) ) continue;
 
 			$tags[] = [
 				'version'      => $zip->version,

@@ -106,7 +106,7 @@
 						renderAppender: false,
 					},
 				),
-			}
+			},
 		);
 	}
 

@@ -44,5 +44,5 @@ if ( false !== \get_option( 'troy_server_settings' ) )
 
 // Remove cron jobs; not doing so will cause PHP errors on cron.
 Cron::remove_cron_jobs();
-Integrations\Cron::remove_cron_jobs();
+Integrations\Plugins\Cron::remove_cron_jobs();
 Stats\Cron::remove_cron_jobs();

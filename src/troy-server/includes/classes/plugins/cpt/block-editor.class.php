@@ -406,7 +406,7 @@ final class Block_Editor {
 					'lock'     => true, // Lock the block itself
 				],
 				'textdomain'       => 'troy-server',
-			]
+			],
 		);
 
 		// Tabs content.
@@ -567,8 +567,7 @@ final class Block_Editor {
 	 */
 	public static function enqueue_editor_assets() {
 
-		if ( PLUGINS_CPT !== $GLOBALS['current_screen']?->post_type )
-			return;
+		if ( PLUGINS_CPT !== $GLOBALS['current_screen']?->post_type ) return;
 
 		$dir_url = \plugin_dir_url( MAIN_FILE );
 		$min     = \SCRIPT_DEBUG ? '' : '.min';
@@ -1088,8 +1087,7 @@ final class Block_Editor {
 			? $GLOBALS['current_screen']?->post_type
 			: \get_post_type( \get_queried_object_id() );
 
-		if ( PLUGINS_CPT !== $post_type )
-			return;
+		if ( PLUGINS_CPT !== $post_type ) return;
 
 		$dir_url = \plugin_dir_url( MAIN_FILE );
 		$min     = \SCRIPT_DEBUG ? '' : '.min';

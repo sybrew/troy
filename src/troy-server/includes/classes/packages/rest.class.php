@@ -12,7 +12,7 @@ use const Troy\Server\REST_NS;
 
 use Troy\Server\{
 	API,
-	Plugins\Data as Plugin_Data,
+	Plugins,
 };
 
 /**
@@ -183,14 +183,12 @@ final class REST {
 		foreach ( $metas->plugins as $entry ) {
 			$plugin_id = $entry['id'] ?? null;
 
-			if ( ! $plugin_id )
-				continue;
+			if ( ! $plugin_id ) continue;
 
-			$plugin_data = new Plugin_Data( $plugin_id );
+			$plugin_data = new Plugins\Data( $plugin_id );
 			$plugin_row  = $plugin_data->get_plugins_row();
 
-			if ( ! $plugin_row )
-				continue;
+			if ( ! $plugin_row ) continue;
 
 			switch ( $plugin_row->status ) {
 				case 'public':

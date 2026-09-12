@@ -574,7 +574,7 @@
 							tags:           response.tags,
 							auto_process:   response.auto_process,
 							tags_refreshed: response.tags_refreshed,
-						}
+						},
 					);
 
 					showNotice( __( 'Integration connected successfully. Fetching tags...', 'troy-server' ) );

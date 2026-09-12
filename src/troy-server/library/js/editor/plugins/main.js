@@ -362,7 +362,7 @@
 									sprintf(
 										/* translators: %s is the version number */
 										__( 'Version %s removed successfully.', 'troy-server' ),
-										version
+										version,
 									),
 									{
 										isDismissible: true,
@@ -380,7 +380,7 @@
 										/* translators: %1$s is the version number, %2$s is the error message */
 										__( 'Failed to remove version %1$s: %2$s', 'troy-server' ),
 										version,
-										error.message || __( 'Unknown error', 'troy-server' )
+										error.message || __( 'Unknown error', 'troy-server' ),
 									),
 									{
 										isDismissible: true,

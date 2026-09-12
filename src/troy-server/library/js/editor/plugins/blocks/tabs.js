@@ -72,7 +72,9 @@
 						if (
 							   'readme' !== storeData.builder_type
 							|| ! dynamicInnerBlocks.length
-						) return;
+						) {
+							return;
+						}
 
 						const currentTabBlock   = dynamicInnerBlocks[ activeTab ];
 						const currentTabContent = storeData.contents?.[ currentTabBlock?.attributes?.troyServerTabId ];

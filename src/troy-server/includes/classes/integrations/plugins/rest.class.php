@@ -15,7 +15,7 @@ use const Troy\Server\{
 
 use Troy\Server\{
 	API,
-	Plugins, // A namesake import is valid; we're relative to \, not \Plugins.
+	Plugins,
 };
 
 /**

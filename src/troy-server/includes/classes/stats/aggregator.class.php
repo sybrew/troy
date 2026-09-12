@@ -77,8 +77,7 @@ final class Aggregator {
 				STATS_AGGREGATOR_BATCH_SIZE,
 			) );
 
-			if ( $plugin_ids )
-				break;
+			if ( $plugin_ids ) break;
 
 			// No plugins found; reset and retry once from start.
 			if ( $last_id > 0 ) {
@@ -638,8 +637,7 @@ final class Aggregator {
 				STATS_AGGREGATOR_BATCH_SIZE,
 			) );
 
-			if ( $package_ids )
-				break;
+			if ( $package_ids ) break;
 
 			// No packages found; reset and retry once from start.
 			if ( $last_id > 0 ) {

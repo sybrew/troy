@@ -14,8 +14,8 @@ use function Troy\Client\recheck_dependencies;
 
 use Troy\Client\{
 	Dependencies,
-	Headers,
 	HTTP,
+	Headers,
 	Plugin_Table,
 	Plugins_API,
 	Protect_Client,

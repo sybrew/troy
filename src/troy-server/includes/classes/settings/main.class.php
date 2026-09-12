@@ -8,14 +8,14 @@ namespace Troy\Server\Settings;
 
 \defined( 'Troy\Server\ABSPATH' ) or die;
 
-use Troy\Server\{
-	Admin_Scripts,
-	Template,
-};
-
 use const Troy\Server\{
 	MAIN_FILE,
 	VERSION,
+};
+
+use Troy\Server\{
+	Admin_Scripts,
+	Template,
 };
 
 /**
@@ -188,7 +188,7 @@ final class Main {
 				// Enqueue setup assets on setup tab.
 				if ( 'setup' === $tab )
 					Setup::enqueue_assets();
-			}
+			},
 		);
 
 		\add_action(

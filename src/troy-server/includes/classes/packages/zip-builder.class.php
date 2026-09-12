@@ -13,7 +13,6 @@ use const Troy\Server\ABSPATH;
 use Troy\Server\{
 	API,
 	File_Utils,
-	Packages\CPT\Store,
 	Plugins,
 };
 
@@ -270,8 +269,7 @@ final class Zip_Builder {
 							foreach ( $meta->plugins as $plugin_config ) {
 								$plugin_id = \absint( $plugin_config['id'] ?? 0 );
 
-								if ( ! $plugin_id )
-									continue;
+								if ( ! $plugin_id ) continue;
 
 								$plugin_data = new Plugins\Data( $plugin_id );
 								$plugin_row  = $plugin_data->get_plugins_row();

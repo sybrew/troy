@@ -12,15 +12,8 @@ use const Troy\Server\PLUGINS_CPT;
 
 use Troy\Server\{
 	API,
-	Integrations,
+	Plugins,
 	Zip_Extractor,
-};
-
-use Troy\Server\Plugins\{
-	Data,
-	Drop,
-	Files,
-	Readme_Parser,
 };
 
 /**
@@ -286,8 +279,7 @@ final class Store {
 					foreach ( $block['innerBlocks'] as $tab ) {
 						$tab_id = $tab['attrs']['troyServerTabId'] ?? null;
 
-						if ( ! $tab_id )
-							continue;
+						if ( ! $tab_id ) continue;
 
 						// Concatenate all innerHTML of child blocks
 						$html = '';
@@ -316,9 +308,9 @@ final class Store {
 						// Merge with defaults to ensure all keys exist
 						$data['contents'] = array_merge(
 							self::get_default_plugin_data()['contents'],
-							new Readme_Parser(
+							new Plugins\Readme_Parser(
 								new Zip_Extractor(
-									Files::get_plugin_zip_file_path( $data['plugin_id'], $working_version ),
+									Plugins\Files::get_plugin_zip_file_path( $data['plugin_id'], $working_version ),
 								)->temp_zip_extraction_dir,
 							)->contents,
 						);
@@ -706,7 +698,7 @@ final class Store {
 		\update_post_meta(
 			$post_id,
 			'troy_server_plugin_trashed_previous_status',
-			new Data( post_id: $post_id )->get_plugins_row()?->status,
+			new Plugins\Data( post_id: $post_id )->get_plugins_row()?->status,
 		);
 
 		$wpdb->update(
@@ -728,8 +720,7 @@ final class Store {
 	 */
 	public static function handle_untrash_post( $post_id ) {
 
-		if ( PLUGINS_CPT !== \get_post_type( $post_id ) )
-			return;
+		if ( PLUGINS_CPT !== \get_post_type( $post_id ) ) return;
 
 		// $previous_status is an optional parameter of the untrash_post action.
 		$previous_plugin_status = \get_post_meta(
@@ -763,7 +754,7 @@ final class Store {
 	 * @param int $post_id The post ID being trashed.
 	 */
 	public static function handle_delete_post( $post_id ) {
-		new Drop( post_id: $post_id )->commit();
+		new Plugins\Drop( post_id: $post_id )->commit();
 	}
 
 	/**

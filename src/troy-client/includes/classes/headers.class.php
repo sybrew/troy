@@ -57,6 +57,7 @@ final class Headers {
 		if ( empty( $cache[''] ) )
 			return false;
 
+		// PHP 8.5+: array_first().
 		return \array_key_exists( TROY_PLUGIN_HEADERS['repo'][0], reset( $cache[''] ) );
 	}
 

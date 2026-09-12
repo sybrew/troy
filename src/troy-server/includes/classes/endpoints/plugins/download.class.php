@@ -10,9 +10,8 @@ namespace Troy\Server\Endpoints\Plugins;
 
 use Troy\Server\{
 	API,
-	Endpoints\Base_Endpoint,
-	Plugins\Data,
-	Plugins\Files,
+	Endpoints,
+	Plugins,
 };
 
 /**
@@ -47,7 +46,7 @@ use Troy\Server\{
  *
  * @since 0.0.1184
  */
-final class Download extends Base_Endpoint {
+final class Download extends Endpoints\Base_Endpoint {
 
 	/**
 	 * Handle a plugin download request with slug provided directly.
@@ -111,7 +110,7 @@ final class Download extends Base_Endpoint {
 			API\Response::send_error( 'Plugin not found', 404 );
 
 		try {
-			$data = new Data(
+			$data = new Plugins\Data(
 				$plugin_id,
 				'latest' === $version
 					? null
@@ -142,7 +141,7 @@ final class Download extends Base_Endpoint {
 			if ( ! $zip_data )
 				API\Response::send_error( 'Plugin data not found', 404 );
 
-			$zip_file_path = Files::get_plugin_zip_file_path( $plugin_id, $version );
+			$zip_file_path = Plugins\Files::get_plugin_zip_file_path( $plugin_id, $version );
 
 			// phpcs:ignore TSF.Performance.Functions.PHP -- Required for file validation
 			if ( ! file_exists( $zip_file_path ) )

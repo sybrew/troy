@@ -10,9 +10,9 @@ namespace Troy\Server\Endpoints\Composer;
 
 use Troy\Server\{
 	API,
-	Endpoints\Base_Endpoint,
-	Packages\Data as Package_Data,
-	Plugins\Data as Plugin_Data,
+	Endpoints,
+	Packages,
+	Plugins,
 };
 
 /**
@@ -53,7 +53,7 @@ use Troy\Server\{
  * @since 1.7.1184
  * @link https://getcomposer.org/doc/04-schema.md#type
  */
-final class Package extends Base_Endpoint {
+final class Package extends Endpoints\Base_Endpoint {
 
 	/**
 	 * Constructor.
@@ -95,12 +95,12 @@ final class Package extends Base_Endpoint {
 		if ( ! $slug )
 			API\Response::send_error( 'Package not found', 404 );
 
-		$package_id = Package_Data::get_package_id_by_slug( $slug );
+		$package_id = Packages\Data::get_package_id_by_slug( $slug );
 
 		if ( ! $package_id )
 			API\Response::send_error( 'Package not found', 404 );
 
-		$package_data = new Package_Data( $package_id );
+		$package_data = new Packages\Data( $package_id );
 		$package      = $package_data->get_packages_row();
 
 		if ( ! $package || 'active' !== $package->status )
@@ -153,14 +153,12 @@ final class Package extends Base_Endpoint {
 		foreach ( $plugin_entries as $entry ) {
 			$plugin_id = $entry['id'] ?? null;
 
-			if ( ! $plugin_id )
-				continue;
+			if ( ! $plugin_id ) continue;
 
-			$plugin_data = new Plugin_Data( $plugin_id );
+			$plugin_data = new Plugins\Data( $plugin_id );
 			$plugin_row  = $plugin_data->get_plugins_row();
 
-			if ( ! $plugin_row )
-				continue;
+			if ( ! $plugin_row ) continue;
 
 			switch ( $plugin_row->status ) {
 				case 'public':

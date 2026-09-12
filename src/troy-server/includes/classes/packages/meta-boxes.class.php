@@ -145,8 +145,7 @@ final class Meta_Boxes {
 	 */
 	public static function render_title_description( $post ) {
 
-		if ( PACKAGES_CPT !== $post->post_type )
-			return;
+		if ( PACKAGES_CPT !== $post->post_type ) return;
 
 		printf(
 			'<p class=description>%s</p>',

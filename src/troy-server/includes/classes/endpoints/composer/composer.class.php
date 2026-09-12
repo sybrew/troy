@@ -10,7 +10,7 @@ namespace Troy\Server\Endpoints\Composer;
 
 use Troy\Server\{
 	API,
-	Endpoints\Base_Endpoint,
+	Endpoints,
 };
 
 /**
@@ -53,7 +53,7 @@ use Troy\Server\{
  * @since 1.7.1184
  * @link https://getcomposer.org/doc/05-repositories.md#composer
  */
-final class Composer extends Base_Endpoint {
+final class Composer extends Endpoints\Base_Endpoint {
 
 	/**
 	 * Handle the Composer packages.json request.

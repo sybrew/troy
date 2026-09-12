@@ -67,7 +67,7 @@
 							width:     772,
 							height:    250,
 							style:     { aspectRatio: '772/250' },
-						}
+						},
 					),
 				);
 			},

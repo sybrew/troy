@@ -11,7 +11,6 @@ namespace Troy\Server\Plugins;
 use Troy\Server\{
 	API,
 	File_Utils,
-	Plugins\Data,
 };
 
 /**
@@ -211,8 +210,7 @@ final class Files {
 		}
 
 		foreach ( $zips as $zip ) {
-			if ( ! \in_array( $zip->type, $allowed_types, true ) )
-				continue;
+			if ( ! \in_array( $zip->type, $allowed_types, true ) ) continue;
 
 			if ( $wp_version && version_compare( $zip->requires_wp, $wp_version, '>' ) )
 				continue;

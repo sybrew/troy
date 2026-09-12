@@ -10,7 +10,7 @@ namespace Troy\Server\Endpoints\Plugins;
 
 use Troy\Server\{
 	API,
-	Endpoints\Base_Endpoint,
+	Endpoints,
 	Plugins,
 };
 
@@ -45,7 +45,7 @@ use Troy\Server\{
  *
  * @since 1.5.1184
  */
-final class Stats extends Base_Endpoint {
+final class Stats extends Endpoints\Base_Endpoint {
 
 	/**
 	 * Constructor.
@@ -138,18 +138,15 @@ final class Stats extends Base_Endpoint {
 
 				foreach ( $slugs as $raw_slug ) {
 
-					if ( ! \is_string( $raw_slug ) )
-						continue;
+					if ( ! \is_string( $raw_slug ) ) continue;
 
 					$slug = API\Sanitize::slug( $raw_slug );
 
-					if ( ! $slug )
-						continue;
+					if ( ! $slug ) continue;
 
 					$plugin_id = API\Plugin::get_plugin_id_by_slug( $slug );
 
-					if ( ! $plugin_id )
-						continue;
+					if ( ! $plugin_id ) continue;
 
 					$data = new Plugins\Data( $plugin_id );
 

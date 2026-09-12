@@ -113,8 +113,7 @@ final class Markdown {
 
 		static $loaded_dependencies;
 
-		if ( $loaded_dependencies )
-			return;
+		if ( $loaded_dependencies ) return;
 
 		$base_dir = ABSPATH . 'vendor/markdown/';
 
@@ -136,8 +135,7 @@ final class Markdown {
 			function ( $class ) use ( $prefix_map ) {
 				foreach ( $prefix_map as $prefix => $path ) {
 					// Check if the class uses the namespace prefix.
-					if ( ! str_starts_with( $class, $prefix ) )
-						continue;
+					if ( ! str_starts_with( $class, $prefix ) ) continue;
 
 					$filename = str_replace(
 						'\\',

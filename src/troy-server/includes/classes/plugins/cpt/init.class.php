@@ -9,8 +9,8 @@ namespace Troy\Server\Plugins\CPT;
 \defined( 'Troy\Server\ABSPATH' ) or die;
 
 use const Troy\Server\{
-	VERSION,
 	PLUGINS_CPT,
+	VERSION,
 };
 
 /**

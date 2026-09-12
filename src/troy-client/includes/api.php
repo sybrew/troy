@@ -253,8 +253,7 @@ function get_troy_plugins() {
 		$slug = get_plugin_slug( $file );
 
 		// Troy cannot support root plugins.
-		if ( '.' === $slug )
-			continue;
+		if ( '.' === $slug ) continue;
 
 		// Reset.
 		$repo = $dependencies = null;
@@ -280,8 +279,7 @@ function get_troy_plugins() {
 		}
 
 		// If nothing is registered, then the plugin does not support Troy.
-		if ( ! $repo && ! $dependencies )
-			continue;
+		if ( ! $repo && ! $dependencies ) continue;
 
 		$plugins[ $file ] = [
 			'slug'         => $slug,

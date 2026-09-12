@@ -10,9 +10,8 @@ namespace Troy\Server\Endpoints\Plugins;
 
 use Troy\Server\{
 	API,
-	Endpoints\Base_Endpoint,
-	Plugins\Data,
-	Plugins\Files,
+	Endpoints,
+	Plugins,
 };
 
 /**
@@ -47,7 +46,7 @@ use Troy\Server\{
  *
  * @since 0.0.1184
  */
-final class Updates extends Base_Endpoint {
+final class Updates extends Endpoints\Base_Endpoint {
 
 	/**
 	 * Handle the plugin updates request.
@@ -105,17 +104,15 @@ final class Updates extends Base_Endpoint {
 
 			$slug = API\Sanitize::slug( $slug );
 
-			if ( ! $slug )
-				continue;
+			if ( ! $slug ) continue;
 
 			// TODO: Once we support transporting slugs, we should resolve the new slug from this plugin ID.
 			$plugin_id = API\Plugin::get_plugin_id_by_slug( $slug );
 
-			if ( ! $plugin_id )
-				continue;
+			if ( ! $plugin_id ) continue;
 
 			try {
-				$data = new Data( $plugin_id );
+				$data = new Plugins\Data( $plugin_id );
 
 				// Check plugin status - only serve updates for public/unlisted plugins
 				switch ( $data->get_plugins_row()->status ) {
@@ -133,13 +130,13 @@ final class Updates extends Base_Endpoint {
 
 				$metas = $data->get_metas_row();
 				// Get latest COMPATIBLE plugin zip
-				$zip = Files::get_latest_plugin_zip(
+				$zip = Plugins\Files::get_latest_plugin_zip(
 					$plugin_id,
 					[
 						'wp_version'  => $wp_version,
 						'php_version' => $php_version,
 						'channel'     => $channel,
-					]
+					],
 				);
 
 				// Write default plugin info for update and no_update responses.
@@ -175,7 +172,7 @@ final class Updates extends Base_Endpoint {
 						$plugin_info,
 						[
 							'new_version'    => $zip->version,
-							'package'        => Files::get_plugin_zip_url_by_slug( $slug, $zip->version ),
+							'package'        => Plugins\Files::get_plugin_zip_url_by_slug( $slug, $zip->version ),
 							'tested'         => API\Utils::get_latest_public_wordpress_version( $zip->tested_wp ),
 							'requires'       => $zip->requires_wp ?: '',
 							'requires_php'   => $zip->requires_php ?: '',

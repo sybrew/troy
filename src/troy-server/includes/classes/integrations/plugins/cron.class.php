@@ -10,7 +10,7 @@ namespace Troy\Server\Integrations\Plugins;
 
 use Troy\Server\{
 	API,
-	Plugins, // A namesake import is valid; we're relative to \, not \Plugins.
+	Plugins,
 };
 
 /**
@@ -91,8 +91,7 @@ final class Cron extends \Troy\Server\Cron {
 			WHERE auto_process != 'none'",
 		);
 
-		if ( empty( $integrations ) )
-			return;
+		if ( empty( $integrations ) ) return;
 
 		foreach ( $integrations as $integration ) {
 			$plugin_id    = $integration->plugin_id;
@@ -277,8 +276,7 @@ final class Cron extends \Troy\Server\Cron {
 
 		$queued_tags = Store::get_queued_tags( 2 );
 
-		if ( empty( $queued_tags ) )
-			return;
+		if ( empty( $queued_tags ) ) return;
 
 		foreach ( $queued_tags as $tag ) {
 			$plugin_id       = $tag->plugin_id;
@@ -385,7 +383,7 @@ final class Cron extends \Troy\Server\Cron {
 				$error_message = $e->getMessage();
 
 				// Determine failure type based on exception code or attempt count
-				$is_permanent_error = $e->getCode() === Plugins\Zip_Uploader::EXCEPTION_PERMANENT;
+				$is_permanent_error = $e->getCode() === Zip_Uploader::EXCEPTION_PERMANENT;
 				$block_reason       = 'Refer to integration logs';
 
 				if ( ! $is_permanent_error ) {

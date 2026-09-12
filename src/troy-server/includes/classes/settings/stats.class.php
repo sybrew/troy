@@ -9,9 +9,9 @@ namespace Troy\Server\Settings;
 \defined( 'Troy\Server\ABSPATH' ) or die;
 
 use const Troy\Server\{
+	MAIN_FILE,
 	REST_NS,
 	VERSION,
-	MAIN_FILE,
 };
 
 use Troy\Server\API;
@@ -1009,7 +1009,7 @@ final class Stats {
 		static $sql_offset_seconds;
 
 		$sql_offset_seconds ??= (int) $GLOBALS['wpdb']->get_var(
-			'SELECT TIMESTAMPDIFF(SECOND, UTC_TIMESTAMP(), NOW())'
+			'SELECT TIMESTAMPDIFF(SECOND, UTC_TIMESTAMP(), NOW())',
 		);
 
 		return \wp_date(

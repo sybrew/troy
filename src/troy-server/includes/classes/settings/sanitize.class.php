@@ -141,8 +141,7 @@ final class Sanitize {
 
 		static $registered = false;
 
-		if ( $registered )
-			return;
+		if ( $registered ) return;
 
 		$registered = true;
 

@@ -9,8 +9,8 @@ namespace Troy\Server\Plugins;
 \defined( 'Troy\Server\ABSPATH' ) or die;
 
 use const Troy\Server\{
-	VERSION,
 	TROY_PLUGIN_HEADERS,
+	VERSION,
 };
 
 use Troy\Server\{
@@ -305,7 +305,7 @@ final class Zip_Uploader {
 			$plugin_subdir_name = $sub_dirs ? basename( $sub_dirs[0] ) : '';
 
 			$temp_plugin_path = \trailingslashit(
-				"{$temp_zip_extraction_dir}{$plugin_subdir_name}"
+				"{$temp_zip_extraction_dir}{$plugin_subdir_name}",
 			);
 
 			if ( $plugin_subdir_name ) {

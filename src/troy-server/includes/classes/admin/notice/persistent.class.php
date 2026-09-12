@@ -206,8 +206,7 @@ final class Persistent {
 	 */
 	public static function enqueue_dismiss_script() {
 
-		if ( ! Settings\Data::get_server_cache( 'persistent_notices' ) )
-			return;
+		if ( ! Settings\Data::get_server_cache( 'persistent_notices' ) ) return;
 
 		$dir_url = \plugin_dir_url( MAIN_FILE );
 		$min     = \SCRIPT_DEBUG ? '' : '.min';

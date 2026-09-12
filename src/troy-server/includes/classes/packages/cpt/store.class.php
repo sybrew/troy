@@ -13,12 +13,9 @@ use const Troy\Server\{
 	PACKAGES_CPT,
 };
 
-use Troy\Server\API;
-use Troy\Server\Packages\{
-	Zip_Builder,
-	Data,
-	Drop,
-	Files,
+use Troy\Server\{
+	API,
+	Packages,
 };
 
 /**
@@ -75,8 +72,7 @@ final class Store {
 	 */
 	public static function output_save_nonce( $post ) {
 
-		if ( PACKAGES_CPT !== $post->post_type )
-			return;
+		if ( PACKAGES_CPT !== $post->post_type ) return;
 
 		\wp_nonce_field( self::SAVE_NONCE['action'], self::SAVE_NONCE['name'], false );
 	}
@@ -98,19 +94,16 @@ final class Store {
 
 		$post_id = \get_the_ID();
 
-		if ( ! $post_id )
-			return;
+		if ( ! $post_id ) return;
 
 		$notices = \get_post_meta( $post_id, '_troy_server_package_update_status', true ) ?: [];
 
-		if ( empty( $notices ) )
-			return;
+		if ( empty( $notices ) ) return;
 
 		$persistent_notices = [];
 
 		foreach ( $notices as $notice ) {
-			if ( empty( $notice['message'] ) )
-				continue;
+			if ( empty( $notice['message'] ) ) continue;
 
 			$type    = $notice['type'] ?? 'error';
 			$message = $notice['message'];
@@ -534,7 +527,7 @@ final class Store {
 		}
 
 		build_package_zip: try {
-			$builder = new Zip_Builder( $package_id );
+			$builder = new Packages\Zip_Builder( $package_id );
 
 			$builder->build();
 
@@ -583,7 +576,7 @@ final class Store {
 		\update_post_meta(
 			$post_id,
 			'troy_server_package_trashed_previous_status',
-			new Data( post_id: $post_id )->get_packages_row()?->status,
+			new Packages\Data( post_id: $post_id )->get_packages_row()?->status,
 		);
 
 		$wpdb->update(
@@ -606,14 +599,13 @@ final class Store {
 	 */
 	public static function handle_untrash_post( $post_id ) {
 
-		if ( PACKAGES_CPT !== \get_post_type( $post_id ) )
-			return;
+		if ( PACKAGES_CPT !== \get_post_type( $post_id ) ) return;
 
 		// $previous_status is an optional parameter of the untrash_post action.
 		$previous_package_status = \get_post_meta(
 			$post_id,
 			'troy_server_package_trashed_previous_status',
-			true
+			true,
 		);
 
 		if ( $previous_package_status ) {
@@ -642,6 +634,6 @@ final class Store {
 	 * @return void
 	 */
 	public static function handle_delete_post( $post_id ) {
-		new Drop( post_id: $post_id )->commit();
+		new Packages\Drop( post_id: $post_id )->commit();
 	}
 }

@@ -16,8 +16,8 @@ use const Troy\Server\{
 };
 
 use Troy\Server\{
-	Admin,
 	API,
+	Admin,
 	Cron,
 	Endpoints,
 	Integrations,

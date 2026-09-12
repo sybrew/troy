@@ -13,7 +13,6 @@ use const Troy\Server\REST_NS;
 use Troy\Server\{
 	API,
 	File_Utils,
-	Plugins\CPT\Store,
 	Zip_Extractor,
 };
 
@@ -188,7 +187,7 @@ final class REST {
 				'integrations'      => $integrations,
 			];
 		} else {
-			$response = Store::get_default_plugin_data();
+			$response = CPT\Store::get_default_plugin_data();
 		}
 
 		return new \WP_REST_Response( $response, 200 );
@@ -916,7 +915,7 @@ final class REST {
 					* ( $index & 1 ? $scale_y : $scale_x )
 				),
 				$random_rect,
-				\array_keys( $random_rect )
+				\array_keys( $random_rect ),
 			);
 
 			$rect_color = \imagecolorallocatealpha(
@@ -953,7 +952,7 @@ final class REST {
 				mt_rand( 50, 300 ),
 				mt_rand( 60, 120 ),
 				mt_rand( 60, 120 ),
-			]
+			],
 		);
 
 		\imagefilledrectangle(
@@ -987,7 +986,7 @@ final class REST {
 					mt_rand( 80, 350 ), // x position
 					$y_pos,             // biased y position
 					mt_rand( 25, 60 ),  // radius
-				]
+				],
 			);
 
 			\imagefilledellipse(
@@ -1069,7 +1068,7 @@ final class REST {
 					mt_rand( 0, 255 ),
 					mt_rand( 0, 255 ),
 					mt_rand( 50, 100 ),
-				)
+				),
 			);
 
 		// Add 2-4 random boxed lines
