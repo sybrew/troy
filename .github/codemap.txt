@@ -42,6 +42,7 @@ readme.md                       Project overview, component descriptions, requir
 			SKILL.md                PHP 7.4 call/array commas; no commas on parameter lists
 			scripts/
 				find-missing.php    Reports missing trailing commas in PHP files
+		mcp.json                    Project Playwright MCP: Troy playground.mcp.json (X-Troy-Playground-Admin)
 		playground/                 Local WordPress Playground regression via wp-plugin-regression
 			SKILL.md                Permission, engine clone, home persist, packages, official faux API, Playwright
 			packages.json           Monorepo package catalog (client, server, daemon, installer)

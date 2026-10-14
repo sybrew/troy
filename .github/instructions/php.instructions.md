@@ -9,13 +9,15 @@ applyTo: "**/*.php"
 - Use WordPress coding standards, except where this file narrows them.
 - Write PHP attributes inline on the symbol they annotate, for example `function foo( #[\SensitiveParameter] $x )`. If the attribute plus that symbol would exceed 80 visual columns (tab = 4), put the attribute on the line above. If the attribute itself exceeds 80, wrap its arguments like a function call.
 - Never add phpcs comments. That includes `phpcs:disable`, `phpcs:enable`, `phpcs:ignore`, `phpcs:set`, and any `-- phpcs:` annotation. Do not copy them from existing files into new or edited code. Existing comments in unmodified files stay.
-- Avoid functions `wp_sprintf`, except with `%l` lists, `wp_parse_url`, `wp_json_encode`, and `status_header`.
+- Avoid functions `wp_sprintf`, except with `%l` lists, `wp_json_encode`, and `status_header`.
 - Never add hooks in class constructs.
 - In `add_filter()` and `add_action()`, write each argument on a new line when implementing anonymous functions.
 - Do not mark anonymous functions or arrow functions `static` except in instance methods. `static` only prevents binding `$this`.
 - Do not create `validate_callbacks` for REST routes. Validate and sanitize parameters directly in the route callback.
 - Use short array syntax.
+- Always delimit regular expressions with `/`. Escape slashes in the pattern. Do not use `#` or other preg delimiters.
 - Add trailing commas on multiline array items and function calls. Do not add them on function, method, closure, or `fn()` parameter lists, closure `use (` lists, or control-structure conditions in PHP 7.4 packages (PHP 8.0 syntax). `src/troy-server/**` (PHP 8.4+) may use trailing commas on multiline parameter lists.
+- A one-line list of plain strings longer than 120 visual columns (tab = 4) requires one string per line. Sort that list by byte order unless position changes behavior, such as the search array of `str_replace`. A one-line list of at most 120 visual columns stays as written.
 - Never use strict typing unless required.
 - Short Echo Tags, HereDoc, and NowDoc are permitted.
 - Use `(s|v)printf` for complex strings when variables still need to be escaped.
@@ -30,7 +32,7 @@ applyTo: "**/*.php"
 - Use `or` / `and` for statement-level short-circuit, for example `isset( $x ) or $x = ...` or `get_cache() or set_cache()`. Do not use `??` as a statement.
 - Pass-through wrappers stay on the opener line; the inner call whose arguments exceed 30 characters starts on the next line. After the coalesce or ternary break, a remaining single nested call may stay compact, for example `?? Query\Cache::memo( self::is_menu_page( Admin\Menu::get_page_hook_name() ) )`.
 - Keep a coalesce of two wrappers on one line when the right-hand call is a single-argument pass-through, for example `memo() ?? memo( array_values(`.
-- When a `?:` expression wraps, treat it like `??`: break after `=`, break at `?:` first, and pad the first operand by 3 spaces.
+- When a `?:` expression wraps, treat it like `??`: break after `=`, break at `?:` first, and pad the first operand by 3 spaces. When that first operand is a call with multiple parameters, put each parameter on its own line, indent the call one tab, and put `?:` or `??` at the same indent as that call. Do not pad that call by 3 spaces. Keep each later operand on one line.
 - A single-property array that is the only argument stays on the opener, for example `get_post_types( [ 'public' => true ] )`. That is not the multi-argument wrap trigger. If the only argument is a multi-property array, keep `fn( [` and wrap the properties.
 - Wrap a Boolean `&&` / `||` function argument so phpcs treats it as one argument.
 - Compact `if` / `elseif`: keep a void `return;`, `continue;`, or `break;` on the same line when that line is at most 80 columns (tab = 4). Put a `return` with a value on the next line, unbraced. If that compact void line exceeds 80, put the terminator on the next line, unbraced. Do not wrap a single expression (no `&&` / `||`) just to make room for the terminator. If an `&&` / `||` condition line exceeds 80, wrap at those operators (first operand padded by 3 spaces) and use braces. Do not wrap only the `return`.

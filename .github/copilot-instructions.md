@@ -8,7 +8,7 @@ Follow these rules.
 
 - Use PHP 8.4+ for `src/troy-server/**`. Use PHP 7.4+ for other folders.
 - The SemVer patch is frozen at `x.x.1184`. Only ever increment major.minor.
-- In the affected package's main plugin file (for example `src/troy-server/troy-server.php`), increment the `Version:` header by `-dev-{number}` once per chat, at the first change that belongs in a PR. If there is no `-dev-{number}` suffix yet, add `-dev-1`. Do not edit that file again in that chat for version bumps; the operator manages further increments.
+- In the affected package's main plugin file (for example `src/troy-server/troy-server.php`), increment the `Version:` header by `-dev-{number}` once per commit, at the first change that belongs in a PR or commit. If there is no `-dev-{number}` suffix yet, add `-dev-1`. Do not edit that file again in that chat for version bumps; the operator manages further increments.
 - Never increment the version number itself; that is done during release.
 - Never use `wp.data.subscribe`.
 - We use `var_dump()` in comments to indicate a blocking issue.
@@ -31,7 +31,7 @@ Support inquiries are first-class engineering work. They may require code inspec
 - Refer to `.github/codemap.txt` first to understand the codebase structure and locate files.
 - When creating new files or changing a file's purpose, update `.github/codemap.txt` to reflect the change.
 - Do not add `.local/` contents to the codemap, but you may reference them as needed.
-- Keep private workspace-only guidance, related-project cross-references, and local support material in `./.local/`, especially `./.local/.instructions/*.instructions.md`, instead of tracked public instruction files.
+- Keep private workspace-only guidance, related-repository cross-references, and local support material in `./.local/`, especially `./.local/.instructions/*.instructions.md`, instead of tracked public instruction files.
 
 ## Response Style
 
@@ -79,10 +79,12 @@ Do not argue a settled intent, rehash a corrected misread, or add meta-commentar
 - Add a short inline comment next to or above magic numbers.
 - Do not add comments about your executions.
 - Write detailed docblocks for all functions, classes, and methods.
+- An `@since` changelog note requires the word "now" when existing behavior changes or a bug is fixed. It requires "Added" when the note is a new behavior that leaves previous behavior unchanged. A symbol introduced in the unreleased version requires only `@since` plus the version being released, as in `@since 1.8.1184`. That tag requires no `Now` and no `Added`. That package's `readme.txt` requires one introduction of that symbol and no second changelog entry for later edits before release.
+- Dynamic array docblock: braces name the loop key only. Pattern: `foreach ( $items as $link => $data )` documents `{$link}`, never `{$data}`. `for ( const id in rows )` documents `{id}`, never `{$id}`. Use the names in the code, not these pattern names. A quoted key `'archive'` stays `$archive`. Every dynamic key requires one tag whose name is the parameter or return that holds the array, not the loop key: "@example $items `[ 'https://example.com/' => [ 'priority' => 1 ] ]`" or "@example rows `{ home: {} }`". Place that tag with `@since` / `@deprecated` / `@see`, before `@param` / `@return` / `@yield`. Backticks sit on that tag and hold one real entry shaped like the array. When the value has known keys: `@type array {$link} {` then `@type` lines for those real keys. JSDoc also writes `@property {Object} rows.{id}`.
 - After a function opening `{`, insert a blank line when the body has two or more statements. A single-statement body stays tight. A leading comment is not a statement: comment plus a single `return` or `yield` stays tight, comment on the first interior line. With two or more statements, the blank line comes first so that comment sits on the next interior line. Do not insert that blank after `if`, `elseif`, `else`, loop, `try`, or labeled `{` (`label: {`) braces.
 - A `return` or `yield` that ends that interior always has a blank line before it if that interior has two or more statements. Early `return` / `yield` inside `if` / `else` count: the blank is a visual split that this path ends there. A single-statement interior that is only a `return` or `yield` stays tight. Own-line comments immediately above that `return` or `yield` stay attached to it; the blank line goes before that comment group. Do not insert that blank before `continue` or `break`. After an early `return`, `continue`, or `break` guard, insert a blank line before the next sibling statement, including another guard.
 - A tab is 4 characters wide.
-- Use tabs for indentation, not spaces. Continuation indent is one tab. When the right-hand side of `=` is a multiline coalesce or ternary, break after `=` and pad the first operand by 3 spaces so the operator aligns. Do not pad a `return` that is not an assignment.
+- Use tabs for indentation, not spaces. Continuation indent is one tab. When the right-hand side of `=` is a multiline coalesce or ternary, break after `=` and pad the first operand by 3 spaces so the operator aligns. When that first operand is a call with multiple parameters, put each parameter on its own line, indent the call one tab, and put `?:` or `??` at the same indent as that call. Do not pad that call by 3 spaces. Keep each later operand on one line. Do not pad a `return` that is not an assignment.
 - When a ternary or coalesce branch is a complex `&&` / `||` chain, wrap that branch in parentheses. Pad the first operand by 3 spaces so the operators align at the start of continuation lines. Use the same wrapping when that Boolean is a function argument, so the linter treats it as one argument. When there is an operator in an argument of a multi-argument call, split all arguments into separate lines. A single Boolean or coalesce argument may stay on the opener if it fits.
 - Use braces with branching control structures when the condition is multiline, when the body has more than one statement, or when the structure has a paired `else`, `elseif`, or `do`/`while`. Keep `{` on the closing `)` line.
 - Do not use braces when the condition is one line, the body is a single statement, and the structure has no paired `else`, `elseif`, or `do`/`while`. Wrapping that statement across lines does not require braces.
@@ -124,7 +126,7 @@ Do not argue a settled intent, rehash a corrected misread, or add meta-commentar
 
 - You cannot rely on composer.json; it contains links to repositories you cannot access.
 - You may rely on phpcs.xml for coding standards.
-- Do not create, edit, or search for `*.min.js` or `*.min.css`.
+- Do not create, edit, read, grep, search, or `git diff` `*.min.js` or `*.min.css`, including after minify exit code 0.
 - Before executing commands, consider the development environment based on the file paths you are working with. For example, if you see `c:\`, you are working in Windows.
 
 ## Post-Change Processing

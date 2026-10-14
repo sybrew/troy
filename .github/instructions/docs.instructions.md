@@ -14,3 +14,4 @@ applyTo: "README.md, readme.md, readme.txt"
 - Treat `readme.txt` changelog entries as Troy package release notes. Preserve the existing house style: version headings (`= x.x.1184 =`) and simple past-tense bullets (`Added`, `Fixed`, `Changed`, `Improved`, `Resolved`, `Removed`).
 - Preserve the existing nested list and indentation style in `readme.txt` changelogs, including indented follow-up bullets where the current format uses them.
 - When copying content from code, such as docblocks, comments, or commit notes, into `readme.txt`, `readme.md`, or other user-facing docs, preserve the essence verbatim. Only minor prose tweaks for readability are allowed. Do not add details that are not present in the source.
+- A symbol introduced in the unreleased version gets one changelog introduction. Do not add a later entry for edits made to it before release.

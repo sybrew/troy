@@ -1,5 +1,5 @@
 ---
-description: "Use when handling local-only workspace guidance, private support or outreach materials, related-project cross-references, remediation, troubleshooting, reproduction, triage, or customer-facing diagnosis that may require code changes."
+description: "Use when handling local-only workspace guidance, private support or outreach materials, related-repository cross-references, remediation, troubleshooting, reproduction, triage, or customer-facing diagnosis that may require code changes."
 applyTo: ".local/**"
 ---
 
@@ -7,8 +7,8 @@ applyTo: ".local/**"
 
 - `.local/` is gitignored. Agent Grep and Glob cannot search it, even with an explicit path. `.cursorignore` `!.local/**` does not fix those tools. Use Read/Write with an explicit path, or Shell (`Get-ChildItem`, `Select-String`, `rg --no-ignore-vcs`). A zero Grep/Glob result does not mean `.local` is empty.
 - Treat `.local/` as private workspace-only context.
-- Do not expose `.local/` details or related-project context in public-facing instructions or responses unless the user asks for them.
-- Keep private workspace-only guidance, partner or outreach rules, and related-project cross-references in `.local/.instructions/*.instructions.md`, not in tracked repo instruction files.
+- Do not expose `.local/` details or related-repository context in public-facing instructions or responses unless the user asks for them.
+- Keep private workspace-only guidance, partner or outreach rules, and related-repository cross-references in `.local/.instructions/*.instructions.md`, not in tracked repo instruction files.
 - Troy is a monorepo. When local guidance refers to Troy, Troy Server, Troy Client, Troy Client Daemon, or Troy Installer, keep the target package explicit.
 - Treat support, partner, or outreach inquiries as first-class engineering work.
 - These inquiries may require code inspection, reproduction, remediation, product explanation, or patches.

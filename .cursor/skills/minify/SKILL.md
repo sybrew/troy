@@ -8,7 +8,7 @@ description: >-
 ---
 # Minify Troy Server JS and CSS
 
-Edit unminified sources only. Never write `*.min.js` or `*.min.css` by hand. Never search this repo for uglify, terser, or babel-minify.
+Edit unminified sources only. Never write `*.min.js` or `*.min.css` by hand. Never search this repo for uglify, terser, or babel-minify. Do not create, edit, read, grep, search, or `git diff` `*.min.js` or `*.min.css`, including after minify exit code 0.
 
 ## Permission
 
